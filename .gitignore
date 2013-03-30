@@ -1,5 +1,7 @@
 # Object files
 *.o
+*.d
+*.lst
 
 # Libraries
 *.lib
@@ -15,3 +17,11 @@
 *.exe
 *.out
 *.app
+
+# eclipse project files
+**/.metadata/
+**/RemoteSystemsTempFiles/
+**/.settings/
+*.cproject
+*.project
+
