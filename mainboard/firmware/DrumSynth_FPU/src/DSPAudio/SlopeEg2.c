@@ -1,0 +1,211 @@
+/*
+ * SlopeEg.c
+ *
+ *  Created on: 16.06.2012
+ *      Author: Julian Schmidt
+ */
+
+
+
+#include "SlopeEg2.h"
+#include "config.h"
+#include <math.h>
+
+//--------------------------------------------------
+void slopeEg2_init(SlopeEg2* eg)
+{
+	eg->attack	= 0.01f;
+	eg->decay = 0.01f;
+	eg->value 	= 0;
+	eg->state 	= EG_STOPPED;
+
+	eg->repeat	= 0;
+
+	//eg->targetValue = 1;
+
+	slopeEg2_setSlope(eg,0.5f);
+
+//	initOnePole(&eg->filter);
+
+}
+//--------------------------------------------------
+void slopeEg2_trigger(SlopeEg2* eg)
+{
+	//if no repeat is selected beginn in attack state
+	if(!eg->repeat)
+	{
+		eg->state = EG_A;
+	}
+	// if repeat is active we want to repeat the decay stage during the attack time
+	else
+	{
+		eg->state = EG_REPEAT;
+		//since we have no attack we start with  eg->value = max
+		//we use the attack time as a repeat phase decay time
+		 eg->value = 1.0f;
+	}
+//	setOnePoleCoef(&eg->filter,eg->a);
+//	eg->sampleToProcess = eg->attackTimeSamples;
+//	eg->targetValue = 1;
+	eg->repeatCnt = eg->repeat;
+}
+//--------------------------------------------------
+float slopeEg2_calcSlopeValue(float val, float slope)
+{
+	return (1+slope)*val/(1+slope*fabsf(val));
+
+	/*
+	 x = (1+slope)*val /  (1+slope*fabsf(val));
+	 x *(1+slope*fabsf(val))  / (1+slope)*val	= 1;
+
+	 */
+}
+//--------------------------------------------------
+float slopeEg2_calc(SlopeEg2* eg)
+{
+
+	register float val = eg->value;
+	switch(eg->state)
+	{
+
+	case EG_STOPPED:
+		return 0.f;
+		break;
+
+	case EG_REPEAT:
+		/*
+		 *  if the repeat mode is active we use the attack time as a 2nd decay time for the loop part
+		 *  the attack phase is looped repeatCnt times
+		 */
+		if(val>0)
+		{
+			val -= eg->attack;
+		}
+		else
+		{
+			if(eg->repeatCnt > 0)
+			{
+				//retrigger the decay phase and decrease repeat counter
+				eg->repeatCnt--;
+				val = 1.f;
+
+			}
+			else
+			{
+				//repeat counter reached zero -> go to real decay stage
+				eg->state = EG_D;
+				val = 1.f;
+				//return 1.f;
+			}
+		}
+		eg->value = val;
+		//to get a analogue stile exp eg we need to invert the shape
+		return slopeEg2_calcSlopeValue(val,eg->slope);
+
+		break;
+	case EG_A:
+		//val = calcOnePole(&eg->filter,1.1f);
+		val += eg->attack;
+
+		if(val >= 1.0f)
+		{
+
+			val = 1.0f;
+
+			/*
+			 //removed - this code segment would repeat an rising attack phase which is not what we want
+
+			if(eg->repeatCnt > 0)
+			{
+				eg->repeatCnt--;
+				//setOnePoleValue(&eg->filter,0);
+				val = 0;
+				//eg->sampleToProcess = eg->attackTimeSamples;
+
+			}
+			else
+			{
+				*/
+				eg->state = EG_D;
+				//eg->sampleToProcess = eg->decayTimeSamples;
+				//setOnePoleCoef(&eg->filter,eg->d);
+				//eg->targetValue = 0;
+				/*
+			}
+			*/
+		}
+
+		eg->value = val;
+		//to get a analogue stile exp eg we need to invert the shape
+		return slopeEg2_calcSlopeValue(val,eg->invSlope);
+		break;
+
+	case EG_D:
+
+		if(val>0)
+		{
+			//val = calcOnePole(&eg->filter,0.f);
+			val -= eg->decay;
+			eg->value = val;
+			return slopeEg2_calcSlopeValue(val,eg->slope);
+		}
+		else
+		{
+			eg->value = 0;
+			return 0;
+		}
+		//return val;
+
+
+		break;
+	}
+	return 0;
+}
+//--------------------------------------------------
+/*
+x = input in [-1..1]
+y = output
+k = 2*amount/(1-amount);
+
+f(x) = (1+k)*x/(1+k*abs(x))
+*/
+#define TIME_AMOUNT_DECAY 0.999f
+#define TIME_AMOUNT_ATTACK 0.99f
+#define TIME_K_ATTACK (2*TIME_AMOUNT_ATTACK/(1.f-TIME_AMOUNT_ATTACK))
+#define TIME_K_DECAY (2*TIME_AMOUNT_DECAY/(1.f-TIME_AMOUNT_DECAY))
+float slopeEg2_calcTime(uint8_t data2, float amount)
+{
+	const float val = (data2)/127.f;
+	return 1.f-((1.f+amount)*val/(1.f+amount*fabsf(val)));
+
+}
+//--------------------------------------------------
+void slopeEg2_setAttack(SlopeEg2* eg, uint8_t data2, uint8_t isSync)
+{
+	eg->attack = slopeEg2_calcTime(data2,TIME_K_ATTACK);
+	if(isSync)
+		eg->attack /= 16;
+};
+//--------------------------------------------------
+void slopeEg2_setDecay(SlopeEg2* eg, uint8_t data2, uint8_t isSync)
+{
+	eg->decay = slopeEg2_calcTime(data2,TIME_K_DECAY);
+	if(isSync)
+			eg->decay /= 16;
+};
+//--------------------------------------------------
+float slopeEg2_calcDecay(uint8_t data2)
+{
+	return slopeEg2_calcTime(data2,TIME_K_DECAY);
+};
+//--------------------------------------------------
+void slopeEg2_setSlope(SlopeEg2* eg, uint8_t data2)
+{
+	const float amount 	 	= ((data2/127.f)-0.5f)*1.999f;
+	//negate the amount
+	const float invAmount 	= -amount;
+
+	eg->slope 		= 2*amount/(1-amount);
+	eg->invSlope	= 2*invAmount/(1-invAmount);
+
+};

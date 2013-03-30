@@ -19,9 +19,16 @@
 *.app
 
 # eclipse project files
-**/.metadata/
-**/RemoteSystemsTempFiles/
-**/.settings/
+*.metadata
+*RemoteSystemsTempFiles
+*.settings
 *.cproject
 *.project
+*.bak
+*.svn
+*.map
+*.pdf
+*.html
+*.rar
+*.zip
 
