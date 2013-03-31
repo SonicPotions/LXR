@@ -45,9 +45,7 @@ C_SRCS +=  \
 ../fifo.c \
 ../frontPanelParser.c \
 ../Hardware/lcd.c \
-../Hardware/SD/dataParse.c \
 ../Hardware/SD/diskIo.c \
-../Hardware/SD/FAT32.c \
 ../Hardware/SD/ff.c \
 ../Hardware/SD/SD_routines.c \
 ../Hardware/SD/SPI_routines.c \
@@ -62,7 +60,6 @@ C_SRCS +=  \
 ../Menu/copyClearTools.c \
 ../Menu/menu.c \
 ../Menu/screensaver.c \
-../midiLfo.c \
 ../Preset/presetManager.c
 
 
@@ -78,9 +75,7 @@ encoder.o \
 fifo.o \
 frontPanelParser.o \
 Hardware/lcd.o \
-Hardware/SD/dataParse.o \
 Hardware/SD/diskIo.o \
-Hardware/SD/FAT32.o \
 Hardware/SD/ff.o \
 Hardware/SD/SD_routines.o \
 Hardware/SD/SPI_routines.o \
@@ -95,7 +90,6 @@ Menu/Cc2Text.o \
 Menu/copyClearTools.o \
 Menu/menu.o \
 Menu/screensaver.o \
-midiLfo.o \
 Preset/presetManager.o
 
 
@@ -105,9 +99,7 @@ encoder.o \
 fifo.o \
 frontPanelParser.o \
 Hardware/lcd.o \
-Hardware/SD/dataParse.o \
 Hardware/SD/diskIo.o \
-Hardware/SD/FAT32.o \
 Hardware/SD/ff.o \
 Hardware/SD/SD_routines.o \
 Hardware/SD/SPI_routines.o \
@@ -122,7 +114,6 @@ Menu/Cc2Text.o \
 Menu/copyClearTools.o \
 Menu/menu.o \
 Menu/screensaver.o \
-midiLfo.o \
 Preset/presetManager.o
 
 
@@ -132,9 +123,7 @@ encoder.d \
 fifo.d \
 frontPanelParser.d \
 Hardware/lcd.d \
-Hardware/SD/dataParse.d \
 Hardware/SD/diskIo.d \
-Hardware/SD/FAT32.d \
 Hardware/SD/ff.d \
 Hardware/SD/SD_routines.d \
 Hardware/SD/SPI_routines.d \
@@ -149,7 +138,6 @@ Menu/Cc2Text.d \
 Menu/copyClearTools.d \
 Menu/menu.d \
 Menu/screensaver.d \
-midiLfo.d \
 Preset/presetManager.d
 
 
@@ -159,9 +147,7 @@ encoder.d \
 fifo.d \
 frontPanelParser.d \
 Hardware/lcd.d \
-Hardware/SD/dataParse.d \
 Hardware/SD/diskIo.d \
-Hardware/SD/FAT32.d \
 Hardware/SD/ff.d \
 Hardware/SD/SD_routines.d \
 Hardware/SD/SPI_routines.d \
@@ -176,7 +162,6 @@ Menu/Cc2Text.d \
 Menu/copyClearTools.d \
 Menu/menu.d \
 Menu/screensaver.d \
-midiLfo.d \
 Preset/presetManager.d
 
 
@@ -189,12 +174,6 @@ ADDITIONAL_DEPENDENCIES:=
 OUTPUT_FILE_DEP:= ./makedep.mk
 
 # AVR32/GNU C Compiler
-
-
-
-
-
-
 
 
 

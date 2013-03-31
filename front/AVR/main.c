@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include "IO/uart.h"
 #include "IO/adcPots.h"
-#include "midiLfo.h"
+
 #if USE_SD_CARD
 #include "Hardware\SD/SPI_routines.h"
 #include "Hardware\SD/sd_routines.h"
@@ -72,13 +72,7 @@ int main(void)
 
 	
 	din_init();
-	dout_init();
-	
-
-#if USE_LFO	
-	lfo_init();
-#endif	
-	
+	dout_init();	
 	led_init();
 	//init the system timer
 	time_initTimer();

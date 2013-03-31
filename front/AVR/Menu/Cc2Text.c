@@ -4,7 +4,6 @@
  * Created: 16.02.2013 14:34:59
  *  Author: Julian
  */ 
-//#include "menuPages.h"
 #include "CcNr2Text.h"
 #include "menu.h"
 #include <avr/pgmspace.h>
@@ -25,7 +24,6 @@ uint8_t page2voice(uint8_t page)
 void cc2Name_init()
 {
 	int pages;
-	//for(pages=0;pages<NUM_PAGES;pages++)
 	for(pages=0;pages<VOICE7_PAGE;pages++)
 	{
 		uint8_t subPages;

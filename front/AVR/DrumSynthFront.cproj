@@ -98,22 +98,10 @@
     <Compile Include="Hardware\lcd.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="Hardware\SD\dataParse.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="Hardware\SD\dataParser.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="Hardware\SD\diskIo.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Hardware\SD\diskio.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="Hardware\SD\FAT32.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="Hardware\SD\FAT32.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Hardware\SD\ff.c">
@@ -209,15 +197,6 @@
     <Compile Include="Menu\screensaver.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="midiCC.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="midiLfo.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="midiLfo.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="Parameters.h">
       <SubType>compile</SubType>
     </Compile>
@@ -228,9 +207,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Preset\SeqStep.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="spi.h">
       <SubType>compile</SubType>
     </Compile>
   </ItemGroup>

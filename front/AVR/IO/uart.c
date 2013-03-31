@@ -85,7 +85,6 @@ ISR(USART0_UDRE_vect )
 		//if there is still data in the tx buffer
 		//UDR = data; // send the byte
 		UDR0 = data; // send the byte
-		
 	}
 	else
 	{
@@ -93,28 +92,16 @@ ISR(USART0_UDRE_vect )
 		//UCSRB &= ~(1<<UDRIE);	
 		UCSR0B &= ~(1<<UDRIE0);	
 	}
-	
 }
-
-
 //----------------------------------------------------
 void uart_init()
 {
 	fifo_init(&uart_txBuffer);
 	fifo_init(&uart_rxBuffer);
-	/*
-	UBRRH = UBRR_VAL >> 8;
-	UBRRL = UBRR_VAL & 0xFF;
- */
 	
-	//UBRR0H = UBRR_VAL >> 8;
-	//UBRR0L = UBRR_VAL & 0xFF;
-	
-	   UBRR0H = UBRRH_VALUE;
-   UBRR0L = UBRRL_VALUE;
-   /* evtl. verkuerzt falls Register aufeinanderfolgen (vgl. Datenblatt)
-      UBRR = UBRR_VALUE;
-   */
+	UBRR0H = UBRRH_VALUE;
+	UBRR0L = UBRRL_VALUE;
+   
 #if USE_2X
    /* U2X-Modus erforderlich */
    UCSR0A |= (1 << U2X0);
@@ -159,7 +146,6 @@ void uart_puts (char *s)
 //returns 1 if there is data to be read, else 0 if there is no data
 uint8_t uart_getc(uint8_t *data)
 {
-	
 	if(fifo_BufferOut(&uart_rxBuffer,data))
 	{
 		//there is valid data present
@@ -176,9 +162,7 @@ void uart_checkAndParse()
 	{
 		//there is new data available
 		frontPanel_parseData(data);
-
 	}
-	
 };
 //----------------------------------------------------
 

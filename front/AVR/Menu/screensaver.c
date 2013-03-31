@@ -8,7 +8,7 @@
 //screensaver mode if the controls are not touched for a while
 #include "../Hardware/timebase.h"
 #include "../Hardware/lcd.h"
-#include "../midiLfo.h"
+
 #include "menu.h"
 
 #define SCREENSAVER_ACTIVE 1

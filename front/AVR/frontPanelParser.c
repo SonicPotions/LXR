@@ -7,7 +7,7 @@
 #include "frontPanelParser.h"
 #include "Menu/menu.h"
 #include <stdio.h>
-#include "midiLfo.h"
+
 #include "ledHandler.h"
 #include "IO\uart.h"
 #include "buttonHandler.h"
@@ -374,11 +374,7 @@ void frontPanel_parseData(uint8_t data)
 						break;
 						
 						case SEQ_RESYNC_LFO:
-						//TODO das tut so nicht für lfo speeds 2/1 und 4/1 nur alles <= 1/1
-						
-#if USE_LFO						
-							lfo_resync(frontParser_midiMsg.data2);
-#endif							
+
 						break;
 					};						
 				}
@@ -473,10 +469,6 @@ void frontPanel_parseData(uint8_t data)
 				}
 				else
 				{
-#if USE_LFO					
-					//should be a note on -> retrigger LFO
-					lfo_retrigger(frontParser_midiMsg.data1);
-#endif					
 					//only SELECT_MODE_VOICE and SELECT_MODE_MUTE
 					led_pulseLed(LED_VOICE1+frontParser_midiMsg.data1);
 				}

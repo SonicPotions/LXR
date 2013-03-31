@@ -18,21 +18,20 @@ int8_t buttonHandler_copyDst = SRC_DST_NONE;
 static uint8_t copyClear_clearTarget = CLEAR_TRACK;
 
 
-
+//-----------------------------------------------------------------------------
 void copyClear_clearTrackAutom(uint8_t automTrack)
 {
 	uint8_t voice = menu_getActiveVoice();
 	frontPanel_sendData(SEQ_CC,SEQ_CLEAR_AUTOM,(voice<<4)|(automTrack&0x0f));
 };
-
+//-----------------------------------------------------------------------------
 void copyClear_clearCurrentPattern()
 {
 	uint8_t pattern = menu_getShownPattern();
 	led_clearSequencerLeds();
 	frontPanel_sendData(SEQ_CC,SEQ_CLEAR_PATTERN,pattern);
 };
-
-
+//-----------------------------------------------------------------------------
 void copyClear_executeClear()
 {
 	switch(copyClear_clearTarget)
@@ -58,26 +57,24 @@ void copyClear_executeClear()
 	copyClear_armClearMenu(0);
 	copyClear_Mode = MODE_NONE;
 };
-
-
-
+//-----------------------------------------------------------------------------
 void copyClear_setSrc(int8_t src, uint8_t type)
 {
 	buttonHandler_copySrc = src;
 	copyClear_Mode = type;
 };
-
+//-----------------------------------------------------------------------------
 void copyClear_setDst(int8_t dst, uint8_t type)
 {
 	buttonHandler_copyDst = dst;
 	copyClear_Mode = type;
 };
-
+//-----------------------------------------------------------------------------
 uint8_t copyClear_srcSet()
 {
 	return buttonHandler_copySrc != SRC_DST_NONE;
 }
-
+//-----------------------------------------------------------------------------
 void copyClear_clearCurrentTrack()
 {
 	uint8_t voice = menu_getActiveVoice();
@@ -85,7 +82,7 @@ void copyClear_clearCurrentTrack()
 	frontPanel_sendData(SEQ_CC,SEQ_CLEAR_TRACK,voice);
 	
 };
-
+//-----------------------------------------------------------------------------
 void copyClear_copyTrack()
 {
 	if(copyClear_Mode != MODE_COPY_TRACK)
@@ -98,7 +95,7 @@ void copyClear_copyTrack()
 	
 	buttonHandler_copySrc = buttonHandler_copyDst = SRC_DST_NONE;
 };
-
+//-----------------------------------------------------------------------------
 void copyClear_copyPattern()
 {
 	if(copyClear_Mode != MODE_COPY_PATTERN)
@@ -111,16 +108,17 @@ void copyClear_copyPattern()
 	
 	buttonHandler_copySrc = buttonHandler_copyDst = SRC_DST_NONE;
 };
-
+//-----------------------------------------------------------------------------
 uint8_t copyClear_isClearModeActive() 
 {
 	return (copyClear_Mode == MODE_CLEAR);
 }
-
+//-----------------------------------------------------------------------------
 uint8_t copyClear_getClearTarget() 
 {
 	return copyClear_clearTarget;
 }	
+//-----------------------------------------------------------------------------
 void copyClear_setClearTarget(uint8_t mode)
 {
 	copyClear_clearTarget = mode;
@@ -130,7 +128,7 @@ void copyClear_setClearTarget(uint8_t mode)
 		copyClear_armClearMenu(1);
 	}
 }
-
+//-----------------------------------------------------------------------------
 void copyClear_armClearMenu(uint8_t isShown)
 {
 	if(isShown)
@@ -170,3 +168,4 @@ void copyClear_armClearMenu(uint8_t isShown)
 		menu_repaintAll();
 	}
 };
+//-----------------------------------------------------------------------------

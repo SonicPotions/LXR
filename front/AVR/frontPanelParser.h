@@ -77,15 +77,7 @@ extern uint8_t frontPanel_sysexMode;
 //TODO in hex werten... nicht dezimal als hex
 //seq_cc messages
 #define SEQ_RUN_STOP		0x01
-/*
-#define SEQ_V1_TOGGLE_STEP	0x02
-#define SEQ_V2_TOGGLE_STEP	0x03
-#define SEQ_V3_TOGGLE_STEP	0x04
-#define SEQ_V4_TOGGLE_STEP	0x05
-#define SEQ_V5_TOGGLE_STEP	0x06
-#define SEQ_V6_TOGGLE_STEP	0x07
-#define SEQ_V7_TOGGLE_STEP	0x08
-*/
+
 #define SEQ_MUTE_TRACK		0x09
 #define SEQ_UNMUTE_TRACK	0x0a
 #define SEQ_CHANGE_PAT		0x0b	/**<requested a new pattern. the same message is send back to the front as ack that the new pattern is loaded (after the current patern finished)*/
@@ -121,20 +113,7 @@ extern uint8_t frontPanel_sysexMode;
 #define SEQ_CLEAR_PATTERN	0x27
 #define SEQ_CLEAR_AUTOM		0x28 //voice nr (0xf0) + autom track nr (0x0f)
 
-//codec control messages
-/*
-#define EQ_ON_OFF				0x01
-#define EQ_BASS_F				0x02
-#define EQ_TREB_F				0x03
-#define EQ_TREB_GAIN			0x04
-#define EQ_BASS_GAIN			0x05
 
-#define LIMIT_ENABLE			0x06
-#define LIMIT_ATT				0x07
-#define LIMIT_REL				0x08
-#define LIMIT_MAX				0x09
-#define LIMIT_MIN				0x0A
-*/
 //SysEx
 #define SYSEX_REQUEST_STEP_DATA			0x01
 #define SYSEX_SEND_STEP_DATA			0x02

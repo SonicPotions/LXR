@@ -55,9 +55,6 @@ void din_load()
 //---------------------------------------------------------------------
 void din_readNextInput()
 {
-
-		
-		
 	//check if a new load is necessary
 	if(inputPos>=NUM_INPUTS)
 	{
@@ -74,23 +71,19 @@ void din_readNextInput()
 		din_shift();
 	}
 	
-
-	
 	//store input value in inputData[]
 	uint8_t arrayPos = inputPos/8;
-	uint8_t bitPos	 = inputPos&7;//(inputPos%8);//(1<<(inputPos&0x7));
+	uint8_t bitPos	 = inputPos&7;
 
 	//read pin
 	uint8_t value;
 	if((DIN_INPUT & DIN_INPUT_PIN) >0)
 	{
 		value = 0;
-		
 	}		
 	else
 	{
 		value = 1;
-	
 	}
 	
 	//check if button was pressed
@@ -115,8 +108,4 @@ void din_readNextInput()
 	din_inputData[arrayPos] &= ~(1<<bitPos);
 	//set new bit value
 	din_inputData[arrayPos] |= (value << bitPos);
-
-
-	
-	
 };

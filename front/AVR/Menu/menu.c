@@ -6,8 +6,8 @@
 #include "..\ledHandler.h"
 #include <avr/pgmspace.h>
 #include "..\IO/uart.h"
-#include "..\midiCC.h"
-#include "..\midiLfo.h"
+
+
 #include "..\Preset/PresetManager.h"
 #include "..\frontPanelParser.h"
 //#include <util/delay.h>
@@ -1469,23 +1469,6 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 			uint8_t paramNr		= pgm_read_byte(&menuPages[menu_activePage][activePage].bot1 + activeParameter);
 			uint8_t *paramValue = &parameters[paramNr].value;
 
-
-#if USE_LFO		
-			if( (paramNr >= PAR_VOICE_LFO1) && (paramNr <= PAR_TARGET_LFO6) )
-			{
-				//the LFO target is a special case
-				//the currently modulated parameter has to be reset to 
-				//it's unmodulated value before switching the destination
-				uint8_t lfoNr = paramNr-PAR_VOICE_LFO1;
-			
-				//since PAR_VOICE_LFO1 up to PAR_TARGET_LFO6 is a span of 12, we have to make sure the lfoNr is between 0 and 5
-				if(lfoNr>5) lfoNr -= 6;
-				lfo_resetCurrentDestination(lfoNr);
-			
-			}
-			
-#endif
-			
 			//increase parameter value		
 			//do not wrap
 			if(!((inc<0) && (*paramValue==0)))
@@ -1887,9 +1870,6 @@ void menu_parseGlobalParam(uint8_t paramNr, uint8_t value)
 		break;
 		case PAR_BPM:
 			frontPanel_sendData(SET_BPM,value&0x7f,(value>>7)&0x7f);
-#if USE_LFO			
-			lfo_setBPM(value);
-#endif			
 		break;
 		case PAR_MORPH:
 		{
@@ -2033,27 +2013,6 @@ void menu_parseGlobalParam(uint8_t paramNr, uint8_t value)
 //-----------------------------------------------------------------
 void menu_processSpecialCaseValues(uint8_t paramNr,uint8_t *value)
 {
-#if USE_LFO		
-	if( (paramNr >= PAR_VOICE_LFO1) && (paramNr <= PAR_TARGET_LFO6) )
-	{
-		//the LFO target is a special case
-		//the currently modulated parameter has to be reset to 
-		//it's unmodulated value before switching the destination
-		uint8_t lfoNr = paramNr-PAR_VOICE_LFO1;
-			
-		//since PAR_VOICE_LFO1 up to PAR_TARGET_LFO6 is a span of 12, we have to make sure the lfoNr is between 0 and 5
-		if(lfoNr>5) lfoNr -= 6;
-		lfo_resetCurrentDestination(lfoNr);
-			
-	}
-
-	else if(paramNr >= PAR_FREQ_LFO1 && paramNr <= PAR_FREQ_LFO6)
-	{
-		lfo_setFrequency(paramNr-PAR_FREQ_LFO1,*value);
-	}
-	
-	else 
-#endif	
 	if(paramNr == PAR_BPM)
 	{
 		//*value *= 2;
@@ -2174,21 +2133,12 @@ void menu_parseKnobValue(uint8_t potNr, uint8_t value)
 	const uint8_t isOn2ndPage		= ( activeParameter > 3) * 4;
 	uint8_t paramNr					= pgm_read_byte(&menuPages[menu_activePage][activePage].bot1 + potNr + isOn2ndPage);
 	
-#if USE_LFO	
-	//disable the lfo
-	//since it is interrupt based it can alter the old target parameter after the reset before the destination is changed
-	lfo_disable(1);
-#endif
-	
 	//parameter fetch
 	const uint8_t dtypeValue = getDtypeValue(value,paramNr);
 	if(parameters[paramNr].value == dtypeValue)
 	{
 		//turn lock off for current pot
 		parameterFetch &= ~(1<<potNr);
-#if USE_LFO		
-		lfo_disable(0);
-#endif
 		return;
 	}
 	
@@ -2228,11 +2178,7 @@ void menu_parseKnobValue(uint8_t potNr, uint8_t value)
 			default:
 				break;
 		}		
-				
-		//re enable the lfo
-#if USE_LFO		
-		lfo_disable(0);
-#endif		
+
 	
 		if(paramNr<128) // => Sound Parameter
 		{
@@ -2248,12 +2194,6 @@ void menu_parseKnobValue(uint8_t potNr, uint8_t value)
 		}
 		
 	}
-	
-#if USE_LFO	
-	//re enable the lfo if lock was active
-	lfo_disable(0);
-#endif	
-
 };
 //-----------------------------------------------------------------
 void menu_sendAllParameters()

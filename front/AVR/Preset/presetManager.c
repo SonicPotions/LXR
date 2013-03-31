@@ -18,7 +18,7 @@
 #include "../IO/uart.h"
 #include "../IO/din.h"
 #include "../IO/dout.h"
-#include "../midiLfo.h"
+
 #include "../Hardware\timebase.h"
 
 FATFS preset_Fatfs;		/* File system object for the logical drive */
@@ -185,48 +185,13 @@ uint8_t preset_loadDrumset(uint8_t presetNr, uint8_t isMorph)
 			{
 				f_read((FIL*)&preset_File,&parameters2[i].value,1,&bytesRead);	
 			}	
-			/*
-			//skip unused parameters -> forward to decimation file  pos
-			uint8_t  dummy;
-			for(;i<PAR_VOICE_DECIMATION1;i++)
-			{
-				f_read((FIL*)&preset_File,&dummy,1,&bytesRead);
-			}
-			
-			//load global parameters [samplerate]
-			f_read((FIL*)&preset_File,&parameters2[PAR_VOICE_DECIMATION1].value,1,&bytesRead);	
-			f_read((FIL*)&preset_File,&parameters2[PAR_VOICE_DECIMATION2].value,1,&bytesRead);	
-			f_read((FIL*)&preset_File,&parameters2[PAR_VOICE_DECIMATION3].value,1,&bytesRead);	
-			f_read((FIL*)&preset_File,&parameters2[PAR_VOICE_DECIMATION4].value,1,&bytesRead);	
-			f_read((FIL*)&preset_File,&parameters2[PAR_VOICE_DECIMATION5].value,1,&bytesRead);	
-			f_read((FIL*)&preset_File,&parameters2[PAR_VOICE_DECIMATION6].value,1,&bytesRead);	
-*/
 		}
 		else
 		{
-			//for(i=0;(i<NUM_PARAMS )&&( bytesRead!=0);i++) //dont read dummy or global params
 			for(i=0;(i<END_OF_SOUND_PARAMETERS) &&( bytesRead!=0);i++)
 			{
 				f_read((FIL*)&preset_File,&parameters[i].value,1,&bytesRead);	
 			}	
-			/*
-			//skip unused parameters -> forward to decimation file  pos
-			uint8_t  dummy;
-			for(;i<PAR_VOICE_DECIMATION1;i++)
-			{
-				f_read((FIL*)&preset_File,&dummy,1,&bytesRead);
-			}
-			
-			//load global parameters [samplerate]
-			f_read((FIL*)&preset_File,&parameters[PAR_VOICE_DECIMATION1].value,1,&bytesRead);	
-			f_read((FIL*)&preset_File,&parameters[PAR_VOICE_DECIMATION2].value,1,&bytesRead);	
-			f_read((FIL*)&preset_File,&parameters[PAR_VOICE_DECIMATION3].value,1,&bytesRead);	
-			f_read((FIL*)&preset_File,&parameters[PAR_VOICE_DECIMATION4].value,1,&bytesRead);	
-			f_read((FIL*)&preset_File,&parameters[PAR_VOICE_DECIMATION5].value,1,&bytesRead);	
-			f_read((FIL*)&preset_File,&parameters[PAR_VOICE_DECIMATION6].value,1,&bytesRead);	
-			*/
-			
-			
 			
 			//special case mod targets
 			for(i=0;i<6;i++)
@@ -242,11 +207,8 @@ uint8_t preset_loadDrumset(uint8_t presetNr, uint8_t isMorph)
 				value = getModTargetValue(parameters[PAR_TARGET_LFO1+i].value,  parameters[PAR_VOICE_LFO1+i].value-1);
 				upper = ((value&0x80)>>7) | (((i)&0x3f)<<1);
 				lower = value&0x7f;
-				frontPanel_sendData(CC_LFO_TARGET,upper,lower);
-				
-				
+				frontPanel_sendData(CC_LFO_TARGET,upper,lower);	
 			}	
-						
 		}
 		
 		//close the file handle
@@ -255,7 +217,7 @@ uint8_t preset_loadDrumset(uint8_t presetNr, uint8_t isMorph)
 		//now we need to send the new param values to the cortex and repaint the menu
 		//menu_sendAllParameters();
 		preset_morph(parameters[PAR_MORPH].value);
-	return 1;	
+		return 1;	
 	
 		//TODO send program change message
 		
@@ -280,17 +242,14 @@ char* preset_getPatternName(uint8_t presetNr)
 	//try to open the file
 	FRESULT res = f_open((FIL*)&preset_File,filename,FA_OPEN_EXISTING | FA_READ);
 	
-	if(res!=FR_OK)
-	{
+	if(res!=FR_OK) {
 		//error opening the file
-		
 		return NULL;	
 	}
 	
 	//file opened correctly -> extract name (first 8 bytes)
 	unsigned int bytesRead;
 	f_read((FIL*)&preset_File,(void*)preset_currentName,8,&bytesRead);
-	
 	
 	//close the file handle
 	f_close((FIL*)&preset_File);
@@ -347,29 +306,20 @@ return "ToDo";
 /** request step data from the cortex via uart and save it in the provided step struct*/
 void preset_queryStepDataFromSeq(uint16_t stepNr)
 {
-//	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) 
-	{
-		frontParser_newSeqDataAvailable = 0;
-	}	
+	frontParser_newSeqDataAvailable = 0;
+
 	//request step data
 	//the max number for 14 bit data is 16383!!!
 	//current max step nr is 128*7*8 = 7168
-//	_delay_ms(10);
-	//frontPanel_sendByte(SYSEX_REQUEST_STEP_DATA);
 	frontPanel_sendByte((stepNr>>7)&0x7f);		//upper nibble 7 bit
-	frontPanel_sendByte(stepNr&0x7f);	//lower nibble 7 bit
-//asm volatile ("nop");
-//_delay_ms(100);
+	frontPanel_sendByte(stepNr&0x7f);			//lower nibble 7 bit
+
 	//wait until data arrives
 	uint8_t newSeqDataLocal = 0;
 	uint16_t now = time_sysTick;
 	while((newSeqDataLocal==0))
 	{
-		//we need an atomic access to the frontParser_newSeqDataAvailable value
-		//since it is shared with the interrupt
-		//otherwise this transmission won't work and the AVR will stall
-	//	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) 
-	//we have to call the uart parser to handle incoming messages from the sequencer
+		//we have to call the uart parser to handle incoming messages from the sequencer
 		uart_checkAndParse();
 		
 		newSeqDataLocal = frontParser_newSeqDataAvailable;
@@ -379,21 +329,10 @@ void preset_queryStepDataFromSeq(uint16_t stepNr)
 			//timeout
 			now = time_sysTick;
 			//request step again
-		//	frontPanel_sendByte(SYSEX_REQUEST_STEP_DATA);
 			frontPanel_sendByte((stepNr>>7)&0x7f);		//upper nibble 7 bit
 			frontPanel_sendByte(stepNr&0x7f);
 		}
-		
-		
-	//	asm volatile ("nop");
-		//_delay_ms(500);
 	}
-	
-	
-	//the new data is now in frontParser_stepData
-	//reset frontParser_newSeqDataAvailable
-	//frontParser_newSeqDataAvailable = 0;
-	
 }
 //----------------------------------------------------
 void preset_sendMainStepDataToSeq(uint16_t stepNr, uint16_t mainStepData)
@@ -455,12 +394,6 @@ void preset_queryPatternInfoFromSeq(uint8_t patternNr, uint8_t* next, uint8_t* r
 	//the stepdata struct is used as buffer for the data
 	*next = frontParser_stepData.volume; 
 	*repeat =  frontParser_stepData.prob;
-	
-	//the new data is now in frontParser_stepData
-	//reset frontParser_newSeqDataAvailable
-	//frontParser_newSeqDataAvailable = 0;		
-	
-	
 }
 //----------------------------------------------------
 void preset_queryMainStepDataFromSeq(uint16_t stepNr, uint16_t *mainStepData)
@@ -494,11 +427,6 @@ void preset_queryMainStepDataFromSeq(uint16_t stepNr, uint16_t *mainStepData)
 	}
 	
 	*mainStepData = (frontParser_stepData.volume<<8) | frontParser_stepData.prob;
-	
-	
-	//the new data is now in frontParser_stepData
-	//reset frontParser_newSeqDataAvailable
-	//frontParser_newSeqDataAvailable = 0;
 };
 //----------------------------------------------------
 void preset_savePattern(uint8_t presetNr)
@@ -520,9 +448,7 @@ void preset_savePattern(uint8_t presetNr)
 	uint16_t bytesWritten;
 	//write preset name to file
 	f_write((FIL*)&preset_File,(void*)preset_currentName,8,&bytesWritten);
-#if USE_LFO	
-	lfo_disable(1);
-#endif	
+
 	//write the preset data
 	//initiate the sysex mode
 	
@@ -612,9 +538,7 @@ void preset_savePattern(uint8_t presetNr)
 	//now we need to save the shuffle setting
 	f_write((FIL*)&preset_File,(const void*)&parameters[PAR_SHUFFLE].value,sizeof(uint8_t),&bytesWritten);	
 
-#if USE_LFO	
-	lfo_disable(0);
-#endif
+
 	
 	
 	//close the file
@@ -657,113 +581,96 @@ uint8_t preset_loadPattern(uint8_t presetNr)
 	
 	
 		//then the data
-#if USE_LFO		
-		lfo_disable(1);
-#endif		
 		
-			while( (frontParser_midiMsg.status != SYSEX_START))
-	{
-		frontPanel_sendByte(SYSEX_START);
-		uart_checkAndParse();
-	}		
-	_delay_ms(10);
-	//enter step data mode
-	frontPanel_sendByte(SYSEX_SEND_STEP_DATA);
-	frontPanel_sysexMode = SYSEX_SEND_STEP_DATA;
-	
-	/*
-		//initiate the sysex mode
-		frontPanel_sendByte(SYSEX_START);
-		//enter send step data mode
+		while( (frontParser_midiMsg.status != SYSEX_START))
+		{
+			frontPanel_sendByte(SYSEX_START);
+			uart_checkAndParse();
+		}		
+		_delay_ms(10);
+		//enter step data mode
 		frontPanel_sendByte(SYSEX_SEND_STEP_DATA);
-		*/
+		frontPanel_sysexMode = SYSEX_SEND_STEP_DATA;
 	
-	uint16_t i;
 	
-	for(i=0;i<(STEPS_PER_PATTERN*NUM_PATTERN*NUM_TRACKS);i++)
-	{
-		f_read((FIL*)&preset_File,(void*)&frontParser_stepData,sizeof(StepData),&bytesRead);	
-		preset_sendStepDataToSeq(i);
-		//we have to give the cortex some time to cope with all the incoming data
-		//since it is mainly calculating audio it takes a while to process all
-		//incoming uart data
-		//if((i&0x1f) == 0x1f) //every 32 steps
-			_delay_us(200);
+		uint16_t i;
+	
+		for(i=0;i<(STEPS_PER_PATTERN*NUM_PATTERN*NUM_TRACKS);i++)
+		{
+			f_read((FIL*)&preset_File,(void*)&frontParser_stepData,sizeof(StepData),&bytesRead);	
+			preset_sendStepDataToSeq(i);
+			//we have to give the cortex some time to cope with all the incoming data
+			//since it is mainly calculating audio it takes a while to process all
+			//incoming uart data
+			//if((i&0x1f) == 0x1f) //every 32 steps
+				_delay_us(200);
 		
-	}	
+		}	
 
 
-	//end sysex mode
-	frontPanel_sendByte(SYSEX_END);
+		//end sysex mode
+		frontPanel_sendByte(SYSEX_END);
 	
-	
-	
-	
-	//----- main step data	 -----
-	frontParser_midiMsg.status = 0;
-	//now the main step data
-	while( (frontParser_midiMsg.status != SYSEX_START))
-	{
-		frontPanel_sendByte(SYSEX_START);
-		uart_checkAndParse();
-	}	
-	_delay_ms(50);	
-	frontPanel_sendByte(SYSEX_SEND_MAIN_STEP_DATA);
-	frontPanel_sysexMode = SYSEX_SEND_MAIN_STEP_DATA;
-	
-	uint16_t mainStepData;
-	for(i=0;i<(NUM_PATTERN*NUM_TRACKS);i++)
-	{
-		f_read((FIL*)&preset_File,(void*)&mainStepData,sizeof(uint16_t),&bytesRead);	
-		preset_sendMainStepDataToSeq(i,mainStepData);
-		//we have to give the cortex some time to cope with all the incoming data
-		//since it is mainly calculating audio it takes a while to process all
-		//incoming uart data
-		//if((i&0x1f) == 0x1f) //every 32 steps
-		_delay_us(200); //todo speed up using ACK possible?
-	}				
-	
-	
-	//end sysex mode
-	frontPanel_sendByte(SYSEX_END);	
-	
-	//----- pattern info (next/repeat) ------
 
-	uint8_t repeat,next;
-	for(i=0;i<(NUM_PATTERN);i++)
-	{
-		f_read((FIL*)&preset_File,(void*)&next,sizeof(uint8_t),&bytesRead);	
-		f_read((FIL*)&preset_File,(void*)&repeat,sizeof(uint8_t),&bytesRead);	
+		//----- main step data	 -----
+		frontParser_midiMsg.status = 0;
+		//now the main step data
+		while( (frontParser_midiMsg.status != SYSEX_START))
+		{
+			frontPanel_sendByte(SYSEX_START);
+			uart_checkAndParse();
+		}	
+		_delay_ms(50);	
+		frontPanel_sendByte(SYSEX_SEND_MAIN_STEP_DATA);
+		frontPanel_sysexMode = SYSEX_SEND_MAIN_STEP_DATA;
+	
+		uint16_t mainStepData;
+		for(i=0;i<(NUM_PATTERN*NUM_TRACKS);i++)
+		{
+			f_read((FIL*)&preset_File,(void*)&mainStepData,sizeof(uint16_t),&bytesRead);	
+			preset_sendMainStepDataToSeq(i,mainStepData);
+			//we have to give the cortex some time to cope with all the incoming data
+			//since it is mainly calculating audio it takes a while to process all
+			//incoming uart data
+			//if((i&0x1f) == 0x1f) //every 32 steps
+			_delay_us(200); //todo speed up using ACK possible?
+		}				
+	
+	
+		//end sysex mode
+		frontPanel_sendByte(SYSEX_END);	
+	
+		//----- pattern info (next/repeat) ------
+
+		uint8_t repeat,next;
+		for(i=0;i<(NUM_PATTERN);i++)
+		{
+			f_read((FIL*)&preset_File,(void*)&next,sizeof(uint8_t),&bytesRead);	
+			f_read((FIL*)&preset_File,(void*)&repeat,sizeof(uint8_t),&bytesRead);	
 
 		
-		frontPanel_sendData(SEQ_CC,SEQ_SET_SHOWN_PATTERN,i);
+			frontPanel_sendData(SEQ_CC,SEQ_SET_SHOWN_PATTERN,i);
 		
-		frontPanel_sendData(SEQ_CC,SEQ_SET_PAT_BEAT,repeat);
-		frontPanel_sendData(SEQ_CC,SEQ_SET_PAT_NEXT,next);
-		//we have to give the cortex some time to cope with all the incoming data
-		//since it is mainly calculating audio it takes a while to process all
-		//incoming uart data
-		//if((i&0x1f) == 0x1f) //every 32 steps
-		_delay_us(200); //todo speed up using ACK possible?
-	}				
+			frontPanel_sendData(SEQ_CC,SEQ_SET_PAT_BEAT,repeat);
+			frontPanel_sendData(SEQ_CC,SEQ_SET_PAT_NEXT,next);
+			//we have to give the cortex some time to cope with all the incoming data
+			//since it is mainly calculating audio it takes a while to process all
+			//incoming uart data
+			//if((i&0x1f) == 0x1f) //every 32 steps
+			_delay_us(200); //todo speed up using ACK possible?
+		}				
 	
 	
-	frontPanel_sendData(SEQ_CC,SEQ_SET_SHOWN_PATTERN,menu_shownPattern);
-	
-	
-	
-	
-	//load the shuffle settings
-	f_read((FIL*)&preset_File,(void*)&parameters[PAR_SHUFFLE].value,sizeof(uint8_t),&bytesRead);
-	//and update on cortex
-	frontPanel_sendData(SEQ_CC,SEQ_SHUFFLE,parameters[PAR_SHUFFLE].value);
-
+		frontPanel_sendData(SEQ_CC,SEQ_SET_SHOWN_PATTERN,menu_shownPattern);
 	
 	
 	
-#if USE_LFO	
-	lfo_disable(0);
-#endif	
+	
+		//load the shuffle settings
+		f_read((FIL*)&preset_File,(void*)&parameters[PAR_SHUFFLE].value,sizeof(uint8_t),&bytesRead);
+		//and update on cortex
+		frontPanel_sendData(SEQ_CC,SEQ_SHUFFLE,parameters[PAR_SHUFFLE].value);
+		
 		//close the file handle
 		f_close((FIL*)&preset_File);
 		
@@ -803,12 +710,6 @@ void preset_morph(uint8_t morph)
 			frontPanel_sendData(CC_2,i-128,val);
 		}		
 		
-		//delay to not overflow the rx buffer on the cortex
-		//TODO ACK scheme for speedup testen
-		/*
-		if((i&0xf) == 0xf) //every 16 steps
-			_delay_ms(1);
-			*/
 			
 		//to ommit front panel button/LED lag we have to process din dout and uart here			
 		//read next button
@@ -818,20 +719,4 @@ void preset_morph(uint8_t morph)
 		//read uart messages from sequencer
 		uart_checkAndParse();
 	}		
-	
-	/*
-	//samplerate/decimation
-	for(int i=0;i<6;i++)
-	{
-		uint8_t val;
-		val = interpolate(parameters[PAR_VOICE_DECIMATION1+i].value,parameters2[PAR_VOICE_DECIMATION1+i].value,morph);
-		
-		//select track
-		frontPanel_sendData(SEQ_CC,SEQ_SET_ACTIVE_TRACK,i);
-		//send value
-		frontPanel_sendData(VOICE_CC,VOICE_DECIMATION,val);
-	}		
-	*/
-	
-	
 };

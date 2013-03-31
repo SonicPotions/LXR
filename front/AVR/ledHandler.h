@@ -83,7 +83,7 @@ enum LedNumbers
 	LED_MODE3,
 	LED_MODE4,
 	
-	LED_SHIFT , //shift
+	LED_SHIFT,
 	
 	LED_REC=5,
 	LED_START_STOP, 	
@@ -107,8 +107,6 @@ enum LedNumbers
 	LED_PART_SELECT7,
 	LED_PART_SELECT8,
 		
-
-		
 	LED_STEP1 ,
 	LED_STEP2,
 	LED_STEP3,
@@ -126,22 +124,6 @@ enum LedNumbers
 	LED_STEP14,
 	LED_STEP15,
 	LED_STEP16,
-	
-
-	
-
-	
-	
-
-	
-	/*
-	LED_MODE1_2 ,
-	LED_MODE1_3 ,
-	LED_MODE1_4 ,
-	*/
-	
-	
-	
 };
 
 #endif /* LEDHANDLER_H_ */

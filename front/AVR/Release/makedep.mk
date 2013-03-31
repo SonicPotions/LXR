@@ -12,11 +12,7 @@ frontPanelParser.c
 
 Hardware\lcd.c
 
-Hardware\SD\dataParse.c
-
 Hardware\SD\diskIo.c
-
-Hardware\SD\FAT32.c
 
 Hardware\SD\ff.c
 
@@ -45,8 +41,6 @@ Menu\copyClearTools.c
 Menu\menu.c
 
 Menu\screensaver.c
-
-midiLfo.c
 
 Preset\presetManager.c
 

@@ -13,12 +13,12 @@
 #include <string.h>
 
 #define BUFFER_SIZE 128 //must be power of 2!!! (8, 16, 32, 64 ...)
-#define BUFFER_MASK (BUFFER_SIZE-1) // Klammern auf keinen Fall vergessen
+#define BUFFER_MASK (BUFFER_SIZE-1) 
 //---------------------------------------------------------------------------- 
 typedef struct FifoStruct {
   volatile uint8_t data[BUFFER_SIZE];
-  volatile uint8_t read; // points to the oldest data in the buffer
-  volatile uint8_t write; // points to the next empty field
+  volatile uint8_t read; 
+  volatile uint8_t write;
   } FifoBuffer;
 //----------------------------------------------------------------------------
 void fifo_init(FifoBuffer* fifo);

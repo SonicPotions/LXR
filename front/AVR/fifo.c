@@ -20,7 +20,6 @@ uint8_t fifo_bufferIn(FifoBuffer* fifo, uint8_t byte)
   if (fifo->read == next)
     return 0;
   fifo->data[fifo->write] = byte;
-  // buffer.data[buffer.write & BUFFER_MASK] = byte; // absolut Sicher
   fifo->write = next;
   return 1;
 }

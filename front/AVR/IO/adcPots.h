@@ -11,16 +11,10 @@
 
 #include <avr/io.h>
 
-/* ADC initialisieren */
 void adc_init(void);
  
-/* ADC Einzelmessung */
 uint16_t adc_read( uint8_t channel );
- 
-/* ADC Mehrfachmessung mit Mittelwertbbildung */
-/* beachte: Wertebereich der Summenvariablen */
 uint16_t adc_readAvg( uint8_t channel, uint8_t nsamples );
-
 //check the connected potentiometers and parse their values
 void adc_checkPots();
  

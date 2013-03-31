@@ -7,10 +7,10 @@
 /*                                                                      */
 /************************************************************************/
 #include "encoder.h"
-#include "midiLfo.h"
+
 
  
-                // target: ATmega32
+                // target: ATmega644
 //------------------------------------------------------------------------
  
 volatile int8_t		enc_delta;          // -128 ... 127
@@ -63,12 +63,6 @@ void encode_init( void )
 void encode_setInterrupt(uint8_t enabled)
 {
 	encoder_calcLFOs = enabled;
-	/*
-	if(enabled)
-		TIMSK |= 1<<OCIE0;
-	else
-		TIMSK &= ~(1<<OCIE0);
-		*/
 }
  
  
@@ -87,7 +81,6 @@ ISR( TIMER0_COMPA_vect )             // 1ms for manual movement
     enc_delta += (diff & 2) - 1;    // bit 1 = direction (+/-)
   }
   
- // buttonValue = ENCODER_BUTTON ;
   
   //button
   if(ENCODER_BUTTON == lastButton)
@@ -95,12 +88,6 @@ ISR( TIMER0_COMPA_vect )             // 1ms for manual movement
 	  buttonValue = lastButton;
   }
   lastButton = ENCODER_BUTTON;
-    
-	
-	//calc lfos for accurate rate tuning
-	//if(encoder_calcLFOs)
-	//todo globalen time interrupt nehmen... doof wenn nicht encoder sachen in  der encoder.c sind
-	//	lfo_calc();
 }
  
  
