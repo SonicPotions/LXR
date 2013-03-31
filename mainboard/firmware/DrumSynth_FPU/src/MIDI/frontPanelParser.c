@@ -11,7 +11,6 @@
 #include "MidiParser.h"
 #include "sequencer.h"
 #include "Uart.h"
-#include "AudioCodecDma.h"
 #include "SD_Manager.h"
 #include "EuklidGenerator.h"
 #include "config.h"
