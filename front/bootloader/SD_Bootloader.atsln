@@ -1,0 +1,17 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# AvrStudio Solution File, Format Version 11.00
+Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "SD_Bootloader", "SD_Bootloader.cproj", "{733935F3-60B5-4DFF-A64F-FBE17A9EBAE1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		default|AVR = default|AVR
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{733935F3-60B5-4DFF-A64F-FBE17A9EBAE1}.default|AVR.ActiveCfg = default|AVR
+		{733935F3-60B5-4DFF-A64F-FBE17A9EBAE1}.default|AVR.Build.0 = default|AVR
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
