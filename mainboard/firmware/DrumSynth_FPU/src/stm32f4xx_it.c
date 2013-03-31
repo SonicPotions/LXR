@@ -34,6 +34,9 @@
 #include "usbd_core.h"
 #include "usb_midi_core.h"
 
+//asm(".extern hard_fault_handler_c");
+
+
 extern USB_OTG_CORE_HANDLE           USB_OTG_dev;
 extern uint32_t USBD_OTG_ISR_Handler (USB_OTG_CORE_HANDLE *pdev);
 
@@ -67,7 +70,7 @@ void NMI_Handler(void)
   * @retval None
   */
 
-
+/*
 void HardFault_Handler(void)
 {
 	asm("TST LR, #4");
@@ -81,6 +84,7 @@ void HardFault_Handler(void)
   {
   }
 }
+*/
 
 
 /**

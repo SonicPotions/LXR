@@ -6,7 +6,7 @@
  * see http://blog.frankvh.com/2011/12/07/cortex-m3-m4-hard-fault-handler/
  */
 
-/*
+
 .syntax unified
 .cpu cortex-m4
 .thumb
@@ -21,4 +21,4 @@ HardFault_Handler:
   MRSNE R0, PSP
   B hard_fault_handler_c
 
-*/
+

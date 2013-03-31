@@ -36,10 +36,8 @@
 #include "stm32f4xx.h"
 #include "config.h"
 #include "globals.h"
-//#include "stm32f4_discovery_audio_codec.h"
-#include "AudioCodecDma.h"
 #include "cs4344_cs5343.h"
-//#include "datatypes.h"
+
 
 
 #define DMA_MODE_ACTIVE 1

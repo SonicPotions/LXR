@@ -60,7 +60,7 @@ void Cymbal_init();
 void Cymbal_trigger( const uint8_t vel, const uint8_t note);
 
 void Cymbal_calcSyncBlock(int16_t* buf, const uint8_t size);
-/** claculate the oscillators and sample based stuff*/
+/** Calculate the oscillators and sample based stuff*/
 int16_t Cymbal_calcSync();
 /** calculate envelopes etc (all 16 samples */
 void Cymbal_calcAsync();

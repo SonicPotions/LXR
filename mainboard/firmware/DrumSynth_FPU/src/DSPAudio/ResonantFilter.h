@@ -14,36 +14,17 @@
  *  Created on: 05.04.2012
  *      Author: Julian
  */
-
-
+//----------------------------------------------------
 #include "globals.h"
 #include "config.h"
 #include "stm32f4xx.h"
 #include "datatypes.h"
 #include "math.h"
-
-#include "1Pole0df.h"
-
-/*//basic resonant 2 pole
-f = 1.0 - exp(-2*pi * hz/rate);
-q = feedback + feedback / (1.0 - f);
-
-a += f * ((in - a) + q * (a - b));
-b += f * (a - b);
-*/
-
-/* SVF
-f = 2*pi * hz/rate;
-q = 2.0 - 2.0*max(f * (2.0 - f), feedback);
-
-h = in - (l + q * b);
-b += f * h;
-b = sat(b, r); //clip to the range you want it to oscillate at
-l += f * b;
-*/
-
-#define ENABLE_NONLINEAR_INTEGRATORS 0
-
+//----------------------------------------------------
+//removed to free some cpu cycles
+#define ENABLE_NONLINEAR_INTEGRATORS 	0
+#define FILTER_GAIN 					0x70ff
+//----------------------------------------------------
 enum filterTypeEnum
 {
 	FILTER_LP=1,
@@ -53,13 +34,7 @@ enum filterTypeEnum
 	FILTER_NOTCH,
 	FILTER_PEAK
 };
-
-#if UNIT_GAIN_DRIVE
-#define FILTER_GAIN 0x70ff
-#else
-#define FILTER_GAIN 0x70ff
-#endif
-
+//----------------------------------------------------
 typedef struct ResoFilterStruct
 {
 	float f;	/**< cutoff frequency as integer from 0 to 0xffff where 0xffff = SR*/
@@ -74,7 +49,6 @@ typedef struct ResoFilterStruct
 
 	float drive;
 } ResonantFilter;
-
 //------------------------------------------------------------------------------------
 void SVF_setReso(ResonantFilter* filter, float feedback);
 //------------------------------------------------------------------------------------

@@ -30,7 +30,7 @@ MEMORY
  
   RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 112K
   
-  //MEMORY_B1 ( rx ) : ORIGIN = 0x60000000 , LENGTH = 0K
+  MEMORY_B1 ( rx ) : ORIGIN = 0x60000000 , LENGTH = 0K
 }
 
 
@@ -57,9 +57,9 @@ SECTIONS
     *(.text*)          /* .text* sections (code) */
     *(.rodata)         /* .rodata sections (constants, strings, etc.) */
     *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
-    //*(.glue_7)         /* glue arm to thumb code */
-    //*(.glue_7t)        /* glue thumb to arm code */
-	//*(.eh_frame)
+    *(.glue_7)         /* glue arm to thumb code */
+    *(.glue_7t)        /* glue thumb to arm code */
+	*(.eh_frame)
 
     KEEP (*(.init))
     KEEP (*(.fini))
@@ -68,16 +68,16 @@ SECTIONS
     _etext = .;        /* define a global symbols at end of code */
   } >FLASH
 
-/*
+
    .ARM.extab   : { *(.ARM.extab* .gnu.linkonce.armextab.*) } >FLASH
     .ARM : {
     __exidx_start = .;
       *(.ARM.exidx*)
       __exidx_end = .;
     } >FLASH
-	*/
+	
 
-	//These are the extra sections in a C++ linker script (from STM32):
+	/*These are the extra sections in a C++ linker script (from STM32):*/
 	
   .preinit_array     :
   {

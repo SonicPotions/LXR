@@ -31,7 +31,6 @@
  */
 
 #include "FIFO.h"
-#include "LCD_driver.h"
 #include "string.h"
 
 //-------------------------------------------------------------------------
@@ -48,7 +47,6 @@ uint8_t fifo_bufferIn(Fifo* fifo, uint8_t byte)
   if (fifo->read == next)
     return 0;
   fifo->data[fifo->write] = byte;
-  // buffer.data[buffer.write & BUFFER_MASK] = byte; // absolut Sicher
   fifo->write = next;
   return 1;
 }
@@ -67,7 +65,6 @@ void fifo_clear(Fifo* fifo)
 	fifo->read = fifo->write;
 }
 //-------------------------------------------------------------------------
-//-------------------------------------------------------------------------
 void fifoBig_init(FifoBig* fifo)
 {
 	memset(fifo->data,0,BUFFER_SIZE_BIG);
@@ -81,7 +78,6 @@ uint8_t fifoBig_bufferIn(FifoBig* fifo, uint8_t byte)
   if (fifo->read == next)
     return 0;
   fifo->data[fifo->write] = byte;
-  // buffer.data[buffer.write & BUFFER_MASK] = byte; // absolut Sicher
   fifo->write = next;
   return 1;
 }
@@ -99,3 +95,4 @@ void fifoBig_clear(FifoBig* fifo)
 {
 	fifo->read = fifo->write;
 }
+//----------------------------------------------------

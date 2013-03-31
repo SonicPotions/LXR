@@ -21,7 +21,7 @@
 #define UNIT_GAIN_DRIVE 0
 #define SET_PARAM_ARRAY_IN_PARSER 1
 #define USE_FILTER_DRIVE 0
-#define BLOCK_BASED_AUDIO 1
+//#define BLOCK_BASED_AUDIO 1
 #define CALC_TONE_CONTROL 0
 
 //if 1 the amp EGs will be calculated on a per sample basis

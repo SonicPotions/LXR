@@ -35,7 +35,6 @@
 
 #include "mixer.h"
 #include "Uart.h"
-#include "LCD_driver.h"
 #include "FIFO.h"
 #include "DrumVoice.h"
 #include "CymbalVoice.h"

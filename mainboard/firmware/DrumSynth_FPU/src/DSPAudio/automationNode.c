@@ -6,17 +6,12 @@
  */
 #include "automationNode.h"
 
-
+//-------------------------------------------------------------
 void autoNode_init(AutomationNode* node)
 {
 	node->destination = NO_AUTOMATION;
-	//node->lastDestination = NO_AUTOMATION;
 }
-
-
-//void autoNode_resetTargets();
-
-
+//-------------------------------------------------------------
 void autoNode_setDestination(AutomationNode* node, uint16_t dest)
 {
 	//reset lastDest
@@ -38,7 +33,7 @@ void autoNode_setDestination(AutomationNode* node, uint16_t dest)
 	//set new destination
 	node->destination = dest;
 }
-
+//-------------------------------------------------------------
 void autoNode_updateValue(AutomationNode* node, uint8_t val)
 {
 	if(node->destination != NO_AUTOMATION) {
@@ -55,5 +50,4 @@ void autoNode_updateValue(AutomationNode* node, uint8_t val)
 		midiParser_ccHandler(msg,0);
 	}
 }
-
-
+//-------------------------------------------------------------

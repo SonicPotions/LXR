@@ -30,12 +30,7 @@
 
 #include <string.h>
 #include "datatypes.h"
-
-#include "AudioCodecDma.h"
-//############################################################################################
-
-
-
+//------------------------------------------------------------------
 #if DMA_MODE_ACTIVE
 volatile int16_t dma_buffer[OUTPUT_DMA_SIZE*4];
 volatile uint8_t dmaBufferPtr=0;
@@ -45,18 +40,13 @@ volatile uint8_t dmaBufferPtr=0;
 #endif
 
 uint8_t bCurrentSampleValid = 0;
-__IO uint8_t codec_volume = 95;
+//__IO uint8_t codec_volume = 95;
 int16_t audioOutBuffer[2];
-/**
-* @brief  Initializes the codec
-* @param  AudioFreq: Audio sampling frequency
-* @retval None
-*/
+//------------------------------------------------------------------
 int CodecInit(uint32_t AudioFreq)
 {
     dma_buffer[0] = 32756;
     codec_initCsCodec((uint32_t)dma_buffer, OUTPUT_DMA_SIZE*2,(uint32_t)dma_buffer2, OUTPUT_DMA_SIZE*2);
     return 0;
 }
-
-
+//------------------------------------------------------------------

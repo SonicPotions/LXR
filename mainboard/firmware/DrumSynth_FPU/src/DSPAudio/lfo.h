@@ -9,14 +9,14 @@
 
 #ifndef LFO_H_
 #define LFO_H_
-
+//-------------------------------------------------------------
 #include "stm32f4xx.h"
 #include "Oscillator.h"
 #include "wavetable.h"	//sine
 #include "config.h"
 #include "sequencer.h"
 #include "modulationNode.h"
-
+//-------------------------------------------------------------
 #define LFO_SINE 		0x00
 #define LFO_TRI			0x01
 #define LFO_SAW_UP		0x02
@@ -27,14 +27,9 @@
 #define LFO_EXP_DOWN	0x07
 
 
-#define LFO_MAX_F 200 //[Hz]
-
-
-#define LFO_SR REAL_FS
-
-//#define MAX 0x7fff	// 32767  int16
-//#define MIN 0x8000 	// - 32768 int16
-
+#define LFO_MAX_F 		200 //[Hz]
+#define LFO_SR 			REAL_FS
+//-------------------------------------------------------------
 typedef struct LfoStruct
 {
 	uint32_t phase;		// the current phase of the LFO (upper bits cnt 0-255)
@@ -45,25 +40,14 @@ typedef struct LfoStruct
 	float rnd;
 	uint8_t sync;
 	float freq;
-
 	ModulationNode modTarget;
 } Lfo;
-
+//-------------------------------------------------------------
 void lfo_init(Lfo *lfo);
-
 void lfo_dispatchNextValue(Lfo* lfo);
-
-//float lfo_calc(Lfo *lfo);
-
-//void lfo_calcBlock(Lfo *lfo, float* buf, uint8_t size);
-
 void lfo_setFreq(Lfo *lfo, float f);
-
 void lfo_setSync(Lfo* lfo, uint8_t sync);
-
 void lfo_recalcSync();
-
 void lfo_retrigger(uint8_t voiceNr);
-
 
 #endif /* LFO_H_ */

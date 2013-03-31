@@ -4,7 +4,7 @@
  *  Created on: 14.01.2013
  *      Author: Julian
  */
-
+//-------------------------------------------------------------
 #include "Lfo.h"
 #include "random.h"
 #include <math.h>
@@ -14,7 +14,7 @@
 #include "HiHat.h"
 #include "Snare.h"
 #include "valueShaper.h"
-
+//-------------------------------------------------------------
 void lfo_init(Lfo *lfo)
 {
 	lfo->phase 			= 0;
@@ -27,91 +27,28 @@ void lfo_init(Lfo *lfo)
 
 	modNode_init(&lfo->modTarget);
 }
-/*
-void lfo_calcBlock(Lfo *lfo, int16_t* buf, uint8_t size)
-{
-
-	uint8_t i;
-	for(i=0;i<size;i++)
-	{
-		lfo->phase += lfo->phaseInc;
-		//get overflow flag
-		APSR_Type apsr;
-		apsr.w = __get_APSR();
-		const uint8_t overflow = apsr.b.V;
-
-		switch(lfo->waveform)
-		{
-			case SINE:
-			//return pgm_read_byte(&sinewave[(lfo->phase>>24)]);
-				buf[i] = 0;
-			break;
-
-			case SAW:
-				buf[i] = MIN+lfo->phase>>16;
-			break;
-
-			case SAW_DOWN:
-				buf[i] = MAX-(lfo->phase>>16); //using upper nibble => 16 bit
-			break;
-
-			case REC:
-			if(lfo->phase > 0x7fffffff)
-			{
-				buf[i] = MAX;
-			}
-			else
-			{
-				buf[i] = MIN;
-			}
-			break;
-
-			case NOISE:
-			if(overflow)
-				lfo->rnd = GetRngValue();
-
-				buf[i] = lfo->rnd;
-			break;
-
-			default:
-				buf[i] = 0;
-			break;
-		}
-	}
-}
-*/
+//-------------------------------------------------------------
 float lfo_calc(Lfo *lfo)
 {
-
-	uint32_t oldPhase = lfo->phase;
-	lfo->phase += lfo->phaseInc;
-
-	//get overflow flag
-	/*
-	APSR_Type apsr;
-	apsr.w = __get_APSR();
-
-	const uint8_t overflow = apsr.b.V;
-	*/
-	const uint8_t overflow = oldPhase>lfo->phase;
+	uint32_t oldPhase 		= lfo->phase;
+	lfo->phase 			   += lfo->phaseInc;
+	const uint8_t overflow 	= oldPhase>lfo->phase;
 
 	switch(lfo->waveform)
 	{
+	//---
 		case LFO_SINE:
-		//return pgm_read_byte(&sinewave[(lfo->phase>>24)]);
 			return ((sine_table[(lfo->phase>>20)]/32767.f) + 1)/2.f;
 		break;
-
+	//---
 		case LFO_TRI:
 			return (1.f-fabsf( (lfo->phase/(float)0xffffffff)*2-1 ) );
 			break;
-
+	//---
 		case LFO_SAW_UP:
 		return lfo->phase/(float)0xffffffff ;
 		break;
-
-
-
+	//---
 		case LFO_REC:
 		if(lfo->phase > 0x7fffffff)
 		{
@@ -122,7 +59,7 @@ float lfo_calc(Lfo *lfo)
 			return 0.f;
 		}
 		break;
-
+	//---
 		case LFO_NOISE:
 		if(overflow)
 		{
@@ -132,39 +69,38 @@ float lfo_calc(Lfo *lfo)
 
 			return lfo->rnd;
 		break;
-
+	//---
 		case LFO_SAW_DOWN:
 		return (0xffffffff-(lfo->phase)) / (float)0xffffffff;
 		break;
-
+	//---
 		case LFO_EXP_UP:
 			{
 				float x = lfo->phase/(float)0xffffffff;
 				return x*x*x;
 			}
 			break;
-
+	//---
 		case LFO_EXP_DOWN:
 			{
 				float x = (0xffffffff-(lfo->phase)) / (float)0xffffffff;
 				return x*x*x;//valueShaperF2F(x,-0.9f);
 			}
 			break;
-
+	//---
 		default:
 		return 0;
 		break;
 	}
 	return 0;
 }
-
+//-------------------------------------------------------------
 void lfo_dispatchNextValue(Lfo* lfo)
 {
 	float val = lfo_calc(lfo);
 	modNode_updateValue(&lfo->modTarget,val);
-
 }
-
+//-------------------------------------------------------------
 uint32_t lfo_calcPhaseInc(float freq, uint8_t sync)
 {
 	/*
@@ -195,7 +131,6 @@ uint32_t lfo_calcPhaseInc(float freq, uint8_t sync)
 	float tempoAsFrequency = bpm > 0.0 ? bpm / 60.f /4: 0.0f; //bpm/60 = beat duration /4 = bar duration
 
 	float scaler;
-
 
 	switch(sync)
 	{
@@ -247,21 +182,12 @@ uint32_t lfo_calcPhaseInc(float freq, uint8_t sync)
 		case 11: // 1/32
 		scaler = 32;//NoteTypeScalers[Regular] * NoteDivisionScalers[Sixteenth];
 		break;
-
-
 	}
 
-	//TODO um sync zu garantieren muss man wohl das ganze zum beginn eines bars resetten
-	//sonst läuft es wohl auseinander
-
 	float lfoSyncfreq = tempoAsFrequency * scaler;
-//	lcd_home();
-//	char text[16];
-//	sprintf(text,"%d %d %d",(uint8_t)((lfoSyncfreq / LFO_SR) * 0xffff),(uint8_t)tempoAsFrequency*10,(uint8_t)scaler*10);
-//	lcd_string(text);
 	return (lfoSyncfreq / (LFO_SR/16.f)) * 0xffffffff;
 }
-
+//-------------------------------------------------------------
 void lfo_setFreq(Lfo *lfo, float f)
 {
 	f += 1;
@@ -270,14 +196,13 @@ void lfo_setFreq(Lfo *lfo, float f)
 	lfo->freq = f*LFO_MAX_F;
 	lfo->phaseInc = lfo_calcPhaseInc(lfo->freq,lfo->sync);
 }
-
+//-------------------------------------------------------------
 void lfo_setSync(Lfo* lfo, uint8_t sync)
 {
 	lfo->sync = sync;
 	lfo->phaseInc = lfo_calcPhaseInc(lfo->freq,lfo->sync);
-
 }
-
+//-------------------------------------------------------------
 void lfo_recalcSync()
 {
 	Lfo* lfo = &voiceArray[0].lfo;
@@ -298,7 +223,7 @@ void lfo_recalcSync()
 	lfo = &hatVoice.lfo;
 	lfo->phaseInc = lfo_calcPhaseInc(lfo->freq,lfo->sync);
 }
-
+//-------------------------------------------------------------
 void lfo_retrigger(uint8_t voice)
 {
 	if(voiceArray[0].lfo.retrigger == voice+1)
@@ -325,7 +250,5 @@ void lfo_retrigger(uint8_t voice)
 	{
 		hatVoice.lfo.phase = hatVoice.lfo.phaseOffset;
 	}
-
-
 }
-
+//-------------------------------------------------------------
