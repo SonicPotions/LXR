@@ -66,7 +66,6 @@ void led_setActivePage(uint8_t pageNr)
 	pageNr +=LED_PART_SELECT1;
 	uint8_t arrayPos = pageNr/8;
 	uint8_t bitPos = pageNr&0x7;
-//	PART_LED_BEGIN
 	
 	//set the whole byte to clear the other leds
 	dout_outputData[arrayPos] = (1<<bitPos);
@@ -79,7 +78,6 @@ void led_setActiveSelectButton(uint8_t butNr)
 	butNr += LED_PART_SELECT1;
 	const uint8_t arrayPos = butNr/8;
 	const uint8_t bitPos = butNr&0x7;
-//	PART_LED_BEGIN
 	
 	//set the whole byte to clear the other leds
 	dout_outputData[arrayPos] = (1<<bitPos);
@@ -89,7 +87,6 @@ void led_setActiveSelectButton(uint8_t butNr)
 //---------------------------------------------
 void led_setActiveVoiceLeds(uint8_t pattern)
 {
-
 	uint8_t arrayPos = LED_VOICE1/8;
 	//clear lower 7 bits
 	dout_outputData[arrayPos] &= 0x80;
@@ -105,7 +102,6 @@ void led_setActiveVoice(uint8_t voiceNr)
 	voiceNr += LED_VOICE1;
 	uint8_t arrayPos = voiceNr/8;
 	uint8_t bitPos = voiceNr&0x7;
-//	PART_LED_BEGIN
 	
 	//clear lower 7 bit (8th bit is copy led)
 	dout_outputData[arrayPos] &= 0x80;
@@ -120,7 +116,6 @@ void led_setValue(uint8_t val, uint8_t ledNr)
 {
 	uint8_t arrayPos = ledNr/8;
 	uint8_t bitPos = ledNr&0x7;
-	//uint8_t oldValue = dout_outputData[arrayPos];
 	//clear the led
 	dout_outputData[arrayPos] &= ~(1<<bitPos);
 	led_originalLedState[arrayPos] &= ~(1<<bitPos);
@@ -138,10 +133,8 @@ void led_setValue(uint8_t val, uint8_t ledNr)
 //-----------------------------------------------
 void led_setValueTemp(uint8_t val, uint8_t ledNr)
 {
-
 	uint8_t arrayPos = ledNr/8;
 	uint8_t bitPos = ledNr&0x7;
-	//uint8_t oldValue = dout_outputData[arrayPos];
 	//clear the led
 	dout_outputData[arrayPos] &= ~(1<<bitPos);
 	
@@ -152,15 +145,7 @@ void led_setValueTemp(uint8_t val, uint8_t ledNr)
 	}	
 	
 	return;
-		
 };
-//-----------------------------------------------
-/*
-void led_getValue(uint8_t ledNr)
-{
-	
-};
-*/
 //-----------------------------------------------
 void led_clearAll()
 {
@@ -170,11 +155,9 @@ void led_clearAll()
 //-----------------------------------------------
 void led_toggle(uint8_t ledNr)
 {
-
 	uint8_t arrayPos = ledNr/8;
 	uint8_t bitPos = ledNr&0x7;
 
-	
 	uint8_t oldValue = dout_outputData[arrayPos]&(1<<bitPos);
 	//clear the led
 	dout_outputData[arrayPos] &= ~(1<<bitPos);
@@ -192,7 +175,6 @@ void led_toggle(uint8_t ledNr)
 //--------------------------------------------------------------------------
 void led_toggleTemp(uint8_t ledNr)
 {
-
 	uint8_t arrayPos = ledNr/8;
 	uint8_t bitPos = ledNr&0x7;
 	uint8_t oldValue = dout_outputData[arrayPos]&(1<<bitPos);
@@ -204,7 +186,6 @@ void led_toggleTemp(uint8_t ledNr)
 		dout_outputData[arrayPos] |= (1<<bitPos);
 	}		
 	return;
-
 };
 //--------------------------------------------------
 void led_setActive_step(uint8_t stepNr)
@@ -303,10 +284,6 @@ void led_setMode2(uint8_t status)
 //-------------------------------------------------------
 void led_setMode2Leds(uint8_t value)
 {
-	//uint8_t arrayPos = LED_PART_SELECT1/8;
-	//uint8_t bitPos = pageNr&0x7;
-//	PART_LED_BEGIN
-	
 	//set the whole byte to clear the other leds
 	dout_outputData[LED_PART_SELECT1/8] = ~value;//(1<<bitPos);
 	led_originalLedState[LED_PART_SELECT1/8] = ~value;
@@ -323,9 +300,6 @@ void led_pulseLed(uint8_t ledNr)
 			
 			//store led number
 			led_pulseLedNumber[i] = ledNr;
-			//store original LED state
-			//if()
-			//led_originalPulseState
 			//set slot to active
 			led_pulsingLeds |= (1<<i);
 			//set light up time
@@ -334,10 +308,7 @@ void led_pulseLed(uint8_t ledNr)
 			led_toggleTemp(ledNr);
 			
 			break;
-			
 		}
-
-		
 	}		
 };
 //-------------------------------------------------------
@@ -350,12 +321,10 @@ void led_clearAllBlinkLeds()
 		//set slot to inactive
 		led_blinkingLeds &= ~(1<<i);
 	}
-	//led_blinkingLeds = 0;
 };
 //-------------------------------------------------------
 void led_setBlinkLed(const uint8_t ledNr, const uint8_t onOff)
 {
-
 	if(onOff)
 	{
 		//--- turn on blinking ---
@@ -368,29 +337,19 @@ void led_setBlinkLed(const uint8_t ledNr, const uint8_t onOff)
 			
 				//store led number
 				led_blinkLedNumber[i] = ledNr;
-				//store original LED state
-				//if()
-				//led_originalPulseState
 				//set slot to active
 				led_blinkingLeds |= (1<<i);
-				//set light up time
-				//led_nextBlinkTime[i] = time_sysTick  +LED_BLINK_TIME;
 				//turn on LED
 				led_toggleTemp(ledNr);
 			
-				break;
-			
+				break;		
 			}
-
-		
 		}	
 	}		
 	else
 	{
 		//--- turn off blinking ---
-		
 		//search the slot with matching ledNr
-		
 		for(int i=0;i<NUM_OF_BLINKABLE_LEDS;i++)
 		{
 			if(led_blinkLedNumber[i] == ledNr)
@@ -426,27 +385,18 @@ void led_tickHandler()
 	{
 		led_nextBlinkTime = time_sysTick + LED_BLINK_TIME;
 		
-
-			for(int i=0;i<NUM_OF_BLINKABLE_LEDS;i++)
+		for(int i=0;i<NUM_OF_BLINKABLE_LEDS;i++)
+		{
+			//if the led is active at the moment
+			if(led_blinkingLeds & (1<<i))
 			{
-				//if the led is active at the moment
-				if(led_blinkingLeds & (1<<i))
-				{
-					//if the on time has passed
-					//f(time_sysTick > led_nextBlinkTime[i])
-			
-					{
-						//toggle led
-						led_toggleTemp(led_blinkLedNumber[i]);
-						//set next toggle time
-					
-					}
-				}	
-			}
+				//toggle led
+				led_toggleTemp(led_blinkLedNumber[i]);
+				//set next toggle time			
+			}	
+		}
 					
 	}		
-	
-	
 }
 
 //--------------------------------------------------------------------------
@@ -465,6 +415,5 @@ void led_reset(uint8_t ledNr)
 	{
 		dout_outputData[arrayPos] &= ~(1<<bitPos);
 	}	 
-		
 };
 //--------------------------------------------------------------------------

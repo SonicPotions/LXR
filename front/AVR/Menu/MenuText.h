@@ -205,6 +205,7 @@ const char shortNames[][4] PROGMEM  =
 	{"trk"},
 	{"val"},
 	{"shu"},
+	{"ss"},
 		
 	
 };
@@ -292,6 +293,7 @@ const char longNames[][16] PROGMEM =
 	{"Autom. Dest."},
 	{"Autom. Value"},
 	{"Shuffle"},
+	{"Screensaver"},
 };
 
 

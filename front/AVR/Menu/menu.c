@@ -204,6 +204,8 @@ const Name valueNames[NUM_NAMES] PROGMEM =
 	
 	{SHORT_SHUFFLE,	CAT_SEQUENCER,	LONG_SHUFFLE},	//TEXT_SHUFFLE
 		
+	{SHORT_SCREEN_SAVER, CAT_GLOBAL,LONG_SCREENSAVER},	//TEXT_SCREENSAVER_ON_OFF
+		
 	
 		
 		
@@ -386,6 +388,10 @@ void menu_init()
 	parameters[PAR_VOICE_LFO6].dtype	= DTYPE_1B6;
 	
 	parameters[PAR_TRACK_LENGTH].dtype	= DTYPE_1B16;
+	
+	parameters[PAR_SCREENSAVER_ON_OFF].dtype	= DTYPE_ON_OFF;
+	
+	
 	
 	
 	
@@ -1432,7 +1438,7 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 
 	if(menu_activePage >= LOAD_PAGE && menu_activePage <= SAVE_PAGE) {
 		menu_handleLoadSaveMenu(inc, button);
-	} else if (inc!=0){
+	} else{
 		//handle the button
 		if( (button==1) && (button!=lastEncoderButton)) {
 			//toggle edit mode
@@ -1441,253 +1447,243 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 		}
 		
 		//============================= handle encoder ==============================
-		
-		if(copyClear_isClearModeActive())
+		if (inc!=0)
 		{
-			//encoder selects clear target
-			uint8_t target = copyClear_getClearTarget();
-			if(inc<0) {
-				if(target!=0) {
-					target--;	
-				}
-			} else if(inc>0) {
-				if(target!=CLEAR_AUTOMATION2) {
-					target++;	
-				}
-			}
-			copyClear_setClearTarget(target);
-			return;
-		
-		}		
-		else if(editModeActive) {
-			//we are in edit mode
-			//encoder controls parameter value
-			const uint8_t activeParameter	= menuIndex & MASK_PARAMETER;
-			const uint8_t activePage		= (menuIndex&MASK_PAGE)>>PAGE_SHIFT;
-		
-			//get address from top1-8 from activeParameter (base adress top1 + offset)
-			uint8_t paramNr		= pgm_read_byte(&menuPages[menu_activePage][activePage].bot1 + activeParameter);
-			uint8_t *paramValue = &parameters[paramNr].value;
-
-			//increase parameter value		
-			//do not wrap
-			if(!((inc<0) && (*paramValue==0)))
-			*paramValue += inc;
-					
-			switch(parameters[paramNr].dtype&0x0F)
+			if(copyClear_isClearModeActive())
 			{
-				case DTYPE_TARGET_SELECTION_VELO:
-				{
-					if(*paramValue > (NUM_SUB_PAGES * 8 -1))
-					*paramValue = (NUM_SUB_PAGES * 8 -1); 
-				
-					uint8_t value = getModTargetValue(*paramValue, paramNr - PAR_VEL_DEST_1);
-				
-					uint8_t upper,lower;
-					upper = ((value&0x80)>>7) | (((paramNr - PAR_VEL_DEST_1)&0x3f)<<1);
-					lower = value&0x7f;
-					frontPanel_sendData(CC_VELO_TARGET,upper,lower);
-					return;
-				}				
-				break;
-			
-				case DTYPE_TARGET_SELECTION_LFO:
-				{
-					if(*paramValue > (NUM_SUB_PAGES * 8 -1))
-						*paramValue = (NUM_SUB_PAGES * 8 -1); 		
-					
-					uint8_t value = getModTargetValue(*paramValue, parameters[PAR_VOICE_LFO1+ paramNr - PAR_TARGET_LFO1].value-1);
-				
-					uint8_t upper,lower;
-					upper = ((value&0x80)>>7) | (((paramNr - PAR_TARGET_LFO1)&0x3f)<<1);
-					lower = value&0x7f;
-					frontPanel_sendData(CC_LFO_TARGET,upper,lower);
-					return;
-				}					
-				break;
-			
-				default:
-				case DTYPE_0B127:
-					if(*paramValue > 127)
-						*paramValue = 127;	
-					break;
-					
-				case DTYPE_AUTOM_TARGET:
-				if(*paramValue >= END_OF_SOUND_PARAMETERS)
-						*paramValue = END_OF_SOUND_PARAMETERS-1;
-					break;
-				
-				case DTYPE_0B255:
-					if(*paramValue > 255)
-						*paramValue = 255;
-					break;
-				
-				case DTYPE_1B6:
-					if(*paramValue < 1)
-						*paramValue = 1;
-					else if(*paramValue > 6)
-						*paramValue = 6; 
-				break;
-				case DTYPE_1B16:
-					if(*paramValue < 1)
-						*paramValue = 1;
-					else if(*paramValue > 16)
-						*paramValue = 16; 
-					break;
-				case DTYPE_MIX_FM:
-				case DTYPE_ON_OFF:
-				case DTYPE_0b1:
-					 if(*paramValue > 1)
-						*paramValue = 1;
-					break;				
-				case DTYPE_MENU:
-				{
-					//get the used menu (upper 4 bit)
-					const uint8_t menuId = (parameters[paramNr].dtype>>4);
-					//get the number of entries
-					uint8_t numEntries;
-					switch(menuId)
-					{
-						case MENU_AUDIO_OUT:
-							numEntries = outputNames[0][0];
-						
-						break;
-					
-						case MENU_FILTER:
-							numEntries = filterTypes[0][0];
-						break;
-					
-						case MENU_SYNC_RATES:
-							numEntries = syncRateNames[0][0];
-						break;
-					
-						case MENU_LFO_WAVES:
-							numEntries = lfoWaveNames[0][0];
-						break;
-					
-						case MENU_RETRIGGER:
-							numEntries = retriggerNames[0][0];
-						break;		
-						
-						case MENU_SEQ_QUANT:
-							numEntries = quantisationNames[0][0];
-						break;						
-						
-						case MENU_NEXT_PATTERN:
-							numEntries = nextPatternNames[0][0];
-						break;			
-					
-						case MENU_WAVEFORM:
-							numEntries = waveformNames[0][0];
-							//value = 127*frac; //TODO to adapt full midi cc range <-> leads to inconsitencies
-						break;
-					
-						case MENU_ROLL_RATES:
-							numEntries = rollRateNames[0][0];
-						break;
-					
-						default:
-							numEntries = 0;
-						break;
+				//encoder selects clear target
+				uint8_t target = copyClear_getClearTarget();
+				if(inc<0) {
+					if(target!=0) {
+						target--;	
 					}
-				
-					if(*paramValue >= numEntries)
-						*paramValue = numEntries-1;
-				
+				} else if(inc>0) {
+					if(target!=CLEAR_AUTOMATION2) {
+						target++;	
+					}
 				}
-				break;
+				copyClear_setClearTarget(target);
+				return;
+		
+			}		
+			else if(editModeActive) {
+				//we are in edit mode
+				//encoder controls parameter value
+				const uint8_t activeParameter	= menuIndex & MASK_PARAMETER;
+				const uint8_t activePage		= (menuIndex&MASK_PAGE)>>PAGE_SHIFT;
+		
+				//get address from top1-8 from activeParameter (base adress top1 + offset)
+				uint8_t paramNr		= pgm_read_byte(&menuPages[menu_activePage][activePage].bot1 + activeParameter);
+				uint8_t *paramValue = &parameters[paramNr].value;
 
-		
-			}
-			//}
-			
-				
-		
-		/*
-			//send parameter change to uart tx
-			uart_putc(0xb0); //staus byte - midi cc
-			//uart_putc(pgm_read_byte(&parameterCCs[paramNr]));//data 1 - parameter number
-			uart_putc(paramNr);//data 1 - parameter number
-			uart_putc(*paramValue);//data 2 - value
-			*/
-		if(paramNr<128) // => Sound Parameter
-		{
-			frontPanel_sendData(MIDI_CC,paramNr,*paramValue);
-		}
-		else if(paramNr>=128 && (paramNr < END_OF_SOUND_PARAMETERS)) // => Sound Parameter above 127
-		{
-			frontPanel_sendData(CC_2,paramNr-128,*paramValue);
-		}
-		else
-		{
-			menu_parseGlobalParam(paramNr,parameters[paramNr].value);
-		}
-		
-		//frontPanel_sendData(0xb0,paramNr,*paramValue);
-		
-
-		
-		}
-		else //-------- not in edit mode --------
-		{
-			//we are not in edit mode
-			//encoder selects active parameter
-		
-			/*
-			//check if next parameter is not empty
-			//if inc is negative avoid to integer underflow (don't decrement 0)*/
-			const uint8_t activeParameter	= (menuIndex+inc) & MASK_PARAMETER;
-			const uint8_t activePage		= ((menuIndex+inc)&MASK_PAGE)>>PAGE_SHIFT;
-			
-			uint8_t param = pgm_read_byte(&menuPages[menu_activePage][activePage].top1 + activeParameter);
-		
-		
-			if(inc>0)
-			{
-				if((param != TEXT_EMPTY) && (activeParameter!=0) ) //(menuIndex+inc)!=255)
+				//increase parameter value		
+				//do not wrap
+				if(!((inc<0) && (*paramValue==0)))
+				*paramValue += inc;
+					
+				switch(parameters[paramNr].dtype&0x0F)
 				{
-					if(parameterFetch & PARAMETER_LOCK_ACTIVE)
+					case DTYPE_TARGET_SELECTION_VELO:
 					{
-						//check if parameter lock for fetch is needed
-						const uint8_t currentActiveParameter	= (menuIndex) & MASK_PARAMETER;
-						if( (currentActiveParameter<=3) && (activeParameter>3) )
-						//if( (((menuIndex+inc)&MASK_PAGE)>>PAGE_SHIFT) != activePage)
-						{
-							//lock all parameters
-							lockPotentiometerFetch();
-						}
-					}					
+						if(*paramValue > (NUM_SUB_PAGES * 8 -1))
+						*paramValue = (NUM_SUB_PAGES * 8 -1); 
+				
+						uint8_t value = getModTargetValue(*paramValue, paramNr - PAR_VEL_DEST_1);
+				
+						uint8_t upper,lower;
+						upper = ((value&0x80)>>7) | (((paramNr - PAR_VEL_DEST_1)&0x3f)<<1);
+						lower = value&0x7f;
+						frontPanel_sendData(CC_VELO_TARGET,upper,lower);
+						return;
+					}				
+					break;
 			
-					//switch menu	
-					menuIndex += inc;
-				}								
-			}
-			else
-			{
-				if( (menuIndex!=0) && (activeParameter != MASK_PARAMETER) )
+					case DTYPE_TARGET_SELECTION_LFO:
+					{
+						if(*paramValue > (NUM_SUB_PAGES * 8 -1))
+							*paramValue = (NUM_SUB_PAGES * 8 -1); 		
+					
+						uint8_t value = getModTargetValue(*paramValue, parameters[PAR_VOICE_LFO1+ paramNr - PAR_TARGET_LFO1].value-1);
+				
+						uint8_t upper,lower;
+						upper = ((value&0x80)>>7) | (((paramNr - PAR_TARGET_LFO1)&0x3f)<<1);
+						lower = value&0x7f;
+						frontPanel_sendData(CC_LFO_TARGET,upper,lower);
+						return;
+					}					
+					break;
+			
+					default:
+					case DTYPE_0B127:
+						if(*paramValue > 127)
+							*paramValue = 127;	
+						break;
+					
+					case DTYPE_AUTOM_TARGET:
+					if(*paramValue >= END_OF_SOUND_PARAMETERS)
+							*paramValue = END_OF_SOUND_PARAMETERS-1;
+						break;
+				
+					case DTYPE_0B255:
+						if(*paramValue > 255)
+							*paramValue = 255;
+						break;
+				
+					case DTYPE_1B6:
+						if(*paramValue < 1)
+							*paramValue = 1;
+						else if(*paramValue > 6)
+							*paramValue = 6; 
+					break;
+					case DTYPE_1B16:
+						if(*paramValue < 1)
+							*paramValue = 1;
+						else if(*paramValue > 16)
+							*paramValue = 16; 
+						break;
+					case DTYPE_MIX_FM:
+					case DTYPE_ON_OFF:
+					case DTYPE_0b1:
+						 if(*paramValue > 1)
+							*paramValue = 1;
+						break;				
+					case DTYPE_MENU:
+					{
+						//get the used menu (upper 4 bit)
+						const uint8_t menuId = (parameters[paramNr].dtype>>4);
+						//get the number of entries
+						uint8_t numEntries;
+						switch(menuId)
+						{
+							case MENU_AUDIO_OUT:
+								numEntries = outputNames[0][0];
+						
+							break;
+					
+							case MENU_FILTER:
+								numEntries = filterTypes[0][0];
+							break;
+					
+							case MENU_SYNC_RATES:
+								numEntries = syncRateNames[0][0];
+							break;
+					
+							case MENU_LFO_WAVES:
+								numEntries = lfoWaveNames[0][0];
+							break;
+					
+							case MENU_RETRIGGER:
+								numEntries = retriggerNames[0][0];
+							break;		
+						
+							case MENU_SEQ_QUANT:
+								numEntries = quantisationNames[0][0];
+							break;						
+						
+							case MENU_NEXT_PATTERN:
+								numEntries = nextPatternNames[0][0];
+							break;			
+					
+							case MENU_WAVEFORM:
+								numEntries = waveformNames[0][0];
+								//value = 127*frac; //TODO to adapt full midi cc range <-> leads to inconsitencies
+							break;
+					
+							case MENU_ROLL_RATES:
+								numEntries = rollRateNames[0][0];
+							break;
+					
+							default:
+								numEntries = 0;
+							break;
+						}
+				
+						if(*paramValue >= numEntries)
+							*paramValue = numEntries-1;
+				
+					}					
+					break;
+
+		
+				}				
+
+				//send parameter change to uart tx
+				if(paramNr<128) // => Sound Parameter
 				{
+					frontPanel_sendData(MIDI_CC,paramNr,*paramValue);
+				}
+				else if(paramNr>=128 && (paramNr < END_OF_SOUND_PARAMETERS)) // => Sound Parameter above 127
+				{
+					frontPanel_sendData(CC_2,paramNr-128,*paramValue);
+				}
+				else
+				{
+					menu_parseGlobalParam(paramNr,parameters[paramNr].value);
+				}
+		
+				//frontPanel_sendData(0xb0,paramNr,*paramValue);
+			}
+			else //-------- not in edit mode --------
+			{
+				//we are not in edit mode
+				//encoder selects active parameter
+		
+				/*
+				//check if next parameter is not empty
+				//if inc is negative avoid to integer underflow (don't decrement 0)*/
+				const uint8_t activeParameter	= (menuIndex+inc) & MASK_PARAMETER;
+				const uint8_t activePage		= ((menuIndex+inc)&MASK_PAGE)>>PAGE_SHIFT;
+			
+				uint8_t param = pgm_read_byte(&menuPages[menu_activePage][activePage].top1 + activeParameter);
+		
+		
+				if(inc>0)
+				{
+					if((param != TEXT_EMPTY) && (activeParameter!=0) ) //(menuIndex+inc)!=255)
+					{
+						if(parameterFetch & PARAMETER_LOCK_ACTIVE)
+						{
+							//check if parameter lock for fetch is needed
+							const uint8_t currentActiveParameter	= (menuIndex) & MASK_PARAMETER;
+							if( (currentActiveParameter<=3) && (activeParameter>3) )
+							//if( (((menuIndex+inc)&MASK_PAGE)>>PAGE_SHIFT) != activePage)
+							{
+								//lock all parameters
+								lockPotentiometerFetch();
+							}
+						}					
+			
+						//switch menu	
+						menuIndex += inc;
+					}								
+				}
+				else
+				{
+					if( (menuIndex!=0) && (activeParameter != MASK_PARAMETER) )
+					{
 				
 	
-					//check if parameter lock fpor fetch is needed
-					if(parameterFetch & PARAMETER_LOCK_ACTIVE)
-					{
-						const uint8_t currentActiveParameter	= (menuIndex) & MASK_PARAMETER;
-						//if( (((menuIndex+inc)&MASK_PAGE)>>PAGE_SHIFT) != activePage)
-						if( (currentActiveParameter>3) && (activeParameter<=3) )
+						//check if parameter lock fpor fetch is needed
+						if(parameterFetch & PARAMETER_LOCK_ACTIVE)
 						{
-							//lock all parameters
-							lockPotentiometerFetch();
-						}
-					}					
+							const uint8_t currentActiveParameter	= (menuIndex) & MASK_PARAMETER;
+							//if( (((menuIndex+inc)&MASK_PAGE)>>PAGE_SHIFT) != activePage)
+							if( (currentActiveParameter>3) && (activeParameter<=3) )
+							{
+								//lock all parameters
+								lockPotentiometerFetch();
+							}
+						}											
 			
-					//switch menu
+						//switch menu
 			
-					menuIndex += inc;	
-				}				
-			}
+						menuIndex += inc;	
+					}				
+				}										
 		
 		
-		}		
+			} //not in edit mode
+		}					
 	}		
 		
 	//update the button state
@@ -1868,6 +1864,11 @@ void menu_parseGlobalParam(uint8_t paramNr, uint8_t value)
 		case PAR_QUANTISATION:
 			frontPanel_sendData(SEQ_CC,SEQ_SET_QUANT,value);
 		break;
+		
+		case PAR_SCREENSAVER_ON_OFF:
+			
+		break;
+		
 		case PAR_BPM:
 			frontPanel_sendData(SET_BPM,value&0x7f,(value>>7)&0x7f);
 		break;

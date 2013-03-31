@@ -150,33 +150,15 @@ uint8_t preset_loadDrumset(uint8_t presetNr, uint8_t isMorph)
 	{
 		//file open error... maybe the file does not exist?
 		return 0;
-		/*
-		lcd_clear();
-		lcd_home();
-		lcd_string_F(PSTR("Could not"));
-		lcd_setcursor(0,2);
-		lcd_string_F(PSTR("open preset"));
-		_delay_ms(2000);
-		*/
-		
 	}
 	else
 	{
-		
-	//	lcd_clear();
-	//	lcd_home();
-	//	lcd_string_F(PSTR("Loading preset"));
-	//	_delay_ms(2000);
-		//now read the file content
+		//read the file content
 		unsigned int bytesRead;
 		//first the preset name
-	//	lcd_clear();
-	//	lcd_string_F(PSTR("read name"));
 		f_read((FIL*)&preset_File,(void*)preset_currentName,8,&bytesRead);
 		//then the data
 		int i;
-	//	lcd_clear();
-	//	lcd_string_F(PSTR("read data"));
 		bytesRead = 1;
 		
 		if(isMorph)

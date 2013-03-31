@@ -21,7 +21,7 @@
 
 static uint8_t frontParser_rxCnt=0;
 volatile MidiMsg frontParser_midiMsg;
-static frontParser_nrpnNr = 0;
+static uint16_t frontParser_nrpnNr = 0;
 
 uint8_t frontPanel_sysexMode = 0;
 
@@ -61,8 +61,6 @@ void frontParser_parseNrpn(uint8_t value)
 		upper = ((value&0x80)>>7) | (((frontParser_nrpnNr+128 - PAR_VEL_DEST_1)&0x3f)<<1);
 		lower = value&0x7f;
 		frontPanel_sendData(CC_VELO_TARGET,upper,lower);
-		
-		
 	}
 }
 //------------------------------------------------------------
@@ -70,14 +68,6 @@ void frontPanel_ccHandler()
 {
 	//get the real parameter number from the cc number
 	const uint8_t parNr = frontParser_midiMsg.data1 - 1;
-	
-	//osc waveform special case bring 0-4 value to 0-127
-	/*
-	if((parNr >=PAR_OSC_WAVE_DRUM1) && (parNr <=PAR_WAVE3_HH))
-	{
-		//frontParser_midiMsg.data2 *= (127/4);
-	}
-	*/
 	
 	if(parNr == NRPN_DATA_ENTRY_COARSE) {
 			frontParser_parseNrpn(frontParser_midiMsg.data2);
@@ -213,16 +203,12 @@ void frontPanel_parseData(uint8_t data)
 					frontParser_stepData.volume = mainStepData>>8;
 					frontParser_stepData.prob = mainStepData&0xff;
 					
-					//signal that a ne data chunk is available
+					//signal that a new data chunk is available
 					frontParser_newSeqDataAvailable = 1;
 					//reset receive counter for next chunk
 					frontParser_rxCnt = 0;
 				}
-				
-				
 			}
-			
-			
 		}
 		else if(frontParser_rxCnt==0)
 		{
@@ -485,14 +471,6 @@ void frontPanel_sendMidiMsg(MidiMsg msg)
 	while(uart_putc(msg.data1) == 0);
 	//data 2 - value	
 	while(uart_putc(msg.data2) == 0);
-	/*
-	switch(msg.status)
-	{
-		case MIDI_CC: //0xb0
-
-		break;
-	}
-	*/
 };
 //------------------------------------------------------------
 void frontPanel_sendData(uint8_t status, uint8_t data1, uint8_t data2)

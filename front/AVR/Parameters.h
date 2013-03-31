@@ -722,6 +722,8 @@ enum ParamEnums
 
 	PAR_PATTERN_BEAT,
 	PAR_PATTERN_NEXT,
+	
+	PAR_TRACK_LENGTH,
 
 	
 	//#########################################
@@ -745,7 +747,8 @@ enum ParamEnums
 	
 	
 	PAR_QUANTISATION,
-	PAR_TRACK_LENGTH,
+	
+	PAR_SCREENSAVER_ON_OFF,
 	
 	
 	NUM_PARAMS	

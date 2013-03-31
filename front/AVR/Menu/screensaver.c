@@ -18,6 +18,7 @@
 #define SCREENSAVER_SYSTICK ((SCREENSAVER_TIMEOUT*60) / (1.f / ((F_CPU/1024.f)/256.f)))
 volatile uint8_t screensaver_Active=0;
 volatile uint16_t screensaver_Timeout=SCREENSAVER_SYSTICK;
+uint8_t screensaver_lastSystick = 0;
 
 //stuff for fancy drawing
 static uint16_t screensaver_processTime = 0;
@@ -34,19 +35,21 @@ uint8_t screensaver_activeCell = 0;
 uint8_t screensaver_cellState = CELL_OFF;
 
 uint16_t screensaver_rng =  0;	//*<temporary var for rng generation*/
-
+//------------------------------------------------------------------
 uint8_t screensaver_pseudoRng()
 {
 	screensaver_rng++;
 	screensaver_rng *= 3;
 	return (screensaver_rng >> 2) & 0xFF;
-		
 }
-
+//------------------------------------------------------------------
 void screensaver_touch()
 {
 	#if SCREENSAVER_ACTIVE
 		screensaver_Timeout = time_sysTick + SCREENSAVER_SYSTICK;
+		
+		screensaver_lastSystick = time_sysTick;
+		
 		if(screensaver_Timeout < time_sysTick)
 		{
 			//prevent screensaver bug near wrap point
@@ -61,7 +64,7 @@ void screensaver_touch()
 		}	
 		#endif		
 }
-
+//------------------------------------------------------------------
 //draw some fancy stuff on the LCD
 void screensaver_process()
 {
@@ -116,7 +119,7 @@ void screensaver_process()
 				case CELL_3:
 				if(screensaver_activeCell>15)
 				{
-						lcd_setcursor(screensaver_activeCell-16,2);
+					lcd_setcursor(screensaver_activeCell-16,2);
 				}
 				else
 				{
@@ -130,24 +133,25 @@ void screensaver_process()
 	}
 #endif	
 }
-
+//------------------------------------------------------------------
 void screensaver_check()
 {
-	#if SCREENSAVER_ACTIVE
-	if(!screensaver_Active)
+#if SCREENSAVER_ACTIVE
+	if(parameters[PAR_SCREENSAVER_ON_OFF].value)
 	{
-		if(time_sysTick >= screensaver_Timeout )
+		if( (!screensaver_Active) )
 		{
-		
+			if(time_sysTick >= screensaver_Timeout )
+			{
 				//lcd_turnOn(0);
-				screensaver_Active = 1;
-				
+				screensaver_Active = 1;	
+			}
 		}
+		else
+		{
+			screensaver_process();
+		}	
 	}
-	else
-	{
-		screensaver_process();
-	}
-			
 #endif
 };
+//------------------------------------------------------------------
