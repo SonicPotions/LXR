@@ -79,10 +79,6 @@ extern DrumVoice voiceArray[NUM_VOICES];
 void initDrumVoice();
 
 void Drum_trigger(const uint8_t voiceNr, const uint8_t vol, const uint8_t note);
-void stopVoice(const uint8_t voiceNr);
-
-/** claculate the oscillators and sample based stuff*/
-//int16_t calcDrumVoiceSync(const uint8_t voiceNr);
 
 /** block based calculation*/
 void calcDrumVoiceSyncBlock(const uint8_t voiceNr, int16_t* buf, const uint8_t size);

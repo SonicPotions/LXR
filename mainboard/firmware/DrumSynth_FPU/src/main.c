@@ -14,11 +14,6 @@
 **
 *****************************************************************************
 */
-
-
-
-/* Includes */
-
 #include "stm32f4xx.h"
 #include "core_cm4.h"
 #include <stdio.h>
@@ -51,7 +46,7 @@
 #include "usb_manager.h"
 #include "MidiParser.h"
 
-
+//----------------------------------------------------------------
 //stub function for newlib
 void _exit(int status)
 {
@@ -79,12 +74,8 @@ int _kill(int pid, int sig)
     _exit(sig);
   return 0;
 }
-//------------------------
-
-
-/* Private macro */
-/* Private variables */
-
+//----------------------------------------------------------------
+//----------------------------------------------------------------
 // var to hold the clock infos
 RCC_ClocksTypeDef RCC_Clocks;
 
@@ -94,60 +85,8 @@ float sign = 1.f;
 float tempo = 0.00005f;
 float gain = 1.0f;
 uint8_t fType = 0;
-/* Private function prototypes */
-/* Private functions */
+//----------------------------------------------------------------
 
-/*
- * ===========================================================================
- *
- *  Abstract: main program
- *
- * ===========================================================================
- */
-
-/*
- * Function Name  : Discovery_processLedBlink
- * Description    : blink the discovery LEDs once per second
- * Input          :nus
- * Output         : None
- * Return         : None
- */
-#if 0
-uint32_t ledBlinkTicks=0;
-uint8_t  blinkLedState=0;
-void Discovery_processLedBlink()
-{
-	if(systick_ticks-ledBlinkTicks >= LED_BLINK_TIME)
-	{
-		ledBlinkTicks = systick_ticks;
-
-		blinkLedState = 1-blinkLedState;
-
-		GPIOD->ODR = GPIOD->ODR & 0x0fff;
-		GPIOD->ODR |= (blinkLedState*0xf000);
-
-
-
-	}
-}
-
-void Discovery_Onboard_LED_Config()
-{
-  GPIO_InitTypeDef  GPIO_InitStructure;
-  /* GPIOD Periph clock enable */
-  RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
-  /* Configure PD12, PD13, PD14 and PD15 in output push-pull mode */
-  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12 | GPIO_Pin_13| GPIO_Pin_14| GPIO_Pin_15;
-  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_25MHz;
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-
-  /* standard output pin */
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-  GPIO_Init(GPIOD, &GPIO_InitStructure);
-  GPIO_Write(GPIOD,0);	//initial state (all LEDs OFF)
-}
-#endif
 
 void initAudioJackDiscoverPins()
 {
@@ -195,51 +134,20 @@ inline void calcNextSampleBlock()
 
 int main(void)
 {
-
-	//----
 	/* get system clock info*/
 	RCC_GetClocksFreq(&RCC_Clocks);
 	/* set timebase systick to 1ms*/
 	SysTick_Config(RCC_Clocks.HCLK_Frequency / 1000);
 
 	initAudioJackDiscoverPins();
-//	lcd_init();
-
-	//Discovery_Onboard_LED_Config();
-
-	//initialize the oscillators
-	//initOsc();
-
-	//initFilter();
-
-	__NOP();
-	__NOP();
-	__NOP();
-	__NOP();
-	__NOP();
-	__NOP();
 
 	mixer_init();
 
 	//precalc the first dma buffer block
 	calcNextSampleBlock();
 
-	__NOP();
-			__NOP();
-			__NOP();
-			__NOP();
-			__NOP();
-			__NOP();
-
 	// start the audio codec
 	CodecInit(SYNTH_FS);
-
-	__NOP();
-	__NOP();
-	__NOP();
-	__NOP();
-	__NOP();
-	__NOP();
 
 	parameterArray_init();
 
@@ -272,15 +180,13 @@ int main(void)
 
 	usb_init();
 
-	//main loop
-	//int freeCycles=0;
+	//--------------------------------------------------------------------
+	//------------------------- Main Loop --------------------------------
+	//--------------------------------------------------------------------
     while (1)
     {
 
     	usb_tick();
-    	//Discovery_processLedBlink();
-    	//freeCycles++;
-
 #if USE_SD_CARD
     	 //check if something needs to be send to the front
     	sdManager_tick();
@@ -291,20 +197,16 @@ int main(void)
     		calcNextSampleBlock();
     	}
 
+		//process midi
+		uart_processMidi();
 
+		//process incoming frontpanel data
+		uart_processFront();
 
-
-
-  	  //process midi
-  	  uart_processMidi();
-
-	  //process incoming frontpanel data
-	  uart_processFront();
-
-	  //check if we have some usb midi messages and process them
-	  MidiMsg msg;
-	  if(usb_getMidi(&msg))
-	  {
+		//check if we have some usb midi messages and process them
+		MidiMsg msg;
+		if(usb_getMidi(&msg))
+		{
 			if( (msg.status&0xf0) == 0xf0)
 			{
 				//system message
@@ -312,20 +214,12 @@ int main(void)
 			}
 			else
 			{
-				midiParser_parseMidiMassage(msg);
+				midiParser_parseMidiMessage(msg);
 			}
-	  }
+		}
 
-	  //process the sequencer
-	  seq_tick();
-
-
-
- // 	lcdFifo_tick();
-  	 //USART_SendData(USART1, (uint8_t) 'w');
-
-
-    	//uint8_t test =  Usart2Get();
+		//process the sequencer
+		seq_tick();
 
     }
 }

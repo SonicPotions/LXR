@@ -60,14 +60,12 @@ void Cymbal_init();
 void Cymbal_trigger( const uint8_t vel, const uint8_t note);
 
 void Cymbal_calcSyncBlock(int16_t* buf, const uint8_t size);
-/** Calculate the oscillators and sample based stuff*/
-int16_t Cymbal_calcSync();
+
 /** calculate envelopes etc (all 16 samples */
 void Cymbal_calcAsync();
 
 //-0.5 = left 0=both max 0.5=right*/
 void Cymbal_setPan(const uint8_t pan);
-
 
 
 #endif /* CYMBALVOICE_H_ */

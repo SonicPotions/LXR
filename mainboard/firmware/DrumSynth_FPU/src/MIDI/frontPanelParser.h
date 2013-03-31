@@ -12,9 +12,9 @@
 #include "modulationNode.h"
 #include "valueShaper.h"
 
-extern  uint8_t frontParser_activeTrack;
+extern uint8_t frontParser_activeTrack;
 extern uint8_t frontParser_shownPattern;
-extern  uint8_t frontParser_sysexActive;
+extern uint8_t frontParser_sysexActive;
 
 extern uint8_t frontParser_activeFrontTrack;
 

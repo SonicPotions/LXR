@@ -19,7 +19,6 @@ RM := rm -rf
 -include Libraries/STM32_USB_OTG_Driver/src/subdir.mk
 -include Libraries/STM32_USB_Device_Library/Core/src/subdir.mk
 -include Libraries/STM32F4xx_StdPeriph_Driver/src/subdir.mk
--include Libraries/STM32F4-Discovery/subdir.mk
 -include subdir.mk
 -include objects.mk
 

@@ -1194,7 +1194,7 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 //-----------------------------------------------------------
 /** Parse incoming midi messages and invoke corresponding action
  */
-void midiParser_parseMidiMassage(MidiMsg msg)
+void midiParser_parseMidiMessage(MidiMsg msg)
 {
 	//only do something if the midi channel is right
 	if(midiParser_isValidMidiChannel(msg.status))
@@ -1347,7 +1347,7 @@ void midiParser_handleDataByte(unsigned char data)
 		midiMsg_tmp.data2 = data;
 		//both databytes received. next should be status again
 		parserState = MIDI_STATUS;
-		midiParser_parseMidiMassage(midiMsg_tmp);
+		midiParser_parseMidiMessage(midiMsg_tmp);
 		break;
 
 	case MIDI_STATUS:

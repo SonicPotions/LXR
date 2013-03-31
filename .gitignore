@@ -31,3 +31,17 @@
 *.rar
 *.zip
 
+# visual studio stuff
+*.pdb
+*.ncb
+*.suo
+*.ilk
+*.manifest
+*.obj
+*.pch
+*.idb
+*.user
+*.res
+*.dep
+*.htm
+

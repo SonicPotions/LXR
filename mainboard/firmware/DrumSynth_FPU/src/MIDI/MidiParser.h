@@ -16,7 +16,7 @@
 
 void midiParser_parseUartData(unsigned char data);
 void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue);
-void midiParser_parseMidiMassage(MidiMsg msg);
+void midiParser_parseMidiMessage(MidiMsg msg);
 float midiParser_calcDetune(uint8_t value);
 
 // a place to store all the incoming CC values

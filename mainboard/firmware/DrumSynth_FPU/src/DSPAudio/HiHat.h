@@ -71,8 +71,7 @@ void HiHat_init();
 void HiHat_trigger(uint8_t vel, uint8_t isOpen, const uint8_t note);
 
 void HiHat_calcSyncBlock(int16_t* buf, const uint8_t size);
-/** claculate the oscillators and sample based stuff*/
-int16_t HiHat_calcSync();
+
 /** calculate envelopes etc (all 16 samples */
 void HiHat_calcAsync();
 

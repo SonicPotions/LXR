@@ -39,7 +39,7 @@ enum {
 };
 
 USB_OTG_CORE_HANDLE           USB_OTG_dev;
-static uint8_t usb_detectionState = USB_NOT_DETECTED;
+//static uint8_t usb_detectionState = USB_NOT_DETECTED;
 //-------------------------------------------------------------------------------
 void usb_init()
 {

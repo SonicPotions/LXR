@@ -12,7 +12,7 @@
 
 #include "stm32f4xx.h"
 #include <stdio.h>
-#include "stm32f4_discovery_audio_codec.h"
+
 
 #define true 1
 #define false 0
