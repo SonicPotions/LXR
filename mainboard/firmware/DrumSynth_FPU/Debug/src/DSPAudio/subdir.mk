@@ -6,7 +6,6 @@
 C_SRCS += \
 ../src/DSPAudio/1Pole0df.c \
 ../src/DSPAudio/1PoleLp.c \
-../src/DSPAudio/AD_EG.c \
 ../src/DSPAudio/BufferTools.c \
 ../src/DSPAudio/CymbalVoice.c \
 ../src/DSPAudio/Decay.c \
@@ -15,7 +14,6 @@ C_SRCS += \
 ../src/DSPAudio/Oscillator.c \
 ../src/DSPAudio/ResonantFilter.c \
 ../src/DSPAudio/Samples.c \
-../src/DSPAudio/SlopeEg.c \
 ../src/DSPAudio/SlopeEg2.c \
 ../src/DSPAudio/Snare.c \
 ../src/DSPAudio/automationNode.c \
@@ -25,7 +23,6 @@ C_SRCS += \
 ../src/DSPAudio/modulationNode.c \
 ../src/DSPAudio/random.c \
 ../src/DSPAudio/squareRootLut.c \
-../src/DSPAudio/toneControl.c \
 ../src/DSPAudio/transientGenerator.c \
 ../src/DSPAudio/transientTables.c \
 ../src/DSPAudio/wavetable.c 
@@ -33,7 +30,6 @@ C_SRCS += \
 OBJS += \
 ./src/DSPAudio/1Pole0df.o \
 ./src/DSPAudio/1PoleLp.o \
-./src/DSPAudio/AD_EG.o \
 ./src/DSPAudio/BufferTools.o \
 ./src/DSPAudio/CymbalVoice.o \
 ./src/DSPAudio/Decay.o \
@@ -42,7 +38,6 @@ OBJS += \
 ./src/DSPAudio/Oscillator.o \
 ./src/DSPAudio/ResonantFilter.o \
 ./src/DSPAudio/Samples.o \
-./src/DSPAudio/SlopeEg.o \
 ./src/DSPAudio/SlopeEg2.o \
 ./src/DSPAudio/Snare.o \
 ./src/DSPAudio/automationNode.o \
@@ -52,7 +47,6 @@ OBJS += \
 ./src/DSPAudio/modulationNode.o \
 ./src/DSPAudio/random.o \
 ./src/DSPAudio/squareRootLut.o \
-./src/DSPAudio/toneControl.o \
 ./src/DSPAudio/transientGenerator.o \
 ./src/DSPAudio/transientTables.o \
 ./src/DSPAudio/wavetable.o 
@@ -60,7 +54,6 @@ OBJS += \
 C_DEPS += \
 ./src/DSPAudio/1Pole0df.d \
 ./src/DSPAudio/1PoleLp.d \
-./src/DSPAudio/AD_EG.d \
 ./src/DSPAudio/BufferTools.d \
 ./src/DSPAudio/CymbalVoice.d \
 ./src/DSPAudio/Decay.d \
@@ -69,7 +62,6 @@ C_DEPS += \
 ./src/DSPAudio/Oscillator.d \
 ./src/DSPAudio/ResonantFilter.d \
 ./src/DSPAudio/Samples.d \
-./src/DSPAudio/SlopeEg.d \
 ./src/DSPAudio/SlopeEg2.d \
 ./src/DSPAudio/Snare.d \
 ./src/DSPAudio/automationNode.d \
@@ -79,7 +71,6 @@ C_DEPS += \
 ./src/DSPAudio/modulationNode.d \
 ./src/DSPAudio/random.d \
 ./src/DSPAudio/squareRootLut.d \
-./src/DSPAudio/toneControl.d \
 ./src/DSPAudio/transientGenerator.d \
 ./src/DSPAudio/transientTables.d \
 ./src/DSPAudio/wavetable.d 

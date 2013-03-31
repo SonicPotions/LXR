@@ -13,7 +13,6 @@
 #include "HiHat.h"
 #include "CymbalVoice.h"
 #include "Uart.h"
-#include "toneControl.h"
 #include "sequencer.h"
 #include "clockSync.h"
 #include "mixer.h"

@@ -14,11 +14,6 @@
 #define TABLESIZE 4096
 #define TABLES 128
 
-//#define FRAC_MAX (int16_t)32767
-//#define FRAC_MIN (int16_t)-32768
-
-//extern const int16_t sine_table[512];
-
 extern const int16_t sine_table[TABLESIZE+1];
 
 /*the midi note numbers for the 11 wavetables are
@@ -38,16 +33,5 @@ extern const int16_t sine_table[TABLESIZE+1];
 extern const int16_t recTable[11][1024];
 extern const int16_t triTable[11][1024];
 extern const int16_t sawTable[11][1024];
-
-
-
-
-
-/** returns a sine wavetable taking index from 0 to TABLESIZE*/
-//int16_t lutSineWavetable(int index);
-
-/** a signed integer sine for math calculations - input [FRAC_MIN to FRAC_MAX]*/
-
-//int16_t lutSineMath(uint16_t index);
 
 #endif /* WAVETABLES_H_ */

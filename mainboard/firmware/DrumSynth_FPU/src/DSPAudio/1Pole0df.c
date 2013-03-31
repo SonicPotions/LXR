@@ -5,7 +5,7 @@
  *      Author: Julian
  */
 
-
+#if 0
 #include "globals.h"
 #include "config.h"
 #include "stm32f4xx.h"
@@ -59,5 +59,5 @@ void setOnePoleFreq0df(OnePole0dfFilter* filter,float val)
 	filter->f = val;
 }
 
-
+#endif
 

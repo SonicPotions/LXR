@@ -224,7 +224,7 @@ void parameterArray_init()
 	parameterArray[PAR_FILTER_FREQ_4].ptr 			= &snareVoice.filter.f;
 	parameterArray[PAR_FILTER_FREQ_4].type 			= TYPE_FLT;//TYPE_SPECIAL_FILTER_F;
 
-	parameterArray[PAR_RESO_4].ptr 					= &snareVoice.filter.feedback;
+	parameterArray[PAR_RESO_4].ptr 					= &snareVoice.filter.q;
 	parameterArray[PAR_RESO_4].type 					= TYPE_FLT;
 
 	parameterArray[PAR_MIX1].ptr 					= &snareVoice.mix;
@@ -267,7 +267,7 @@ void parameterArray_init()
 	parameterArray[PAR_FILTER_FREQ_5].ptr 			= &cymbalVoice.filter.f;
 	parameterArray[PAR_FILTER_FREQ_5].type 			= TYPE_FLT;//TYPE_SPECIAL_FILTER_F;
 
-	parameterArray[PAR_RESO_5].ptr 					= &cymbalVoice.filter.feedback;
+	parameterArray[PAR_RESO_5].ptr 					= &cymbalVoice.filter.q;
 	parameterArray[PAR_RESO_5].type 					= TYPE_FLT;
 
 	parameterArray[PAR_VOL5].ptr 					= &cymbalVoice.vol;
@@ -308,7 +308,7 @@ void parameterArray_init()
 	parameterArray[PAR_FILTER_FREQ_6].ptr 			= &hatVoice.filter.f;
 	parameterArray[PAR_FILTER_FREQ_6].type 			= TYPE_FLT;//TYPE_SPECIAL_FILTER_F;
 
-	parameterArray[PAR_RESO_6].ptr 					= &hatVoice.filter.feedback;
+	parameterArray[PAR_RESO_6].ptr 					= &hatVoice.filter.q;
 	parameterArray[PAR_RESO_6].type 					= TYPE_FLT;
 
 	parameterArray[PAR_VOL6].ptr 					= &hatVoice.vol;
@@ -467,13 +467,13 @@ void parameterArray_init()
 	parameterArray[PAR_FILTER_FREQ_3].ptr 			= &voiceArray[2].filter.f;
 	parameterArray[PAR_FILTER_FREQ_3].type 			= TYPE_FLT;//TYPE_SPECIAL_FILTER_F;
 
-	parameterArray[PAR_RESO_1].ptr 					= &voiceArray[0].filter.feedback;
+	parameterArray[PAR_RESO_1].ptr 					= &voiceArray[0].filter.q;
 	parameterArray[PAR_RESO_1].type 				= TYPE_FLT;
 
-	parameterArray[PAR_RESO_2].ptr 					= &voiceArray[1].filter.feedback;
+	parameterArray[PAR_RESO_2].ptr 					= &voiceArray[1].filter.q;
 	parameterArray[PAR_RESO_2].type 				= TYPE_FLT;
 
-	parameterArray[PAR_RESO_3].ptr 					= &voiceArray[2].filter.feedback;
+	parameterArray[PAR_RESO_3].ptr 					= &voiceArray[2].filter.q;
 	parameterArray[PAR_RESO_3].type 				= TYPE_FLT;
 
 	parameterArray[PAR_FILTER_TYPE_1].ptr 			= &voiceArray[0].filterType;

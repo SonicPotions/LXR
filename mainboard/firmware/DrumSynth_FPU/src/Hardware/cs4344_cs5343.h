@@ -36,19 +36,13 @@
 #include "stm32f4xx.h"
 #include "config.h"
 
-
-
-
-extern volatile int16_t dma_buffer[OUTPUT_DMA_SIZE*4]; 	// *4 because we need 16 stereo samples = *2
+extern volatile int16_t dma_buffer[OUTPUT_DMA_SIZE*4]; 		// *4 because we need 16 stereo samples = *2
 extern volatile int16_t dma_buffer2[OUTPUT_DMA_SIZE*4]; 	// *4 because we need 16 stereo samples = *2
 
 /* Mask for the bit EN of the I2S CFGR register */
 #define I2S_ENABLE_MASK                	 	0x0400
-
 #define I2S_STANDARD                   		I2S_Standard_Phillips
 
-//#define CODEC_I2C_GPIO_CLOCK           		RCC_AHB1Periph_GPIOB
-//#define CODEC_DAC1_I2S_GPIO_CLOCK           		(RCC_AHB1Periph_GPIOB | RCC_AHB1Periph_GPIOA)
 
 /* Select the interrupt preemption priority and subpriority for the DMA interrupt */
 #define EVAL_AUDIO_IRQ_PREPRIO           	0   /* Select the preemption priority level(0 is the highest) */
@@ -91,14 +85,6 @@ extern volatile int16_t dma_buffer2[OUTPUT_DMA_SIZE*4]; 	// *4 because we need 1
 
 #define CODEC_DAC1_I2S_GPIO                 GPIOC
 #define CODEC_DAC1_I2S_WS_GPIO              GPIOA
-//#define Audio_DAC1_I2S_IRQHandler           SPI3_IRQHandler
-
-
-
-
-
-
-
 
 
 #if USE_DAC2

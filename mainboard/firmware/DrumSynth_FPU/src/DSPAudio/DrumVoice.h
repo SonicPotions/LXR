@@ -12,25 +12,12 @@
 #include "config.h"
 #include "ResonantFilter.h"
 #include "distortion.h"
-//#include "AD_EG.h"
 #include "SlopeEg2.h"
 #include "Decay.h"
 #include "modulationNode.h"
 #include "lfo.h"
-
-
-//#if (AMP_EG_SYNC==0)
 #include "1PoleLp.h"
-//#endif
-
-#include "toneControl.h"
 #include "transientGenerator.h"
-
-/*
-#define LP 0x1
-#define HP 0x2
-#define BP 0x4
-*/
 //------------------------------------------------------------------------
 enum
 {
@@ -49,37 +36,18 @@ typedef struct VoiceStruct
 	float		panL;		// [0:1]
 	float		panR;		// [0:1]
 	float 		panModifier;
-//	float   	mix;		// defines the mix between osc and noise [0 = 100% osc: 1 = 100% noise]
-//	uint8_t 	status;		// the voice status e.g. running, stopped...
-
 
 	int16_t 		oscSample;
-//	int16_t			modOscSample;
-//	int16_t		noiseSample;
-
-//	ResonantFilter noiseFilter;
-//	uint8_t		filterMode; // bit 1: LP on/off - bit 2: HP on/off - bit 3: BP on/off
-
-
-
 
 	DecayEg		oscPitchEg;
 	float		egPitchModAmount;
 	float 		offset;				//the start offset for the waveform - used to generate clicks
 
 	TransientGenerator transGen;
-
-	//ToneControl toneControl;
 	Lfo 		lfo;
-
 	SlopeEg2	oscVolEg;
 	float 		egValueOscVol;
-
 	float 		volEgValueBlock[OUTPUT_DMA_SIZE];
-
-
-//	AdEg		noiseVolEg;
-
 	Distortion distortion;
 
 #if ENABLE_DRUM_SVF
@@ -100,10 +68,6 @@ typedef struct VoiceStruct
 	float decimationRate;
 
 	uint8_t volumeMod;	//modulate volume by midi velocity if 1
-
-
-
-
 } DrumVoice;
 //------------------------------------------------------------------------
 
@@ -120,10 +84,9 @@ void stopVoice(const uint8_t voiceNr);
 /** claculate the oscillators and sample based stuff*/
 int16_t calcDrumVoiceSync(const uint8_t voiceNr);
 
+/** block based calculation*/
 void calcDrumVoiceSyncBlock(const uint8_t voiceNr, int16_t* buf, const uint8_t size);
 
-/** block based calculation*/
-//int16_t calcDrumVoiceSyncBlock(const uint8_t voiceNr, int16_t* audioBuffer);
 /** calculate envelopes etc (all 16 samples */
 void calcDrumVoiceAsync(const uint8_t voiceNr);
 

@@ -12,10 +12,8 @@
 #include "Oscillator.h"
 #include "config.h"
 #include "ResonantFilter.h"
-//#include "Decay.h"
 #include "SlopeEG2.h"
 #include "random.h"
-#include "toneControl.h"
 #include "transientGenerator.h"
 #include "BufferTools.h"
 #include "lfo.h"
@@ -30,7 +28,6 @@ typedef struct CymbalStruct
 	float		fmModAmount1;
 	float		fmModAmount2;
 
-//	uint8_t		filterType; // bit 0 = lp, bit 1 = hp, bit 3 = bp on/off
 	float	 	vol;		// volume of the voice
 	float		panL;		// [0:1]
 	float		panR;		// [0:1]
@@ -43,15 +40,10 @@ typedef struct CymbalStruct
 	ResonantFilter filter;
 	uint8_t		filterType;
 
-	//ToneControl toneControl;
 	Lfo 		lfo;
 	TransientGenerator transGen;
 	Distortion distortion;
 
-//	float		decayClosed;
-//	float		decayOpen;
-
-	//DecayEg		oscVolEg;
 	SlopeEg2		oscVolEg;
 	float 		egValueOscVol;
 

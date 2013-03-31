@@ -7,7 +7,7 @@
 
 #ifndef POLE0DF_H_
 #define POLE0DF_H_
-
+#if 0
 #include "stm32f4xx.h"
 
 /*
@@ -33,3 +33,4 @@ float calcOnePole0df(OnePole0dfFilter* filter, float x);
 void setOnePoleFreq0df(OnePole0dfFilter* filter,float val);
 
 #endif /* POLE0DF_H_ */
+#endif

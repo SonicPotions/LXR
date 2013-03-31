@@ -9,27 +9,6 @@
 #include "wavetable.h"
 #include "config.h"
 
-//----------------------------------------------------------------
-/*
-int16_t lutSineWavetable(int index)
-{
-	return sine_table[index];
-};
-//----------------------------------------------------------------
-int16_t lutSineMath(uint16_t index)
-{
-	// make unsigned
-	uint16_t unsignedIndex = index + FRAC_MIN;
-	// shift 7 bits right to get in range 0:511
-	uint16_t pos = unsignedIndex > 0x7;
-
-	return (sine_table[pos]);
-}
-*/
-//----------------------------------------------------------------
-
-
-
 //Saw Table
 //128 Wavetables a 256 Samples
 //Samplerate: 44000

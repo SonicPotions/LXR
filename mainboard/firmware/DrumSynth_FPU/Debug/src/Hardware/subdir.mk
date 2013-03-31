@@ -5,17 +5,14 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../src/Hardware/FIFO.c \
-../src/Hardware/LCD_driver.c \
 ../src/Hardware/cs4344_cs5343.c 
 
 OBJS += \
 ./src/Hardware/FIFO.o \
-./src/Hardware/LCD_driver.o \
 ./src/Hardware/cs4344_cs5343.o 
 
 C_DEPS += \
 ./src/Hardware/FIFO.d \
-./src/Hardware/LCD_driver.d \
 ./src/Hardware/cs4344_cs5343.d 
 
 

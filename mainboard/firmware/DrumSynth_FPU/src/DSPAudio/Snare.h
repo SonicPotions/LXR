@@ -13,11 +13,8 @@
 #include "config.h"
 #include "ResonantFilter.h"
 #include "distortion.h"
-#include "AD_EG.h"
 #include "Decay.h"
-
 #include "SlopeEg2.h"
-#include "toneControl.h"
 #include "transientGenerator.h"
 #include "BufferTools.h"
 #include "lfo.h"

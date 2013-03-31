@@ -42,6 +42,8 @@ b = sat(b, r); //clip to the range you want it to oscillate at
 l += f * b;
 */
 
+#define ENABLE_NONLINEAR_INTEGRATORS 0
+
 enum filterTypeEnum
 {
 	FILTER_LP=1,
@@ -61,63 +63,27 @@ enum filterTypeEnum
 typedef struct ResoFilterStruct
 {
 	float f;	/**< cutoff frequency as integer from 0 to 0xffff where 0xffff = SR*/
+	float g;    /**< embedded integrator gain (Fig 3.11), wc == wa*/
 	float q;	/**< q value calculated from setReso()*/
-
-//	float h;
-//	float b;
-//	float l;
 
 	float s1;
 	float s2;
-
-
-	float feedback; /**< resonance value between 0:1.0*/
-	float drive;
-
-
-//	float wd;
-//	float T ;
-//	float wa; 	// prewarped radian frequency for analog filter (Eq. 3.7)
-	float g;            			// embedded integrator gain (Fig 3.11), wc == wa
-
-//	float scale;
-//	float ug;	//unity gain
+#if ENABLE_NONLINEAR_INTEGRATORS
 	float zi;	//input z^(-1)
-//	float y0,y1;
+#endif
 
-//	OnePole0dfFilter pole1Filter;
-//	OnePole0dfFilter pole2Filter;
-
-
+	float drive;
 } ResonantFilter;
 
-
-//extern ResonantFilter resoFilters[NUM_VOICES];
-
-//TODO calc in fixed point math!
-
 //------------------------------------------------------------------------------------
-
-/** set the resonance*/
 void SVF_setReso(ResonantFilter* filter, float feedback);
 //------------------------------------------------------------------------------------
 void SVF_init();
 //------------------------------------------------------------------------------------
-//void SVF_setFreq(ResonantFilter* filter, float f);
-//------------------------------------------------------------------------------------
 void SVF_directSetFilterValue(ResonantFilter* filter, float val);
-//------------------------------------------------------------------------------------
-//void SVF_calcBlock(ResonantFilter* filter, int16_t* input, const uint8_t size);
 //------------------------------------------------------------------------------------
 void SVF_calcBlockZDF(ResonantFilter* filter, const uint8_t type, int16_t* buf, const uint8_t size);
 //------------------------------------------------------------------------------------
-
-//------------------------------------------------------------------------------------
 void SVF_recalcFreq(ResonantFilter* filter);
-/*
-//------------------------------------------------------------------------------------
-int16_t* SVF_getLpBlockInt(const ResonantFilter* filter);
-//------------------------------------------------------------------------------------
-int16_t* SVF_getHpBlockInt(const ResonantFilter* filter);
-*/
+
 #endif /* RESONANTFILTER_H_ */

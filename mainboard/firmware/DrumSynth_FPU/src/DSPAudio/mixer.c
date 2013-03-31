@@ -4,9 +4,6 @@
  *  Created on: 11.04.2012
  *      Author: Julian
  */
-
-
-
 #include "mixer.h"
 #include "config.h"
 #include "AudioCodecManager.h"
@@ -15,19 +12,15 @@
 #include "Snare.h"
 #include "HiHat.h"
 #include "BufferTools.h"
-
-
-
+//-----------------------------------------------------------------------
 uint8_t mixer_audioRouting[6];
-
+//-----------------------------------------------------------------------
 #if USE_DECIMATOR
 float mixer_decimation_rate[7];		/**<sets the sample rate decimation. 0..1 = full rate*/
 float mixer_decimation_cnt[6];		/**<s'n'h counter for decimator*/
 int16_t mixer_voice_samples[6];		/**< stores the last outputted sample of the 6 voices*/
 #endif
-
-//int16_t mixer_workAudioBuffer[OUTPUT_DMA_SIZE];
-
+//-----------------------------------------------------------------------
 void mixer_init()
 {
 #if USE_DECIMATOR
@@ -37,14 +30,12 @@ void mixer_init()
 		mixer_decimation_rate[i] 	= 1;
 		mixer_decimation_cnt[i] 	= 0;
 		mixer_voice_samples[i] 		= 0;
-
 		mixer_audioRouting[i]		= 0;
 	}
 	mixer_decimation_rate[6] 		= 1;
 #endif
 }
-
-
+//-----------------------------------------------------------------------
 void mixer_decimateBlock(const uint8_t voiceNr, int16_t* buffer)
 {
 	uint8_t i;
@@ -60,7 +51,7 @@ void mixer_decimateBlock(const uint8_t voiceNr, int16_t* buffer)
 		buffer[i] = mixer_voice_samples[voiceNr];
 	}
 }
-
+//-----------------------------------------------------------------------
 uint8_t mixer_checkOutJackAvailable(uint8_t dest)
 {
 	//read input pins
@@ -138,12 +129,11 @@ uint8_t mixer_checkOutJackAvailable(uint8_t dest)
 		}
 	return dest;
 }
-
+//-----------------------------------------------------------------------
 inline void mixer_moveDataToOutput(const uint8_t voiceNr,uint8_t dest, const float panL, const float panR, int16_t* data,int16_t* outL,int16_t* outR,int16_t* outL2, int16_t* outR2)
 {
 	//check if a cable is in the selected out
 	dest = mixer_checkOutJackAvailable(dest);
-
 
 	uint8_t i;
 	switch(dest)
@@ -197,10 +187,9 @@ inline void mixer_moveDataToOutput(const uint8_t voiceNr,uint8_t dest, const flo
 			outR += 2;
 		}
 		break;
-
 	}
 }
-
+//-----------------------------------------------------------------------
 inline void mixer_addDataToOutput(const uint8_t voiceNr,uint8_t dest, const float panL, const float panR,  int16_t* data,int16_t* outL,int16_t* outR,int16_t* outL2, int16_t* outR2)
 {
 	//check if a cable is in the selected out
@@ -261,7 +250,7 @@ inline void mixer_addDataToOutput(const uint8_t voiceNr,uint8_t dest, const floa
 
 	}
 }
-
+//-----------------------------------------------------------------------
 void mixer_calcNextSampleBlock(int16_t* output,int16_t* output2)
 {
 	modNode_resetTargets();
@@ -284,7 +273,6 @@ void mixer_calcNextSampleBlock(int16_t* output,int16_t* output2)
 	SVF_recalcFreq(&cymbalVoice.filter);
 	SVF_recalcFreq(&hatVoice.filter);
 
-
 	//--- Calc async -----
 	calcDrumVoiceAsync(0);
 	calcDrumVoiceAsync(1);
@@ -296,21 +284,13 @@ void mixer_calcNextSampleBlock(int16_t* output,int16_t* output2)
 
 
 #if BLOCK_BASED_AUDIO
-
-
 	//an array to store intermediate voice samples
 	//befor output distribution
 	int16_t sampleData[OUTPUT_DMA_SIZE];
 
 	//get the current position in the DMA buffer (wraps at 31)
 	const uint8_t pos = dmaBufferPtr&0x1f;
-/*
-	int16_t* outL = &output[pos];
-	int16_t* outR = &output[pos+1];
 
-	int16_t* outL2 = &output2[pos];
-	int16_t* outR2 = &output2[pos+1];
-	*/
 	bufferTool_clearBuffer(output,0x1f);
 	bufferTool_clearBuffer(output2,0x1f);
 
@@ -342,7 +322,6 @@ void mixer_calcNextSampleBlock(int16_t* output,int16_t* output2)
 	//copy to selected dma buffer
 	mixer_addDataToOutput(3,mixer_audioRouting[3],snareVoice.panL,snareVoice.panR, sampleData,&output[pos],&output[pos+1],&output2[pos],&output2[pos+1]);
 
-
 	//calc cymbal
 	Cymbal_calcSyncBlock(sampleData,OUTPUT_DMA_SIZE);
 	//decimate voice
@@ -357,13 +336,8 @@ void mixer_calcNextSampleBlock(int16_t* output,int16_t* output2)
 	//copy to selected dma buffer
 	mixer_addDataToOutput(5,mixer_audioRouting[5],hatVoice.panL,hatVoice.panR, sampleData,&output[pos],&output[pos+1],&output2[pos],&output2[pos+1]);
 
-
 	//update dma buffer position
 	dmaBufferPtr += 32;
-
-
-
-
 
 #else
 

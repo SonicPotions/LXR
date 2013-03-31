@@ -2,58 +2,19 @@
  * ResonantFilter.c
  *
  *  Created on: 05.04.2012
- *      Author: Julian
+ *      Author: Julian Schmidt
  */
-
-
 #include "ResonantFilter.h"
-#if 0
-#define FMAX ((int16_t)(31000*0.7f))//32767
-#define FMIN ((int16_t)(-31000*0.7f))//-32768
 
-__inline float clamp(float value)
-{
-    const float temp = value + FMAX - fabsf(value-FMAX);
-    /*
-#if (FMIN == 0)
-    return (temp + fabsf(temp)) * 0.25f;
-#else
-*/
-    return (temp + (2.0f*FMIN) + fabsf(temp-(2.0f*FMIN))) * 0.25f;
-    /*
-#endif
-*/
-}
-/*
-You can also use a branch free min function (thanks Laurent from ohm force):
-float minf(float a, float b)
-{
-    return 0.5f*(a+b - fabsf(a-b));
-}
-*/
-
-#ifndef max
-	#define max( a, b ) ( ((a) > (b)) ? (a) : (b) )
-#endif
-
-#ifndef min
-	#define min( a, b ) ( ((a) < (b)) ? (a) : (b) )
-#endif
-#endif
 
 // to make the linker happy. __errno seems not defined
 // so libm.a won't link without this int.
 int __errno;
-
-//ResonantFilter resoFilters[NUM_VOICES];
 //------------------------------------------------------------------------------------
-
-/** set the resonance*/
+//------------------------------------------------------------------------------------
 void SVF_setReso(ResonantFilter* filter, float feedback)
 {
-	filter->feedback = feedback;
-	filter->q = 1-feedback;//2.0f - 2.0f*min(filter->f * (2.0f - filter->f), feedback);
-
+	filter->q = 1-feedback;
 	if(filter->q<0.1f)filter->q = 0.1f;
 }
 //------------------------------------------------------------------------------------
@@ -64,7 +25,6 @@ void SVF_init(ResonantFilter* filter)
 
 		filter->f = 0.20f;
 		filter->q = 0.9f;
-		filter->feedback = 0.10;
 
 		filter->drive = 0.5f;
 
@@ -73,13 +33,9 @@ void SVF_init(ResonantFilter* filter)
 //------------------------------------------------------------------------------------
 static float fastTanh(float var)
 {
-
    if(var < -1.95f)     return -1.0f;
    else if(var > 1.95f) return  1.0f;
-
-   else
-		return  4.15f*var/(4.29f+var*var);
-
+   else					return  4.15f*var/(4.29f+var*var);
 }
 //------------------------------------------------------------------------------------
 float fastTan(float x)
@@ -95,34 +51,6 @@ float fastTan(float x)
 #endif
 }
 //------------------------------------------------------------------------------------
-/*
-void SVF_setFreq(ResonantFilter* filter, float f)
-{
-	filter->f = M_TWOPI * f*2/REAL_FS;
-}
-*/
-//------------------------------------------------------------------------------------
-#ifndef UInt32
-#define UInt32 uint32_t
-#endif
-/*
-inline void erase_All_NaNs_Infinities_And_Denormals(float *in, float *in2)
-{
-	const UInt32 sample = (UInt32) *in;
-	const UInt32 sample2 = (UInt32) *in2;
-	const UInt32 exponent = sample & 0x7F800000;
-
-	// exponent < 0x7F800000 is 0 if NaN or Infinity, otherwise 1
-	// exponent > 0 is 0 if denormalized, otherwise 1
-
-	const int aNaN = exponent < 0x7F800000;
-//	int aDen = exponent > 0;
-
-
-	*in2 = sample2*aNaN;
-}
-*/
-
 void SVF_recalcFreq(ResonantFilter* filter)
 {
 	filter->g  = fastTan(M_PI * filter->f );
@@ -133,72 +61,56 @@ void SVF_directSetFilterValue(ResonantFilter* filter, float val)
 	filter->f = val*(0.5f*0.96f);
 	filter->g  = fastTan(M_PI * filter->f );
 }
-
-
-
 //------------------------------------------------------------------------------------
-__inline float clip(float x)
-{
-	return fastTanh(x);
-}
-//------------------------------------------------------------------------------------
+#if ENABLE_NONLINEAR_INTEGRATORS
 float tanhXdX(float x)
 {
-
-	//return 1 - 0.25 * fabsf(x);
-
 	float a = x*x;
     // IIRC I got this as Pade-approx for tanh(sqrt(x))/sqrt(x)
 	x = ((a + 105)*a + 945) / ((15*a + 420)*a + 945);
-
 	return x;
 }
-//------------------------------------------------------------------------------------
-float variableShaper(float x, float depth)
-{
-	//remember output has to be shaper()x/x!!!
-	return 1-depth*fabsf(x);
-
-}
+#endif
 //------------------------------------------------------------------------------------
 float softClipTwo(float in)
 {
-	//return fastTanh(in/2.f)*2.2f;
-
-
 	if(in > 0.76159415595576488811945828260479f) return fastTanh(in-0.76159415595576488811945828260479f)+0.76159415595576488811945828260479f;
 	if(in < -0.76159415595576488811945828260479f) return fastTanh(in+0.76159415595576488811945828260479f)-0.76159415595576488811945828260479f;
 
 	return in;
-
 }
-
+//------------------------------------------------------------------------------------
 void SVF_calcBlockZDF(ResonantFilter* filter, const uint8_t type, int16_t* buf, const uint8_t size)
 {
 	uint8_t i;
-	const float R = filter->q;//(1.f-filter->feedback);
-	const float f = filter->g;
-
-	const float ff = f*f;
+	const float R 	= filter->q;
+	const float f 	= filter->g;
+	const float ff 	= f*f;
 
 	for(i=0;i<size;i++)
 	{
 		const float x = (buf[i]/((float)0x7fff))*filter->drive;
 
+#if ENABLE_NONLINEAR_INTEGRATORS
 		// input with half sample delay, for non-linearities
 		float ih = 0.5f * (x + filter->zi);
 		filter->zi = x;
+#endif
 
 		// evaluate the non-linear gains
 		/*
 		You can travially remove any saturator by setting the corresponding gain t0,...,t1 to 1. Also, you can simply scale any saturator (i.e. change clipping threshold) to 1/a*tanh(a*x) by writing
 		double t1 = tanhXdX(a*s[0]);
 		*/
+#if ENABLE_NONLINEAR_INTEGRATORS
 		const float offset = 0;//0.002f;
 		const float tanhScale = 2.f;
-		const float t0 = 1;//tanhXdX( (ih - 2*R*filter->s1 - filter->s2 +offset)/tanhScale )*tanhScale;
-		const float t1 = 1;//tanhXdX( (filter->s1 - offset)/tanhScale )*tanhScale;
-
+		const float t0 = tanhXdX( (ih - 2*R*filter->s1 - filter->s2 +offset)/tanhScale )*tanhScale;
+		const float t1 = tanhXdX( (filter->s1 - offset)/tanhScale )*tanhScale;
+#else
+		const float t0 = 1;
+		const float t1 = 1;
+#endif
 
 		// g# the denominators for solutions of individual stages
 		const float g0 = 1.f / (1.f + f*t0*2*R);
@@ -215,15 +127,8 @@ void SVF_calcBlockZDF(ResonantFilter* filter, const uint8_t type, int16_t* buf, 
 		 const float xx = t0*(x - y1);
 		 const float y0 = (softClipTwo(s1) + f*xx)*g0;
 
-
 		filter->s1   = softClipTwo(filter->s1) + 2*f*(xx - t0*2*R*y0);
 		filter->s2   = (filter->s2)    + 2*f* t1*y0;
-
-
-
-		//const float h = xx - t0*2*R*filter->y0 ;
-		//const float b = y0;
-		//const float l = y1;
 
 		int32_t tmp;
 		switch(type)

@@ -12,16 +12,13 @@
 #include "Oscillator.h"
 #include "config.h"
 #include "ResonantFilter.h"
-//#include "Decay.h"
-//#include "AD_EG.h"
 #include "SlopeEg2.h"
 #include "random.h"
-#include "toneControl.h"
 #include "transientGenerator.h"
 #include "BufferTools.h"
 #include "lfo.h"
 #include "distortion.h"
-#endif /* HIHAT_H_ */
+
 
 //#define NUM_HAT 1
 
@@ -82,3 +79,4 @@ void HiHat_calcAsync();
 //-0.5 = left 0=both max 0.5=right*/
 void HiHat_setPan(const uint8_t pan);
 
+#endif /* HIHAT_H_ */
