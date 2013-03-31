@@ -1267,7 +1267,7 @@ void menu_handleLoadSaveMenu(int8_t inc, uint8_t button)
 				}
 
 				menu_resetSaveParameters();						
-				editModeActive=0;
+				//editModeActive=0;
 				menu_repaintAll();
 				
 			} else {
@@ -1278,7 +1278,7 @@ void menu_handleLoadSaveMenu(int8_t inc, uint8_t button)
 					case WHAT_PATTERN:
 					if(preset_loadPattern(menu_currentPresetNr)) {
 						menu_resetSaveParameters();						
-						editModeActive=0;
+						//editModeActive=0;
 						menu_repaintAll();
 					}	
 					break;
@@ -1286,7 +1286,7 @@ void menu_handleLoadSaveMenu(int8_t inc, uint8_t button)
 					case WHAT_GLO:
 					preset_loadGlobals();
 					menu_resetSaveParameters();						
-					editModeActive=0;
+				//	editModeActive=0;
 					menu_repaintAll();
 					break;
 					
@@ -1719,8 +1719,10 @@ void menu_resetSaveParameters()
 	
 	//reset save params
 //	menu_saveOptions.activeChar = 0;
-	menu_saveOptions.what	= WHAT_SOUND;
-	menu_saveOptions.state	= SAVE_STATE_EDIT_TYPE;
+//	menu_saveOptions.what	= WHAT_SOUND;
+	editModeActive = 1;
+	menu_saveOptions.state	= SAVE_STATE_EDIT_PRESET_NR;//SAVE_STATE_EDIT_TYPE;
+	menu_repaintAll();
 	
 }
 //-----------------------------------------------------------------
@@ -1796,7 +1798,7 @@ void menu_switchPage(uint8_t pageNr)
 			}
 		
 			//leave edit mode if active
-			editModeActive = 0;
+			//editModeActive = 0;
 			preset_loadName(menu_currentPresetNr, menu_saveOptions.what);
 		}
 		break;

@@ -87,7 +87,9 @@ int main(void)
 	//we have to toggle the first step sequencer led, otherwise it will be lit all the time
 	led_toggle(0);
 	
-
+	//show message for 1 sec
+	_delay_ms(2000);
+	lcd_clear();
 	//init menu
 	menu_init();
 
@@ -101,27 +103,24 @@ int main(void)
 	preset_init();
 #endif	
 
-
-
-
-	
-#if USE_SD_CARD	
-	preset_loadGlobals();
-#endif
-	//show message for 1 sec
-	_delay_ms(2000);
-	lcd_clear();
 #if USE_SD_CARD		
 	//load init preset 1
 	preset_loadDrumset(0,0);
 #endif
 
 
+	
+#if USE_SD_CARD	
+	preset_loadGlobals();
+#endif
+
+
+
+
 	//main loop
 	while(1) 
 	{
-		//check if new sd card is available after remove
-		SD_checkCardAvailable();
+		
 		
 			
 		//read next button
@@ -129,7 +128,7 @@ int main(void)
 		//update LEDs
 		dout_updateOutputs();
 		
-	uart_checkAndParse();
+		uart_checkAndParse();
 		//get the encoder values
 		const int8_t encoderValue = encode_read4();  
 		
@@ -149,8 +148,7 @@ int main(void)
 		//check the poti values
 		adc_checkPots();
 
-	//update LEDs
-	//	dout_updateOutputs();
+
 
 		
 		led_tickHandler();
@@ -159,7 +157,8 @@ int main(void)
 		
 		buttonHandler_tick();
 		
-	
+		//check if new sd card is available after remove
+		SD_checkCardAvailable();
 		
 	}
 return 0;
