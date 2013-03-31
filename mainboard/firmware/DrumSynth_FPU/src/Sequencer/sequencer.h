@@ -182,6 +182,10 @@ void seq_setRecordingMode(uint8_t active);
 //------------------------------------------------------------------------------
 void seq_clearTrack(uint8_t trackNr, uint8_t pattern);
 //------------------------------------------------------------------------------
+void seq_clearAutomation(uint8_t trackNr, uint8_t pattern, uint8_t automTrack);
+//------------------------------------------------------------------------------
+void seq_clearPattern(uint8_t pattern);
+//------------------------------------------------------------------------------
 void seq_copyTrack(uint8_t srcNr, uint8_t dstNr, uint8_t pattern);
 //------------------------------------------------------------------------------
 void seq_copyPattern(uint8_t src, uint8_t dst);

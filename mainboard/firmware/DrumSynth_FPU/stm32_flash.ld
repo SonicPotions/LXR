@@ -1,35 +1,14 @@
 /*
-*****************************************************************************
-**
-**  File        : stm32_flash.ld
-**
-**  Abstract    : Linker script for STM32F207IG Device with
-**                1024KByte FLASH, 112KByte RAM
-**
-**                Set heap size, stack size and stack location according
-**                to application requirements.
-**
-**                Set memory bank area and size if external memory is used.
-**
-**  Target      : STMicroelectronics STM32
-**
-**  Environment : Atollic TrueSTUDIO(R)
-**
-**  Distribution: The file is distributed “as is,” without any warranty
-**                of any kind.
-**
-**  (c)Copyright Atollic AB.
-**  You may use this file as-is or modify it according to the needs of your
-**  project. Distribution of this file (unmodified or modified) is not
-**  permitted. Atollic AB permit registered Atollic TrueSTUDIO(R) users the
-**  rights to distribute the assembled, compiled & linked contents of this
-**  file as part of an application binary file, provided that it is built
-**  using the Atollic TrueSTUDIO(R) toolchain.
-**
-*****************************************************************************
+*	Linker script file for STM32F407VGT6
+*	1024 kB FLASH, 112kB RAM
+*   
+*   Julian Schmidt 2013
+*
+*	build after tutorial found on 
+*	http://developers.stf12.net/cpp-demo/gcc-linker-script-and-stm32-a-tutorial
+*	http://www.embedds.com/programming-stm32-discovery-using-gnu-tools-linker-script/
+*	http://hertaville.com/2012/06/29/a-sample-linker-script/
 */
-
-
 
 /* Entry Point */
 ENTRY(Reset_Handler)
@@ -41,23 +20,28 @@ _estack = 0x2001c000;    /* end of 112K RAM */
 _Min_Heap_Size = 0;      /* required amount of heap  */
 _Min_Stack_Size = 0x400; /* required amount of stack */
 
-/* Specify the memory areas */
+/* memory areas */
 MEMORY
 {
 
  /* FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 1024K*/
  /*we have to reserve the first sector (16k) for the bootloader*/ 
    FLASH (rx)	  : ORIGIN = 0x08004000, LENGTH = 1008K 
-
  
   RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 112K
-  MEMORY_B1 (rx)  : ORIGIN = 0x60000000, LENGTH = 0K
+  
+  //MEMORY_B1 ( rx ) : ORIGIN = 0x60000000 , LENGTH = 0K
 }
+
+
+
+
+
 
 /* Define output sections */
 SECTIONS
 {
-  /* The startup code goes first into FLASH */
+  /* first the startup code */
   .isr_vector :
   {
     . = ALIGN(4);
@@ -65,7 +49,7 @@ SECTIONS
     . = ALIGN(4);
   } >FLASH
 
-  /* The program code and other data goes into FLASH */
+  /*  section where program code will be stored (Flash)*/
   .text :
   {
     . = ALIGN(4);
@@ -73,9 +57,9 @@ SECTIONS
     *(.text*)          /* .text* sections (code) */
     *(.rodata)         /* .rodata sections (constants, strings, etc.) */
     *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
-    *(.glue_7)         /* glue arm to thumb code */
-    *(.glue_7t)        /* glue thumb to arm code */
-	*(.eh_frame)
+    //*(.glue_7)         /* glue arm to thumb code */
+    //*(.glue_7t)        /* glue thumb to arm code */
+	//*(.eh_frame)
 
     KEEP (*(.init))
     KEEP (*(.fini))
@@ -84,14 +68,17 @@ SECTIONS
     _etext = .;        /* define a global symbols at end of code */
   } >FLASH
 
-
+/*
    .ARM.extab   : { *(.ARM.extab* .gnu.linkonce.armextab.*) } >FLASH
     .ARM : {
     __exidx_start = .;
       *(.ARM.exidx*)
       __exidx_end = .;
     } >FLASH
+	*/
 
+	//These are the extra sections in a C++ linker script (from STM32):
+	
   .preinit_array     :
   {
     PROVIDE_HIDDEN (__preinit_array_start = .);
@@ -173,5 +160,5 @@ SECTIONS
     libgcc.a ( * )
   }
 
-  .ARM.attributes 0 : { *(.ARM.attributes) }
+  //.ARM.attributes 0 : { *(.ARM.attributes) }
 }

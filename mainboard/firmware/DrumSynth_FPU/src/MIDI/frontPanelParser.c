@@ -679,6 +679,19 @@ void frontParser_parseUartData(unsigned char data)
 					}
 					break;
 
+				case FRONT_SEQ_CLEAR_PATTERN:
+					 seq_clearPattern(frontParser_midiMsg.data2);
+					break;
+
+				//voice nr (0xf0) + autom track nr (0x0f)
+				case FRONT_SEQ_CLEAR_AUTOM:
+				{
+					const uint8_t voice 		= frontParser_midiMsg.data2 >> 4;
+					const uint8_t automTrack 	= frontParser_midiMsg.data2 &  0x0f;
+					seq_clearAutomation(voice, frontParser_shownPattern, automTrack);
+				}
+					break;
+
 				case FRONT_SEQ_COPY_TRACK:
 					{
 						const uint8_t src = frontParser_midiMsg.data2>>4;
@@ -694,6 +707,8 @@ void frontParser_parseUartData(unsigned char data)
 						seq_copyPattern(src,dst);
 					}
 					break;
+
+
 
 				case FRONT_SEQ_TRACK_LENGTH:
 					seq_setTrackLength(frontParser_activeTrack,frontParser_midiMsg.data2);

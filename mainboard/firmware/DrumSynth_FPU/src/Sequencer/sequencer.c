@@ -1152,6 +1152,52 @@ void seq_clearTrack(uint8_t trackNr, uint8_t pattern)
 	}
 }
 //------------------------------------------------------------------------------
+void seq_clearPattern(uint8_t pattern)
+{
+	int k,i;
+	for(k=0;k<128;k++)
+	{
+		for(i=0;i<NUM_TRACKS;i++)
+		{
+			seq_patternSet.seq_subStepPattern[pattern][i][k].note 		= SEQ_DEFAULT_NOTE;
+			seq_patternSet.seq_subStepPattern[pattern][i][k].param1Nr 	= NO_AUTOMATION;
+			seq_patternSet.seq_subStepPattern[pattern][i][k].param1Val 	= 0;
+			seq_patternSet.seq_subStepPattern[pattern][i][k].param2Nr	= NO_AUTOMATION;
+			seq_patternSet.seq_subStepPattern[pattern][i][k].param2Val	= 0;
+			seq_patternSet.seq_subStepPattern[pattern][i][k].prob		= 127;
+			seq_patternSet.seq_subStepPattern[pattern][i][k].volume		= 100;//STEP_VOLUME_MASK;
+
+			//every 1st step in a substep pattern active
+			if( (k%8) == 0)
+			{
+				seq_patternSet.seq_subStepPattern[pattern][i][k].volume		|= STEP_ACTIVE_MASK ;
+			}
+
+			seq_patternSet.seq_mainSteps[pattern][i] = 0;
+		}
+	}
+}
+//------------------------------------------------------------------------------
+void seq_clearAutomation(uint8_t trackNr, uint8_t pattern, uint8_t automTrack)
+{
+	int k;
+
+	if(automTrack==0)
+	{
+		for(k=0;k<128;k++)
+		{
+			seq_patternSet.seq_subStepPattern[pattern][trackNr][k].param1Nr 	= NO_AUTOMATION;
+			seq_patternSet.seq_subStepPattern[pattern][trackNr][k].param1Val 	= 0;
+		}
+	} else {
+		for(k=0;k<128;k++)
+		{
+			seq_patternSet.seq_subStepPattern[pattern][trackNr][k].param2Nr		= NO_AUTOMATION;
+			seq_patternSet.seq_subStepPattern[pattern][trackNr][k].param2Val	= 0;
+		}
+	}
+}
+//------------------------------------------------------------------------------
 void seq_copyTrack(uint8_t srcNr, uint8_t dstNr, uint8_t pattern)
 {
 	int k;

@@ -793,6 +793,8 @@ enum
 #define FRONT_SEQ_SELECT_ACTIVE_STEP 	0x24
 #define FRONT_SEQ_SHUFFLE				0x25
 #define FRONT_SEQ_TRACK_LENGTH			0x26
+#define FRONT_SEQ_CLEAR_PATTERN			0x27
+#define FRONT_SEQ_CLEAR_AUTOM			0x28 //voice nr (0xf0) + autom track nr (0x0f)
 
 //codec control messages
 #define EQ_ON_OFF						0x01
