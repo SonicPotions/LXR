@@ -65,6 +65,7 @@ uint8_t seq_rndValue[NUM_TRACKS];			/**< random value for probability function*/
 
 uint8_t seq_barCounter;						/**< counts the absolute position in bars since the seq was started */
 
+static uint8_t seq_loadPendigFlag = 0;
 
 const float seq_shuffleTable[16] =
 {
@@ -298,7 +299,7 @@ void seq_sync()
 void seq_setNextPattern(const uint8_t patNr)
 {
 	seq_pendingPattern = patNr;
-
+	seq_loadPendigFlag = 1;
 }
 //------------------------------------------------------------------------------
 void seq_sendMidi(uint8_t status, uint8_t data1, uint8_t data2)
@@ -414,10 +415,10 @@ void seq_nextStep()
 
 			// a new pattern is about to start
 			// set pendingPattern active
-			if(seq_activePattern != seq_pendingPattern)
+			if((seq_activePattern != seq_pendingPattern) || seq_loadPendigFlag)
 			{
 
-
+				seq_loadPendigFlag = 0;
 				//first check if 2 new pattern is available
 				if(seq_newPatternAvailable)
 				{
