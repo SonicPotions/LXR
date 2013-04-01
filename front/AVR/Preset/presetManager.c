@@ -668,13 +668,12 @@ frontPanel_sendData(PRESET,PATTERN_LOAD,presetNr);
 #endif
 };
 //----------------------------------------------------
-//val is interpolation value between 0 and 127
+//val is interpolation value between 0 and 255
 uint8_t interpolate(uint8_t a, uint8_t b, uint8_t x)
 {
 	return ((a*255) + (b-a)*x)/255;
 }
 //----------------------------------------------------
-/** morph parameter is 0<->128 */
 void preset_morph(uint8_t morph)
 {
 	int i;

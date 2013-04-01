@@ -982,32 +982,50 @@ return;
 			} 
 			else
 			{
-				//select active voice
 				
-				//the currently active button is lit
-				led_setActiveVoice((buttonNr-BUT_VOICE_1));
-			
-				//change voice page on display if in voice mode
-				if( (buttonHandler_getMode() == SELECT_MODE_VOICE) /*|| (buttonHandler_getMode() ==SELECT_MODE_STEP) */)
+				if(buttonHandler_getMode() == SELECT_MODE_PERF)
 				{
-					menu_switchPage(buttonNr-BUT_VOICE_1);			
-				}				
-				frontPanel_sendData(SEQ_CC,SEQ_SET_ACTIVE_TRACK,buttonNr-BUT_VOICE_1);
-			
-				menu_setActiveVoice(buttonNr-BUT_VOICE_1);
-				
-				
-				frontPanel_sendData(SEQ_CC,SEQ_REQUEST_EUKLID_PARAMS,buttonNr-BUT_VOICE_1);
-				//request the pattern info for the selected pattern (bar cnt, next...)
-				//frontPanel_sendData(SEQ_CC,SEQ_REQUEST_PATTERN_PARAMS,buttonNr);
-				
-				if((buttonHandler_getMode() ==SELECT_MODE_STEP))
-				{
-					//reactivate sequencer mode
-					led_clearAllBlinkLeds();
-					buttonHandler_enterSeqModeStepMode();
-					
+					//unmute all tracks
+						for(int i=0;i<=(buttonNr-BUT_VOICE_1);i++)
+						{
+							if(buttonHandler_mutedVoices & (1<<i))
+							{
+								frontPanel_sendData(SEQ_CC,SEQ_UNMUTE_TRACK,i);
+								buttonHandler_mutedVoices &= ~(1<<i);
+							}								
+						}
+						led_setActiveVoiceLeds(~buttonHandler_mutedVoices);
+						
 				}
+				else
+				{
+					//select active voice
+				
+					//the currently active button is lit
+					led_setActiveVoice((buttonNr-BUT_VOICE_1));
+			
+					//change voice page on display if in voice mode
+					if( (buttonHandler_getMode() == SELECT_MODE_VOICE) /*|| (buttonHandler_getMode() ==SELECT_MODE_STEP) */)
+					{
+						menu_switchPage(buttonNr-BUT_VOICE_1);			
+					}				
+					frontPanel_sendData(SEQ_CC,SEQ_SET_ACTIVE_TRACK,buttonNr-BUT_VOICE_1);
+			
+					menu_setActiveVoice(buttonNr-BUT_VOICE_1);
+				
+				
+					frontPanel_sendData(SEQ_CC,SEQ_REQUEST_EUKLID_PARAMS,buttonNr-BUT_VOICE_1);
+					//request the pattern info for the selected pattern (bar cnt, next...)
+					//frontPanel_sendData(SEQ_CC,SEQ_REQUEST_PATTERN_PARAMS,buttonNr);
+				
+					if((buttonHandler_getMode() ==SELECT_MODE_STEP))
+					{
+						//reactivate sequencer mode
+						led_clearAllBlinkLeds();
+						buttonHandler_enterSeqModeStepMode();
+					
+					}
+				}					
 			}	
 		}						
 			
@@ -1198,12 +1216,12 @@ return;
 		}
 		
 		//show muted voices if pressed
-		if(buttonHandler_getMode() != SELECT_MODE_PERF) {
+	//	if(buttonHandler_getMode() != SELECT_MODE_PERF) {
 			led_setActiveVoiceLeds(~buttonHandler_mutedVoices);
-		} else {
-			//show active voice if released
-			led_setActiveVoice(menu_getActiveVoice());
-		}
+	//	} else {
+			//show active voice if pressed
+		//	led_setActiveVoice(menu_getActiveVoice());
+	//	}
 		
 		break;
 		//the mode selection for the 8 select buttons
