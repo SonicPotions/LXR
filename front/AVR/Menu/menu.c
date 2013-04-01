@@ -1698,9 +1698,18 @@ void menu_resetSaveParameters()
 	
 	//reset save params
 //	menu_saveOptions.activeChar = 0;
-//	menu_saveOptions.what	= WHAT_SOUND;
-	editModeActive = 1;
-	menu_saveOptions.state	= SAVE_STATE_EDIT_PRESET_NR;//SAVE_STATE_EDIT_TYPE;
+	if(menu_saveOptions.what == WHAT_GLO)
+	{
+		menu_saveOptions.state = SAVE_STATE_EDIT_TYPE;
+		menu_saveOptions.what = WHAT_SOUND;
+	}
+	else
+	{
+	//	menu_saveOptions.what	= WHAT_SOUND;
+		editModeActive = 1;
+		menu_saveOptions.state	= SAVE_STATE_EDIT_PRESET_NR;//SAVE_STATE_EDIT_TYPE;
+	}		
+	
 	menu_repaintAll();
 	
 }
@@ -1752,6 +1761,12 @@ void menu_switchPage(uint8_t pageNr)
 		
 		case LOAD_PAGE:
 		{
+			if((menu_activePage != LOAD_PAGE) && (menu_activePage != SAVE_PAGE))
+			{
+				//when coming from another page, do a complete reset and show the sound select page
+				menu_resetSaveParameters();
+				menu_saveOptions.what	= WHAT_SOUND;
+			}
 
 			//if we are already on the load/save page, toggle between load/save
 			if(menu_activePage == LOAD_PAGE)
