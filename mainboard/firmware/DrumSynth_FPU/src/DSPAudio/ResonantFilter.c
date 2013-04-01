@@ -15,7 +15,7 @@ int __errno;
 void SVF_setReso(ResonantFilter* filter, float feedback)
 {
 	filter->q = 1-feedback;
-	if(filter->q<0.1f)filter->q = 0.1f;
+	if(filter->q<0.1f)filter->q = 0.02f;
 }
 //------------------------------------------------------------------------------------
 void SVF_init(ResonantFilter* filter)
@@ -58,7 +58,7 @@ void SVF_recalcFreq(ResonantFilter* filter)
 //------------------------------------------------------------------------------------
 void SVF_directSetFilterValue(ResonantFilter* filter, float val)
 {
-	filter->f = val*(0.5f*0.93f);
+	filter->f = val*(0.5f*0.90f);
 	filter->g  = fastTan(M_PI * filter->f );
 }
 //------------------------------------------------------------------------------------
@@ -75,6 +75,8 @@ float tanhXdX(float x)
 float softClipTwo(float in)
 {
 
+	return in * tanhXdX(0.5*in);
+
 	if(in > 0.76159415595576488811945828260479f) return fastTanh(in-0.76159415595576488811945828260479f)+0.76159415595576488811945828260479f;
 	if(in < -0.76159415595576488811945828260479f) return fastTanh(in+0.76159415595576488811945828260479f)-0.76159415595576488811945828260479f;
 
@@ -90,7 +92,7 @@ void SVF_calcBlockZDF(ResonantFilter* filter, const uint8_t type, int16_t* buf, 
 
 	for(i=0;i<size;i++)
 	{
-		const float x = ((buf[i]/((float)0x7fff))*filter->drive);
+		const float x = softClipTwo((buf[i]/((float)0x7fff))*filter->drive);
 
 #if ENABLE_NONLINEAR_INTEGRATORS
 		// input with half sample delay, for non-linearities
@@ -104,10 +106,9 @@ void SVF_calcBlockZDF(ResonantFilter* filter, const uint8_t type, int16_t* buf, 
 		double t1 = tanhXdX(a*s[0]);
 		*/
 #if ENABLE_NONLINEAR_INTEGRATORS
-		const float offset = 0;//0.002f;
-		const float tanhScale = 2.f;
-		const float t0 = tanhXdX( (ih - 2*R*filter->s1 - filter->s2 +offset)/tanhScale )*tanhScale;
-		const float t1 = tanhXdX( (filter->s1 - offset)/tanhScale )*tanhScale;
+		const float scale = 0.5f;
+		const float t0 = tanhXdX(scale* (ih - 2*R*filter->s1 - filter->s2 ) );
+		const float t1 = tanhXdX(scale* (filter->s1 ) );
 #else
 		const float t0 = 1;
 		const float t1 = 1;
