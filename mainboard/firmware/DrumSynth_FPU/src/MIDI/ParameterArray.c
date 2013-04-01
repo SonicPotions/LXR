@@ -11,6 +11,7 @@
 #include "CymbalVoice.h"
 #include "HiHat.h"
 #include "Snare.h"
+#include "mixer.h"
 
 
  Parameter parameterArray[NUM_PARAMS];
@@ -369,7 +370,7 @@ void parameterArray_init()
 	parameterArray[PAR_VOICE_DECIMATION5].ptr 	= &mixer_decimation_rate[4];
 	parameterArray[PAR_VOICE_DECIMATION5].type 	= TYPE_FLT;
 	parameterArray[PAR_VOICE_DECIMATION6].ptr 	= &mixer_decimation_rate[5];
-	parameterArray[PAR_VOICE_DECIMATION6].type 	= TYPE_FLT
+	parameterArray[PAR_VOICE_DECIMATION6].type 	= TYPE_FLT;
 	parameterArray[PAR_VOICE_DECIMATION_ALL].ptr= &mixer_decimation_rate[6];
 	parameterArray[PAR_VOICE_DECIMATION_ALL].type 	= TYPE_FLT;
 
@@ -621,17 +622,17 @@ void parameterArray_init()
 	parameterArray[PAR_TRANS6_FREQ].ptr 			= &hatVoice.transGen.pitch;
 	parameterArray[PAR_TRANS6_FREQ].type 			= TYPE_FLT;
 
-	parameterArray[PAR_AUDIO_OUT1].ptr 				= mixer_audioRouting[0];
+	parameterArray[PAR_AUDIO_OUT1].ptr 				= &mixer_audioRouting[0];
 	parameterArray[PAR_AUDIO_OUT1].type 			= TYPE_UINT8;
-	parameterArray[PAR_AUDIO_OUT2].ptr 				= mixer_audioRouting[1];
+	parameterArray[PAR_AUDIO_OUT2].ptr 				= &mixer_audioRouting[1];
 	parameterArray[PAR_AUDIO_OUT2].type			 	= TYPE_UINT8;
-	parameterArray[PAR_AUDIO_OUT3].ptr 				= mixer_audioRouting[2];
+	parameterArray[PAR_AUDIO_OUT3].ptr 				= &mixer_audioRouting[2];
 	parameterArray[PAR_AUDIO_OUT3].type 			= TYPE_UINT8;
-	parameterArray[PAR_AUDIO_OUT4].ptr 				= mixer_audioRouting[3];
+	parameterArray[PAR_AUDIO_OUT4].ptr 				= &mixer_audioRouting[3];
 	parameterArray[PAR_AUDIO_OUT4].type 			= TYPE_UINT8;
-	parameterArray[PAR_AUDIO_OUT5].ptr 				= mixer_audioRouting[4];
+	parameterArray[PAR_AUDIO_OUT5].ptr 				= &mixer_audioRouting[4];
 	parameterArray[PAR_AUDIO_OUT5].type 			= TYPE_UINT8;
-	parameterArray[PAR_AUDIO_OUT6].ptr 				= mixer_audioRouting[5];
+	parameterArray[PAR_AUDIO_OUT6].ptr 				= &mixer_audioRouting[5];
 	parameterArray[PAR_AUDIO_OUT6].type 			= TYPE_UINT8;
 	//#########################################
 	//######## End of sound Parameters ########
