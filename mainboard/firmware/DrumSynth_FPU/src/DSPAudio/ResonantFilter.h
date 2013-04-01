@@ -22,7 +22,7 @@
 #include "math.h"
 //----------------------------------------------------
 //removed to free some cpu cycles
-#define ENABLE_NONLINEAR_INTEGRATORS 	0
+#define ENABLE_NONLINEAR_INTEGRATORS 	1
 #define FILTER_GAIN 					0x70ff
 //----------------------------------------------------
 enum filterTypeEnum

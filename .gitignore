@@ -18,6 +18,14 @@
 *.out
 *.app
 
+
+# binaries
+*.hex
+*.elf
+*.bin
+*.lss
+
+
 # eclipse project files
 *.metadata
 *RemoteSystemsTempFiles

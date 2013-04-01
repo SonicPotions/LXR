@@ -46,6 +46,6 @@ extern const float transientVolumeTable[69];
 /* signed 8 bit pcm
  * 4102__patchen__atik-2-10-stereoatik
  */
-extern const int8_t transientData[2][TRANSIENT_SAMPLE_LENGTH];
+extern const int8_t transientData[7][TRANSIENT_SAMPLE_LENGTH];
 
 #endif /* TRANSIENTTABLES_H_ */

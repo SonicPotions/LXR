@@ -508,6 +508,11 @@ void buttonHandler_leaveSeqMode()
 	menu_switchPage(lastActivePage);
 }
 //--------------------------------------------------------
+uint8_t buttonHandler_getMutedVoices()
+{
+	return buttonHandler_mutedVoices;
+}
+//--------------------------------------------------------
 void buttonHandler_buttonReleased(uint8_t buttonNr)
 {
 	
@@ -549,8 +554,9 @@ void buttonHandler_buttonReleased(uint8_t buttonNr)
 		} else if( (buttonHandler_getMode() == SELECT_MODE_PERF)) {
 			led_clearAllBlinkLeds();
 			led_clearSelectLeds();
-			led_setValue(1,menu_playedPattern + LED_PART_SELECT1);
+			//led_setValue(1,menu_playedPattern + LED_PART_SELECT1);
 			menu_switchPage(PERFORMANCE_PAGE);
+			return;
 		} else if( (buttonHandler_getMode() == SELECT_MODE_PAT_GEN)) {
 			led_clearAllBlinkLeds();
 			led_clearSelectLeds();
@@ -561,7 +567,12 @@ void buttonHandler_buttonReleased(uint8_t buttonNr)
 		}			
 		
 		//show active voice if released
-		led_setActiveVoice(menu_getActiveVoice());
+		if( (buttonHandler_getMode() != SELECT_MODE_PERF)) {
+			led_setActiveVoice(menu_getActiveVoice());
+		}else
+		{
+			led_setActiveVoiceLeds(~buttonHandler_mutedVoices);
+		}	
 		
 		break;
 		
@@ -1187,7 +1198,12 @@ return;
 		}
 		
 		//show muted voices if pressed
-		led_setActiveVoiceLeds(~buttonHandler_mutedVoices);
+		if(buttonHandler_getMode() != SELECT_MODE_PERF) {
+			led_setActiveVoiceLeds(~buttonHandler_mutedVoices);
+		} else {
+			//show active voice if released
+			led_setActiveVoice(menu_getActiveVoice());
+		}
 		
 		break;
 		//the mode selection for the 8 select buttons

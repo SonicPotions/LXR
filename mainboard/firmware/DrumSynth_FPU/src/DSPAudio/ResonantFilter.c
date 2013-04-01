@@ -58,7 +58,7 @@ void SVF_recalcFreq(ResonantFilter* filter)
 //------------------------------------------------------------------------------------
 void SVF_directSetFilterValue(ResonantFilter* filter, float val)
 {
-	filter->f = val*(0.5f*0.96f);
+	filter->f = val*(0.5f*0.93f);
 	filter->g  = fastTan(M_PI * filter->f );
 }
 //------------------------------------------------------------------------------------
@@ -74,6 +74,7 @@ float tanhXdX(float x)
 //------------------------------------------------------------------------------------
 float softClipTwo(float in)
 {
+
 	if(in > 0.76159415595576488811945828260479f) return fastTanh(in-0.76159415595576488811945828260479f)+0.76159415595576488811945828260479f;
 	if(in < -0.76159415595576488811945828260479f) return fastTanh(in+0.76159415595576488811945828260479f)-0.76159415595576488811945828260479f;
 
@@ -89,7 +90,7 @@ void SVF_calcBlockZDF(ResonantFilter* filter, const uint8_t type, int16_t* buf, 
 
 	for(i=0;i<size;i++)
 	{
-		const float x = (buf[i]/((float)0x7fff))*filter->drive;
+		const float x = ((buf[i]/((float)0x7fff))*filter->drive);
 
 #if ENABLE_NONLINEAR_INTEGRATORS
 		// input with half sample delay, for non-linearities

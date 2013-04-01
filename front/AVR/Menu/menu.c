@@ -1735,27 +1735,14 @@ void menu_switchPage(uint8_t pageNr)
 	//clear all sequencer buttons
 	led_clearSequencerLeds();
 	
+
 	switch(pageNr)
 	{
-		/*
-		case LFO1_PAGE:
-		case LFO2_PAGE:
-		case LFO3_PAGE:
-		case LFO4_PAGE:
-		case LFO5_PAGE:
-		case LFO6_PAGE:
-		
-		
-		case VOICE1_SETTINGS_PAGE:
-		case VOICE2_SETTINGS_PAGE:
-		case VOICE3_SETTINGS_PAGE:
-		case VOICE4_SETTINGS_PAGE:
-		case VOICE5_SETTINGS_PAGE:
-		case VOICE6_SETTINGS_PAGE:
-		*/
+
+		case PERFORMANCE_PAGE:		
 		case PATTERN_SETTINGS_PAGE:
 		case SEQ_PAGE:
-		case PERFORMANCE_PAGE:
+		
 			menu_activePage = pageNr;
 			//leave edit mode if active
 			editModeActive = 0;
@@ -1805,7 +1792,15 @@ void menu_switchPage(uint8_t pageNr)
 	}		
 		
 
-
+	//re initialize the voice LEDs
+	if(pageNr==PERFORMANCE_PAGE)
+	{
+		//light up mute leds
+		led_setActiveVoiceLeds(~buttonHandler_getMutedVoices());
+	} else
+	{
+		led_setActiveVoiceLeds(1<<menu_getActiveVoice());
+	}
 		
 	
 
