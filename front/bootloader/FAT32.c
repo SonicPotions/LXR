@@ -115,38 +115,7 @@ unsigned long getNextCluster (unsigned long clusterNumber)
 
 }
 
-//********************************************************************************************
-//Function: to get or set next free cluster or total free clusters in FSinfo sector of SD card
-//Arguments: 1.flag:TOTAL_FREE or NEXT_FREE, 
-//			 2.flag: GET or SET 
-//			 3.new FS entry, when argument2 is SET; or 0, when argument2 is GET
-//return: next free cluster, if arg1 is NEXT_FREE & arg2 is GET
-//        total number of free clusters, if arg1 is TOTAL_FREE & arg2 is GET
-//		  0xffffffff, if any error or if arg2 is SET
-//********************************************************************************************
-//unsigned long getSetFreeCluster(unsigned char totOrNext, unsigned char get_set, unsigned long FSEntry)
-//unsigned long getFreeCluster(unsigned char totOrNext,  unsigned long FSEntry)
-#if 0
-unsigned long getFreeCluster(unsigned long FSEntry)
-{
-	struct FSInfo_Structure *FS = (struct FSInfo_Structure *) &sd_buffer;
-	//unsigned char error;
 
-	SD_readSingleBlock(unusedSectors + 1);
-
-	if((FS->leadSignature != 0x41615252) || (FS->structureSignature != 0x61417272) || (FS->trailSignature !=0xaa550000))
-	  return 0xffffffff;
-
-
-	 //  if(totOrNext == TOTAL_FREE)
-		  return(FS->freeClusterCount);
-	 //  else // when totOrNext = NEXT_FREE
-	//	  return(FS->nextFreeCluster);
-
-
-	// return 0xffffffff;	
-}
-#endif
 
 //***************************************************************************
 //Function: to get DIR/FILE list or a single file address (cluster number) or to delete a specified file
@@ -156,7 +125,6 @@ unsigned long getFreeCluster(unsigned long FSEntry)
 //		  Delete the file mentioned in arg#2, if flag = DELETE
 //****************************************************************************
 struct dir_Structure* findFiles (unsigned char *fileName)
-//struct dir_Structure* findFiles (unsigned char flag, unsigned char *fileName)
 {
 	unsigned long cluster, sector, firstSector;//, firstCluster, nextCluster;
 	struct dir_Structure *dir;
@@ -243,20 +211,16 @@ dir = findFiles (fileName); //get the file location
 if(dir == 0) 
 {
 	lcd_clear();
-	lcd_string("Firmware error");
+	lcd_string("FW error");
 	while(1);
 	return;
 }	
-  
-
-//if(flag == VERIFY) return (1);	//specified file name is already existing
+ 
 
 cluster = (((unsigned long) dir->firstClusterHI) << 16) | dir->firstClusterLO;
 
 fileSize = dir->fileSize;
 
-//TX_NEWLINE;
-//TX_NEWLINE;
 
 while(1)
 {
@@ -282,78 +246,5 @@ while(1)
 }
 return;
 }
-#if 0
-//***************************************************************************
-//Function: to convert normal short file name into FAT format
-//Arguments: pointer to the file name
-//return: 0, if successful else 1.
-//***************************************************************************
-unsigned char convertFileName (unsigned char *fileName)
-{
-unsigned char fileNameFAT[11];
-unsigned char j, k;
 
-for(j=0; j<12; j++)
-if(fileName[j] == '.') break;
-
-if(j>8) 
-{
-//transmitString_F(PSTR("Invalid fileName..")); 
-return 1;
-}
-
-for(k=0; k<j; k++) //setting file name
-  fileNameFAT[k] = fileName[k];
-
-for(k=j; k<=7; k++) //filling file name trail with blanks
-  fileNameFAT[k] = ' ';
-
-j++;
-for(k=8; k<11; k++) //setting file extention
-{
-  if(fileName[j] != 0)
-    fileNameFAT[k] = fileName[j++];
-  else //filling extension trail with blanks
-    while(k<11)
-      fileNameFAT[k++] = ' ';
-}
-
-for(j=0; j<11; j++) //converting small letters to caps
-  if((fileNameFAT[j] >= 0x61) && (fileNameFAT[j] <= 0x7a))
-    fileNameFAT[j] -= 0x20;
-
-for(j=0; j<11; j++)
-  fileName[j] = fileNameFAT[j];
-
-return 0;
-}
-
-
-//***************************************************************************
-//Function: to search for the next free cluster in the root directory
-//          starting from a specified cluster
-//Arguments: Starting cluster
-//return: the next free cluster
-//****************************************************************
-unsigned long searchNextFreeCluster (unsigned long startCluster)
-{
-  unsigned long cluster, *value, sector;
-  unsigned char i;
-    
-	startCluster -=  (startCluster % 128);   //to start with the first file in a FAT sector
-    for(cluster =startCluster; cluster <totalClusters; cluster+=128) 
-    {
-      sector = unusedSectors + reservedSectorCount + ((cluster * 4) / bytesPerSector);
-      SD_readSingleBlock(sector);
-      for(i=0; i<128; i++)
-      {
-       	 value = (unsigned long *) &sd_buffer[i*4];
-         if(((*value) & 0x0fffffff) == 0)
-            return(cluster+i);
-      }  
-    } 
-
- return 0;
-}
-#endif
 //******** END ****** www.dharmanitech.com *****

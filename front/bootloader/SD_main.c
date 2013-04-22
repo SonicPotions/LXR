@@ -127,7 +127,7 @@ int __attribute__((OS_main)) __attribute__((noreturn))
 				lcd_string("FS error");
 				while(1)
 				{	
-		  		  _delay_ms(500);
+		  		  //_delay_ms(500);
 				  //ui_ledToggle();
 				}				  
 			}
@@ -137,11 +137,9 @@ int __attribute__((OS_main)) __attribute__((noreturn))
 				readFile((unsigned char*)"FIRMWAREBIN");	
 				
 				
-				//software reset
-				//wdt_enable(WDTO_15MS) ;
-				//while(1);
-				cli();
-				start();
+
+			//	cli();
+			//	start();
 			}
 		}	
 	}		

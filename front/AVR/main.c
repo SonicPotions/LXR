@@ -34,8 +34,6 @@
 
 int main(void) 
 {
-	
-	
 	//set PD2 as out pin (LED start stop)
 	DDRD   |= (1<<PD2); //configure as output
 	PORTD  &= ~(1<<PD2);//disable pull up	
@@ -48,13 +46,11 @@ int main(void)
 	//init the lcd display
 	lcd_init();
 	
-
-
 	//init the uart
 	uart_init();
 
 	//print boot up message
-	lcd_string_F(PSTR("   RP-1 V"));
+	lcd_string_F(PSTR("Drumsynth V"));
 	lcd_string(FIRMWARE_VERSION);
 	//goto 2nd line
 	lcd_setcursor(0,2);
@@ -62,15 +58,9 @@ int main(void)
 	
 	adc_init();
 	
-
-	
-
-
 	//init encoder
 	encode_init();
-	
-
-	
+		
 	din_init();
 	dout_init();	
 	led_init();
@@ -86,8 +76,7 @@ int main(void)
 	lcd_clear();
 	//init menu
 	menu_init();
-
-
+	
 	//enable interrupts
 	sei();
 	
@@ -101,22 +90,14 @@ int main(void)
 	//load init preset 1
 	preset_loadDrumset(0,0);
 #endif
-
-
 	
 #if USE_SD_CARD	
 	preset_loadGlobals();
 #endif
 
-
-
-
 	//main loop
 	while(1) 
-	{
-		
-		
-			
+	{		
 		//read next button
 		din_readNextInput();
 		//update LEDs
@@ -133,7 +114,7 @@ int main(void)
 		menu_parseEncoder(encoderValue,button);
 	
 		//check if there is data received for the parameters (from mainboard)
-		//2 tinmes to speed up msg handling
+		//4 times to speed up msg handling
 		uart_checkAndParse();
 		uart_checkAndParse();
 		uart_checkAndParse();
@@ -142,11 +123,8 @@ int main(void)
 		//check the poti values
 		adc_checkPots();
 
-
-
-		
 		led_tickHandler();
-		
+
 		screensaver_check();
 		
 		buttonHandler_tick();

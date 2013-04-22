@@ -81,7 +81,7 @@ clean:
 
 post-build:
 	-@echo 'make .bin file'
-	-C:\stm32DevTools\ArmGcc\arm-none-eabi\bin\objcopy  -O binary E:\Eclipse_Drum_Synth_STM32\DrumSynth_Workspace\DrumSynth_FPU\Debug\DrumSynth_FPU.elf E:\Eclipse_Drum_Synth_STM32\DrumSynth_Workspace\DrumSynth_FPU\Debug\DrumSynthCortex.bin
+	-C:\stm32DevTools\ArmGcc\arm-none-eabi\bin\objcopy  -O binary E:\gewerbe_sonic_potions\git\Drumsynth\mainboard\firmware\DrumSynth_FPU\Debug\DrumSynth_FPU.elf E:\gewerbe_sonic_potions\git\Drumsynth\mainboard\firmware\DrumSynth_FPU\Debug\DrumSynthCortex.bin
 	-@echo ' '
 
 secondary-outputs: $(SECONDARY_FLASH) $(SECONDARY_LIST) $(SECONDARY_SIZE)

@@ -592,7 +592,7 @@ void menu_repaintLoadSavePage()
 	else
 	{
 		//Top row 
-		strcpy_P(&editDisplayBuffer[0][0],PSTR("Load"));
+		strcpy_P(&editDisplayBuffer[0][0],PSTR("Load:"));
 			
 		switch(menu_saveOptions.what)
 		{

@@ -87,6 +87,45 @@ float gain = 1.0f;
 uint8_t fType = 0;
 //----------------------------------------------------------------
 
+#define SPI_MISO_MOSI_PORT	GPIOA
+#define SPI_CS_SCK_PORT		GPIOB
+#define SPI_MISO_PIN		GPIO_Pin_6	//a
+#define SPI_MOSI_PIN		GPIO_Pin_7	//a
+#define SPI_SCK_PIN			GPIO_Pin_3  //b
+#define SPI_CS_PIN			GPIO_Pin_0  //b
+
+#define SPI_MISO_PIN_SRC	GPIO_PinSource6	//a
+#define SPI_MOSI_PIN_SRC	GPIO_PinSource7	//a
+#define SPI_SCK_PIN_SRC		GPIO_PinSource3  //b
+#define SPI_CS_PIN_SRC		GPIO_PinSource0  //b
+//disable SPI pins since SD card is used by AVR
+void initSpiPins()
+{
+	GPIO_InitTypeDef GPIO_InitStructure;
+	// init the pins
+	//MISO and MOSI
+	GPIO_InitStructure.GPIO_Pin = SPI_MISO_PIN | SPI_MOSI_PIN;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+	GPIO_Init(SPI_MISO_MOSI_PORT, &GPIO_InitStructure);
+	//SCK pins
+	GPIO_InitStructure.GPIO_Pin = SPI_SCK_PIN;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+	GPIO_Init(SPI_CS_SCK_PORT, &GPIO_InitStructure);
+	//CS
+	GPIO_InitStructure.GPIO_Pin = SPI_CS_PIN;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+	GPIO_Init(SPI_CS_SCK_PORT, &GPIO_InitStructure);
+}
+  //----------------------------------------------------------------
 
 void initAudioJackDiscoverPins()
 {
@@ -134,6 +173,10 @@ inline void calcNextSampleBlock()
 
 int main(void)
 {
+
+	initSpiPins();
+
+
 	/* get system clock info*/
 	RCC_GetClocksFreq(&RCC_Clocks);
 	/* set timebase systick to 1ms*/

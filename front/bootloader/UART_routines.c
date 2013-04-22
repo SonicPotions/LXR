@@ -83,31 +83,21 @@ void uart_tx( unsigned char data )
 //----------------------------------------------------------
 uint8_t uart_checkAck()
 {
-	//TODO delay anpassen
-	//give the cortex some time to answer
-	//_delay_us(5);
-//	for(int i=0;i<5000;i++)
-//	{
-		//if received data is available
-	//	if( (UCSRA & (1<<RXC)) )
-		{
-			uint8_t data = uart_rxWait();	
-						
-			if(data == ACK)
-			{
-				return ACK;
-			}
-			else if(data == NACK)
-			{
-				lcd_setcursor(0,2);
-				lcd_string("nack");
-				while(1);
-				return NACK;
-			}
-		
-		}
 
-//	}	
+	uint8_t data = uart_rxWait();	
+						
+	if(data == ACK)
+	{
+		return ACK;
+	}
+	else if(data == NACK)
+	{
+//		lcd_setcursor(0,2);
+//lcd_string("nack");
+		while(1);
+		return NACK;
+	}
+
 	lcd_setcursor(0,2);
 				lcd_string("no ack");
 				while(1);

@@ -127,24 +127,7 @@ uint8_t fileParser_parseNextBlock(unsigned long filesize)
 				while(1);
 				return 0;
 			}
-			/*
-			lcd_clear();
-			lcd_home();
-			
-			lcd_string("fnd hd");
-			lcd_setcursor(0,2);
-			
-			lcd_string("avr ");
-			*/
-		//	char text[10];
-		//	uint8_t hi,lo;
-		//	hi = infoHeader.avrCodeSize>>8;
-		//	lo = infoHeader.avrCodeSize&0xff;
-		//	infoHeader.avrCodeSize = hi | (lo<<8);
-		//	uint16_t test = infoHeader.avrCodeSize;
-		//	lcd_string(utoa(test,text,10));
-		//	_delay_ms(1500);
-			
+		
 		
 			fileParser_bytesRead += 512;
 			
@@ -154,8 +137,6 @@ uint8_t fileParser_parseNextBlock(unsigned long filesize)
 				lcd_setcursor(0,2);
 				lcd_string("end hd");
 				while(1);
-				
-				 return 0;
 			}		
 			
 			fileParser_parseState = AVR_DATA;
@@ -165,9 +146,6 @@ uint8_t fileParser_parseNextBlock(unsigned long filesize)
 		case AVR_DATA:
 		{
 			//--- read avr code ---
-			
-	
-				
 			//program data into flash (512 bytes data to 4 pages a 128 bytes -> mega32 SPM_PAGESIZE = 128
 			//program data into flash (512 bytes data to 2 pages a 256 bytes -> mega644 SPM_PAGESIZE = 256
 			
@@ -177,52 +155,12 @@ uint8_t fileParser_parseNextBlock(unsigned long filesize)
 				boot_program_page(fileParser_pagesWritten,(uint8_t *)&sd_buffer[0+i*SPM_PAGESIZE]);
 				fileParser_bytesRead += SPM_PAGESIZE;
 				fileParser_pagesWritten+=SPM_PAGESIZE;
-				
-				//toggle the start stop led
-			//	ui_ledToggle();	
-				/*
-							lcd_clear();
-			lcd_home();
-			lcd_string("page");
-			
-			char text[10];
-			lcd_string(utoa(fileParser_pagesWritten,text,10));
-			*/
-			//lcd_setcursor(0,2);
-			//uint16_t tmp = sd_buffer[0+i*SPM_PAGESIZE];
-			//lcd_string(utoa(tmp,text,10));
-			//_delay_ms(500)
-			;/*
-lcd_setcursor(0,2);
-			
-			lcd_string("wrt ");
-			//char text[10];
-			lcd_string(utoa(fileParser_bytesRead,text,10));
-		//	_delay_ms(1500);
-		*/
-			
-			
 			}
-			
-
-			/*
-			char text[10];
-			lcd_string(" fs");
-			lcd_string(utoa(filesize,text,10));
-			*/
-			/*				
-			boot_program_page(fileParser_pagesWritten++,&sd_buffer[128]);
-			boot_program_page(fileParser_pagesWritten++,&sd_buffer[256]);
-			boot_program_page(fileParser_pagesWritten++,&sd_buffer[384]);
-			*/
-				
+							
 			//increment the byte counter
 			//fileParser_bytesRead += 512
 			if ((fileParser_bytesRead) >= filesize )
 			{
-			//	lcd_setcursor(0,2);
-			//	lcd_string("end avr");
-			//	while(1);
 				 return 0;
 			}				 
 			
@@ -232,9 +170,10 @@ lcd_setcursor(0,2);
 				
 				
 				//reset cortex chip
-				//lcd_clear();
 				lcd_home();
 				lcd_string("updating...(1/2)");
+				lcd_setcursor(0,2);
+				lcd_command(LCD_CURSOR_ON);
 				
 				fileParser_resetCortex();
 				
@@ -253,16 +192,12 @@ lcd_setcursor(0,2);
 					if( (UCSR0A & (1<<RXC0)) )
 #endif
 					{
-			//			lcd_setcursor(0,2);
-			//	lcd_string("wait ack");
 						uint8_t data = uart_rxWait();	
-						
 						
 						if(data == ACK)
 						{
 							//bootloader successfully initialized
 							//it is now waiting for commands
-
 							break;
 						}
 					}
@@ -275,7 +210,7 @@ lcd_setcursor(0,2);
 					//an error occured
 					//could not initialize bootloader
 					lcd_home();
-					lcd_string("maiboard error");
+					lcd_string("mb error");
 					while(1);
 					return 0;
 				}
@@ -286,10 +221,8 @@ lcd_setcursor(0,2);
 				
 				
 				//give the cortex time to erase the flash
-			//	_delay_ms(2000); //ack is send after flash delete
 				lcd_home();
 				lcd_string("updating...(2/2)");
-				
 				return 1;
 			}
 			}			
@@ -316,24 +249,14 @@ lcd_setcursor(0,2);
 					//lcd_home();
 					//lcd_string("cmd");
 					uart_tx(addressCounter>>24);
-			//		lcd_home();
-		//	lcd_string("1");
 					uart_tx(addressCounter>>16);
-		//			lcd_home();
-		//	lcd_string("2");
 					uart_tx(addressCounter>>8);
-		//			lcd_home();
-		//	lcd_string("3");
 					uart_tx(addressCounter);
-		//			lcd_home();
-		//	lcd_string("4");
+
 					//send calculated CRC
 					uart_tx(crc>>8);
-		//			lcd_home();
-		//	lcd_string("c1");
 					uart_tx(crc&0xff);
-		//			lcd_home();
-		//	lcd_string("c2");
+
 				} 
 				while (uart_checkAck()!=ACK);	
 				
@@ -362,15 +285,7 @@ lcd_setcursor(0,2);
 			}				
 			
 			
-		//ui_ledToggle();	
-		/*
-			lcd_clear();
-			lcd_home();
-			lcd_string("add:");
-			char text[10];
-			lcd_string(utoa(addressCounter,text,10));
-			*/
-			
+	
 				
 			fileParser_bytesRead+=512;
 			//send cortex bootloader data
@@ -382,6 +297,7 @@ lcd_setcursor(0,2);
 				lcd_string("success!");
 				lcd_setcursor(0,2);
 				lcd_string("please reboot...");
+				lcd_command(LCD_CURSOR_OFF);
 				uart_tx(END_BOOTLOADER);
 				while(1);
 				 return 0;

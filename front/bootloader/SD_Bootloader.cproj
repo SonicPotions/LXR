@@ -5,7 +5,7 @@
     <ProjectVersion>5.1</ProjectVersion>
     <ToolchainName>com.Atmel.AVRGCC8</ToolchainName>
     <ProjectGuid>733935f3-60b5-4dff-a64f-fbe17a9ebae1</ProjectGuid>
-    <avrdevice>ATmega644</avrdevice>
+    <avrdevice>ATmega644P</avrdevice>
     <avrdeviceseries>none</avrdeviceseries>
     <AvrProjectType>Importer</AvrProjectType>
     <OutputType>Executable</OutputType>
@@ -17,6 +17,7 @@
     <avrtool />
     <AsfVersion>2.11.1</AsfVersion>
     <Name>SD_Bootloader</Name>
+    <avrtoolinterface />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'default' ">
     <OutputPath>bin\default\</OutputPath>

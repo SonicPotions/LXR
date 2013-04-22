@@ -5,7 +5,7 @@
     <ProjectVersion>5.1</ProjectVersion>
     <ToolchainName>com.Atmel.AVRGCC8</ToolchainName>
     <ProjectGuid>{2793f1e7-a992-4b77-938e-b0eb2e8f6389}</ProjectGuid>
-    <avrdevice>ATmega644</avrdevice>
+    <avrdevice>ATmega644P</avrdevice>
     <avrdeviceseries>none</avrdeviceseries>
     <OutputType>Executable</OutputType>
     <Language>C</Language>

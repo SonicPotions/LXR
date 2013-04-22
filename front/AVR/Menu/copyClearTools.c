@@ -160,6 +160,7 @@ void copyClear_armClearMenu(uint8_t isShown)
 		lcd_string("]?");
 		led_clearAllBlinkLeds();
 		led_setValue(1,LED_COPY);
+
 		
 	}
 	else
