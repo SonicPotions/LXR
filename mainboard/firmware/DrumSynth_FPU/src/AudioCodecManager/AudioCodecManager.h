@@ -47,8 +47,8 @@
 #if DMA_MODE_ACTIVE
 
 												// and want to do double buffering = *2
-extern volatile uint8_t dmaBufferPtr;
-extern volatile uint8_t doubleBufferPos;
+//extern volatile uint8_t dmaBufferPtr;
+//extern volatile uint8_t doubleBufferPos;
 #endif
 
 

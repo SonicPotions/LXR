@@ -118,7 +118,7 @@ void uart_init()
 
 
 //----------------------------------------------------
-//output on byte on the uart
+//output one byte on the uart
 uint8_t uart_putc(unsigned char c)
 {
 	uint8_t ret = fifo_bufferIn(&uart_txBuffer,c);

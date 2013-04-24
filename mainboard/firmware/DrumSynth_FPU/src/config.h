@@ -17,7 +17,8 @@
 #define true 1
 #define false 0
 
-#define OUTPUT_DMA_SIZE 16
+#define OUTPUT_DMA_SIZE 32
+#define DMA_MASK ((OUTPUT_DMA_SIZE*2)-1)
 #define UNIT_GAIN_DRIVE 0
 #define SET_PARAM_ARRAY_IN_PARSER 1
 #define USE_FILTER_DRIVE 0

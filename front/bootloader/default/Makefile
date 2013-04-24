@@ -37,6 +37,7 @@ SUBDIRS :=  \
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS +=  \
+../dout.c \
 ../FileParser.c \
 ../lcd/lcd.c \
 ../FAT32.c \
@@ -54,6 +55,7 @@ ASM_SRCS +=
 
 
 OBJS +=  \
+dout.o \
 FileParser.o \
 lcd/lcd.o \
 FAT32.o \
@@ -65,6 +67,7 @@ userInterface.o
 
 
 OBJS_AS_ARGS +=  \
+dout.o \
 FileParser.o \
 lcd/lcd.o \
 FAT32.o \
@@ -76,6 +79,7 @@ userInterface.o
 
 
 C_DEPS +=  \
+dout.d \
 FileParser.d \
 lcd/lcd.d \
 FAT32.d \
@@ -87,6 +91,7 @@ userInterface.d
 
 
 C_DEPS_AS_ARGS +=  \
+dout.d \
 FileParser.d \
 lcd/lcd.d \
 FAT32.d \
@@ -106,6 +111,8 @@ ADDITIONAL_DEPENDENCIES:=
 OUTPUT_FILE_DEP:= ./makedep.mk
 
 # AVR32/GNU C Compiler
+
+
 
 
 

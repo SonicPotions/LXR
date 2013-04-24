@@ -86,14 +86,17 @@ int main(void)
 	preset_init();
 #endif	
 
-#if USE_SD_CARD		
-	//load init preset 1
-	preset_loadDrumset(0,0);
-#endif
-	
+	_delay_ms(500); //give the data some time to be transmitted
 #if USE_SD_CARD	
 	preset_loadGlobals();
 #endif
+
+	_delay_ms(500); //give the data some time to be transmitted
+#if USE_SD_CARD		
+	//load init preset
+	preset_loadDrumset(0,0);
+#endif
+
 
 	//main loop
 	while(1) 

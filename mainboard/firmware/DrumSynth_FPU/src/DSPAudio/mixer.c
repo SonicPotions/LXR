@@ -287,10 +287,12 @@ void mixer_calcNextSampleBlock(int16_t* output,int16_t* output2)
 	int16_t sampleData[OUTPUT_DMA_SIZE];
 
 	//get the current position in the DMA buffer (wraps at 31)
-	const uint8_t pos = dmaBufferPtr&0x1f;
 
-	bufferTool_clearBuffer(output,0x1f);
-	bufferTool_clearBuffer(output2,0x1f);
+//	const uint8_t pos = dmaBufferPtr & ((OUTPUT_DMA_SIZE*2)-1);//&0x1f;
+	const uint8_t pos = 0;
+
+	bufferTool_clearBuffer(output,DMA_MASK);
+	bufferTool_clearBuffer(output2,DMA_MASK);
 
 	//calc voice 1
 	calcDrumVoiceSyncBlock(0, sampleData,OUTPUT_DMA_SIZE);
@@ -335,7 +337,7 @@ void mixer_calcNextSampleBlock(int16_t* output,int16_t* output2)
 	mixer_addDataToOutput(5,mixer_audioRouting[5],hatVoice.panL,hatVoice.panR, sampleData,&output[pos],&output[pos+1],&output2[pos],&output2[pos+1]);
 
 	//update dma buffer position
-	dmaBufferPtr += 32;
+	//dmaBufferPtr += (OUTPUT_DMA_SIZE*2);
 
 
 }

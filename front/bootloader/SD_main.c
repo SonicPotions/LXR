@@ -26,6 +26,7 @@
 #include "lcd/lcd.h"
 #include "avr/wdt.h"
 #include "userInterface.h"
+#include "dout.h"
 
 
 void port_init(void)
@@ -89,10 +90,12 @@ int __attribute__((OS_main)) __attribute__((noreturn))
 	 //init user ui
 	ui_init();
 	
+	dout_init();
+	
 	if(ui_isButtonPressed())
 	{
 		init_devices();
-		lcd_string("bootloader");
+		lcd_string("Bootloader v1.0");
 		_delay_ms(500);
 		cardType = 0;
 

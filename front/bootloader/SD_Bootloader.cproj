@@ -57,6 +57,12 @@
     <Compile Include="config.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="dout.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="dout.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="FAT32.h">
       <SubType>compile</SubType>
     </Compile>

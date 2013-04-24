@@ -33,8 +33,8 @@
 //------------------------------------------------------------------
 #if DMA_MODE_ACTIVE
 volatile int16_t dma_buffer[OUTPUT_DMA_SIZE*4];
-volatile uint8_t dmaBufferPtr=0;
- volatile uint8_t doubleBufferPos=0;
+//volatile uint8_t dmaBufferPtr=0;
+ //volatile uint8_t doubleBufferPos=0;
 
  volatile int16_t dma_buffer2[OUTPUT_DMA_SIZE*4];
 #endif

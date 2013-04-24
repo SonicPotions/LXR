@@ -202,6 +202,7 @@ uint8_t fileParser_parseNextBlock(unsigned long filesize)
 						}
 					}
 					
+					dout_updateOutputs();
 				}
 				
 				//check if init is ok (ACK received)
@@ -281,8 +282,11 @@ uint8_t fileParser_parseNextBlock(unsigned long filesize)
 				
 				//transfer succeeded
 				addressCounter++;
+				
+				
 											
-			}				
+			}	
+			dout_updateOutputs();			
 			
 			
 	

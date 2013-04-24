@@ -211,7 +211,8 @@ dir = findFiles (fileName); //get the file location
 if(dir == 0) 
 {
 	lcd_clear();
-	lcd_string("FW error");
+	lcd_home();
+	lcd_string("Firmware error");
 	while(1);
 	return;
 }	
