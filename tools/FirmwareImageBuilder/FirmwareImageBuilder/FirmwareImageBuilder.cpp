@@ -98,10 +98,13 @@ int _tmain(int argc, _TCHAR* argv[])
 	}
 
 	//zero padding to get full code page
-	float usedPages = avrSizeInBytes/256.f;
-	int restForFullPage = (usedPages-floor(usedPages))*256;
+	//float usedPages = avrSizeInBytes/256.f;
+	float usedPages = avrSizeInBytes/512.f;
+	//int restForFullPage = (usedPages-floor(usedPages))*256;
+	int restForFullPage = (usedPages-floor(usedPages))*512;
 
-	for(int i=0;i<restForFullPage-0xA0;i++)
+	//for(int i=0;i<restForFullPage-0xA0;i++)
+	for(int i=0;i<restForFullPage;i++)
 	{
 		char data = 0;
 		output << data;
@@ -125,7 +128,8 @@ int _tmain(int argc, _TCHAR* argv[])
 	float boundary = bytesWritten/512.f;
 	int itg = floorf(boundary)+1;
 	itg *= 512;
-	unsigned int neededDummyBytes = 0;//itg - bytesWritten;
+	//unsigned int neededDummyBytes = 0;//itg - bytesWritten;
+	unsigned int neededDummyBytes = itg - bytesWritten;
 
 	//append dummies
 	for(int i=0;i<neededDummyBytes;i++)

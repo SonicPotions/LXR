@@ -22,8 +22,8 @@ void Snare_setPan(const uint8_t pan)
 	snareVoice[voiceNr].panR = sqrtf(0.5+pan);
 	*/
 
-	snareVoice.panL = squareRootLut[pan];
-	snareVoice.panR = squareRootLut[127-pan];
+	snareVoice.panL = squareRootLut[127-pan];
+	snareVoice.panR = squareRootLut[pan];
 }
 //---------------------------------------------------
 

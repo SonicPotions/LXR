@@ -86,16 +86,59 @@ int main(void)
 	preset_init();
 #endif	
 
-	_delay_ms(500); //give the data some time to be transmitted
+	//we have to read out the pots once to have a defined state before loading the preset data
+	adc_checkPots();
+	
 #if USE_SD_CARD	
 	preset_loadGlobals();
 #endif
 
-	_delay_ms(500); //give the data some time to be transmitted
+
+
+	/*
+	{		
+		//read next button
+		din_readNextInput();
+		//update LEDs
+		dout_updateOutputs();
+		
+		uart_checkAndParse();
+		//get the encoder values
+		const int8_t encoderValue = encode_read4();  
+		
+		
+		const uint8_t button = encode_readButton();
+		
+		//update the menu according to the encoder values
+		menu_parseEncoder(encoderValue,button);	
+		//check the poti values
+		adc_checkPots();
+	
+		//check if there is data received for the parameters (from mainboard)
+		//4 times to speed up msg handling
+		uart_checkAndParse();
+		uart_checkAndParse();
+		uart_checkAndParse();
+		uart_checkAndParse();
+		
+	
+
+		led_tickHandler();
+
+		screensaver_check();
+		
+		buttonHandler_tick();
+		
+		//check if new sd card is available after remove
+		SD_checkCardAvailable();
+		
+	}
+		*/
+//	_delay_ms(500); //give the data some time to be transmitted
 #if USE_SD_CARD		
 	//load init preset
 	preset_loadDrumset(0,0);
-#endif
+#endif		
 
 
 	//main loop

@@ -23,8 +23,8 @@ float cheapSixRec(float f)
 //---------------------------------------------------
 void HiHat_setPan(const uint8_t pan)
 {
-	hatVoice.panL = squareRootLut[pan];
-	hatVoice.panR = squareRootLut[127-pan];
+	hatVoice.panL = squareRootLut[127-pan];
+	hatVoice.panR = squareRootLut[pan];
 }
 //---------------------------------------------------
 

@@ -16,7 +16,7 @@
 #define LED_PULSE_TIME (LED_PULSE_TIME_MS/16.384f)
 
 #define NUM_OF_BLINKABLE_LEDS 4
-#define LED_BLINK_TIME_MS 125
+#define LED_BLINK_TIME_MS 250
 #define LED_BLINK_TIME (LED_BLINK_TIME_MS/16.384f)
 
 volatile uint8_t led_currentStepLed = 0;
@@ -381,7 +381,8 @@ void led_tickHandler()
 		}			
 	}
 	
-	if(time_sysTick > led_nextBlinkTime)
+	//second condition is to prevent hanging LEDs if a systick overflow occurs
+	if( (time_sysTick > led_nextBlinkTime) || ( (led_nextBlinkTime-time_sysTick) > LED_BLINK_TIME*2) )
 	{
 		led_nextBlinkTime = time_sysTick + LED_BLINK_TIME;
 		

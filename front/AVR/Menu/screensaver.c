@@ -141,6 +141,12 @@ void screensaver_check()
 	{
 		if( (!screensaver_Active) )
 		{
+			//prevent overflow screensaver hanging bug
+			 if( (screensaver_Timeout-time_sysTick) > SCREENSAVER_SYSTICK)
+			 {
+				 screensaver_Timeout = time_sysTick + SCREENSAVER_SYSTICK;
+			 }
+
 			if(time_sysTick >= screensaver_Timeout )
 			{
 				//lcd_turnOn(0);

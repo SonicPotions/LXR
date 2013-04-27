@@ -13,8 +13,8 @@ CymbalVoice cymbalVoice;
 //---------------------------------------------------
 void Cymbal_setPan(const uint8_t pan)
 {
-	cymbalVoice.panL = squareRootLut[pan];
-	cymbalVoice.panR = squareRootLut[127-pan];
+	cymbalVoice.panL = squareRootLut[127-pan];
+	cymbalVoice.panR = squareRootLut[pan];
 }
 //---------------------------------------------------
 
