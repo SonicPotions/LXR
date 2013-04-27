@@ -83,10 +83,11 @@ float slopeEg2_calc(SlopeEg2* eg)
 		}
 		else
 		{
+			eg->repeatCnt--;
 			if(eg->repeatCnt > 0)
 			{
 				//retrigger the decay phase and decrease repeat counter
-				eg->repeatCnt--;
+
 				val = 1.f;
 
 			}

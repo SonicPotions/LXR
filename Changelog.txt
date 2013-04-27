@@ -7,6 +7,8 @@ Firmware v0.13
 - Fixed faulty sub step LED update (notes would not show up on the last steps of a pattern)
 - Fixed: LEDs stop blinking
 - Fixed buggy active step LEDs in step edit mode
+- Fixed layout bug on 2 page menu sections
+- EG Repeat count offset fixed (repeat=1 yielded in 2 repeats)
 
 Firmware v0.12
 --------------
