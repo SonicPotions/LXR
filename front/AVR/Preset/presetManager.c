@@ -668,10 +668,15 @@ frontPanel_sendData(PRESET,PATTERN_LOAD,presetNr);
 #endif
 };
 //----------------------------------------------------
-//val is interpolation value between 0 and 255
+//val is interpolation value between 0 and 255 
+//uses bankers rounding
 uint8_t interpolate(uint8_t a, uint8_t b, uint8_t x)
 {
-	return ((a*255) + (b-a)*x)/255;
+	uint16_t fixedPointValue = ((a*256) + (b-a)*x);
+	uint8_t result = fixedPointValue/256;
+	
+	return (fixedPointValue&0xff) < 0x7f ? result : result+1; 
+	//return ((a*255) + (b-a)*x)/255;
 }
 //----------------------------------------------------
 void preset_morph(uint8_t morph)
