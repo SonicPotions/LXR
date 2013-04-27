@@ -19,6 +19,7 @@
 #include "screensaver.h"
 #include "CcNr2Text.h"
 #include "copyClearTools.h"
+#include "../buttonHandler.h"
 
 #define ARROW_SIGN '>'
 //-----------------------------------------------------------------
@@ -207,7 +208,7 @@ const Name valueNames[NUM_NAMES] PROGMEM =
 	{SHORT_SCREEN_SAVER, CAT_GLOBAL,LONG_SCREENSAVER},	//TEXT_SCREENSAVER_ON_OFF
 		
 	
-		
+		{SHORT_EMPTY,CAT_EMPTY,LONG_EMPTY},					//SKIP	
 		
 		
 		
@@ -715,6 +716,17 @@ void menu_repaintLoadSavePage()
 	}	
 }
 //-----------------------------------------------------------------
+uint8_t checkScrollSign(uint8_t activePage, uint8_t activeParameter)
+{
+	const uint8_t is2ndPage = (activeParameter>3);
+	const uint8_t textType = pgm_read_byte(&menuPages[menu_activePage][activePage].top1 + 4);
+	if(textType != TEXT_EMPTY)
+	{
+		return is2ndPage?'<':'>';
+	}
+	else return 0;	
+}
+//-----------------------------------------------------------------
 void menu_repaint()
 {
 	
@@ -740,7 +752,6 @@ void menu_repaint()
 			//sprintf(&editDisplayBuffer[0][0],"Am");
 
 			if(parameters[parNr].dtype == DTYPE_AUTOM_TARGET)
-		//	if(0)
 			{
 				
 				if(parameters[parNr].value >= END_OF_SOUND_PARAMETERS) parameters[parNr].value = END_OF_SOUND_PARAMETERS-1;
@@ -936,56 +947,6 @@ void menu_repaint()
 						sprintf(&editDisplayBuffer[1][13],"%3d",parameters[parNr].value-63);
 					}
 					break;
-					
-					
-	/*				
-					case PAR_VEL_DEST_1:
-					case PAR_VEL_DEST_2:
-					case PAR_VEL_DEST_3:
-					case PAR_VEL_DEST_4:
-					case PAR_VEL_DEST_5:
-					case PAR_VEL_DEST_6:
-					{
-						const uint8_t voiceNr = parNr - PAR_VEL_DEST_1;
-						//get the page for the menuPage array
-						const uint8_t page = (parameters[parNr].value&MASK_PAGE)>>PAGE_SHIFT;
-						//get the active parameter on the page
-						const uint8_t activeParameter	= parameters[parNr].value&MASK_PARAMETER;
-
-						//print the corresponding parameter short name
-						//&menuPages[voiceNr][page].top1 + activeParameter
-					
-						memcpy_P(&editDisplayBuffer[1][13],&shortNames[pgm_read_byte(&valueNames[pgm_read_byte(&menuPages[voiceNr][page].top1 + activeParameter)].shortName)],3);
-					
-						//sprintf(valueAsText,"%s",parameters[parNr].value);	
-					}		
-					break;
-				
-				case PAR_TARGET_LFO1:
-					case PAR_TARGET_LFO2:
-					case PAR_TARGET_LFO3:
-					case PAR_TARGET_LFO4:
-					case PAR_TARGET_LFO5:
-					case PAR_TARGET_LFO6:
-					{
-						//get the active lfo number
-						const uint8_t lfoNr = parNr - PAR_TARGET_LFO1;
-						//get the selected voice from the LFO, we can use the menu page from the voice to get a parameter list
-						const uint8_t voiceNr = parameters[PAR_VOICE_LFO1+lfoNr].value;
-						//get the page for the menuPage array
-						const uint8_t page = (parameters[parNr].value&MASK_PAGE)>>PAGE_SHIFT;
-						//get the active parameter on the page
-						const uint8_t activeParameter	= parameters[parNr].value&MASK_PARAMETER;
-
-						//print the corresponding parameter short name
-						//&menuPages[voiceNr][page].top1 + activeParameter
-					
-						memcpy_P(&editDisplayBuffer[1][13],&shortNames[pgm_read_byte(&valueNames[pgm_read_byte(&menuPages[voiceNr][page].top1 + activeParameter)].shortName)],3);
-					
-						//sprintf(valueAsText,"%s",parameters[parNr].value);	
-					}					
-						break;
-						*/
 			}
 		
 		
@@ -1002,9 +963,18 @@ void menu_repaint()
 			memcpy_P(&editDisplayBuffer[0][12],&shortNames[pgm_read_byte(&valueNames[pgm_read_byte(&menuPages[menu_activePage][activePage].top4+is2ndPage)].shortName)],3);
 	
 			//make first letter of selected parameter capital (sub dec 32 --> see ascii table)
-			editDisplayBuffer[0][(activeParameter%4)*4] -= 32;
-	
-			// bottom values
+			//NOT on text_empty
+			if(editDisplayBuffer[0][(activeParameter%4)*4] != 0) {
+				editDisplayBuffer[0][(activeParameter%4)*4] -= 32;
+			}			
+			
+			
+			//check if scoll sign needs to be shown
+			uint8_t showScrollSign = checkScrollSign(activePage, activeParameter);
+			editDisplayBuffer[0][15] = showScrollSign;
+
+			
+			//------------------ bottom values ----------------------------------
 		
 			// some place to store the parameter value as text
 			char valueAsText[3]; 
@@ -1237,7 +1207,6 @@ void menu_repaint()
 };
 //-----------------------------------------------------------------
 
-//-----------------------------------------------------------------
 void menu_handleLoadSaveMenu(int8_t inc, uint8_t button)
 {
 //this is a special case because the load/save page differs from all the other pages

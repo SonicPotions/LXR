@@ -46,15 +46,22 @@
  uint8_t frontParser_activeTrack=0;	/** the active track on the Frontpanel. track specific messages refer to the track selected with this command*/
 uint8_t frontParser_shownPattern = 0;
  uint8_t frontParser_activeStep=0;
+ static uint8_t frontParser_lastRequestedStep=0;
 //------------------------------------------------------
 /**send all active step numbers to frontpanel to light up corresponding LEDs*/
 void frontParser_updateTrackLeds(const uint8_t trackNr, uint8_t patternNr)
 {
+
+
 	if(trackNr<=6)
 	{
+
+		//uint8_t range = frontParser_lastRequestedStep/8;
+
 		frontParser_activeFrontTrack = trackNr;
 
 		int i=0;
+
 		for(;i<16;i++)
 		{
 			if(seq_isMainStepActive(trackNr,i,patternNr))
@@ -65,7 +72,9 @@ void frontParser_updateTrackLeds(const uint8_t trackNr, uint8_t patternNr)
 			}
 		}
 
-		for(i=0;i<128;i++)
+
+		//for(i=0;i<128;i++)
+		for(i=frontParser_lastRequestedStep;i<(frontParser_lastRequestedStep+8);i++) //only send visible substeps
 		{
 
 			if(seq_isStepActive(trackNr,i,patternNr))
@@ -73,11 +82,13 @@ void frontParser_updateTrackLeds(const uint8_t trackNr, uint8_t patternNr)
 				uart_sendFrontpanelByte(FRONT_STEP_LED_STATUS_BYTE);
 				uart_sendFrontpanelByte(FRONT_LED_SEQ_SUB_STEP);
 				uart_sendFrontpanelByte(i);
+				/*
 				__NOP();
 				__NOP();
 				__NOP();
 				__NOP();
 				__NOP();
+				*/
 			}
 
 
@@ -747,6 +758,8 @@ void frontParser_parseUartData(unsigned char data)
 					break;
 
 				case FRONT_SEQ_REQUEST_STEP_PARAMS:{
+
+					frontParser_lastRequestedStep = frontParser_midiMsg.data2;
 					/* send back probability, volume and note nr*/
 					uart_sendFrontpanelByte(FRONT_SEQ_CC);
 					uart_sendFrontpanelByte(FRONT_SEQ_VOLUME);
@@ -868,6 +881,8 @@ void frontParser_parseUartData(unsigned char data)
 					//send all active step numbers to frontpanel to light up corresponding LEDs
 					case FRONT_LED_QUERY_SEQ_TRACK:
 					{
+
+
 						uint8_t trackNr = frontParser_midiMsg.data2 >> 4;
 						uint8_t patternNr = frontParser_midiMsg.data2 & 0x7;
 

@@ -58,6 +58,14 @@ void copyClear_executeClear()
 	copyClear_Mode = MODE_NONE;
 };
 //-----------------------------------------------------------------------------
+void copyClear_reset()
+{
+	copyClear_Mode = MODE_NONE;
+	led_clearAllBlinkLeds();
+	buttonHandler_copySrc = buttonHandler_copyDst = SRC_DST_NONE;
+	
+};
+//-----------------------------------------------------------------------------
 void copyClear_setSrc(int8_t src, uint8_t type)
 {
 	buttonHandler_copySrc = src;

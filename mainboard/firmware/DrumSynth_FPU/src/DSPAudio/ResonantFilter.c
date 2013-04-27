@@ -11,6 +11,7 @@
 // so libm.a won't link without this int.
 int __errno;
 //------------------------------------------------------------------------------------
+
 //------------------------------------------------------------------------------------
 void SVF_setReso(ResonantFilter* filter, float feedback)
 {
@@ -29,6 +30,10 @@ void SVF_init(ResonantFilter* filter)
 		filter->drive = 0.5f;
 
 		SVF_directSetFilterValue(filter,0.25f);
+
+#if USE_SHAPER_NONLINEARITY
+		setDistortionShape(&filter->shaper, 0);
+#endif
 }
 //------------------------------------------------------------------------------------
 static float fastTanh(float var)
@@ -54,6 +59,20 @@ float fastTan(float x)
 void SVF_recalcFreq(ResonantFilter* filter)
 {
 	filter->g  = fastTan(M_PI * filter->f );
+#if USE_SHAPER_NONLINEARITY
+	setDistortionShape(&filter->shaper, filter->drive);
+#endif
+}
+//------------------------------------------------------------------------------------
+void SVF_setDrive(ResonantFilter* filter,uint8_t drive)
+{
+#if USE_SHAPER_NONLINEARITY
+	filter->drive = drive;
+	setDistortionShape(&filter->shaper, filter->drive);
+#else
+	filter->drive =  0.4f + (drive/127.f)*(drive/127.f)*6;
+#endif
+
 }
 //------------------------------------------------------------------------------------
 void SVF_directSetFilterValue(ResonantFilter* filter, float val)
@@ -92,7 +111,11 @@ void SVF_calcBlockZDF(ResonantFilter* filter, const uint8_t type, int16_t* buf, 
 
 	for(i=0;i<size;i++)
 	{
+#if USE_SHAPER_NONLINEARITY
+		const float x = (buf[i]/((float)0x7fff));
+#else
 		const float x = softClipTwo((buf[i]/((float)0x7fff))*filter->drive);
+#endif
 
 #if ENABLE_NONLINEAR_INTEGRATORS
 		// input with half sample delay, for non-linearities
@@ -137,37 +160,62 @@ void SVF_calcBlockZDF(ResonantFilter* filter, const uint8_t type, int16_t* buf, 
 		{
 		default:
 		case FILTER_LP:
-			tmp = y1 * FILTER_GAIN;
+#if USE_SHAPER_NONLINEARITY
+
+			buf[i] = FILTER_GAIN * fastTanh( distortion_calcSampleFloat(&filter->shaper, y1));
+#else
+			tmp = fastTanh(y1) * 0x7fff ;//FILTER_GAIN;
 			buf[i] = __SSAT(tmp,16);
+#endif
 			break;
 
 		case FILTER_HP:
 		{
 			const float ugb = 2*R*y0;
 			const float h = x - ugb - y1;
+#if USE_SHAPER_NONLINEARITY
+
+			buf[i] = FILTER_GAIN * distortion_calcSampleFloat(&filter->shaper, h);
+#else
 			tmp = h * FILTER_GAIN;
 			buf[i] = __SSAT(tmp,16);
+#endif
 		}
 			break;
 
 		case FILTER_BP:
+#if USE_SHAPER_NONLINEARITY
+
+			buf[i] = FILTER_GAIN * distortion_calcSampleFloat(&filter->shaper, y0);
+#else
 			tmp = y0 * FILTER_GAIN;
 			buf[i] = __SSAT(tmp,16);
+#endif
 			break;
 
 		case FILTER_UNITY_BP:
 		{
 			const float ugb = 2*R*y0;
+#if USE_SHAPER_NONLINEARITY
+
+			buf[i] = FILTER_GAIN * distortion_calcSampleFloat(&filter->shaper, ugb);
+#else
 			tmp = ugb * FILTER_GAIN;
 			buf[i] = __SSAT(tmp,16);
+#endif
 		}
 			break;
 
 		case FILTER_NOTCH:
 		{
 			const float ugb = 2*R*y0;
+#if USE_SHAPER_NONLINEARITY
+
+			buf[i] = FILTER_GAIN * distortion_calcSampleFloat(&filter->shaper, (x-ugb));
+#else
 			tmp = (x-ugb) * FILTER_GAIN;
 			buf[i] = __SSAT(tmp,16);
+#endif
 		}
 			break;
 
@@ -175,8 +223,13 @@ void SVF_calcBlockZDF(ResonantFilter* filter, const uint8_t type, int16_t* buf, 
 		{
 			const float ugb = 2*R*y0;
 			const float h = x - ugb - y1;
+#if USE_SHAPER_NONLINEARITY
+
+			buf[i] = FILTER_GAIN * distortion_calcSampleFloat(&filter->shaper, (y1-h));
+#else
 			tmp = (y1-h) * FILTER_GAIN;
 			buf[i] = __SSAT(tmp,16);
+#endif
 		}
 			break;
 

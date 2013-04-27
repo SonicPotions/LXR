@@ -1,0 +1,21 @@
+
+
+Firmware v0.13
+--------------
+- Fixed SD card error messages
+- copy operation is now aborted when the copy button is released
+- Fixed faulty sub step LED update (notes would not show up on the last steps of a pattern)
+- Fixed: LEDs stop blinking
+- Fixed buggy active step LEDs in step edit mode
+
+Firmware v0.12
+--------------
+- Fixed noise problems with output routing
+- Added visual feedback to bootloader
+- added 'additional page available' sign to display
+- fixed 'Firmware error' message in bootloader
+
+
+Firmware v0.1
+-------------
+Initial release

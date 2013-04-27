@@ -23,3 +23,8 @@ void calcDistBlock(const Distortion *dist, int16_t* buf, const uint8_t size)
 	}
 }
 //--------------------------------------------------
+
+float distortion_calcSampleFloat(const Distortion *dist, float x)
+{
+	return (1+dist->shape)*x/(1+dist->shape*fabsf(x));
+}

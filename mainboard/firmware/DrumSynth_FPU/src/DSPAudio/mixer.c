@@ -55,6 +55,7 @@ void mixer_decimateBlock(const uint8_t voiceNr, int16_t* buffer)
 uint8_t mixer_checkOutJackAvailable(uint8_t dest)
 {
 	//read input pins
+	//TODO move pin reading in low priority idle loop
 	uint8_t r2_Available = (GPIOC->IDR & GPIO_Pin_4);
 	uint8_t l1_Available = (GPIOC->IDR & GPIO_Pin_5);
 	uint8_t l2_Available = (GPIOA->IDR & GPIO_Pin_0);
@@ -291,15 +292,15 @@ void mixer_calcNextSampleBlock(int16_t* output,int16_t* output2)
 //	const uint8_t pos = dmaBufferPtr & ((OUTPUT_DMA_SIZE*2)-1);//&0x1f;
 	const uint8_t pos = 0;
 
-	bufferTool_clearBuffer(output,DMA_MASK);
-	bufferTool_clearBuffer(output2,DMA_MASK);
+	bufferTool_clearBuffer(output,OUTPUT_DMA_SIZE*2);
+	bufferTool_clearBuffer(output2,OUTPUT_DMA_SIZE*2);
 
 	//calc voice 1
 	calcDrumVoiceSyncBlock(0, sampleData,OUTPUT_DMA_SIZE);
 	//decimate voice
 	mixer_decimateBlock(0,sampleData);
 	//copy to selected dma buffer
-	mixer_moveDataToOutput(0,mixer_audioRouting[0],voiceArray[0].panL ,voiceArray[0].panR, sampleData,&output[pos],&output[pos+1],&output2[pos],&output2[pos+1]);
+	mixer_addDataToOutput(0,mixer_audioRouting[0],voiceArray[0].panL ,voiceArray[0].panR, sampleData,&output[pos],&output[pos+1],&output2[pos],&output2[pos+1]);
 
 	//calc voice 2
 	calcDrumVoiceSyncBlock(1, sampleData,OUTPUT_DMA_SIZE);

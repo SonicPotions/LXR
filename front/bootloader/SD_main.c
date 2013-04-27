@@ -95,7 +95,7 @@ int __attribute__((OS_main)) __attribute__((noreturn))
 	if(ui_isButtonPressed())
 	{
 		init_devices();
-		lcd_string("Bootloader v1.0");
+		lcd_string("Bootloader v1.1");
 		_delay_ms(500);
 		cardType = 0;
 

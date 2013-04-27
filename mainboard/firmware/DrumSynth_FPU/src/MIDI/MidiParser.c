@@ -987,14 +987,16 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 #if UNIT_GAIN_DRIVE
 				voiceArray[msg.data1-CC2_FILTER_DRIVE_1].filter.drive = (msg.data2/127.f);
 #else
-				voiceArray[msg.data1-CC2_FILTER_DRIVE_1].filter.drive = 0.4f + (msg.data2/127.f)*(msg.data2/127.f)*6;
+				SVF_setDrive(&voiceArray[msg.data1-CC2_FILTER_DRIVE_1].filter,msg.data2);
+				//voiceArray[msg.data1-CC2_FILTER_DRIVE_1].filter.drive = 0.4f + (msg.data2/127.f)*(msg.data2/127.f)*6;
 #endif
 				break;
 			case CC2_FILTER_DRIVE_4:
 #if UNIT_GAIN_DRIVE
 				snareVoice.filter.drive = (msg.data2/127.f);
 #else
-				snareVoice.filter.drive = 0.4f + (msg.data2/127.f)*(msg.data2/127.f)*6;
+				SVF_setDrive(&snareVoice.filter, msg.data2);
+				//snareVoice.filter.drive = 0.4f + (msg.data2/127.f)*(msg.data2/127.f)*6;
 #endif
 
 				break;
@@ -1002,7 +1004,8 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 #if UNIT_GAIN_DRIVE
 				cymbalVoice.filter.drive = (msg.data2/127.f);
 #else
-				cymbalVoice.filter.drive = 0.4f + (msg.data2/127.f)*(msg.data2/127.f)*6;
+				SVF_setDrive(&cymbalVoice.filter, msg.data2);
+				//cymbalVoice.filter.drive = 0.4f + (msg.data2/127.f)*(msg.data2/127.f)*6;
 #endif
 
 				break;
@@ -1010,7 +1013,8 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 #if UNIT_GAIN_DRIVE
 				hatVoice.filter.drive = (msg.data2/127.f);
 #else
-				hatVoice.filter.drive =  0.4f + (msg.data2/127.f)*(msg.data2/127.f)*6;
+				SVF_setDrive(&hatVoice.filter, msg.data2);
+				//hatVoice.filter.drive =  0.4f + (msg.data2/127.f)*(msg.data2/127.f)*6;
 #endif
 
 				break;

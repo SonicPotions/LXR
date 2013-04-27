@@ -122,7 +122,7 @@ uint8_t fileParser_parseNextBlock(unsigned long filesize)
 				
 				lcd_clear();
 				lcd_home();
-				lcd_string("hd err");
+				lcd_string("header error");
 				
 				while(1);
 				return 0;
@@ -135,7 +135,7 @@ uint8_t fileParser_parseNextBlock(unsigned long filesize)
 			{
 				
 				lcd_setcursor(0,2);
-				lcd_string("end hd");
+				lcd_string("EOF error");
 				while(1);
 			}		
 			
@@ -211,7 +211,7 @@ uint8_t fileParser_parseNextBlock(unsigned long filesize)
 					//an error occured
 					//could not initialize bootloader
 					lcd_home();
-					lcd_string("mb error");
+					lcd_string("mainboard error");
 					while(1);
 					return 0;
 				}

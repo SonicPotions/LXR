@@ -43,5 +43,7 @@ uint8_t copyClear_srcSet();
 void copyClear_setSrc(int8_t src, uint8_t type);
 void copyClear_setDst(int8_t dst, uint8_t type);
 
+void copyClear_reset();
+
 
 #endif /* COPYCLEARTOOLS_H_ */

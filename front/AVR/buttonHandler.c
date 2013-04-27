@@ -322,14 +322,7 @@ void buttonHandler_handleSelectButton(uint8_t buttonNr)
 		
 				uint8_t stepNr = buttonHandler_selectedStep + buttonNr;
 				uint8_t ledNr = LED_PART_SELECT1 + buttonNr;
-				//toggle the led
-				//led_toggle(ledNr);
-
-				//uint8_t trackNr = menu_getActiveVoice(); //max 6 => 0x6 = 0b110
-				//uint8_t patternNr = menu_getShownPattern(); //max 7 => 0x07 = 0b111
-				//uint8_t value = (trackNr<<4) | (patternNr&0x7);
-				//frontPanel_sendData(STEP_CC,value,stepNr);
-		
+			
 				//request step parameters from sequencer
 				frontPanel_sendData(SEQ_CC,SEQ_REQUEST_STEP_PARAMS,stepNr);
 		
@@ -337,7 +330,9 @@ void buttonHandler_handleSelectButton(uint8_t buttonNr)
 				
 				//buttonHandler_armTimerActionStep(stepNr);
 				led_clearAllBlinkLeds();
-				led_setBlinkLed(LED_STEP1 + buttonHandler_selectedStep,1);
+				//re set the main step led
+				led_setBlinkLed(LED_STEP1 + (stepNr/8),1);
+
 				
 				const uint8_t selectButtonNr = stepNr%8;
 				led_setBlinkLed(LED_PART_SELECT1 + selectButtonNr,1);
@@ -529,8 +524,8 @@ void buttonHandler_buttonReleased(uint8_t buttonNr)
 			else
 			{
 				//copy mode abort/exit
-				copyClear_Mode = MODE_NONE;
-				led_setBlinkLed(LED_COPY,0);
+				copyClear_reset();
+				
 			
 			}
 
@@ -747,6 +742,7 @@ void buttonHandler_buttonReleased(uint8_t buttonNr)
 //--------------------------------------------------------
 void buttonHandler_selectActiveStep(uint8_t ledNr, uint8_t seqButtonPressed)
 {
+	
 	led_setBlinkLed(selectedStepLed,0);
 	led_setValue(0,selectedStepLed);
 				
@@ -758,12 +754,13 @@ void buttonHandler_selectActiveStep(uint8_t ledNr, uint8_t seqButtonPressed)
 				
 	//blink new step
 	led_setBlinkLed(ledNr,1);
-				
-	//update sub steps
-	buttonHandler_updateSubSteps(menu_activeVoice);
+
 	//update sub steps
 	//request step parameters from sequencer 
 	frontPanel_sendData(SEQ_CC,SEQ_REQUEST_STEP_PARAMS,seqButtonPressed*8);
+				
+	//update sub steps
+	buttonHandler_updateSubSteps(menu_activeVoice);
 }
 //--------------------------------------------------------
 void buttonHandler_setRemoveStep(uint8_t ledNr, uint8_t seqButtonPressed)
@@ -1088,7 +1085,12 @@ return;
 				{
 					
 					case SELECT_MODE_STEP:
+						led_clearAllBlinkLeds();
 						buttonHandler_selectActiveStep(ledNr, seqButtonPressed);
+						
+						//reset sub step to 1 (== main step parameters)
+						led_setBlinkLed(LED_PART_SELECT1,1);
+						
 					break;
 					//--- edit the pattern -> button sets and removes a step ---
 					/*

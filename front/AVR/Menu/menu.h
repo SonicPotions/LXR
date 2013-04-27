@@ -167,6 +167,8 @@ enum NamesEnum
 	TEXT_SHUFFLE,
 	TEXT_SCREENSAVER_ON_OFF,
 	
+	TEXT_SKIP, //spacer to insert if 1st of 2 pages has only 3 parameters
+	
 	NUM_NAMES
 };
 //-----------------------------------------------------------------

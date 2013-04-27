@@ -20,10 +20,15 @@
 #include "stm32f4xx.h"
 #include "datatypes.h"
 #include "math.h"
+#include "distortion.h"
 //----------------------------------------------------
 //removed to free some cpu cycles
 #define ENABLE_NONLINEAR_INTEGRATORS 	1
 #define FILTER_GAIN 					0x70ff
+
+#define USE_SHAPER_NONLINEARITY 0
+
+
 //----------------------------------------------------
 enum filterTypeEnum
 {
@@ -48,11 +53,17 @@ typedef struct ResoFilterStruct
 #endif
 
 	float drive;
+
+#if USE_SHAPER_NONLINEARITY
+	Distortion shaper;
+#endif
 } ResonantFilter;
 //------------------------------------------------------------------------------------
 void SVF_setReso(ResonantFilter* filter, float feedback);
 //------------------------------------------------------------------------------------
 void SVF_init();
+//------------------------------------------------------------------------------------
+void SVF_setDrive(ResonantFilter* filter, uint8_t drive);
 //------------------------------------------------------------------------------------
 void SVF_directSetFilterValue(ResonantFilter* filter, float val);
 //------------------------------------------------------------------------------------

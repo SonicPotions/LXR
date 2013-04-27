@@ -101,7 +101,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	float usedPages = avrSizeInBytes/256.f;
 	int restForFullPage = (usedPages-floor(usedPages))*256;
 
-	for(int i=0;i<restForFullPage;i++)
+	for(int i=0;i<restForFullPage-0xA0;i++)
 	{
 		char data = 0;
 		output << data;
@@ -125,7 +125,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	float boundary = bytesWritten/512.f;
 	int itg = floorf(boundary)+1;
 	itg *= 512;
-	unsigned int neededDummyBytes = itg - bytesWritten;
+	unsigned int neededDummyBytes = 0;//itg - bytesWritten;
 
 	//append dummies
 	for(int i=0;i<neededDummyBytes;i++)

@@ -20,4 +20,6 @@ void setDistortionShape(Distortion *dist, uint8_t shape);
 //--------------------------------------------------
 void calcDistBlock(const Distortion *dist, int16_t* buf, const uint8_t size);
 //--------------------------------------------------
+float distortion_calcSampleFloat(const Distortion *dist, float x);
+//--------------------------------------------------
 #endif /* DISTORTION_H_ */

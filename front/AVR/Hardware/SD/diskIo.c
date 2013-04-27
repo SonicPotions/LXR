@@ -32,8 +32,8 @@ DSTATUS disk_initialize (BYTE drive)/* Physical drive number */
 	
 	//init spi port for SD card
 	spi_init();
-	lcd_home();
-	lcd_string_F(PSTR("spi init"));
+//	lcd_home();
+//	lcd_string_F(PSTR("spi init"));
 	
 	//init SD card for (i=0; i<10; i++)
 	for (i=0; i<10; i++)
@@ -47,11 +47,17 @@ DSTATUS disk_initialize (BYTE drive)/* Physical drive number */
 	{
 		
 		lcd_home();
+		lcd_clear();
+		lcd_string_F(PSTR("SD card"));
+		lcd_setcursor(0,2);
+		if(error == 1) {
+			
+			lcd_string_F(PSTR("not detected!"));
+		}		
+		else if(error == 2) lcd_string_F(PSTR("init error"));
 		
-		if(error == 1) lcd_string_F(PSTR("SD card not detected.."));
-		else if(error == 2) lcd_string_F(PSTR("Card Initialization failed.."));
-		
-		else lcd_string_F(PSTR("unknown SD card error"));
+		else lcd_string_F(PSTR("unknown error"));
+		_delay_ms(2000);
 		
 		return Stat;
 		
@@ -61,11 +67,11 @@ DSTATUS disk_initialize (BYTE drive)/* Physical drive number */
 	else
 	{
 		lcd_home();	
-		lcd_string_F(PSTR("sd card ok"));
+		lcd_string_F(PSTR("SD card OK"));
 		
 	
 		SPI_HIGH_SPEED;
-		_delay_ms(1);
+		_delay_ms(5);
 
 	}
 	

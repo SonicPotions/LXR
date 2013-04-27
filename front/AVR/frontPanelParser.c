@@ -408,7 +408,7 @@ void frontPanel_parseData(uint8_t data)
 								uint8_t stepNr = frontParser_midiMsg.data2 ;//& 0x7f;
 								uint8_t subStepRange = buttonHandler_selectedStep;
 								//check if received step is a valid sub step
-								if( (stepNr >= subStepRange) && (stepNr<subStepRange+8) )
+								if( (stepNr >= subStepRange) && (stepNr<(subStepRange+8)) )
 								{
 									stepNr = stepNr - subStepRange;
 									led_setValue(1,LED_PART_SELECT1+stepNr);
