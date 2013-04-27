@@ -1600,15 +1600,25 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 				/*
 				//check if next parameter is not empty
 				//if inc is negative avoid to integer underflow (don't decrement 0)*/
-				const uint8_t activeParameter	= (menuIndex+inc) & MASK_PARAMETER;
-				const uint8_t activePage		= ((menuIndex+inc)&MASK_PAGE)>>PAGE_SHIFT;
+				uint8_t activeParameter	= (menuIndex+inc) & MASK_PARAMETER;
+				uint8_t activePage		= ((menuIndex+inc)&MASK_PAGE)>>PAGE_SHIFT;
 			
 				uint8_t param = pgm_read_byte(&menuPages[menu_activePage][activePage].top1 + activeParameter);
 		
 		
 				if(inc>0)
-				{
-					if((param != TEXT_EMPTY) && (activeParameter!=0) ) //(menuIndex+inc)!=255)
+				{			
+					
+					if((param == TEXT_SKIP) && (activeParameter!=0) ) 
+					{
+						//skip entry
+						inc++;
+						activeParameter	= (menuIndex+inc) & MASK_PARAMETER;
+						activePage		= ((menuIndex+inc)&MASK_PAGE)>>PAGE_SHIFT;
+						param = pgm_read_byte(&menuPages[menu_activePage][activePage].top1 + activeParameter);
+						
+					}		
+					if((param != TEXT_EMPTY) && (activeParameter!=0) ) 
 					{
 						if(parameterFetch & PARAMETER_LOCK_ACTIVE)
 						{
@@ -1628,6 +1638,17 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 				}
 				else
 				{
+					
+					if((param == TEXT_SKIP) && (activeParameter!=0) ) 
+					{
+						//skip entry
+						inc--;
+						activeParameter	= (menuIndex+inc) & MASK_PARAMETER;
+						activePage		= ((menuIndex+inc)&MASK_PAGE)>>PAGE_SHIFT;
+						param = pgm_read_byte(&menuPages[menu_activePage][activePage].top1 + activeParameter);
+						
+					}
+					
 					if( (menuIndex!=0) && (activeParameter != MASK_PARAMETER) )
 					{
 				
