@@ -9,6 +9,7 @@
 #include "IO\dout.h"
 #include <string.h>
 #include "Hardware/timebase.h"
+#include "Menu/menu.h"
 
 //since we need an array to store the start time we have to limit the number of simultanousely pulsable LEDs
 #define NUM_OF_PULSABLE_LEDS 8	//MAX 8 at the moment (because of led_pulsingLeds)
@@ -53,6 +54,16 @@ void led_clearSelectLeds()
 	dout_outputData[arrayPos] = 0;
 	led_originalLedState[arrayPos] = 0; 
 }
+//--------------------------------------------
+void led_initPerformanceLeds()
+{
+	led_setValue(1,menu_playedPattern + LED_PART_SELECT1);
+	// a blinking LED shows the viewed pattern if different from the played pattern
+	if(menu_playedPattern != menu_getViewedPattern())
+	{
+		led_setBlinkLed(LED_PART_SELECT1 + menu_getViewedPattern() ,1);
+	}		
+};
 //--------------------------------------------
 void led_clearVoiceLeds()
 {

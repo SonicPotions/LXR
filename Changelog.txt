@@ -1,4 +1,9 @@
-
+Firmware v0.14 (27.4.2013)
+---------------------------
+- Fixed LED display in performance mode
+- changed name on splashscreen
+- added status LED for viewed (blinking) and playing (lit) pattern in perf. mode
+- prevent pattern option update while pattern options are edited
 
 Firmware v0.13 (27.4.2013)
 ---------------------------

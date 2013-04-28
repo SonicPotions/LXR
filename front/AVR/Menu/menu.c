@@ -41,7 +41,7 @@ void menu_setShownPattern(uint8_t patternNr)
 	frontPanel_sendData(SEQ_CC,SEQ_SET_SHOWN_PATTERN,menu_shownPattern);
 }
 
-uint8_t menu_getShownPattern()
+uint8_t menu_getViewedPattern()
 {
 	return menu_shownPattern;
 }
@@ -1024,7 +1024,7 @@ void menu_repaint()
 									sprintf(valueAsText,"Off");
 								} else {
 									
-									const uint8_t voice = menu_cc2name[parameters[parNr].value].voiceNr;
+									//const uint8_t voice = menu_cc2name[parameters[parNr].value].voiceNr;
 									const uint8_t name = menu_cc2name[parameters[parNr].value].nameIdx;
 									memcpy_P(&valueAsText,shortNames[pgm_read_byte(&valueNames[name].shortName)],3);	
 									

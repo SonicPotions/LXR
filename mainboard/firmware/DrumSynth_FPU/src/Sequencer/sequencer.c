@@ -215,35 +215,6 @@ uint8_t seq_getTrackLength(uint8_t trackNr)
 	return 16;
 }
 //------------------------------------------------------------------------------
-/*
-PatternSet* seq_getActivePatternSet()
-{
-	if(seq_activePatternSetPtr == &seq_patternSet1) {
-		return &seq_patternSet1;
-	} else {
-		return seq_patternSet2;
-	}
-}
-//------------------------------------------------------------------------------
-PatternSet* seq_getInactivePatternSet()
-{
-	if(seq_activePatternSetPtr == &seq_patternSet1) {
-		return &seq_patternSet2;
-	} else {
-		return &seq_patternSet1;
-	}
-}
-//------------------------------------------------------------------------------
-void seq_switchActivePatternSet()
-{
-	if(seq_activePatternSetPtr == &seq_patternSet1) {
-		seq_activePatternSetPtr = seq_patternSet2;
-	} else {
-		seq_activePatternSetPtr = &seq_patternSet1;
-	}
-}
-*/
-//------------------------------------------------------------------------------
 void seq_calcDeltaT(uint16_t bpm)
 {
 	//--- calc deltaT ----

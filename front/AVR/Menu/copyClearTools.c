@@ -27,7 +27,7 @@ void copyClear_clearTrackAutom(uint8_t automTrack)
 //-----------------------------------------------------------------------------
 void copyClear_clearCurrentPattern()
 {
-	uint8_t pattern = menu_getShownPattern();
+	uint8_t pattern = menu_getViewedPattern();
 	led_clearSequencerLeds();
 	frontPanel_sendData(SEQ_CC,SEQ_CLEAR_PATTERN,pattern);
 };

@@ -195,21 +195,11 @@ void buttonHandler_handleModeButtons(uint8_t mode)
 		{
 			case SELECT_MODE_PERF:
 			{
-				//show the muted voices on the select buttons
-				//led_setMode2Leds(buttonHandler_mutedVoices);
-				
-				//show the active pattern on the sequencer buttons 9-16
 				led_clearSequencerLeds();
 				led_clearSelectLeds();
-				//request active pattern
-				//frontPanel_sendData(SEQ_CC,SEQ_GET_ACTIVE_PAT,0x00);
-				
-				//led_clearSequencerLeds9_16();
-				led_clearSelectLeds();
-				// set led to show active pattern
-				led_setValue(1, LED_PART_SELECT1 + menu_playedPattern);
-				//set menu to mute page mode
-				
+				led_initPerformanceLeds();		
+
+				//set menu to perf page
 				lastActiveSubPage	= menu_getSubPage();
 				menu_switchPage(PERFORMANCE_PAGE);
 				menu_switchSubPage(0);
@@ -285,7 +275,7 @@ void buttonHandler_handleSelectButton(uint8_t buttonNr)
 				//set sequencer step on soundchip
 		
 				uint8_t trackNr = menu_getActiveVoice(); //max 6 => 0x6 = 0b110
-				uint8_t patternNr = menu_getShownPattern(); //max 7 => 0x07 = 0b111
+				uint8_t patternNr = menu_getViewedPattern(); //max 7 => 0x07 = 0b111
 				uint8_t value = (trackNr<<4) | (patternNr&0x7);
 				frontPanel_sendData(STEP_CC,value,stepNr);
 		
@@ -305,7 +295,7 @@ void buttonHandler_handleSelectButton(uint8_t buttonNr)
 					//led_clearSequencerLeds();
 					//query current sequencer step states and light up the corresponding leds 
 					uint8_t trackNr = menu_getActiveVoice(); //max 6 => 0x6 = 0b110
-					uint8_t patternNr = menu_getShownPattern(); //max 7 => 0x07 = 0b111
+					uint8_t patternNr = menu_getViewedPattern(); //max 7 => 0x07 = 0b111
 					uint8_t value = (trackNr<<4) | (patternNr&0x7);
 					frontPanel_sendData(LED_CC,LED_QUERY_SEQ_TRACK, value);
 					frontPanel_sendData(SEQ_CC,SEQ_REQUEST_PATTERN_PARAMS, patternNr);
@@ -321,7 +311,7 @@ void buttonHandler_handleSelectButton(uint8_t buttonNr)
 				//select buttons represent sub steps
 		
 				uint8_t stepNr = buttonHandler_selectedStep + buttonNr;
-				uint8_t ledNr = LED_PART_SELECT1 + buttonNr;
+				//uint8_t ledNr = LED_PART_SELECT1 + buttonNr;
 			
 				//request step parameters from sequencer
 				frontPanel_sendData(SEQ_CC,SEQ_REQUEST_STEP_PARAMS,stepNr);
@@ -442,7 +432,7 @@ void buttonHandler_updateSubSteps(uint8_t track)
 	led_clearSelectLeds();
 	//query current sequencer step states and light up the corresponding leds 
 	uint8_t trackNr = menu_getActiveVoice(); //max 6 => 0x6 = 0b110
-	uint8_t patternNr = menu_getShownPattern(); //max 7 => 0x07 = 0b111
+	uint8_t patternNr = menu_getViewedPattern(); //max 7 => 0x07 = 0b111
 	uint8_t value = (trackNr<<4) | (patternNr&0x7);
 	frontPanel_sendData(LED_CC,LED_QUERY_SEQ_TRACK,value);
 }
@@ -549,13 +539,15 @@ void buttonHandler_buttonReleased(uint8_t buttonNr)
 		} else if( (buttonHandler_getMode() == SELECT_MODE_PERF)) {
 			led_clearAllBlinkLeds();
 			led_clearSelectLeds();
-			//led_setValue(1,menu_playedPattern + LED_PART_SELECT1);
+			
 			menu_switchPage(PERFORMANCE_PAGE);
+			led_initPerformanceLeds();
+			
 			return;
 		} else if( (buttonHandler_getMode() == SELECT_MODE_PAT_GEN)) {
-			led_clearAllBlinkLeds();
+			//led_clearAllBlinkLeds();
 			led_clearSelectLeds();
-			led_setValue(1,menu_playedPattern + LED_PART_SELECT1);
+			led_setValue(1,menu_getViewedPattern() + LED_PART_SELECT1);
 			menu_switchPage(EUKLID_PAGE);
 		} else if ( (buttonHandler_getMode() == SELECT_MODE_STEP)) {
 			buttonHandler_enterSeqModeStepMode();
@@ -782,7 +774,7 @@ void buttonHandler_setRemoveStep(uint8_t ledNr, uint8_t seqButtonPressed)
 						
 	//set sequencer step on soundchip
 	uint8_t trackNr = menu_getActiveVoice(); //max 6 => 0x6 = 0b110
-	uint8_t patternNr = menu_getShownPattern(); //max 7 => 0x07 = 0b111
+	uint8_t patternNr = menu_getViewedPattern(); //max 7 => 0x07 = 0b111
 	uint8_t value = (trackNr<<4) | (patternNr&0x7);
 	//frontPanel_sendData(STEP_CC,value,seqButtonPressed);
 	frontPanel_sendData(MAIN_STEP_CC,value,seqButtonPressed/8);		
@@ -832,7 +824,7 @@ return;
 					//query current sequencer step states and light up the corresponding leds 
 					
 					uint8_t trackNr = menu_getActiveVoice(); //max 6 => 0x6 = 0b110
-					uint8_t patternNr = menu_getShownPattern(); //max 7 => 0x07 = 0b111
+					uint8_t patternNr = menu_getViewedPattern(); //max 7 => 0x07 = 0b111
 					uint8_t value = (trackNr<<4) | (patternNr&0x7);
 					frontPanel_sendData(LED_CC,LED_QUERY_SEQ_TRACK,value);
 				
@@ -919,7 +911,7 @@ return;
 				//query current sequencer step states and light up the corresponding leds 
 				
 				uint8_t trackNr = menu_getActiveVoice(); //max 6 => 0x6 = 0b110
-				uint8_t patternNr = menu_getShownPattern(); //max 7 => 0x07 = 0b111
+				uint8_t patternNr = menu_getViewedPattern(); //max 7 => 0x07 = 0b111
 				uint8_t value = (trackNr<<4) | (patternNr&0x7);
 				frontPanel_sendData(LED_CC,LED_QUERY_SEQ_TRACK,value);
 				
@@ -1105,7 +1097,7 @@ return;
 					
 					break;
 					
-					//--- buttons 1-8 initiate a manual roll, buttons 9-16 select the pattern ---
+					//--- buttons 1-8 initiate a manual roll
 					case SELECT_MODE_PERF:
 						if(seqButtonPressed < 8 )
 						{
@@ -1211,7 +1203,29 @@ return;
 			//blink selected pattern LED
 			menu_switchPage(PATTERN_SETTINGS_PAGE);
 			led_clearSelectLeds();
-			led_setBlinkLed(menu_getShownPattern()+LED_PART_SELECT1,1);
+			led_clearAllBlinkLeds();
+			
+			if((buttonHandler_getMode() == SELECT_MODE_PAT_GEN))
+			{
+				led_setBlinkLed(LED_MODE2,1);
+			}
+			
+			//the pattern change update for the follow mode is not made immediately when the pattern options are active
+			//so we have to do it here
+			if (parameters[PAR_FOLLOW].value)  {
+					menu_setShownPattern(frontParser_midiMsg.data2);
+					led_clearSequencerLeds();
+					//query current sequencer step states and light up the corresponding leds 
+					uint8_t trackNr = menu_getActiveVoice(); //max 6 => 0x6 = 0b110
+					uint8_t patternNr = menu_getViewedPattern(); //max 7 => 0x07 = 0b111
+					uint8_t value = (trackNr<<4) | (patternNr&0x7);
+					frontPanel_sendData(LED_CC,LED_QUERY_SEQ_TRACK,value);
+					frontPanel_sendData(SEQ_CC,SEQ_REQUEST_PATTERN_PARAMS,frontParser_midiMsg.data2);
+				}	
+			
+			
+			//led_initPerformanceLeds();
+			led_setBlinkLed(LED_PART_SELECT1 + menu_getViewedPattern() ,1);
 		}else if(buttonHandler_getMode() == SELECT_MODE_STEP)
 		{
 			buttonHandler_leaveSeqModeStepMode();

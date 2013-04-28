@@ -327,30 +327,29 @@ void frontPanel_parseData(uint8_t data)
 						led_setBlinkLed(LED_PART_SELECT1+frontParser_midiMsg.data2,0);
 						//clear last pattern led
 						
-						if(parameters[PAR_FOLLOW].value) {
+						if( (parameters[PAR_FOLLOW].value) && ( menu_activePage != PATTERN_SETTINGS_PAGE)) {
 							menu_setShownPattern(frontParser_midiMsg.data2);
-							
-							if(buttonHandler_getMode() == SELECT_MODE_PERF)
-							{
-								//only show pattern changes when in performance mode
-								
-								//led_clearSequencerLeds9_16();
-								led_clearSelectLeds();
-								// and set it to active
-								led_setValue(1,LED_PART_SELECT1+frontParser_midiMsg.data2);
-							}								
-
 							led_clearSequencerLeds();
 							//query current sequencer step states and light up the corresponding leds 
-							
 							uint8_t trackNr = menu_getActiveVoice(); //max 6 => 0x6 = 0b110
-							uint8_t patternNr = menu_getShownPattern(); //max 7 => 0x07 = 0b111
+							uint8_t patternNr = menu_getViewedPattern(); //max 7 => 0x07 = 0b111
 							uint8_t value = (trackNr<<4) | (patternNr&0x7);
 							frontPanel_sendData(LED_CC,LED_QUERY_SEQ_TRACK,value);
 							frontPanel_sendData(SEQ_CC,SEQ_REQUEST_PATTERN_PARAMS,frontParser_midiMsg.data2);
-							//frontPanel_sendData(SEQ_CC,SEQ_REQUEST_EUKLID_PARAMS,menu_activePage);
 						}	
 						menu_playedPattern = frontParser_midiMsg.data2;						
+						
+						if( (buttonHandler_getMode() == SELECT_MODE_PERF) || (buttonHandler_getMode() == SELECT_MODE_PAT_GEN) )
+						{
+							//only show pattern changes when in performance mode
+								
+							//led_clearSequencerLeds9_16();
+							led_clearSelectLeds();
+							led_clearAllBlinkLeds();
+							// re init the LEDs shwoing active/viewed pattern
+							led_initPerformanceLeds();
+							//led_setValue(1,LED_PART_SELECT1+frontParser_midiMsg.data2);
+						}			
 						
 						
 						break;
@@ -370,12 +369,12 @@ void frontPanel_parseData(uint8_t data)
 					{
 						
 						case LED_CURRENT_STEP_NR: {
-							uint8_t shownPattern = menu_getShownPattern();
+							uint8_t shownPattern = menu_getViewedPattern();
 							uint8_t playedPattern = menu_playedPattern;
 							
 							if(shownPattern == playedPattern) {
 								//only update chaselight LED when it step edit mode
-								if( (menu_activePage < MENU_MIDI_PAGE) || menu_activePage == SEQ_PAGE || menu_activePage == EUKLID_PAGE) {
+								if( (menu_activePage < MENU_MIDI_PAGE) || menu_activePage == PERFORMANCE_PAGE ||menu_activePage == SEQ_PAGE || menu_activePage == EUKLID_PAGE) {
 									led_setActive_step(frontParser_midiMsg.data2);
 								}							
 							} else {
@@ -419,35 +418,13 @@ void frontPanel_parseData(uint8_t data)
 						break;
 						case LED_SEQ_BUTTON:
 						{
-							/*
-							if(buttonHandler_getShift())
+							if(menu_activePage != PERFORMANCE_PAGE) //do not show active steps on perf. page
 							{
-								//parse sub steps
-								
-								
-								uint8_t stepNr = frontParser_midiMsg.data2 & 0x7f;
-								uint8_t subStepRange = buttonHandler_selectedStep;
-								//check if received step is a valid sub step
-								if((stepNr >= subStepRange) && (stepNr<subStepRange+8)) 
-								{
-									stepNr = stepNr - subStepRange;
-									led_setValue(1,LED_PART_SELECT1+stepNr);
-								}
-								
-								
-							}
-							*/
-							//else
-							{
-								
-		
 								//limit to 16 steps
-								//
 								uint8_t stepNr = ((frontParser_midiMsg.data2&0x7f)/8); //limit to 127
 								
 								led_setValue(1,LED_STEP1+stepNr);
-																	
-							}								
+							}
 						}		
 						
 						break;

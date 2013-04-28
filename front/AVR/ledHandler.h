@@ -24,7 +24,7 @@ void led_setActiveVoice(uint8_t voiceNr);
 
 void led_setActiveSelectButton(uint8_t butNr);
 
-
+void led_initPerformanceLeds();
 /** set the state of all select mode 2 leds*/
 void led_setMode2Leds(uint8_t value);
 

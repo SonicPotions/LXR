@@ -31,7 +31,7 @@ extern uint8_t menu_playedPattern;
 extern uint8_t menu_shownPattern;
 
 void menu_setShownPattern(uint8_t patternNr);
-uint8_t menu_getShownPattern();
+uint8_t menu_getViewedPattern();
 
 
 enum PageNames
