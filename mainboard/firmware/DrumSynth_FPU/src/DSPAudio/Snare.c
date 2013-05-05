@@ -118,24 +118,8 @@ void Snare_calcSyncBlock(int16_t* buf, const uint8_t size)
 
 	int16_t transBuf[size];
 
-	calcNoiseBlock(&snareVoice.noiseOsc,buf,size,0.5f);
+	calcNoiseBlock(&snareVoice.noiseOsc,buf,size,0.9f);
 	SVF_calcBlockZDF(&snareVoice.filter,snareVoice.filterType,buf,size);
-
-	/*
-	if((snareVoice.filterType&0x1))
-	{
-		//get low pass
-		bufferTool_moveBuffer(buf,SVF_getLpBlockInt(&snareVoice.filter),size);
-	}
-	else
-	{
-		//clear buffer
-		bufferTool_clearBuffer(buf,size);
-	}
-	if((snareVoice.filterType&0x2)) bufferTool_addBuffersSaturating(buf,SVF_getHpBlockInt(&snareVoice.filter),size);
-	if((snareVoice.filterType&0x4)) bufferTool_addBuffersSaturating(buf,SVF_getBpBlockInt(&snareVoice.filter),size);
-	*/
-
 
 	//calc transient sample
 	transient_calcBlock(&snareVoice.transGen,transBuf,size);
