@@ -1,3 +1,16 @@
+Firmware v0.15 
+---------------------------
+- Mod target pan fixed
+- mod target LFO speed fixed
+- Mod target drum 1-3 FM freq fixed
+- fixed LFO sync times
+- added toggle via select button if menu has 2 pages
+- added some new transient samples
+- added global midi channel to settings menu 
+- fixed flickering display when changing voices
+- added/fixed save morph sound function
+
+
 Firmware v0.14 (27.4.2013)
 ---------------------------
 - Fixed LED display in performance mode

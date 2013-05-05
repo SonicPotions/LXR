@@ -38,15 +38,11 @@ void modNode_setOriginalValueChanged(ModulationNode* vm, uint16_t idx)
 				case TYPE_SPECIAL_F:
 					break;
 
+				case TYPE_SPECIAL_P:
 				case TYPE_SPECIAL_FILTER_F:
 				case TYPE_FLT:
 					vm->originalValue.flt = *((float*)parameterArray[vm->destination].ptr);
 					break;
-
-				case TYPE_SPECIAL_P:
-
-					break;
-
 
 				case TYPE_UINT32:
 					vm->originalValue.itg = *((uint32_t*)parameterArray[vm->destination].ptr);

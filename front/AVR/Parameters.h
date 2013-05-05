@@ -724,6 +724,11 @@ enum ParamEnums
 	PAR_PATTERN_NEXT,
 	
 	PAR_TRACK_LENGTH,
+	
+	PAR_POS_X,
+	PAR_POS_Y,
+	PAR_FLUX,
+	PAR_SOM_FREQ,
 
 	
 	//#########################################

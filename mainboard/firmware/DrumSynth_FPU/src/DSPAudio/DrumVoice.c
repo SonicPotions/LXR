@@ -19,8 +19,9 @@ DrumVoice voiceArray[NUM_VOICES];
 //---------------------------------------------------
 void setPan(const uint8_t voiceNr, const uint8_t pan)
 {
-	voiceArray[voiceNr].panL = squareRootLut[127-pan];
-	voiceArray[voiceNr].panR = squareRootLut[pan];
+	//voiceArray[voiceNr].panL = squareRootLut[127-pan];
+	//voiceArray[voiceNr].panR = squareRootLut[pan];
+	voiceArray[voiceNr].pan = pan;
 }
 //---------------------------------------------------
 void drum_setPhase(const uint8_t phase, const uint8_t voiceNr)

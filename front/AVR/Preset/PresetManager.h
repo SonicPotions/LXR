@@ -19,7 +19,7 @@ void preset_init();
 /** save the parameters of all 6 voices + LFO settings to a file on the SD card 
 if isMorph==1 the sound will be loaded into the morph buffer
 */
-void preset_saveDrumset(uint8_t presetNr);
+void preset_saveDrumset(uint8_t presetNr, uint8_t isMorph);
 uint8_t preset_loadDrumset(uint8_t presetNr, uint8_t isMorph);
 
 
@@ -36,6 +36,7 @@ uint8_t preset_loadPattern(uint8_t presetNr);
 char* preset_getPatternName(uint8_t presetNr);
 /** morph pattern linear to üpattern buffer 2*/
 void preset_morph(uint8_t morph);
+uint8_t preset_getMorphValue(uint8_t index, uint8_t morph);
 
 
 #endif /* PRESETMANAGER_H_ */

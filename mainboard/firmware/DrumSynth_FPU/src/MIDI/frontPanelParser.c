@@ -20,6 +20,7 @@
 #include "CymbalVoice.h"
 #include "HiHat.h"
 #include "Snare.h"
+#include "SomGenerator.h"
 
 
 
@@ -685,6 +686,31 @@ void frontParser_parseUartData(unsigned char data)
 				case FRONT_SEQ_CLEAR_PATTERN:
 					 seq_clearPattern(frontParser_midiMsg.data2);
 					break;
+
+				case FRONT_SEQ_POSX:
+					som_setX(frontParser_midiMsg.data2);
+					break;
+
+				case FRONT_SEQ_POSY:
+					som_setY(frontParser_midiMsg.data2);
+					break;
+
+				case FRONT_SEQ_FLUX:
+					som_setFlux(frontParser_midiMsg.data2/127.f);
+					break;
+
+				case FRONT_SEQ_SOM_FREQ:
+					som_setFreq(frontParser_midiMsg.data2,frontParser_activeTrack);
+					break;
+
+				case FRONT_SEQ_MIDI_CHAN:
+				{
+					uint8_t voice = frontParser_midiMsg.data2 >> 4;
+					uint8_t channel = frontParser_midiMsg.data2 & 0x0f;
+					midi_globalMidiChannel = channel;
+				}
+					break;
+
 
 				//voice nr (0xf0) + autom track nr (0x0f)
 				case FRONT_SEQ_CLEAR_AUTOM:

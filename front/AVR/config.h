@@ -10,6 +10,6 @@
 #define CONFIG_H_
 
 #define USE_SD_CARD 1		//set to "1" if the SD reader is connected to the AVR, "0" if the cortex uses it
-
+#define USE_DRUM_MAP_GENERATOR 0
 
 #endif /* CONFIG_H_ */

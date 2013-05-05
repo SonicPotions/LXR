@@ -14,7 +14,7 @@
 #include "Menu\screensaver.h"
 #include "Menu/copyClearTools.h"
 #include "Hardware/timebase.h"
-
+#include "config.h"
 
 
 
@@ -225,6 +225,12 @@ void buttonHandler_handleModeButtons(uint8_t mode)
 			case SELECT_MODE_MENU:
 				menu_switchPage(MENU_MIDI_PAGE);
 
+			break;
+			
+			case SELECT_MODE_SOM_GEN:
+#if USE_DRUM_MAP_GENERATOR
+				menu_switchPage(SOM_PAGE);
+#endif
 			break;
 			
 

@@ -38,6 +38,7 @@
 #include "EuklidGenerator.h"
 #include "ParameterArray.h"
 #include "modulationNode.h"
+#include "SomGenerator.h"
 
 #if USE_SD_CARD
 #include "SD_Manager.h"
@@ -208,6 +209,8 @@ int main(void)
 
 	euklid_init();
 
+	som_init();
+
 	//init the seq speed
 	seq_init();
 	seq_setBpm(120);
@@ -261,6 +264,11 @@ int main(void)
 			}
 		}
 
+		//generate next sample if no valid sample is present
+		if(bCurrentSampleValid!= SAMPLE_VALID)
+		{
+			calcNextSampleBlock();
+		}
 		//process the sequencer
 		seq_tick();
 

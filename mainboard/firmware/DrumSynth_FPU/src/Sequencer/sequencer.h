@@ -94,6 +94,8 @@ extern uint8_t seq_newPatternAvailable;
 //extern PatternSet* seq_activePatternSetPtr;
 extern PatternSet seq_patternSet;
 extern TempPattern seq_tmpPattern;
+
+//extern uint8_t seq_midiChannel;
 /*
 extern volatile Step seq_subStepPattern[NUM_PATTERN][NUM_TRACKS][NUM_STEPS];
 extern volatile uint16_t seq_mainSteps[NUM_PATTERN][NUM_TRACKS];
@@ -109,6 +111,7 @@ extern uint8_t seq_selectedStep;
 //PatternSet* seq_getActivePatternSet();
 //------------------------------------------------------------------------------
 //PatternSet* seq_getInactivePatternSet();
+void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note);
 //------------------------------------------------------------------------------
 void seq_setShuffle(float shuffle);
 //------------------------------------------------------------------------------

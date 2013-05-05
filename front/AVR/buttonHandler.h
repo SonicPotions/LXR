@@ -38,8 +38,9 @@ sequencer buttons display the 16 main steps and can be used to access step speci
 
 //#define SELECT_MODE_VOICE_STEP	0x04
 #define SELECT_MODE_PAT_GEN		0x05
-//#define SELECT_MODE_STEP_EDIT	0x06
+#define SELECT_MODE_SOM_GEN		0x06
 #define SELECT_MODE_MENU		0x07
+		
 
 enum ButtonNumbers
 {

@@ -299,20 +299,20 @@ void parameterArray_init()
 	parameterArray[PAR_FMAMNT1].ptr 		= &voiceArray[0].fmModAmount;
 	parameterArray[PAR_FMAMNT1].type 	= TYPE_FLT;
 
-	parameterArray[PAR_FM_FREQ1].ptr 	= &voiceArray[0].modOsc.phaseInc;
-	parameterArray[PAR_FM_FREQ1].type 	= TYPE_UINT32;
+	parameterArray[PAR_FM_FREQ1].ptr 	= &voiceArray[0].modOsc.modNodeValue;
+	parameterArray[PAR_FM_FREQ1].type 	= TYPE_SPECIAL_F;//TYPE_UINT32;
 
 	parameterArray[PAR_FMAMNT2].ptr 		= &voiceArray[1].fmModAmount;
 	parameterArray[PAR_FMAMNT2].type 	= TYPE_FLT;
 
-	parameterArray[PAR_FM_FREQ2].ptr 	= &voiceArray[1].modOsc.phaseInc;
-	parameterArray[PAR_FM_FREQ2].type 	= TYPE_UINT32;
+	parameterArray[PAR_FM_FREQ2].ptr 	= &voiceArray[1].modOsc.modNodeValue;
+	parameterArray[PAR_FM_FREQ2].type 	= TYPE_SPECIAL_F;//TYPE_UINT32;
 
 	parameterArray[PAR_FMAMNT3].ptr 		= &voiceArray[2].fmModAmount;
 	parameterArray[PAR_FMAMNT3].type 	= TYPE_FLT;
 
-	parameterArray[PAR_FM_FREQ3].ptr 	= &voiceArray[2].modOsc.phaseInc;
-	parameterArray[PAR_FM_FREQ3].type 	= TYPE_UINT32;
+	parameterArray[PAR_FM_FREQ3].ptr 	= &voiceArray[2].modOsc.modNodeValue;
+	parameterArray[PAR_FM_FREQ3].type 	= TYPE_SPECIAL_F;//TYPE_UINT32;
 
 
 	parameterArray[PAR_VOL1].ptr 		= &voiceArray[0].vol;
@@ -328,13 +328,13 @@ void parameterArray_init()
 	parameterArray[PAR_VOL6].ptr 		= &hatVoice.vol;
 	parameterArray[PAR_VOL6].type 		= TYPE_FLT;
 
-	parameterArray[PAR_PAN1].ptr 		= 0;
-	parameterArray[PAR_PAN1].type 		= TYPE_SPECIAL_P;
-	parameterArray[PAR_PAN2].ptr 		= 0;
-	parameterArray[PAR_PAN2].type 		= TYPE_SPECIAL_P;
-	parameterArray[PAR_PAN3].ptr 		= 0;
-	parameterArray[PAR_PAN3].type 		= TYPE_SPECIAL_P;
-	parameterArray[PAR_PAN4].ptr 		= 0;
+	parameterArray[PAR_PAN1].ptr 		= &voiceArray[0].pan;
+	parameterArray[PAR_PAN1].type 		= TYPE_UINT8;
+	parameterArray[PAR_PAN2].ptr 		= &voiceArray[1].pan;
+	parameterArray[PAR_PAN2].type 		= TYPE_UINT8;
+	parameterArray[PAR_PAN3].ptr 		= &voiceArray[2].pan;
+	parameterArray[PAR_PAN3].type 		= TYPE_UINT8;
+	parameterArray[PAR_PAN4].ptr 		= 0;//&snareVoice.pan;
 	parameterArray[PAR_PAN4].type 		= TYPE_SPECIAL_P;
 	parameterArray[PAR_PAN5].ptr 		= 0;
 	parameterArray[PAR_PAN5].type 		= TYPE_SPECIAL_P;
@@ -374,18 +374,18 @@ void parameterArray_init()
 	parameterArray[PAR_VOICE_DECIMATION_ALL].ptr= &mixer_decimation_rate[6];
 	parameterArray[PAR_VOICE_DECIMATION_ALL].type 	= TYPE_FLT;
 
-	parameterArray[PAR_FREQ_LFO1].ptr 			= &voiceArray[0].lfo.freq;
-	parameterArray[PAR_FREQ_LFO1].type 			= TYPE_FLT;
-	parameterArray[PAR_FREQ_LFO2].ptr 			= &voiceArray[1].lfo.freq;
-	parameterArray[PAR_FREQ_LFO2].type 			= TYPE_FLT;
-	parameterArray[PAR_FREQ_LFO3].ptr 			= &voiceArray[2].lfo.freq;
-	parameterArray[PAR_FREQ_LFO3].type 			= TYPE_FLT;
-	parameterArray[PAR_FREQ_LFO4].ptr 			= &snareVoice.lfo.freq;
-	parameterArray[PAR_FREQ_LFO4].type 			= TYPE_FLT;
-	parameterArray[PAR_FREQ_LFO5].ptr 			= &cymbalVoice.lfo.freq;
-	parameterArray[PAR_FREQ_LFO5].type 			= TYPE_FLT;
-	parameterArray[PAR_FREQ_LFO6].ptr 			= &hatVoice.lfo.freq;
-	parameterArray[PAR_FREQ_LFO6].type 			= TYPE_FLT;
+	parameterArray[PAR_FREQ_LFO1].ptr 			= &voiceArray[0].lfo.modNodeValue;
+	parameterArray[PAR_FREQ_LFO1].type 			= TYPE_SPECIAL_F;//TYPE_FLT;
+	parameterArray[PAR_FREQ_LFO2].ptr 			= &voiceArray[1].lfo.modNodeValue;
+	parameterArray[PAR_FREQ_LFO2].type 			= TYPE_SPECIAL_F;//TYPE_FLT;
+	parameterArray[PAR_FREQ_LFO3].ptr 			= &voiceArray[2].lfo.modNodeValue;
+	parameterArray[PAR_FREQ_LFO3].type 			= TYPE_SPECIAL_F;//TYPE_FLT;
+	parameterArray[PAR_FREQ_LFO4].ptr 			= &snareVoice.lfo.modNodeValue;
+	parameterArray[PAR_FREQ_LFO4].type 			= TYPE_SPECIAL_F;//TYPE_FLT;
+	parameterArray[PAR_FREQ_LFO5].ptr 			= &cymbalVoice.lfo.modNodeValue;
+	parameterArray[PAR_FREQ_LFO5].type 			= TYPE_SPECIAL_F;//TYPE_FLT;
+	parameterArray[PAR_FREQ_LFO6].ptr 			= &hatVoice.lfo.modNodeValue;
+	parameterArray[PAR_FREQ_LFO6].type 			= TYPE_SPECIAL_F;//TYPE_FLT;
 
 	parameterArray[PAR_AMOUNT_LFO1].ptr 	= &voiceArray[0].lfo.modTarget.amount;
 	parameterArray[PAR_OSC_WAVE_DRUM3].type = TYPE_FLT;

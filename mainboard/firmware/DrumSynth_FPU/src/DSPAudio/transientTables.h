@@ -11,6 +11,8 @@
 #include "stm32f4xx.h"
 #include <stdint.h>
 
+#define NUM_TRANSIENTS 12
+
 /*
  * a transient sound is very short one shot sound to give the attack of a sound some character
  *
@@ -46,6 +48,6 @@ extern const float transientVolumeTable[69];
 /* signed 8 bit pcm
  * 4102__patchen__atik-2-10-stereoatik
  */
-extern const int8_t transientData[7][TRANSIENT_SAMPLE_LENGTH];
+extern const int8_t transientData[NUM_TRANSIENTS][TRANSIENT_SAMPLE_LENGTH];
 
 #endif /* TRANSIENTTABLES_H_ */

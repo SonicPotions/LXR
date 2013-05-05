@@ -13,12 +13,6 @@
 HiHatVoice hatVoice;
 
 
-float cheapSixRec(float f)
-{
-	float out=0;
-	return out;
-}
-
 
 //---------------------------------------------------
 void HiHat_setPan(const uint8_t pan)
@@ -68,6 +62,8 @@ void HiHat_init()
 	slopeEg2_init(&hatVoice.oscVolEg);
 
 	SVF_init(&hatVoice.filter);
+
+	lfo_init(&hatVoice.lfo);
 }
 //---------------------------------------------------
 //---------------------------------------------------

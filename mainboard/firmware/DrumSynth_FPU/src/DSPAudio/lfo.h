@@ -28,7 +28,7 @@
 
 
 #define LFO_MAX_F 		200 //[Hz]
-#define LFO_SR 			REAL_FS
+#define LFO_SR 			(REAL_FS/(float)OUTPUT_DMA_SIZE)
 //-------------------------------------------------------------
 typedef struct LfoStruct
 {
@@ -41,6 +41,7 @@ typedef struct LfoStruct
 	uint8_t sync;
 	float freq;
 	ModulationNode modTarget;
+	float		modNodeValue;
 } Lfo;
 //-------------------------------------------------------------
 void lfo_init(Lfo *lfo);

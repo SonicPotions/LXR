@@ -23,4 +23,6 @@ float midiParser_calcDetune(uint8_t value);
 //needed to know to which value the automation node should return
 extern uint8_t midiParser_originalCcValues[0xff];
 
+extern uint8_t midi_globalMidiChannel;
+
 #endif /* MIDIPARSER_H_ */

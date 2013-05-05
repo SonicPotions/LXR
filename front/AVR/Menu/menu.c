@@ -207,8 +207,12 @@ const Name valueNames[NUM_NAMES] PROGMEM =
 		
 	{SHORT_SCREEN_SAVER, CAT_GLOBAL,LONG_SCREENSAVER},	//TEXT_SCREENSAVER_ON_OFF
 		
-	
-		{SHORT_EMPTY,CAT_EMPTY,LONG_EMPTY},					//SKIP	
+	{SHORT_EMPTY,CAT_EMPTY,LONG_EMPTY},					//SKIP	
+			
+	{SHORT_X,CAT_GENERATOR,LONG_X},	//TEXT_POS_X,
+	{SHORT_Y,CAT_GENERATOR,LONG_Y},	//TEXT_POS_Y,
+	{SHORT_FLUX,CAT_GENERATOR,LONG_FLUX},	//TEXT_FLUX,
+	{SHORT_FREQ,CAT_GENERATOR,LONG_FREQ},	//TEXT_SOM_FREQ,
 		
 		
 		
@@ -716,11 +720,22 @@ void menu_repaintLoadSavePage()
 	}	
 }
 //-----------------------------------------------------------------
+uint8_t has2ndPage(uint8_t menuPage)
+{
+	const uint8_t textType = pgm_read_byte(&menuPages[menu_activePage][menuPage].top1 + 4);
+	if(textType != TEXT_EMPTY)
+	{
+		return 1;
+	}
+	else return 0;	
+		
+}
+//-----------------------------------------------------------------
 uint8_t checkScrollSign(uint8_t activePage, uint8_t activeParameter)
 {
 	const uint8_t is2ndPage = (activeParameter>3);
-	const uint8_t textType = pgm_read_byte(&menuPages[menu_activePage][activePage].top1 + 4);
-	if(textType != TEXT_EMPTY)
+	//const uint8_t textType = pgm_read_byte(&menuPages[menu_activePage][activePage].top1 + 4);
+	if(has2ndPage(activePage))
 	{
 		return is2ndPage?'<':'>';
 	}
@@ -1230,10 +1245,11 @@ void menu_handleLoadSaveMenu(int8_t inc, uint8_t button)
 					break;
 						
 					case WHAT_SOUND:
-					preset_saveDrumset(menu_currentPresetNr);
+					preset_saveDrumset(menu_currentPresetNr,0);
 					break;
 						
 					case WHAT_MORPH:
+					preset_saveDrumset(menu_currentPresetNr,1);
 					break;
 					
 					case WHAT_GLO:
@@ -1708,14 +1724,40 @@ void menu_switchSubPage(uint8_t subPageNr)
 {
 	//lock all parameters
 	lockPotentiometerFetch();
-							
-	menuIndex &= ~(MASK_PAGE);
-	menuIndex |= (subPageNr&MASK_PARAMETER)<<PAGE_SHIFT;	
+	
+	//
+	
+	uint8_t activeParameter	= menuIndex & MASK_PARAMETER;
+	uint8_t activePage		= (menuIndex&MASK_PAGE)>>PAGE_SHIFT;
+	
+	if( has2ndPage(activePage) &&(subPageNr == activePage))
+	{
+		//toggle between 1st and 2nd page
+		if(activeParameter>=4)
+		{
+			activeParameter -= 4;	
+		} else {
+			activeParameter +=4;
+		}
+		
+		menuIndex &= ~(MASK_PARAMETER);
+		menuIndex |= (activeParameter&MASK_PARAMETER);
+		
+	} else
+	{		
+		//got to page 1, parameter 1
+		menuIndex &= ~(MASK_PAGE);
+		menuIndex |= (subPageNr&MASK_PARAMETER)<<PAGE_SHIFT;	
+	}		
 };
 //-----------------------------------------------------------------
 void menu_resetActiveParameter()
 {
-	menuIndex &= ~MASK_PARAMETER;
+	uint8_t activePage		= (menuIndex&MASK_PAGE)>>PAGE_SHIFT;
+	if(!has2ndPage(activePage))
+	{
+		menuIndex &= ~MASK_PARAMETER;
+	}		
 };
 //-----------------------------------------------------------------
 uint8_t menu_getSubPage()
@@ -1728,8 +1770,7 @@ void menu_switchPage(uint8_t pageNr)
 	//go to 1st parameter on sub page
 	menu_resetActiveParameter();
 	
-	//re-init the save page variables
-	menu_resetSaveParameters();
+	
 	
 	//clear all sequencer buttons
 	led_clearSequencerLeds();
@@ -1751,6 +1792,9 @@ void menu_switchPage(uint8_t pageNr)
 		
 		case LOAD_PAGE:
 		{
+			//re-init the save page variables
+			menu_resetSaveParameters();
+			
 			if((menu_activePage != LOAD_PAGE) && (menu_activePage != SAVE_PAGE))
 			{
 				//when coming from another page, do a complete reset and show the sound select page
@@ -1825,10 +1869,39 @@ void menu_sendAllGlobals()
 	}
 };
 //-----------------------------------------------------------------
+#define ALL_VOICES 0x7
 void menu_parseGlobalParam(uint8_t paramNr, uint8_t value)
 {
 	switch(paramNr)
 	{
+		
+		case PAR_MIDI_CHAN_1:
+		{
+			uint8_t voice = ALL_VOICES;
+			uint8_t channel = value-1;
+			frontPanel_sendData(SEQ_CC,SEQ_MIDI_CHAN,(voice<<4) | channel );	
+		}
+		break;
+		
+		case PAR_POS_X:
+		frontPanel_sendData(SEQ_CC,SEQ_SET_ACTIVE_TRACK,menu_getActiveVoice());
+		frontPanel_sendData(SEQ_CC,SEQ_POSX,value);
+		break;
+		
+		case PAR_POS_Y:
+		frontPanel_sendData(SEQ_CC,SEQ_SET_ACTIVE_TRACK,menu_getActiveVoice());
+		frontPanel_sendData(SEQ_CC,SEQ_POSY,value);
+		break;
+		
+		case PAR_FLUX:
+		frontPanel_sendData(SEQ_CC,SEQ_SET_ACTIVE_TRACK,menu_getActiveVoice());
+		frontPanel_sendData(SEQ_CC,SEQ_FLUX,value);
+		break;
+		
+		case PAR_SOM_FREQ:
+		frontPanel_sendData(SEQ_CC,SEQ_SET_ACTIVE_TRACK,menu_getActiveVoice());
+		frontPanel_sendData(SEQ_CC,SEQ_SOM_FREQ,value);
+		break;
 		
 		case PAR_TRACK_LENGTH:
 			frontPanel_sendData(SEQ_CC,SEQ_SET_ACTIVE_TRACK,menu_getActiveVoice());

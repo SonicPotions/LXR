@@ -60,6 +60,7 @@ enum PageNames
 	EUKLID_PAGE,
 	PATTERN_SETTINGS_PAGE,
 	RECORDING_PAGE,
+	SOM_PAGE,
 	
 	//The Voice settings -> Midi Channel, Audio Out...
 	/*
@@ -169,6 +170,11 @@ enum NamesEnum
 	
 	TEXT_SKIP, //spacer to insert if 1st of 2 pages has only 3 parameters
 	
+	TEXT_POS_X,
+	TEXT_POS_Y,
+	TEXT_FLUX,
+	TEXT_SOM_FREQ,
+	
 	NUM_NAMES
 };
 //-----------------------------------------------------------------
@@ -246,6 +252,9 @@ enum shortNamesEnum
 	SHORT_VALUE,
 	SHORT_SHUFFLE,
 	SHORT_SCREEN_SAVER,
+	SHORT_X,
+	SHORT_Y,
+	SHORT_FLUX,
 	
 
 	
@@ -278,6 +287,7 @@ enum catNamesEnum
 	CAT_VELOCITY,
 	CAT_PARAMETER,
 	CAT_SEQUENCER,
+	CAT_GENERATOR,
 	
 };
 //-----------------------------------------------------------------
@@ -335,7 +345,10 @@ enum longNamesEnum
 	LONG_AUTOMATION_DEST,
 	LONG_AUTOMATION_VAL,
 	LONG_SHUFFLE,
-	LONG_SCREENSAVER
+	LONG_SCREENSAVER,
+	LONG_X,
+	LONG_Y,
+	LONG_FLUX,
 	
 	
 };

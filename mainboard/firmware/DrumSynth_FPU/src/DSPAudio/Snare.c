@@ -67,6 +67,8 @@ void Snare_init()
 
 		SVF_init(&snareVoice.filter);
 
+		lfo_init(&snareVoice.lfo);
+
 }
 //---------------------------------------------------
 void Snare_trigger(const uint8_t vel, const uint8_t note)

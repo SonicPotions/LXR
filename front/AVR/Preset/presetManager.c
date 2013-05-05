@@ -45,7 +45,7 @@ void preset_init()
 }
 
 //----------------------------------------------------
-void preset_saveDrumset(uint8_t presetNr)
+void preset_saveDrumset(uint8_t presetNr, uint8_t isMorph)
 {
 #if USE_SD_CARD	
 	//filename in 8.3  format
@@ -62,10 +62,20 @@ void preset_saveDrumset(uint8_t presetNr)
 	//caution. the parameter data is in a struct. every 1st value has to be saved (param value)
 	//every 2nd ommited (max value)
 	int i;
-	for(i=0;i<END_OF_SOUND_PARAMETERS;i++)
+	
+	if(isMorph)
 	{
-		f_write((FIL*)&preset_File,&parameters[i].value,1,&bytesWritten);	
-	}
+		for(i=0;i<END_OF_SOUND_PARAMETERS;i++)
+		{
+			uint8_t value = preset_getMorphValue(i,parameters[PAR_MORPH].value);
+			f_write((FIL*)&preset_File,&value,1,&bytesWritten);	
+		}
+	} else {
+		for(i=0;i<END_OF_SOUND_PARAMETERS;i++)
+		{
+			f_write((FIL*)&preset_File,&parameters[i].value,1,&bytesWritten);	
+		}
+	}		
 	/*
 	//save global parameters [samplerate]
 	f_write((FIL*)&preset_File,&parameters[PAR_VOICE_DECIMATION1].value,1,&bytesWritten);	
@@ -136,6 +146,13 @@ void preset_loadGlobals()
 #endif	
 }
 //----------------------------------------------------
+void checkRange(Parameter* p)
+{
+	
+	//p->dtype
+}
+//----------------------------------------------------
+
 uint8_t preset_loadDrumset(uint8_t presetNr, uint8_t isMorph)
 {
 	
@@ -173,6 +190,9 @@ uint8_t preset_loadDrumset(uint8_t presetNr, uint8_t isMorph)
 			for(i=0;(i<END_OF_SOUND_PARAMETERS) &&( bytesRead!=0);i++)
 			{
 				f_read((FIL*)&preset_File,&parameters[i].value,1,&bytesRead);	
+				
+				checkRange(&parameters[i]);
+				
 			}	
 			
 			//special case mod targets
@@ -706,3 +726,9 @@ void preset_morph(uint8_t morph)
 		uart_checkAndParse();
 	}		
 };
+//----------------------------------------------------
+uint8_t preset_getMorphValue(uint8_t index, uint8_t morph)
+{
+	return interpolate(parameters[index].value,parameters2[index].value,morph);
+};
+//----------------------------------------------------

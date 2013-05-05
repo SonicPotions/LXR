@@ -206,6 +206,9 @@ const char shortNames[][4] PROGMEM  =
 	{"val"},
 	{"shu"},
 	{"ss"},
+	{"x"},
+	{"y"},
+	{"flx"},
 		
 	
 };
@@ -237,6 +240,7 @@ const char catNames[][16] PROGMEM =
 	{"Velocity"},
 	{"Parameter"},
 	{"Sequencer"},
+	{"Generator"},
 };
 //-----------------------------------------------------------------
 const char longNames[][16] PROGMEM = 
@@ -294,6 +298,9 @@ const char longNames[][16] PROGMEM =
 	{"Autom. Value"},
 	{"Shuffle"},
 	{"Screensaver"},
+	{"X Position"},
+	{"Y Position"},
+	{"Flux"},
 };
 
 

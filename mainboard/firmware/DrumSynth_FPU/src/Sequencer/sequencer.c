@@ -22,7 +22,10 @@
 #include "clockSync.h"
 #include "MidiParser.h"
 #include "automationNode.h"
+#include "SomGenerator.h"
 
+
+//uint8_t seq_midiChannel = 0x00;
 uint8_t seq_masterStepCnt=0;					/** keeps track of the played steps between 0 and 127 indipendend from the track counters*/
 uint8_t seq_rollRate = 0;
 uint8_t seq_rollState = 0;					/**< each bit represents a voice. if bit is set, roll is active*/
@@ -41,6 +44,8 @@ uint8_t seq_isSyncExternal = 0;
 uint8_t seq_syncStepCnt = 3;
 
 float seq_shuffle = 0;
+
+static uint8_t seq_SomModeActive = 0;
 
 static int8_t seq_armedArmedAutomationStep = -1;
 static int8_t seq_armedArmedAutomationTrack = -1;
@@ -281,12 +286,12 @@ void seq_sendMidi(uint8_t status, uint8_t data1, uint8_t data2)
 
 	//send to usb midi
 	usb_sendMidi(status,data1,data2);
-/*
+
 	//send to hardware midi out jack
 	uart_sendMidiByte(status);
 	uart_sendMidiByte(data1);
 	uart_sendMidiByte(data2);
-*/
+
 
 }
 //------------------------------------------------------------------------------
@@ -330,7 +335,8 @@ void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note)
 	uart_sendFrontpanelByte(0);
 
 	//send to midi out
-	seq_sendMidi(0x90,NOTE_VOICE1+voiceNr,seq_patternSet.seq_subStepPattern[seq_activePattern][voiceNr][seq_stepIndex[voiceNr]].volume&STEP_VOLUME_MASK);
+
+	seq_sendMidi(0x90 | midi_globalMidiChannel,NOTE_VOICE1+voiceNr,seq_patternSet.seq_subStepPattern[seq_activePattern][voiceNr][seq_stepIndex[voiceNr]].volume&STEP_VOLUME_MASK);
 }
 //------------------------------------------------------------------------------
 void seq_nextStep()
@@ -446,33 +452,39 @@ void seq_nextStep()
 			}
 
 
-
-			//if track is not muted
-			if(!(seq_mutedTracks & (1<<i) ) )
+			if(seq_SomModeActive)
 			{
-				//automation is independent of active steps
-				//seq_parseAutomationNodes(i, &seq_track[seq_activePattern][i][seq_stepIndex[i]]);
+				som_tick(seq_stepIndex[0],seq_mutedTracks);
 
-				//if main step + sub step is active
-				//if(seq_isStepActive(i,seq_stepIndex[i],seq_activePattern))
-				if(seq_isMainStepActive(i,seq_stepIndex[i]/8,seq_activePattern) && (seq_isStepActive(i,seq_stepIndex[i],seq_activePattern)))
+			} else {
+				//if track is not muted
+				if(!(seq_mutedTracks & (1<<i) ) )
 				{
-					//PROBABILITY
-					//every 8th step a new random value is generated
-					//thus every sub step block has only one random value to compare against
-					//allows randomisation of rolls by chance
 
-					if((seq_stepIndex[i] & 0x07) == 0x00) //every 8th step
-					{
-						seq_rndValue[i] = GetRngValue()&0x7f;
-					}
 
-					if( (seq_rndValue[i]) <= seq_patternSet.seq_subStepPattern[seq_activePattern][i][seq_stepIndex[i]].prob )
-					{
-						const uint8_t vol = seq_patternSet.seq_subStepPattern[seq_activePattern][i][seq_stepIndex[i]].volume&STEP_VOLUME_MASK;
-						const uint8_t note = seq_patternSet.seq_subStepPattern[seq_activePattern][i][seq_stepIndex[i]].note;
-						seq_triggerVoice(i,vol,note);
-					}
+
+
+						//if main step + sub step is active
+						if(seq_isMainStepActive(i,seq_stepIndex[i]/8,seq_activePattern) && (seq_isStepActive(i,seq_stepIndex[i],seq_activePattern)))
+						{
+							//PROBABILITY
+							//every 8th step a new random value is generated
+							//thus every sub step block has only one random value to compare against
+							//allows randomisation of rolls by chance
+
+							if((seq_stepIndex[i] & 0x07) == 0x00) //every 8th step
+							{
+								seq_rndValue[i] = GetRngValue()&0x7f;
+							}
+
+							if( (seq_rndValue[i]) <= seq_patternSet.seq_subStepPattern[seq_activePattern][i][seq_stepIndex[i]].prob )
+							{
+								const uint8_t vol = seq_patternSet.seq_subStepPattern[seq_activePattern][i][seq_stepIndex[i]].volume&STEP_VOLUME_MASK;
+								const uint8_t note = seq_patternSet.seq_subStepPattern[seq_activePattern][i][seq_stepIndex[i]].note;
+								seq_triggerVoice(i,vol,note);
+							}
+						}
+
 				}
 			}
 

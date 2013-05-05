@@ -24,6 +24,7 @@ void lfo_init(Lfo *lfo)
 	lfo->waveform		= SINE;
 	lfo->sync			= 0;
 	lfo->freq			= 1;
+	lfo->modNodeValue	= 1;
 
 	modNode_init(&lfo->modTarget);
 }
@@ -31,7 +32,9 @@ void lfo_init(Lfo *lfo)
 float lfo_calc(Lfo *lfo)
 {
 	uint32_t oldPhase 		= lfo->phase;
-	lfo->phase 			   += lfo->phaseInc;
+	float inc = lfo->phaseInc*lfo->modNodeValue;
+	uint32_t incInt = inc;
+	lfo->phase 			   += incInt;//lfo->phaseInc*lfo->modNodeValue;
 	const uint8_t overflow 	= oldPhase>lfo->phase;
 
 	switch(lfo->waveform)
@@ -118,9 +121,11 @@ uint32_t lfo_calcPhaseInc(float freq, uint8_t sync)
 	11 - 1/32
 	*/
 
+
+
 	if(sync==0)//no sync
 	{
-		return freq/(LFO_SR/16.f) * 0xffffffff;
+		return freq/(LFO_SR) * 0xffffffff;
 	}
 
 	//sync is on
@@ -136,7 +141,7 @@ uint32_t lfo_calcPhaseInc(float freq, uint8_t sync)
 	{
 		default: //no sync
 
-		return freq/(LFO_SR/16) * 0xffffffff;
+		return freq/(LFO_SR) * 0xffffffff;
 		break;
 
 		case 1: // 4/1
@@ -185,7 +190,7 @@ uint32_t lfo_calcPhaseInc(float freq, uint8_t sync)
 	}
 
 	float lfoSyncfreq = tempoAsFrequency * scaler;
-	return (lfoSyncfreq / (LFO_SR/16.f)) * 0xffffffff;
+	return (lfoSyncfreq / (LFO_SR)) * 0xffffffff;
 }
 //-------------------------------------------------------------
 void lfo_setFreq(Lfo *lfo, float f)

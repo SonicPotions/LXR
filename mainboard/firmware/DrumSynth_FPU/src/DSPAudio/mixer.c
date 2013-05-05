@@ -12,6 +12,7 @@
 #include "Snare.h"
 #include "HiHat.h"
 #include "BufferTools.h"
+#include "squareRootLut.h"
 //-----------------------------------------------------------------------
 uint8_t mixer_audioRouting[6];
 //-----------------------------------------------------------------------
@@ -300,21 +301,23 @@ void mixer_calcNextSampleBlock(int16_t* output,int16_t* output2)
 	//decimate voice
 	mixer_decimateBlock(0,sampleData);
 	//copy to selected dma buffer
-	mixer_addDataToOutput(0,mixer_audioRouting[0],voiceArray[0].panL ,voiceArray[0].panR, sampleData,&output[pos],&output[pos+1],&output2[pos],&output2[pos+1]);
+	//mixer_addDataToOutput(0,mixer_audioRouting[0],voiceArray[0].panL ,voiceArray[0].panR, sampleData,&output[pos],&output[pos+1],&output2[pos],&output2[pos+1]);
+	  mixer_addDataToOutput(0,mixer_audioRouting[0],squareRootLut[127-voiceArray[0].pan] ,squareRootLut[voiceArray[0].pan], sampleData,&output[pos],&output[pos+1],&output2[pos],&output2[pos+1]);
+
 
 	//calc voice 2
 	calcDrumVoiceSyncBlock(1, sampleData,OUTPUT_DMA_SIZE);
 	//decimate voice
 	mixer_decimateBlock(1,sampleData);
 	//copy to selected dma buffer
-	mixer_addDataToOutput(1,mixer_audioRouting[1],voiceArray[1].panL,voiceArray[1].panR, sampleData,&output[pos],&output[pos+1],&output2[pos],&output2[pos+1]);
+	mixer_addDataToOutput(1,mixer_audioRouting[1],squareRootLut[127-voiceArray[1].pan] ,squareRootLut[voiceArray[1].pan], sampleData,&output[pos],&output[pos+1],&output2[pos],&output2[pos+1]);
 
 	//calc voice 3
 	calcDrumVoiceSyncBlock(2, sampleData,OUTPUT_DMA_SIZE);
 	//decimate voice
 	mixer_decimateBlock(2,sampleData);
 	//copy to selected dma buffer
-	mixer_addDataToOutput(2,mixer_audioRouting[2],voiceArray[2].panL,voiceArray[2].panR, sampleData,&output[pos],&output[pos+1],&output2[pos],&output2[pos+1]);
+	mixer_addDataToOutput(2,mixer_audioRouting[2],squareRootLut[127-voiceArray[2].pan] ,squareRootLut[voiceArray[2].pan], sampleData,&output[pos],&output[pos+1],&output2[pos],&output2[pos+1]);
 
 	//calc snare
 	Snare_calcSyncBlock(sampleData,OUTPUT_DMA_SIZE);
