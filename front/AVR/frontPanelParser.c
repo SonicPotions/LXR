@@ -327,15 +327,22 @@ void frontPanel_parseData(uint8_t data)
 						led_setBlinkLed(LED_PART_SELECT1+frontParser_midiMsg.data2,0);
 						//clear last pattern led
 						
-						if( (parameters[PAR_FOLLOW].value) && ( menu_activePage != PATTERN_SETTINGS_PAGE)) {
-							menu_setShownPattern(frontParser_midiMsg.data2);
-							led_clearSequencerLeds();
-							//query current sequencer step states and light up the corresponding leds 
-							uint8_t trackNr = menu_getActiveVoice(); //max 6 => 0x6 = 0b110
-							uint8_t patternNr = menu_getViewedPattern(); //max 7 => 0x07 = 0b111
-							uint8_t value = (trackNr<<4) | (patternNr&0x7);
-							frontPanel_sendData(LED_CC,LED_QUERY_SEQ_TRACK,value);
-							frontPanel_sendData(SEQ_CC,SEQ_REQUEST_PATTERN_PARAMS,frontParser_midiMsg.data2);
+						if( (parameters[PAR_FOLLOW].value) ) {
+							
+							if( menu_activePage != PATTERN_SETTINGS_PAGE)
+							{
+								menu_setShownPattern(frontParser_midiMsg.data2);
+								led_clearSequencerLeds();
+								//query current sequencer step states and light up the corresponding leds 
+								uint8_t trackNr = menu_getActiveVoice(); //max 6 => 0x6 = 0b110
+								uint8_t patternNr = menu_getViewedPattern(); //max 7 => 0x07 = 0b111
+								uint8_t value = (trackNr<<4) | (patternNr&0x7);
+								frontPanel_sendData(LED_CC,LED_QUERY_SEQ_TRACK,value);
+								frontPanel_sendData(SEQ_CC,SEQ_REQUEST_PATTERN_PARAMS,frontParser_midiMsg.data2);
+							} else {
+								//store the pending pattern update for shift button release handler
+								menu_shownPattern = frontParser_midiMsg.data2;
+							}								
 						}	
 						menu_playedPattern = frontParser_midiMsg.data2;						
 						

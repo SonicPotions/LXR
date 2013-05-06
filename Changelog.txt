@@ -1,6 +1,10 @@
-Firmware v0.15 
+Firmware v0.16 
 ---------------------------
 - increased absolute noise volume on snare voice (voice 4)
+- increased transient volume
+- fixed rapid rotary encoder movement 
+- fixed step mode display glitch
+- fixed diappearing chaselight with shift button in perf. mode
 
 Firmware v0.15 (5.5.2013)
 ---------------------------

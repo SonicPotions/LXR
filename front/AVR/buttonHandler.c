@@ -164,91 +164,74 @@ uint8_t buttonHandler_getShift()
 //--------------------------------------------------------
 void buttonHandler_handleModeButtons(uint8_t mode)
 {
-
-
 	if(buttonHandler_getShift())
 	{
-		
 		//set the new mode
 		buttonHandler_stateMemory.selectButtonMode = mode+4;
 	}
 	else
 	{
-		
 		//set the new mode
 		buttonHandler_stateMemory.selectButtonMode = mode;
 	}
 	
-	/*
-	if(buttonHandler_stateMemory.selectButtonMode!=SELECT_MODE_LOAD_SAVE) {
-		buttonHandler_leaveSeqMode(); // to prevent blink leds from hanging 
-	}	
-	*/
-	
 	led_clearAllBlinkLeds();	
 		
 
-		//update the status LED
-		led_setMode2(buttonHandler_stateMemory.selectButtonMode);
+	//update the status LED
+	led_setMode2(buttonHandler_stateMemory.selectButtonMode);
 			
-		switch(buttonHandler_stateMemory.selectButtonMode)
+	switch(buttonHandler_stateMemory.selectButtonMode)
+	{
+		case SELECT_MODE_PERF:
 		{
-			case SELECT_MODE_PERF:
-			{
-				led_clearSequencerLeds();
-				led_clearSelectLeds();
-				led_initPerformanceLeds();		
+			led_clearSequencerLeds();
+			led_clearSelectLeds();
+			led_initPerformanceLeds();		
 
-				//set menu to perf page
-				lastActiveSubPage	= menu_getSubPage();
-				menu_switchPage(PERFORMANCE_PAGE);
-				menu_switchSubPage(0);
+			//set menu to perf page
+			lastActiveSubPage	= menu_getSubPage();
+			menu_switchPage(PERFORMANCE_PAGE);
+			menu_switchSubPage(0);
 				
-			}
-			break;
-			
-			case SELECT_MODE_STEP:
-				menu_switchPage(menu_getActiveVoice());
-				led_setActiveSelectButton(menu_getSubPage()); 
-				buttonHandler_enterSeqModeStepMode();
-				break;
-			case SELECT_MODE_VOICE:
-			//set menu to voice page mode
-				menu_switchPage(menu_getActiveVoice());
-				led_setActiveSelectButton(menu_getSubPage()); 
-			break;
-		
-			case SELECT_MODE_LOAD_SAVE:
-					menu_switchPage(LOAD_PAGE);
-			break;
-			
-			case SELECT_MODE_MENU:
-				menu_switchPage(MENU_MIDI_PAGE);
-
-			break;
-			
-			case SELECT_MODE_SOM_GEN:
-#if USE_DRUM_MAP_GENERATOR
-				menu_switchPage(SOM_PAGE);
-#endif
-			break;
-			
-
-			
-			case SELECT_MODE_PAT_GEN:
-				frontPanel_sendData(SEQ_CC,SEQ_REQUEST_EUKLID_PARAMS,menu_getActiveVoice());
-				menu_switchPage(EUKLID_PAGE);
-			
-			break;
-			
-			default:
-			break;
-				
-							
 		}
+		break;
+			
+		case SELECT_MODE_STEP:
+			//menu_switchPage(menu_getActiveVoice());
+			led_setActiveSelectButton(menu_getSubPage()); 
+			buttonHandler_enterSeqModeStepMode();
+			break;
+		case SELECT_MODE_VOICE:
+		//set menu to voice page mode
+			menu_switchPage(menu_getActiveVoice());
+			led_setActiveSelectButton(menu_getSubPage()); 
+		break;
 		
-	
-	//menu_switchSubPage(0);
+		case SELECT_MODE_LOAD_SAVE:
+				menu_switchPage(LOAD_PAGE);
+		break;
+			
+		case SELECT_MODE_MENU:
+			menu_switchPage(MENU_MIDI_PAGE);
+
+		break;
+			
+		case SELECT_MODE_SOM_GEN:
+#if USE_DRUM_MAP_GENERATOR
+			menu_switchPage(SOM_PAGE);
+#endif
+		break;
+			
+		case SELECT_MODE_PAT_GEN:
+			frontPanel_sendData(SEQ_CC,SEQ_REQUEST_EUKLID_PARAMS,menu_getActiveVoice());
+			menu_switchPage(EUKLID_PAGE);
+			
+		break;
+			
+		default:
+		break;
+	}
 }
 //--------------------------------------------------------
 void buttonHandler_handleSelectButton(uint8_t buttonNr)
@@ -1219,7 +1202,7 @@ return;
 			//the pattern change update for the follow mode is not made immediately when the pattern options are active
 			//so we have to do it here
 			if (parameters[PAR_FOLLOW].value)  {
-					menu_setShownPattern(frontParser_midiMsg.data2);
+					menu_setShownPattern(menu_shownPattern);
 					led_clearSequencerLeds();
 					//query current sequencer step states and light up the corresponding leds 
 					uint8_t trackNr = menu_getActiveVoice(); //max 6 => 0x6 = 0b110
