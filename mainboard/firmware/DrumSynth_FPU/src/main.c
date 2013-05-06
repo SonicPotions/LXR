@@ -47,6 +47,8 @@
 #include "usb_manager.h"
 #include "MidiParser.h"
 
+#include "TriggerOut.h"
+
 //----------------------------------------------------------------
 //stub function for newlib
 void _exit(int status)
@@ -195,6 +197,8 @@ int main(void)
 
 	parameterArray_init();
 
+	trigger_init();
+
 	int i;
 	for(i=0;i<6;i++)
 	{
@@ -271,6 +275,9 @@ int main(void)
 		}
 		//process the sequencer
 		seq_tick();
+
+		//handle trigger outs
+		trigger_tick();
 
     }
 }

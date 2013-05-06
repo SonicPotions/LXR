@@ -23,7 +23,7 @@
 #include "MidiParser.h"
 #include "automationNode.h"
 #include "SomGenerator.h"
-
+#include "TriggerOut.h"
 
 //uint8_t seq_midiChannel = 0x00;
 uint8_t seq_masterStepCnt=0;					/** keeps track of the played steps between 0 and 127 indipendend from the track counters*/
@@ -327,7 +327,7 @@ void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note)
 		HiHat_trigger(vol,voiceNr-5,note);
 	}
 
-
+	trigger_triggerVoice(voiceNr);
 
 	//to retrigger the LFOs the Frontpanel AVR needs to know about note ons
 	uart_sendFrontpanelByte(0x90);
@@ -343,6 +343,7 @@ void seq_nextStep()
 {
 	if(seq_running)
 	{
+		trigger_clockTick();
 		seq_masterStepCnt++;
 
 		//---- calc master step position. max value is 127. also take in regard the pattern end bit from the note value -----
@@ -801,8 +802,10 @@ void seq_setRunning(uint8_t isRunning)
 		//so the next seq_tick call will trigger the next step immediately
 		seq_deltaT = 0;
 		uart_sendMidiByte(MIDI_STOP);
+		trigger_reset(1);
 	} else {
 		uart_sendMidiByte(MIDI_START);
+		trigger_reset(0);
 	}
 }
 //------------------------------------------------------------------------------
