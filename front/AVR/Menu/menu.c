@@ -1326,7 +1326,7 @@ void menu_handleLoadSaveMenu(int8_t inc, uint8_t button)
 			
 			case 1: //edit preset nr
 				if(inc<0) {
-					if(menu_currentPresetNr!=0)	{
+					if(menu_currentPresetNr+inc>=0)	{
 						menu_currentPresetNr += inc;	
 					}
 				} else if(inc>0) {
@@ -1414,11 +1414,12 @@ void menu_handleLoadSaveMenu(int8_t inc, uint8_t button)
 //-----------------------------------------------------------------
 void menu_parseEncoder(int8_t inc, uint8_t button)
 {
-	//invert encoder
-	inc *= -1;
 	
 	if(inc != 0) {
 		screensaver_touch();
+		inc *= -1;
+		//limit to +/- 1
+	//	inc = inc>0?1:-1;
 	}		
 
 	if(menu_activePage >= LOAD_PAGE && menu_activePage <= SAVE_PAGE) {
@@ -1439,7 +1440,7 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 				//encoder selects clear target
 				uint8_t target = copyClear_getClearTarget();
 				if(inc<0) {
-					if(target!=0) {
+					if(target!=0) { 
 						target--;	
 					}
 				} else if(inc>0) {
@@ -1463,7 +1464,7 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 
 				//increase parameter value		
 				//do not wrap
-				if(!((inc<0) && (*paramValue==0)))
+				if(!((inc<0) && (*paramValue<abs(inc))))//abs(inc))))
 				*paramValue += inc;
 					
 				switch(parameters[paramNr].dtype&0x0F)
