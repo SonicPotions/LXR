@@ -603,9 +603,9 @@ uint8_t preset_loadPattern(uint8_t presetNr)
 			preset_sendStepDataToSeq(i);
 			//we have to give the cortex some time to cope with all the incoming data
 			//since it is mainly calculating audio it takes a while to process all
-			//incoming uart data
+			//incoming uart data also FIFO overflow
 			//if((i&0x1f) == 0x1f) //every 32 steps
-				_delay_us(200);
+				_delay_us(100);
 		
 		}	
 
