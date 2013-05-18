@@ -206,6 +206,7 @@ void buttonHandler_handleModeButtons(uint8_t mode)
 		//set menu to voice page mode
 			menu_switchPage(menu_getActiveVoice());
 			led_setActiveSelectButton(menu_getSubPage()); 
+			menu_resetActiveParameter();
 		break;
 		
 		case SELECT_MODE_LOAD_SAVE:
