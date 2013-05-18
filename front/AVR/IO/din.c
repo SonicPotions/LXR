@@ -55,57 +55,62 @@ void din_load()
 //---------------------------------------------------------------------
 void din_readNextInput()
 {
-	//check if a new load is necessary
-	if(inputPos>=NUM_INPUTS)
-	{
-		//reset inputPos
-		inputPos = 0;
-		//load new data into register
-		din_load();
-	}
-	else
-	{
-		//increment position counter		
-		inputPos++;
-		//shift data
-		din_shift();
-	}
 	
-	//store input value in inputData[]
-	uint8_t arrayPos = inputPos/8;
-	uint8_t bitPos	 = inputPos&7;
+	int i;
+	for(i=0;i<10;i++)
+	{
+		//check if a new load is necessary
+		if(inputPos>=NUM_INPUTS)
+		{
+			//reset inputPos
+			inputPos = 0;
+			//load new data into register
+			din_load();
+		}
+		else
+		{
+			//increment position counter		
+			inputPos++;
+			//shift data
+			din_shift();
+		}
+	
+		//store input value in inputData[]
+		uint8_t arrayPos = inputPos/8;
+		uint8_t bitPos	 = inputPos&7;
 
-	//read pin
-	uint8_t value;
-	if((DIN_INPUT & DIN_INPUT_PIN) >0)
-	{
-		value = 0;
-	}		
-	else
-	{
-		value = 1;
-	}
-	
-	//check if button was pressed
-	if(!value)
-	{
-		if( (din_inputData[arrayPos] & (1<<bitPos)) !=  (value << bitPos))
+		//read pin
+		uint8_t value;
+		if((DIN_INPUT & DIN_INPUT_PIN) >0)
 		{
-			buttonHandler_buttonPressed(inputPos);
-		}
-	}		
-	
-	//check if button was release
-	if(value)
-	{
-		if( (din_inputData[arrayPos] & (1<<bitPos)) !=  (value << bitPos))
+			value = 0;
+		}		
+		else
 		{
-			buttonHandler_buttonReleased(inputPos);
+			value = 1;
 		}
-	}		
 	
-	//clear bit
-	din_inputData[arrayPos] &= ~(1<<bitPos);
-	//set new bit value
-	din_inputData[arrayPos] |= (value << bitPos);
+		//check if button was pressed
+		if(!value)
+		{
+			if( (din_inputData[arrayPos] & (1<<bitPos)) !=  (value << bitPos))
+			{
+				buttonHandler_buttonPressed(inputPos);
+			}
+		}		
+	
+		//check if button was release
+		if(value)
+		{
+			if( (din_inputData[arrayPos] & (1<<bitPos)) !=  (value << bitPos))
+			{
+				buttonHandler_buttonReleased(inputPos);
+			}
+		}		
+	
+		//clear bit
+		din_inputData[arrayPos] &= ~(1<<bitPos);
+		//set new bit value
+		din_inputData[arrayPos] |= (value << bitPos);
+	}		
 };
