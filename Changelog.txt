@@ -6,6 +6,8 @@ Firmware v0.16
 - fixed step mode display glitch
 - fixed diappearing chaselight with shift button in perf. mode
 - fixed empty display page when changing modes
+- increased DIN scan rate
+- fixed display error in voice mode when using shift
 
 Firmware v0.15 (5.5.2013)
 ---------------------------

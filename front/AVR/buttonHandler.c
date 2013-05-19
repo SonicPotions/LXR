@@ -479,8 +479,9 @@ void buttonHandler_leaveSeqMode()
 	//reset select leds
 	led_clearSelectLeds();
 	
-	menu_switchSubPage(lastActiveSubPage);
 	menu_switchPage(lastActivePage);
+	menu_switchSubPage(lastActiveSubPage);
+	
 }
 //--------------------------------------------------------
 uint8_t buttonHandler_getMutedVoices()

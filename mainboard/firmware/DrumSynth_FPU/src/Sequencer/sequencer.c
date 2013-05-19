@@ -25,6 +25,11 @@
 #include "SomGenerator.h"
 #include "TriggerOut.h"
 
+
+#define SEQ_PRESCALER_MASK 	0x03
+#define MIDI_PRESCALER_MASK	0x04
+static uint8_t seq_prescaleCounter = 0;
+
 //uint8_t seq_midiChannel = 0x00;
 uint8_t seq_masterStepCnt=0;					/** keeps track of the played steps between 0 and 127 indipendend from the track counters*/
 uint8_t seq_rollRate = 0;
@@ -50,8 +55,10 @@ static uint8_t seq_SomModeActive = 0;
 static int8_t seq_armedArmedAutomationStep = -1;
 static int8_t seq_armedArmedAutomationTrack = -1;
 
-static uint32_t	midiClock_lastTick = 0;	 	/**<stores the last time a clock message was send*/
-static float midiClock_deltaT;
+//static uint32_t	midiClock_lastTick = 0;	 	/**<stores the last time a clock message was send*/
+//static float midiClock_deltaT;
+
+
 
 
 static uint8_t seq_mutedTracks=0;			/**< indicate which tracks are muted */
@@ -115,16 +122,10 @@ const float seq_shuffleTable[16] =
 
 float seq_lastShuffle = 0;
 
-
-//volatile Step seq_subStepPattern[NUM_PATTERN][NUM_TRACKS][128];	/**< a sequencer row of 128 steps*/
-//volatile uint16_t seq_mainSteps[NUM_PATTERN][NUM_TRACKS];
-//PatternSetting seq_patternSettings[NUM_PATTERN];
 PatternSet seq_patternSet;
-//static PatternSet* seq_patternSet2 = &seq_patternSet1;
 
 TempPattern seq_tmpPattern;
 
-//PatternSet* seq_activePatternSetPtr = &seq_patternSet;
 uint8_t seq_newPatternAvailable = 0; //indicate that a new pattern has loaded in the background and we should switch
 
 //for the automation tracks each track needs 2 modNodes
@@ -139,13 +140,12 @@ void seq_init()
 		autoNode_init(&seq_automationNodes[i][1]);
 	}
 
-	//memset(seq_stepIndex,0,NUM_TRACKS*128);
 	memset(seq_stepIndex,0,NUM_TRACKS);
 
 
 	for(i=0;i<NUM_PATTERN;i++)
 	{
-		seq_patternSet.seq_patternSettings[i].changeBar 		= 1;	//default setting: every bar
+		seq_patternSet.seq_patternSettings[i].changeBar 	= 1;	//default setting: every bar
 		seq_patternSet.seq_patternSettings[i].nextPattern 	= i;	//default setting: repeat same pattern
 
 		for(j=0;j<NUM_TRACKS;j++)
@@ -178,8 +178,6 @@ void seq_activateTmpPattern()
 	memcpy(&seq_patternSet.seq_subStepPattern[seq_activePattern],&seq_tmpPattern.seq_subStepPattern,sizeof(Step)*NUM_TRACKS*NUM_STEPS);
 	memcpy(&seq_patternSet.seq_mainSteps[seq_activePattern],&seq_tmpPattern.seq_mainSteps,sizeof(uint16_t)*NUM_TRACKS);
 	memcpy(&seq_patternSet.seq_patternSettings[seq_activePattern],&seq_tmpPattern.seq_patternSettings,sizeof(PatternSetting));
-
-	//memcpy(&seq_activePatternSetPtr[seq_activePattern],&seq_tmpPattern,sizeof(TempPattern));
 }
 //------------------------------------------------------------------------------
 void seq_setShuffle(float shuffle)
@@ -226,7 +224,9 @@ void seq_calcDeltaT(uint16_t bpm)
 	// für 4/4tel takt -> 1 beat = 4 main steps = 4*8 = 32 sub steps
 	// 120 bpm 4/4tel = 120 * 1 beat / 60sec = 120 * 32 in 60 sec;
 	seq_deltaT 	= (1000*60)/bpm; 	//bei 12 = 500ms = zeit für einen beat
-	seq_deltaT /= 32.f;					// zeit für einen beat / anzahl steps pro beat
+	seq_deltaT /= 96.f; //we run the internal clock at 96ppq -> seq clock 32 ppq == prescaler 3, midi clock 24 ppq == prescale 4
+	seq_deltaT *= 4;
+	//32.f;					// zeit für einen beat / anzahl steps pro beat
 
 
 
@@ -250,6 +250,10 @@ void seq_calcDeltaT(uint16_t bpm)
 
 		seq_lastShuffle = shuffleFactor;
 	}
+
+	//midi clock
+//	midiClock_deltaT 	= (1000*60)/bpm; 		//bei 12 = 500ms = time for one beat
+//	midiClock_deltaT    = midiClock_deltaT/24.f;	//24 midi clock messages per beat
 
 
 }
@@ -335,7 +339,6 @@ void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note)
 	uart_sendFrontpanelByte(0);
 
 	//send to midi out
-
 	seq_sendMidi(0x90 | midi_globalMidiChannel,NOTE_VOICE1+voiceNr,seq_patternSet.seq_subStepPattern[seq_activePattern][voiceNr][seq_stepIndex[voiceNr]].volume&STEP_VOLUME_MASK);
 }
 //------------------------------------------------------------------------------
@@ -381,12 +384,6 @@ void seq_nextStep()
 						uint8_t rnd = GetRngValue() % limit;
 						seq_pendingPattern = rnd;
 					}
-					/*
-					else //if(seq_patternSettings[seq_activePattern].nextPattern == SEQ_NEXT_RANDOM_PREV)
-					{
-						seq_pendingPattern = ((GetRngValue()&0x7fffffff)/(float)0x80000000)*(seq_activePattern+1);
-					}
-					*/
 				}
 			}
 
@@ -411,10 +408,6 @@ void seq_nextStep()
 				uart_sendFrontpanelByte(FRONT_SEQ_CC);
 				uart_sendFrontpanelByte(FRONT_SEQ_CHANGE_PAT);
 				uart_sendFrontpanelByte(seq_activePattern);
-
-				//tell the fronpanel that a pattern switch occured
-				//and update the seq button leds
-				//frontParser_updateTrackLeds(frontParser_activeFrontTrack);
 			}
 		}
 
@@ -506,33 +499,6 @@ void seq_nextStep()
 							seq_triggerVoice(i,vol,note);
 
 							seq_addNote(i,vol);
-
-							/*
-							if(i<3)
-							{
-								Drum_trigger(i,vol,seq_track[seq_activePattern][i][seq_stepIndex[i]].note);
-							}
-							else if(i<4)
-							{
-								Snare_trigger(vol,seq_track[seq_activePattern][i][seq_stepIndex[i]].note);
-							}
-							else if(i<5)
-							{
-								Cymbal_trigger(vol,seq_track[seq_activePattern][i][seq_stepIndex[i]].note);
-							}
-							else
-							{
-								HiHat_trigger(vol,i-5,seq_track[seq_activePattern][i][seq_stepIndex[i]].note);
-							}
-
-							//record roll notes
-							seq_addNote(i,vol);
-
-							//to retrigger the LFOs the Frontpanel AVR needs to know about note ons
-							uart_sendFrontpanelByte(0x90);
-							uart_sendFrontpanelByte(i);
-							uart_sendFrontpanelByte(0);//vol not used by front
-							*/
 						}
 					}
 				}
@@ -546,126 +512,6 @@ void seq_nextStep()
 		uart_sendFrontpanelByte(FRONT_CURRENT_STEP_NUMBER_CC);
 		uart_sendFrontpanelByte(seq_stepIndex[frontParser_activeTrack]);
 	}
-
-#if MONO_SEQ
-	if(seq_running)
-	{
-		seq_stepIndex++;
-		stepIndex &= 0x7f;
-
-		//FRONT_SEQ_RESYNC_LFO
-
-		if(stepIndex == 0)
-		{
-			// a new pattern is about to start
-			// set pendingPattern active
-			if(seq_activePattern != seq_pendingPattern)
-			{
-				seq_activePattern = seq_pendingPattern;
-
-				//send the ack message to tell the front that a new pattern starts playing
-				uart_sendFrontpanelByte(FRONT_SEQ_CC);
-				uart_sendFrontpanelByte(FRONT_SEQ_CHANGE_PAT);
-				uart_sendFrontpanelByte(seq_activePattern);
-
-				//tell the fronpanel that a pattern switch occured
-				//and update the seq button leds
-				frontParser_updateTrackLeds(frontParser_activeFrontTrack);
-			}
-
-
-		}
-
-		if((stepIndex&31) == 0)
-		{
-			//&32 <=> %32
-			//a quarter beat occured (multiple of 32 steps in the 128 step pattern)
-			//turn on the start/stop led (beat indicator)
-			uart_sendFrontpanelByte(FRONT_STEP_LED_STATUS_BYTE);
-			uart_sendFrontpanelByte(FRONT_LED_PULSE_BEAT);
-			uart_sendFrontpanelByte(1);
-		}
-		else if ((stepIndex&31) == 1)
-		{
-			//turn it of again on the next step
-			uart_sendFrontpanelByte(FRONT_STEP_LED_STATUS_BYTE);
-			uart_sendFrontpanelByte(FRONT_LED_PULSE_BEAT);
-			uart_sendFrontpanelByte(0);
-		}
-
-		int i;
-		for(i=0;i<NUM_TRACKS;i++)
-		{
-			//if track is not muted and step is active
-			if( !(seq_mutedTracks & (1<<i) ) &&  ( seq_subStepPattern[seq_activePattern][i][stepIndex].volume & STEP_ACTIVE_MASK ) )
-			{
-				//generate a random value for step probability
-				if( (GetRngValue()&0x7f) <= seq_subStepPattern[seq_activePattern][i][stepIndex].prob )
-				{
-					if(i<3)
-					{
-						Drum_trigger(i,seq_subStepPattern[seq_activePattern][i][stepIndex].volume&STEP_VOLUME_MASK);
-					}
-					else if(i<4)
-					{
-						Snare_trigger(seq_subStepPattern[seq_activePattern][i][stepIndex].volume&STEP_VOLUME_MASK);
-					}
-					else if(i<5)
-					{
-						Cymbal_trigger(seq_subStepPattern[seq_activePattern][i][stepIndex].volume&STEP_VOLUME_MASK);
-					}
-					else
-					{
-						HiHat_trigger(seq_subStepPattern[seq_activePattern][i][stepIndex].volume&STEP_VOLUME_MASK,i-5);
-					}
-
-					//to retrigger the LFOs the Frontpanel AVR needs to know about note ons
-					uart_sendFrontpanelByte(0x90);
-					uart_sendFrontpanelByte(i);
-					uart_sendFrontpanelByte(0);
-				}
-			}
-			else if(seq_rollState & (1<<i))
-			{
-				//check if roll is active
-
-				{
-					if((stepIndex%seq_rollRate)==0)
-					{
-						const uint8_t vol = 127;
-						if(i<3)
-						{
-							Drum_trigger(i,vol);
-						}
-						else if(i<4)
-						{
-							Snare_trigger(vol);
-						}
-						else if(i<5)
-						{
-							Cymbal_trigger(vol);
-						}
-						else
-						{
-							HiHat_trigger(vol,i-5);
-						}
-
-						//to retrigger the LFOs the Frontpanel AVR needs to know about note ons
-						uart_sendFrontpanelByte(0x90);
-						uart_sendFrontpanelByte(i);
-						uart_sendFrontpanelByte(0);
-					}
-				}
-			}
-		}
-
-		//send messxage to frontpanel
-		//to display the current step
-		uart_sendFrontpanelByte(FRONT_STEP_LED_STATUS_BYTE);
-		uart_sendFrontpanelByte(FRONT_CURRENT_STEP_NUMBER_CC);
-		uart_sendFrontpanelByte(stepIndex);
-	}
-#endif
 }
 //------------------------------------------------------------------------------
 uint8_t seq_getExtSync()
@@ -691,10 +537,24 @@ void seq_armAutomationStep(uint8_t stepNr, uint8_t track,uint8_t isArmed)
 //------------------------------------------------------------------------------
 void seq_resetDeltaAndTick()
 {
+
+
+	while(!seq_isNextStepSyncStep())
+	{
+		seq_nextStep();
+	}
+
 	seq_nextStep();
-	seq_lastTick = systick_ticks;
+
+	/*midiClock_lastTick =*/ seq_lastTick = systick_ticks;
 	seq_calcDeltaT(seq_tempo);
+
+
+
 	seq_syncStepCnt = 0;
+	seq_prescaleCounter = 0;
+	//seq_stepsSinceLastSync = 0;
+
 }
 //------------------------------------------------------------------------------
 /** call periodically to check if the next step has to be processed */
@@ -702,26 +562,51 @@ void seq_tick()
 {
 	if(systick_ticks-seq_lastTick >= seq_deltaT)
 	{
+
 		float rest = systick_ticks-seq_lastTick - seq_deltaT;
 		seq_lastTick = systick_ticks;
-		//for external sync we have a ratio of 3/4 ppq/steps
-		//so when the 3rd ppq is received we have to activate the 4th step etc
-		//advance only 2 steps automatically, then wait for sync message
-
-		if(seq_getExtSync()) {
-			if(seq_syncStepCnt<3) {
-				seq_nextStep();
-				seq_syncStepCnt++;
-			}
-
-		} else {
-			seq_nextStep();
-		}
-
 		seq_calcDeltaT(seq_tempo);
 		seq_deltaT = seq_deltaT - rest;
-	}
 
+		if((seq_prescaleCounter%SEQ_PRESCALER_MASK) == 0)
+		{
+			//for external sync we have a ratio of 3/4 ppq/steps
+			//so when the 3rd ppq is received we have to activate the 4th step etc
+			//advance only 2 steps automatically, then wait for sync message
+
+			if(seq_getExtSync()) {
+				//if(seq_syncStepCnt<3) {
+				if(seq_isNextStepSyncStep()==0) {
+
+					seq_nextStep();
+					seq_syncStepCnt++;
+
+					//seq_stepsSinceLastSync++;
+				}
+
+			} else {
+				seq_nextStep();
+			}
+
+
+		}
+
+
+		if((seq_prescaleCounter%MIDI_PRESCALER_MASK) == 0)
+		{
+
+			uart_sendMidiByte(MIDI_CLOCK);
+		}
+
+		seq_prescaleCounter++;
+		if(seq_prescaleCounter>=12)seq_prescaleCounter=0;
+
+
+
+
+
+	}
+/*
 	if(systick_ticks-midiClock_lastTick >= midiClock_deltaT)
 	{
 		float rest = systick_ticks-midiClock_lastTick - midiClock_deltaT;
@@ -734,6 +619,7 @@ void seq_tick()
 		midiClock_deltaT    = midiClock_deltaT/24.f;	//24 midi clock messages per beat
 		midiClock_deltaT    = midiClock_deltaT - rest;
 	}
+	*/
 }
 //------------------------------------------------------------------------------
 void seq_setQuantisation(uint8_t value)
@@ -804,6 +690,8 @@ void seq_setRunning(uint8_t isRunning)
 		uart_sendMidiByte(MIDI_STOP);
 		trigger_reset(1);
 	} else {
+		seq_syncStepCnt = 0;
+		seq_prescaleCounter = 0;
 		uart_sendMidiByte(MIDI_START);
 		trigger_reset(0);
 	}
@@ -1227,3 +1115,12 @@ void seq_setActiveAutomationTrack(uint8_t trackNr)
 	seq_activeAutomTrack = trackNr;
 }
 //------------------------------------------------------------------------------
+uint8_t seq_isNextStepSyncStep()
+{
+	if( (seq_stepIndex[0] & 0x3) % 4 == 3) {
+		return 1;
+	}
+	return 0;
+}
+//------------------------------------------------------------------------------
+

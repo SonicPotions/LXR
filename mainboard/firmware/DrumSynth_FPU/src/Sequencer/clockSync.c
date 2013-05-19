@@ -11,6 +11,7 @@
 static float sync_window[WINDOW_SIZE];
 float sync_timeLast = 0;
 uint8_t sync_writePos = 0;
+uint8_t sync_armed = 0;
 
 uint8_t sync_clockCnt = 0;
 
@@ -20,7 +21,7 @@ uint16_t sync_calcBpm(float timePerPulse)
 	//we have 24 pulses per quarter
 	//120 bpm = 120 quarters per minute
 
-	float quarterDuration = 24 * timePerPulse;
+	float quarterDuration = 24 * (timePerPulse*4);
 	float bpm = (60 * 1000) / quarterDuration;
 
 	return bpm;
@@ -29,6 +30,13 @@ uint16_t sync_calcBpm(float timePerPulse)
 //called by midi clock
 void sync_tick()
 {
+/*
+	if(sync_armed)
+	{
+		sync_armed = 0;
+		seq_setRunning(1);
+	}
+	*/
 	float time = systick_ticks - sync_timeLast;
 	sync_timeLast = systick_ticks;
 
@@ -63,6 +71,7 @@ void sync_midiStartStop(uint8_t isStart)
 		// this message does NOT mean start immediately! it just 'arms' the seq to start at the next MIDI_CLOCK received
 		sync_clockCnt = 0;
 		seq_syncStepCnt = 3;
+		//sync_armed = 1;
 		seq_setRunning(1);
 		sync_timeLast = systick_ticks;
 	} else {

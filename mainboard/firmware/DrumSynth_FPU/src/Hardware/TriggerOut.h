@@ -22,7 +22,8 @@
 #define PIN_CLOCK_2 GPIO_Pin_9	//Port A
 #define PIN_RESET GPIO_Pin_10	//Port A
 
-#define PULSE_LENGTH 20 //[ms]
+#define PULSE_LENGTH_MS 20 //[ms]
+#define PULSE_LENGTH (PULSE_LENGTH_MS*4) //systick 0.25ms
 
 enum
 {

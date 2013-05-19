@@ -198,6 +198,7 @@ void seq_setActiveAutomationTrack(uint8_t trackNr);
 //------------------------------------------------------------------------------
 void seq_recordAutomation(uint8_t voice, uint8_t dest, uint8_t value);
 //------------------------------------------------------------------------------
+uint8_t seq_isNextStepSyncStep();
 //------------------------------------------------------------------------------
 
 #endif /* SEQUENCER_H_ */

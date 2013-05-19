@@ -183,7 +183,8 @@ int main(void)
 	/* get system clock info*/
 	RCC_GetClocksFreq(&RCC_Clocks);
 	/* set timebase systick to 1ms*/
-	SysTick_Config(RCC_Clocks.HCLK_Frequency / 1000);
+	//SysTick_Config(RCC_Clocks.HCLK_Frequency / 1000);
+	SysTick_Config(RCC_Clocks.HCLK_Frequency / 4000);
 
 	initAudioJackDiscoverPins();
 
