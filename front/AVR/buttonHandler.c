@@ -417,7 +417,7 @@ void buttonHandler_handleSelectButton(uint8_t buttonNr)
 	
 }
 //--------------------------------------------------------
-void buttonHandler_updateSubSteps(uint8_t track)
+void buttonHandler_updateSubSteps()
 {
 	led_clearSelectLeds();
 	//query current sequencer step states and light up the corresponding leds 
@@ -440,7 +440,7 @@ void buttonHandler_enterSeqModeStepMode()
 	menu_switchSubPage(0);
 	menu_switchPage(SEQ_PAGE);
 
-	buttonHandler_updateSubSteps(lastActivePage);
+	buttonHandler_updateSubSteps();
 	
 	led_setBlinkLed(selectedStepLed,1);
 }
@@ -465,7 +465,7 @@ void buttonHandler_enterSeqMode()
 	menu_switchSubPage(0);
 	menu_switchPage(SEQ_PAGE);
 
-	buttonHandler_updateSubSteps(lastActivePage);
+	buttonHandler_updateSubSteps();
 	
 	led_setBlinkLed(selectedStepLed,1);
 }
@@ -575,7 +575,7 @@ void buttonHandler_buttonReleased(uint8_t buttonNr)
 			
 			
 			
-			//which button is pressed
+			//which button is released
 			uint8_t seqButtonPressed;
 			uint8_t ledNr;
 			
@@ -640,57 +640,6 @@ void buttonHandler_buttonReleased(uint8_t buttonNr)
 			
 				}	
 			}						
-			
-			
-			///--------------------------------
-			/*
-			//which button is pressed
-			uint8_t seqButtonPressed;
-			uint8_t ledNr;
-
-			seqButtonPressed = buttonNr;
-			ledNr = buttonNr+LED_STEP1;
-
-			
-			if(buttonHandler_getShift())
-			{
-			}
-			else
-			{
-				switch(buttonHandler_stateMemory.selectButtonMode)
-				{
-					
-					case SELECT_MODE_VOICE:
-					
-					break;
-					//--- buttons 1-8 turn off roll
-					case SELECT_MODE_PERF:
-						if(seqButtonPressed < 8 )
-						{
-							//turn roll on
-							frontPanel_sendData(SEQ_CC,SEQ_ROLL_ON_OFF,(seqButtonPressed&0xf) );
-							//turn button led off
-							led_setValue(0,ledNr);
-							
-							
-						}
-
-					break;
-					//--- select a step to edit ---
-					case SELECT_MODE_STEP:
-				
-					break;
-					//--- unused (maybe lfo clock sync? ---
-					case SELECT_MODE_LOAD_SAVE:
-				
-					break;
-				
-					default:
-					break;
-			
-				}					
-			}	
-			*/	
 		}
 		
 		break;	
@@ -743,7 +692,7 @@ void buttonHandler_selectActiveStep(uint8_t ledNr, uint8_t seqButtonPressed)
 	frontPanel_sendData(SEQ_CC,SEQ_REQUEST_STEP_PARAMS,seqButtonPressed*8);
 				
 	//update sub steps
-	buttonHandler_updateSubSteps(menu_activeVoice);
+	buttonHandler_updateSubSteps();
 }
 //--------------------------------------------------------
 void buttonHandler_setRemoveStep(uint8_t ledNr, uint8_t seqButtonPressed)

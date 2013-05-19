@@ -75,7 +75,8 @@ void frontParser_updateTrackLeds(const uint8_t trackNr, uint8_t patternNr)
 
 
 		//for(i=0;i<128;i++)
-		for(i=frontParser_activeStep;i<(frontParser_activeStep+8);i++) //only send visible substeps
+		uint8_t start = (frontParser_activeStep/8)*8;
+		for(i=start;i<(start+8);i++) //only send visible substeps
 		{
 
 			if(seq_isStepActive(trackNr,i,patternNr))

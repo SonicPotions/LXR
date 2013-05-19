@@ -1,3 +1,9 @@
+Firmware v0.17
+---------------------------
+- fixed midi sync problems
+- fixed sub step update (broken by the last update)
+
+
 Firmware v0.16 
 ---------------------------
 - increased absolute noise volume on snare voice (voice 4)

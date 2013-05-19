@@ -12,7 +12,7 @@
 #include <avr/io.h>
 #include <string.h>
 
-#define BUFFER_SIZE 128 //must be power of 2!!! (8, 16, 32, 64 ...)
+#define BUFFER_SIZE 256 //must be power of 2!!! (8, 16, 32, 64 ...)
 #define BUFFER_MASK (BUFFER_SIZE-1) 
 //---------------------------------------------------------------------------- 
 typedef struct FifoStruct {
