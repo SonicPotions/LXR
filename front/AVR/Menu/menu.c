@@ -20,6 +20,7 @@
 #include "CcNr2Text.h"
 #include "copyClearTools.h"
 #include "../buttonHandler.h"
+#include <ctype.h>
 
 #define ARROW_SIGN '>'
 //-----------------------------------------------------------------
@@ -1221,7 +1222,58 @@ void menu_repaint()
 	sendDisplayBuffer();
 };
 //-----------------------------------------------------------------
-
+void menu_handleSaveScreenKnobValue(uint8_t potNr, uint8_t value)
+{
+	int x;
+	if(menu_saveOptions.state >=2 && menu_saveOptions.state <=9)
+	{
+		switch(potNr)
+		{
+			// move cursor
+			case 0:
+				x = value/(256/7); //0-7
+				menu_saveOptions.state = 2 + x;
+				//force complete repaint
+				menu_repaintAll();
+			break;
+		
+			// select lower,upper,number
+			case 1:
+				x = value/(256/2); //0-2
+				switch(x)
+				{
+					case 0: //Upper Case
+					preset_currentName[menu_saveOptions.state - SAVE_STATE_EDIT_NAME1] = toupper(preset_currentName[menu_saveOptions.state - SAVE_STATE_EDIT_NAME1]);
+					break;
+					
+					case 1: //lower case
+					preset_currentName[menu_saveOptions.state - SAVE_STATE_EDIT_NAME1] = tolower(preset_currentName[menu_saveOptions.state - SAVE_STATE_EDIT_NAME1]);
+					break;
+					
+					case 2: //numbers
+					//don't know how to do this without loosing selected character
+					break;	
+									
+				}
+			break;
+		
+			// scroll through letters
+			case 2: //32 to 127 => default ascii range numbers/letters
+				x = value/(256/(127-32.f)) + 32; //32 - 127
+				preset_currentName[menu_saveOptions.state - SAVE_STATE_EDIT_NAME1] = x;
+			break;
+		
+			//nothing
+			case 3:		
+			break;
+		
+			default:
+			break;
+		}
+	}		
+	
+}
+//-----------------------------------------------------------------
 void menu_handleLoadSaveMenu(int8_t inc, uint8_t button)
 {
 //this is a special case because the load/save page differs from all the other pages
@@ -2197,78 +2249,81 @@ uint8_t getDtypeValue(uint8_t value, uint8_t paramNr)
 			break;	
 	}	
 };
-
 //-----------------------------------------------------------------
 void menu_parseKnobValue(uint8_t potNr, uint8_t value)
 {
 	screensaver_touch();
 	
-	const uint8_t activePage		= (menuIndex&MASK_PAGE)>>PAGE_SHIFT;
-	const uint8_t activeParameter	= menuIndex & MASK_PARAMETER;
-	const uint8_t isOn2ndPage		= ( activeParameter > 3) * 4;
-	uint8_t paramNr					= pgm_read_byte(&menuPages[menu_activePage][activePage].bot1 + potNr + isOn2ndPage);
+	if(menu_activePage == SAVE_PAGE) {
+		menu_handleSaveScreenKnobValue(potNr, value);
+	} else {
+		const uint8_t activePage		= (menuIndex&MASK_PAGE)>>PAGE_SHIFT;
+		const uint8_t activeParameter	= menuIndex & MASK_PARAMETER;
+		const uint8_t isOn2ndPage		= ( activeParameter > 3) * 4;
+		uint8_t paramNr					= pgm_read_byte(&menuPages[menu_activePage][activePage].bot1 + potNr + isOn2ndPage);
 	
-	//parameter fetch
-	const uint8_t dtypeValue = getDtypeValue(value,paramNr);
-	if(parameters[paramNr].value == dtypeValue)
-	{
-		//turn lock off for current pot
-		parameterFetch &= ~(1<<potNr);
-		return;
-	}
-	
-	menu_processSpecialCaseValues(paramNr,&dtypeValue); 
-	
-	//if parameter lock is off
-	if((parameterFetch & (1<<potNr)) == 0 )
-	{
-		parameters[paramNr].value = value = dtypeValue;//getDtypeValue(value,parameters[paramNr].dtype);
-				
-		switch(parameters[paramNr].dtype&0x0F)
+		//parameter fetch
+		const uint8_t dtypeValue = getDtypeValue(value,paramNr);
+		if(parameters[paramNr].value == dtypeValue)
 		{
-			case DTYPE_TARGET_SELECTION_VELO:
-			{
-				value = getModTargetValue(value,paramNr - PAR_VEL_DEST_1);
+			//turn lock off for current pot
+			parameterFetch &= ~(1<<potNr);
+			return;
+		}
+	
+		menu_processSpecialCaseValues(paramNr,&dtypeValue); 
+	
+		//if parameter lock is off
+		if((parameterFetch & (1<<potNr)) == 0 )
+		{
+			parameters[paramNr].value = value = dtypeValue;//getDtypeValue(value,parameters[paramNr].dtype);
 				
-				uint8_t upper,lower;
-				upper = ((value&0x80)>>7) | (((paramNr - PAR_VEL_DEST_1)&0x3f)<<1);
-				lower = value&0x7f;
-				frontPanel_sendData(CC_VELO_TARGET,upper,lower);
-				return;
-			}				
-				break;
-			
-			case DTYPE_TARGET_SELECTION_LFO:
+			switch(parameters[paramNr].dtype&0x0F)
 			{
-				value = getModTargetValue(value,parameters[PAR_VOICE_LFO1+ paramNr - PAR_TARGET_LFO1].value-1);
+				case DTYPE_TARGET_SELECTION_VELO:
+				{
+					value = getModTargetValue(value,paramNr - PAR_VEL_DEST_1);
 				
-				uint8_t upper,lower;
-				upper = ((value&0x80)>>7) | (((paramNr - PAR_TARGET_LFO1)&0x3f)<<1);
-				lower = value&0x7f;
-				frontPanel_sendData(CC_LFO_TARGET,upper,lower);
-				return;
-			}				
-				break;
+					uint8_t upper,lower;
+					upper = ((value&0x80)>>7) | (((paramNr - PAR_VEL_DEST_1)&0x3f)<<1);
+					lower = value&0x7f;
+					frontPanel_sendData(CC_VELO_TARGET,upper,lower);
+					return;
+				}				
+					break;
 			
-			default:
-				break;
-		}		
+				case DTYPE_TARGET_SELECTION_LFO:
+				{
+					value = getModTargetValue(value,parameters[PAR_VOICE_LFO1+ paramNr - PAR_TARGET_LFO1].value-1);
+				
+					uint8_t upper,lower;
+					upper = ((value&0x80)>>7) | (((paramNr - PAR_TARGET_LFO1)&0x3f)<<1);
+					lower = value&0x7f;
+					frontPanel_sendData(CC_LFO_TARGET,upper,lower);
+					return;
+				}				
+					break;
+			
+				default:
+					break;
+			}		
 
 	
-		if(paramNr<128) // => Sound Parameter
-		{
-			frontPanel_sendData(MIDI_CC,paramNr,value);
-		}
-		else if(paramNr>=128 && (paramNr < END_OF_SOUND_PARAMETERS)) // => Sound Parameter above 127
-		{
-			frontPanel_sendData(CC_2,paramNr-128,value);
-		}
-		else
-		{
-			menu_parseGlobalParam(paramNr,parameters[paramNr].value);
-		}
+			if(paramNr<128) // => Sound Parameter
+			{
+				frontPanel_sendData(MIDI_CC,paramNr,value);
+			}
+			else if(paramNr>=128 && (paramNr < END_OF_SOUND_PARAMETERS)) // => Sound Parameter above 127
+			{
+				frontPanel_sendData(CC_2,paramNr-128,value);
+			}
+			else
+			{
+				menu_parseGlobalParam(paramNr,parameters[paramNr].value);
+			}
 		
-	}
+		}
+	}		
 };
 //-----------------------------------------------------------------
 void menu_sendAllParameters()

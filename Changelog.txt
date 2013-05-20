@@ -1,7 +1,7 @@
 Firmware v0.17
 ---------------------------
 - fixed midi sync problems
-- fixed sub step update (broken by the last update)
+- fixed sub step LED update 
 
 
 Firmware v0.16 
