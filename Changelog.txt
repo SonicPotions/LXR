@@ -1,3 +1,7 @@
+Firmware v0.18
+---------------------------
+- added quick naming scheme (
+
 Firmware v0.17
 ---------------------------
 - fixed midi sync problems

@@ -394,25 +394,30 @@ void frontParser_parseUartData(unsigned char data)
 			case FRONT_SET_P1_DEST: {
 					uint8_t hi = frontParser_midiMsg.data1;
 					uint8_t lo = frontParser_midiMsg.data2;
-					seq_patternSet.seq_subStepPattern[seq_activePattern][frontParser_activeTrack][seq_selectedStep].param1Nr = ((hi<<7)|lo);
+					//seq_patternSet.seq_subStepPattern[seq_activePattern][frontParser_activeTrack][seq_selectedStep].param1Nr = ((hi<<7)|lo);
+					seq_patternSet.seq_subStepPattern[frontParser_shownPattern][frontParser_activeTrack][seq_selectedStep].param1Nr = ((hi<<7)|lo);
 				}
 				break;
 			case FRONT_SET_P2_DEST: {
 					uint8_t hi = frontParser_midiMsg.data1;
 					uint8_t lo = frontParser_midiMsg.data2;
-					seq_patternSet.seq_subStepPattern[seq_activePattern][frontParser_activeTrack][seq_selectedStep].param2Nr = (hi<<7)|lo;
+					//seq_patternSet.seq_subStepPattern[seq_activePattern][frontParser_activeTrack][seq_selectedStep].param2Nr = (hi<<7)|lo;
+					seq_patternSet.seq_subStepPattern[frontParser_shownPattern][frontParser_activeTrack][seq_selectedStep].param2Nr = (hi<<7)|lo;
 				}
 				break;
 			case FRONT_SET_P1_VAL: {
 					uint8_t stepNr = frontParser_midiMsg.data1;
 					uint8_t value = frontParser_midiMsg.data2;
-					seq_patternSet.seq_subStepPattern[seq_activePattern][frontParser_activeTrack][stepNr].param1Val = value;
+					//seq_patternSet.seq_subStepPattern[seq_activePattern][frontParser_activeTrack][stepNr].param1Val = value;
+					seq_patternSet.seq_subStepPattern[frontParser_shownPattern][frontParser_activeTrack][stepNr].param1Val = value;
+
 				}
 				break;
 			case FRONT_SET_P2_VAL: {
 					uint8_t stepNr = frontParser_midiMsg.data1;
 					uint8_t value = frontParser_midiMsg.data2;
-					seq_patternSet.seq_subStepPattern[seq_activePattern][frontParser_activeTrack][stepNr].param2Val = value;
+					//seq_patternSet.seq_subStepPattern[seq_activePattern][frontParser_activeTrack][stepNr].param2Val = value;
+					seq_patternSet.seq_subStepPattern[frontParser_shownPattern][frontParser_activeTrack][stepNr].param2Val = value;
 				}
 				break;
 
