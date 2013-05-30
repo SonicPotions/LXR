@@ -145,7 +145,7 @@ void seq_init()
 
 	for(i=0;i<NUM_PATTERN;i++)
 	{
-		seq_patternSet.seq_patternSettings[i].changeBar 	= 1;	//default setting: every bar
+		seq_patternSet.seq_patternSettings[i].changeBar 	= 0;	//default setting: zero repeats (play once then change)
 		seq_patternSet.seq_patternSettings[i].nextPattern 	= i;	//default setting: repeat same pattern
 
 		for(j=0;j<NUM_TRACKS;j++)
