@@ -179,9 +179,6 @@
     <Compile Include="Menu\copyClearTools.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="Menu\IncFile1.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="Menu\menu.c">
       <SubType>compile</SubType>
     </Compile>

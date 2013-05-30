@@ -1,6 +1,8 @@
 Firmware v0.18
 ---------------------------
-- added quick naming scheme (
+- added quick naming scheme 
+- fixed automation parameter edit bug with chained patterns
+- fixed empty menu pages bug (with shift)
 
 Firmware v0.17
 ---------------------------

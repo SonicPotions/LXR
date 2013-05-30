@@ -1798,6 +1798,17 @@ void menu_switchSubPage(uint8_t subPageNr)
 		
 	} else
 	{		
+		//prevent empty pages
+		if(!has2ndPage(activePage)) 
+		{
+			if(activeParameter>=4)
+			{
+				activeParameter -= 4;	
+			}
+			menuIndex &= ~(MASK_PARAMETER);
+			menuIndex |= (activeParameter&MASK_PARAMETER);	
+					
+		}
 		//got to page 1, parameter 1
 		menuIndex &= ~(MASK_PAGE);
 		menuIndex |= (subPageNr&MASK_PARAMETER)<<PAGE_SHIFT;	
