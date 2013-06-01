@@ -67,7 +67,22 @@ void preset_saveDrumset(uint8_t presetNr, uint8_t isMorph)
 	{
 		for(i=0;i<END_OF_SOUND_PARAMETERS;i++)
 		{
-			uint8_t value = preset_getMorphValue(i,parameters[PAR_MORPH].value);
+			uint8_t value;
+			//Mod targets are not morphed!!!
+			if( (i >= PAR_VEL_DEST_1) && (i <= PAR_VEL_DEST_6) )
+			{
+				value = parameters[i].value;
+			} else if( (i >= PAR_TARGET_LFO1) && (i <= PAR_TARGET_LFO6) )
+			{
+				value = parameters[i].value;
+			} else if( (i >= PAR_VOICE_LFO1) && (i <= PAR_VOICE_LFO6) )
+			{
+				value = parameters[i].value;
+			} 
+			else 
+			{
+				value = preset_getMorphValue(i,parameters[PAR_MORPH].value);
+			}					
 			f_write((FIL*)&preset_File,&value,1,&bytesWritten);	
 		}
 	} else {
@@ -182,7 +197,7 @@ uint8_t preset_loadDrumset(uint8_t presetNr, uint8_t isMorph)
 		{
 			for(i=0;(i<END_OF_SOUND_PARAMETERS) &&( bytesRead!=0);i++)
 			{
-				f_read((FIL*)&preset_File,&parameters2[i].value,1,&bytesRead);	
+				f_read((FIL*)&preset_File,&parameters2[i].value,1,&bytesRead);						
 			}	
 		}
 		else
