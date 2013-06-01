@@ -1,7 +1,7 @@
 Firmware v0.19
 ---------------------------
 - multiple step buttons can be pressed simultaniously to add/remove steps
-- 
+- fixed double triggering of select buttons in voice mode (introduced in last update)
 
 Firmware v0.18
 ---------------------------

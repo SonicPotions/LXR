@@ -662,6 +662,7 @@ void buttonHandler_buttonReleased(uint8_t buttonNr)
 			}
 			else
 			{
+				if(buttonHandler_stateMemory.selectButtonMode == SELECT_MODE_VOICE) return;
 				//do nothing if timer action occured
 				if(buttonHandler_TimerActionOccured())return;
 				
