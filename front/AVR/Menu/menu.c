@@ -386,12 +386,12 @@ void menu_init()
 	
 	parameters[PAR_QUANTISATION].dtype = DTYPE_MENU | (MENU_SEQ_QUANT<<4);
 	
-	parameters[PAR_VOICE_LFO1].dtype	= DTYPE_1B6;
-	parameters[PAR_VOICE_LFO2].dtype	= DTYPE_1B6;
-	parameters[PAR_VOICE_LFO3].dtype	= DTYPE_1B6;
-	parameters[PAR_VOICE_LFO4].dtype	= DTYPE_1B6;
-	parameters[PAR_VOICE_LFO5].dtype	= DTYPE_1B6;
-	parameters[PAR_VOICE_LFO6].dtype	= DTYPE_1B6;
+	parameters[PAR_VOICE_LFO1].dtype	= DTYPE_VOICE_LFO;
+	parameters[PAR_VOICE_LFO2].dtype	= DTYPE_VOICE_LFO;
+	parameters[PAR_VOICE_LFO3].dtype	= DTYPE_VOICE_LFO;
+	parameters[PAR_VOICE_LFO4].dtype	= DTYPE_VOICE_LFO;
+	parameters[PAR_VOICE_LFO5].dtype	= DTYPE_VOICE_LFO;
+	parameters[PAR_VOICE_LFO6].dtype	= DTYPE_VOICE_LFO;
 	
 	parameters[PAR_TRACK_LENGTH].dtype	= DTYPE_1B16;
 	
@@ -842,7 +842,7 @@ void menu_repaint()
 						case DTYPE_0B127:
 						case DTYPE_0B255:
 						case DTYPE_1B16:
-						case DTYPE_1B6:
+						case DTYPE_VOICE_LFO:
 						case DTYPE_0b1:
 							sprintf(&editDisplayBuffer[1][13],"%3d",parameters[parNr].value);		
 							break;
@@ -1029,7 +1029,7 @@ void menu_repaint()
 							case DTYPE_0B127:
 							case DTYPE_0B255:
 							case DTYPE_1B16:
-							case DTYPE_1B6:
+							case DTYPE_VOICE_LFO:
 							case DTYPE_0b1:
 								sprintf(valueAsText,"%3d",parameters[parNr].value);		
 								break;
@@ -1536,6 +1536,22 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 					}				
 					break;
 			
+					case DTYPE_VOICE_LFO:
+					{
+						if(*paramValue < 1)
+							*paramValue = 1;
+						else if(*paramValue > 6)
+							*paramValue = 6; 
+							
+						uint8_t value = getModTargetValue(parameters[PAR_TARGET_LFO1+ paramNr - PAR_VOICE_LFO1].value, *paramValue -1);
+				
+						uint8_t upper,lower;
+						upper = ((value&0x80)>>7) | (((paramNr - PAR_VOICE_LFO1)&0x3f)<<1);
+						lower = value&0x7f;
+						frontPanel_sendData(CC_LFO_TARGET,upper,lower);
+						//return;
+					}						
+					break;
 					case DTYPE_TARGET_SELECTION_LFO:
 					{
 						if(*paramValue > (NUM_SUB_PAGES * 8 -1))
@@ -1567,12 +1583,7 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 							*paramValue = 255;
 						break;
 				
-					case DTYPE_1B6:
-						if(*paramValue < 1)
-							*paramValue = 1;
-						else if(*paramValue > 6)
-							*paramValue = 6; 
-					break;
+					
 					case DTYPE_1B16:
 						if(*paramValue < 1)
 							*paramValue = 1;
@@ -2189,7 +2200,7 @@ uint8_t getDtypeValue(uint8_t value, uint8_t paramNr)
 		case DTYPE_0B255:
 			return value;
 			break;
-		case DTYPE_1B6:
+		case DTYPE_VOICE_LFO:
 			return 1 + 5*frac; 
 		break;
 		case DTYPE_1B16:
@@ -2303,6 +2314,19 @@ void menu_parseKnobValue(uint8_t potNr, uint8_t value)
 				}				
 					break;
 			
+				case DTYPE_VOICE_LFO:
+				{
+						
+							
+						value = getModTargetValue(parameters[PAR_TARGET_LFO1+ paramNr - PAR_VOICE_LFO1].value, value -1);
+				
+						uint8_t upper,lower;
+						upper = ((value&0x80)>>7) | (((paramNr - PAR_VOICE_LFO1)&0x3f)<<1);
+						lower = value&0x7f;
+						frontPanel_sendData(CC_LFO_TARGET,upper,lower);
+						return;
+				}						
+				break;
 				case DTYPE_TARGET_SELECTION_LFO:
 				{
 					value = getModTargetValue(value,parameters[PAR_VOICE_LFO1+ paramNr - PAR_TARGET_LFO1].value-1);
