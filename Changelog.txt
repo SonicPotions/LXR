@@ -1,3 +1,8 @@
+Firmware v0.19
+---------------------------
+- multiple step buttons can be pressed simultaniously to add/remove steps
+- 
+
 Firmware v0.18
 ---------------------------
 - added quick naming scheme 

@@ -31,6 +31,7 @@ uint8_t selectedStepLed=LED_STEP1;
 
 static uint16_t buttonHandler_buttonTimer = 0;
 #define NO_STEP_SELECTED -1
+#define TIMER_ACTION_OCCURED -2
 static int8_t buttonHandler_buttonTimerStepNr = NO_STEP_SELECTED;
 
 volatile struct 
@@ -100,7 +101,7 @@ int8_t buttonHandler_getArmedAutomationStep()
 uint8_t buttonHandler_TimerActionOccured()
 {
 	buttonHandler_disarmTimerActionStep();
-	if(buttonHandler_buttonTimerStepNr == NO_STEP_SELECTED)
+	if(buttonHandler_buttonTimerStepNr == TIMER_ACTION_OCCURED)//NO_STEP_SELECTED)
 	{
 		//a timed action apeared -> do nothing
 		return 1;
@@ -137,12 +138,12 @@ void buttonHandler_tick()
 {
 	if( (time_sysTick > buttonHandler_buttonTimer))
 	{
-		if(buttonHandler_buttonTimerStepNr !=NO_STEP_SELECTED)
+		if(buttonHandler_buttonTimerStepNr >=0)//!=NO_STEP_SELECTED)
 		{
 			//select step
 			buttonHandler_armTimerActionStep(buttonHandler_buttonTimerStepNr);
 			//reset
-			buttonHandler_buttonTimerStepNr = NO_STEP_SELECTED;
+			buttonHandler_buttonTimerStepNr = TIMER_ACTION_OCCURED;//NO_STEP_SELECTED;
 		}
 	}
 };
