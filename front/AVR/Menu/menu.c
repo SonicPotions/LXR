@@ -29,10 +29,11 @@
 /** the lower 2 bit indicate the active parameter.
 the upper bits indicate the active page no.
 */
-static volatile uint8_t menuIndex = 0; 
+static uint8_t menuIndex = 0; 
 
 //preset vars
-static volatile uint8_t menu_currentPresetNr=0;
+#define NUM_PRESET_LOCATIONS 3 //sound, pattern, morph sound
+static uint8_t menu_currentPresetNr[NUM_PRESET_LOCATIONS];
 
 uint8_t menu_shownPattern = 0;
 
@@ -251,6 +252,8 @@ void menu_init()
 	lcd_clear();
 	
 	cc2Name_init();
+	
+	memset(menu_currentPresetNr,0,sizeof(uint8_t) *NUM_PRESET_LOCATIONS );
 	
 	parameters[PAR_EUKLID_LENGTH].value = 16;
 	parameters[PAR_EUKLID_STEPS].value = 16;
@@ -550,7 +553,8 @@ void menu_repaintLoadSavePage()
 		{
 			//the preset number
 			char nr[4] = {0,0,0,0};
-			sprintf(nr,"%3d",menu_currentPresetNr);
+				
+			sprintf(nr,"%3d",menu_currentPresetNr[menu_saveOptions.what]);
 			memcpy(&editDisplayBuffer[1][1],nr,3);
 			
 			if(menu_saveOptions.state == SAVE_STATE_EDIT_PRESET_NR)
@@ -684,7 +688,7 @@ void menu_repaintLoadSavePage()
 		if( menu_saveOptions.what != WHAT_GLO) //no mane and number for global settings
 		{
 			char nr[4] = {0,0,0,0};
-			sprintf(nr,"%3d",menu_currentPresetNr);
+			sprintf(nr,"%3d",menu_currentPresetNr[menu_saveOptions.what]);
 			memcpy(&editDisplayBuffer[1][1],nr,3);
 			
 			if(menu_saveOptions.state == SAVE_STATE_EDIT_PRESET_NR)
@@ -1293,15 +1297,15 @@ void menu_handleLoadSaveMenu(int8_t inc, uint8_t button)
 					
 				switch(menu_saveOptions.what) {
 					case WHAT_PATTERN:
-					preset_savePattern(menu_currentPresetNr);
+					preset_savePattern(menu_currentPresetNr[WHAT_PATTERN]);
 					break;
 						
 					case WHAT_SOUND:
-					preset_saveDrumset(menu_currentPresetNr,0);
+					preset_saveDrumset(menu_currentPresetNr[WHAT_SOUND],0);
 					break;
 						
 					case WHAT_MORPH:
-					preset_saveDrumset(menu_currentPresetNr,1);
+					preset_saveDrumset(menu_currentPresetNr[WHAT_MORPH],1);
 					break;
 					
 					case WHAT_GLO:
@@ -1319,7 +1323,7 @@ void menu_handleLoadSaveMenu(int8_t inc, uint8_t button)
 				switch(menu_saveOptions.what) {
 					
 					case WHAT_PATTERN:
-					if(preset_loadPattern(menu_currentPresetNr)) {
+					if(preset_loadPattern(menu_currentPresetNr[WHAT_PATTERN])) {
 						menu_resetSaveParameters();						
 						//editModeActive=0;
 						menu_repaintAll();
@@ -1356,17 +1360,17 @@ void menu_handleLoadSaveMenu(int8_t inc, uint8_t button)
 				}
 				switch(menu_saveOptions.what) {
 					case WHAT_PATTERN: {
-						preset_getPatternName(menu_currentPresetNr);
+						preset_getPatternName(menu_currentPresetNr[WHAT_PATTERN]);
 					}
 					break;
 						
 					case WHAT_SOUND: {
-						preset_getDrumsetName(menu_currentPresetNr);
+						preset_getDrumsetName(menu_currentPresetNr[WHAT_SOUND]);
 					}				
 					break;
 						
 					case WHAT_MORPH: {
-						preset_getDrumsetName(menu_currentPresetNr);
+						preset_getDrumsetName(menu_currentPresetNr[WHAT_MORPH]);
 					}	
 					break;
 					
@@ -1378,12 +1382,12 @@ void menu_handleLoadSaveMenu(int8_t inc, uint8_t button)
 			
 			case 1: //edit preset nr
 				if(inc<0) {
-					if(menu_currentPresetNr+inc>=0)	{
-						menu_currentPresetNr += inc;	
+					if(menu_currentPresetNr[menu_saveOptions.what]+inc>=0)	{
+						menu_currentPresetNr[menu_saveOptions.what] += inc;	
 					}
 				} else if(inc>0) {
-					if(menu_currentPresetNr<=125) {
-						menu_currentPresetNr += inc;	
+					if(menu_currentPresetNr[menu_saveOptions.what]<=125) {
+						menu_currentPresetNr[menu_saveOptions.what] += inc;	
 					}
 				}	
 				//if on load page, load the new preset when the preset number is changed
@@ -1391,26 +1395,26 @@ void menu_handleLoadSaveMenu(int8_t inc, uint8_t button)
 					if(menu_activePage == LOAD_PAGE) {
 						switch(menu_saveOptions.what) {
 							case WHAT_PATTERN: {
-								preset_getPatternName(menu_currentPresetNr);
+								preset_getPatternName(menu_currentPresetNr[menu_saveOptions.what]);
 							}
 							break;
 						
 							case WHAT_SOUND: {
-								preset_loadDrumset(menu_currentPresetNr,0);
-								preset_getDrumsetName(menu_currentPresetNr);
+								preset_loadDrumset(menu_currentPresetNr[menu_saveOptions.what],0);
+								preset_getDrumsetName(menu_currentPresetNr[menu_saveOptions.what]);
 							}				
 							break;
 						
 							case WHAT_MORPH: {
 								//load to morph buffer
-								preset_loadDrumset(menu_currentPresetNr,1);
-								preset_getDrumsetName(menu_currentPresetNr);								
+								preset_loadDrumset(menu_currentPresetNr[menu_saveOptions.what],1);
+								preset_getDrumsetName(menu_currentPresetNr[menu_saveOptions.what]);								
 							}	
 							break;
 						}
 					} else {
 						//save page -> always load name
-						preset_loadName(menu_currentPresetNr, menu_saveOptions.what);
+						preset_loadName(menu_currentPresetNr[menu_saveOptions.what], menu_saveOptions.what);
 					}								
 				}
 				break;
@@ -1889,7 +1893,7 @@ void menu_switchPage(uint8_t pageNr)
 		
 			//leave edit mode if active
 			//editModeActive = 0;
-			preset_loadName(menu_currentPresetNr, menu_saveOptions.what);
+			preset_loadName(menu_currentPresetNr[menu_saveOptions.what], menu_saveOptions.what);
 		}
 		break;
 		

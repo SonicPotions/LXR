@@ -5,6 +5,8 @@ Firmware v0.19
 - fixed mod target bug in saved morph sounds
 - fixed some buttons functions
 - added menu toggle to settings mennu
+- mod target reselection necessary after target voice change - fixed
+- synth now keeps track of sound,preset and morphsound preset numbers separatrely
 
 
 Firmware v0.18
