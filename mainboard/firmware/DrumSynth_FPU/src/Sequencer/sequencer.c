@@ -986,7 +986,22 @@ void seq_addNote(uint8_t trackNr,uint8_t vel)
 	if(seq_running && seq_recordActive)
 	{
 		const int8_t quantizedStep = seq_quantize(seq_stepIndex[trackNr]);
-		//TODO quantization
+
+		//special care must be taken when recording midi notes!
+		//since per default the 1st substep of a mainstep cluster is always active
+		//we will get double notes when a substep other than ss1 is recorded
+
+
+		if(!seq_isMainStepActive(trackNr, quantizedStep/8, seq_activePattern))
+		{
+			//if the mainstep is not active, we clear the 1st substep
+			//to prevent double notes while recording
+			seq_patternSet.seq_subStepPattern[seq_activePattern][trackNr][(quantizedStep/8)*8].volume 	&= ~STEP_ACTIVE_MASK;
+		}
+		//--
+
+
+
 		//set the current step in the requested track active
 		seq_patternSet.seq_subStepPattern[seq_activePattern][trackNr][quantizedStep].note 		= SEQ_DEFAULT_NOTE;	// default note
 		seq_patternSet.seq_subStepPattern[seq_activePattern][trackNr][quantizedStep].volume		= vel;				// new velocity
@@ -996,6 +1011,18 @@ void seq_addNote(uint8_t trackNr,uint8_t vel)
 
 		//activate corresponding main step
 		seq_setMainStep(trackNr, quantizedStep/8,1);
+
+		if( (frontParser_shownPattern == seq_activePattern) && ( frontParser_activeTrack == trackNr) )
+		{
+			//update front sub step LED
+			uart_sendFrontpanelByte(FRONT_STEP_LED_STATUS_BYTE);
+			uart_sendFrontpanelByte(FRONT_LED_SEQ_SUB_STEP);
+			uart_sendFrontpanelByte(quantizedStep);
+			//update front main step LED
+			uart_sendFrontpanelByte(FRONT_STEP_LED_STATUS_BYTE);
+			uart_sendFrontpanelByte(FRONT_LED_SEQ_BUTTON);
+			uart_sendFrontpanelByte(quantizedStep);
+		}
 	}
 }
 //------------------------------------------------------------------------
