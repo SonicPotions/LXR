@@ -75,11 +75,13 @@ int main(void)
 	//show message for 1 sec
 	_delay_ms(2000);
 	lcd_clear();
-	//init menu
-	menu_init();
+
 	
 	//enable interrupts
 	sei();
+	
+	//init menu
+	menu_init();
 	
 	//init sd card, fat and preset manager
 	//has to be called after sei() because it sends uart data via interrupts

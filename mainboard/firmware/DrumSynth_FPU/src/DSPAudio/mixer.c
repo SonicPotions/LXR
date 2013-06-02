@@ -197,6 +197,7 @@ inline void mixer_addDataToOutput(uint8_t dest, const float panL, const float pa
 	//check if a cable is in the selected out
 	dest = mixer_checkOutJackAvailable(dest);
 
+	//TODO may be possible tooptimize here using both halfwordsof qadd for stereo mixing
 	uint8_t i;
 	switch(dest)
 	{

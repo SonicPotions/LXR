@@ -32,7 +32,7 @@ static uint8_t seq_prescaleCounter = 0;
 
 //uint8_t seq_midiChannel = 0x00;
 uint8_t seq_masterStepCnt=0;					/** keeps track of the played steps between 0 and 127 indipendend from the track counters*/
-uint8_t seq_rollRate = 0;
+uint8_t seq_rollRate = 0x08;					//start with roll rate = 1/16
 uint8_t seq_rollState = 0;					/**< each bit represents a voice. if bit is set, roll is active*/
 
 static int8_t 	seq_stepIndex[NUM_TRACKS];			/**< we have 16 steps consisting of 8 sub steps = 128 steps. each track has its own counter to allow different pattern lengths*/
@@ -898,7 +898,7 @@ void seq_setRollRate(uint8_t rate)
 		seq_rollRate = 0x00;
 		break;
 	}
-	seq_rollRate +=1;
+	seq_rollRate +=1; //is there a reason for this offset here? seems the value could be assigned directly!?!
 
 }
 //------------------------------------------------------------------------
@@ -989,7 +989,7 @@ void seq_addNote(uint8_t trackNr,uint8_t vel)
 		//TODO quantization
 		//set the current step in the requested track active
 		seq_patternSet.seq_subStepPattern[seq_activePattern][trackNr][quantizedStep].note 		= SEQ_DEFAULT_NOTE;	// default note
-		seq_patternSet.seq_subStepPattern[seq_activePattern][trackNr][quantizedStep].volume	= vel;				// new velocity
+		seq_patternSet.seq_subStepPattern[seq_activePattern][trackNr][quantizedStep].volume		= vel;				// new velocity
 		seq_patternSet.seq_subStepPattern[seq_activePattern][trackNr][quantizedStep].prob		= 127;				// 100% probability
 
 		seq_patternSet.seq_subStepPattern[seq_activePattern][trackNr][quantizedStep].volume 	|= STEP_ACTIVE_MASK;

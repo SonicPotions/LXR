@@ -255,8 +255,7 @@ void menu_init()
 	
 	memset(menu_currentPresetNr,0,sizeof(uint8_t) *NUM_PRESET_LOCATIONS );
 	
-	parameters[PAR_EUKLID_LENGTH].value = 16;
-	parameters[PAR_EUKLID_STEPS].value = 16;
+
 	
 
 	//init the parameter array dtype fields to  DTYPE_0B127;
@@ -421,6 +420,13 @@ void menu_init()
 		
 		//parameters[i].max = 127; //TODO max werte für filter type mod matrizen etc
 	}		
+	
+	parameters[PAR_EUKLID_LENGTH].value = 16;
+	parameters[PAR_EUKLID_STEPS].value = 16;
+	
+	//initialize the roll value
+	parameters[PAR_ROLL].value = 8;
+	//frontPanel_sendData(SEQ_CC,SEQ_ROLL_RATE,8); //value is initialized in cortex firmware
 	
 	parameters[PAR_BPM].value = 120;
 	

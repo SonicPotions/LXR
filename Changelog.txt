@@ -9,7 +9,8 @@ Firmware v0.19
 - synth now keeps track of sound,preset and morphsound preset numbers separatrely
 - changed mixer routine to use saturating math (prevent integer overflow clipping)
 - 1st knob selects type (sound, pattern, morph) on load/save page
-- load/save type is not reset
+- load/save type is not reset anymore (stays on last selected item)
+- fixed roll rate initialisation after power up
 
 
 Firmware v0.18
