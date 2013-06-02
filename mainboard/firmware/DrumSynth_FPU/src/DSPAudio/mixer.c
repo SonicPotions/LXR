@@ -192,7 +192,7 @@ inline void mixer_moveDataToOutput(const uint8_t voiceNr,uint8_t dest, const flo
 	}
 }
 //-----------------------------------------------------------------------
-inline void mixer_addDataToOutput(const uint8_t voiceNr,uint8_t dest, const float panL, const float panR,  int16_t* data,int16_t* outL,int16_t* outR,int16_t* outL2, int16_t* outR2)
+inline void mixer_addDataToOutput(uint8_t dest, const float panL, const float panR,  int16_t* data,int16_t* outL,int16_t* outR,int16_t* outL2, int16_t* outR2)
 {
 	//check if a cable is in the selected out
 	dest = mixer_checkOutJackAvailable(dest);
@@ -204,48 +204,56 @@ inline void mixer_addDataToOutput(const uint8_t voiceNr,uint8_t dest, const floa
 	case MIXER_ROUTING_DAC1_STEREO:
 		for(i=0;i<OUTPUT_DMA_SIZE;i++)
 		{
-			*outL2 += data[i] * panL;
+			*outL2 = __QADD16(*outL2,data[i] * panL) & 0xFFFF;
+			//*outL2 += data[i] * panL;
 			outL2 += 2;
 
-			*outR2 += data[i] * panR;
+			*outR2 = __QADD16(*outR2,data[i] * panR) & 0xFFFF;
+			//*outR2 += data[i] * panR;
 			outR2 += 2;
 		}
 		break;
 	case MIXER_ROUTING_DAC2_STEREO:
 		for(i=0;i<OUTPUT_DMA_SIZE;i++)
 		{
-			*outL += data[i] * panL;
+			*outL = __QADD16(*outL,data[i] * panL) & 0xFFFF;
+			//*outL += data[i] * panL;
 			outL += 2;
 
-			*outR += data[i] * panR;
+			*outR = __QADD16(*outR,data[i] * panR) & 0xFFFF;
+			//*outR += data[i] * panR;
 			outR += 2;
 		}
 		break;
 	case MIXER_ROUTING_DAC1_L:
 		for(i=0;i<OUTPUT_DMA_SIZE;i++)
 		{
-			*outL2 += data[i];
+			*outL2 = __QADD16(*outL2,data[i]) & 0xFFFF;
+			//*outL2 += data[i];
 			outL2 += 2;
 		}
 		break;
 	case MIXER_ROUTING_DAC1_R:
 		for(i=0;i<OUTPUT_DMA_SIZE;i++)
 		{
-			*outR2 += data[i];
+			*outR2 = __QADD16(*outR2,data[i]) & 0xFFFF;
+			//*outR2 += data[i];
 			outR2 += 2;
 		}
 		break;
 	case MIXER_ROUTING_DAC2_L:
 		for(i=0;i<OUTPUT_DMA_SIZE;i++)
 		{
-			*outL += data[i];
+			*outL = __QADD16(*outL,data[i]) & 0xFFFF;
+			//*outL += data[i];
 			outL += 2;
 		}
 		break;
 	case MIXER_ROUTING_DAC2_R:
 		for(i=0;i<OUTPUT_DMA_SIZE;i++)
 		{
-			*outR += data[i];
+			*outR = __QADD16(*outR,data[i]) & 0xFFFF;
+			//*outR += data[i];
 			outR += 2;
 		}
 		break;
@@ -302,7 +310,7 @@ void mixer_calcNextSampleBlock(int16_t* output,int16_t* output2)
 	mixer_decimateBlock(0,sampleData);
 	//copy to selected dma buffer
 	//mixer_addDataToOutput(0,mixer_audioRouting[0],voiceArray[0].panL ,voiceArray[0].panR, sampleData,&output[pos],&output[pos+1],&output2[pos],&output2[pos+1]);
-	  mixer_addDataToOutput(0,mixer_audioRouting[0],squareRootLut[127-voiceArray[0].pan] ,squareRootLut[voiceArray[0].pan], sampleData,&output[pos],&output[pos+1],&output2[pos],&output2[pos+1]);
+	  mixer_addDataToOutput(mixer_audioRouting[0],squareRootLut[127-voiceArray[0].pan] ,squareRootLut[voiceArray[0].pan], sampleData,&output[pos],&output[pos+1],&output2[pos],&output2[pos+1]);
 
 
 	//calc voice 2
@@ -310,35 +318,35 @@ void mixer_calcNextSampleBlock(int16_t* output,int16_t* output2)
 	//decimate voice
 	mixer_decimateBlock(1,sampleData);
 	//copy to selected dma buffer
-	mixer_addDataToOutput(1,mixer_audioRouting[1],squareRootLut[127-voiceArray[1].pan] ,squareRootLut[voiceArray[1].pan], sampleData,&output[pos],&output[pos+1],&output2[pos],&output2[pos+1]);
+	mixer_addDataToOutput(mixer_audioRouting[1],squareRootLut[127-voiceArray[1].pan] ,squareRootLut[voiceArray[1].pan], sampleData,&output[pos],&output[pos+1],&output2[pos],&output2[pos+1]);
 
 	//calc voice 3
 	calcDrumVoiceSyncBlock(2, sampleData,OUTPUT_DMA_SIZE);
 	//decimate voice
 	mixer_decimateBlock(2,sampleData);
 	//copy to selected dma buffer
-	mixer_addDataToOutput(2,mixer_audioRouting[2],squareRootLut[127-voiceArray[2].pan] ,squareRootLut[voiceArray[2].pan], sampleData,&output[pos],&output[pos+1],&output2[pos],&output2[pos+1]);
+	mixer_addDataToOutput(mixer_audioRouting[2],squareRootLut[127-voiceArray[2].pan] ,squareRootLut[voiceArray[2].pan], sampleData,&output[pos],&output[pos+1],&output2[pos],&output2[pos+1]);
 
 	//calc snare
 	Snare_calcSyncBlock(sampleData,OUTPUT_DMA_SIZE);
 	//decimate voice
 	mixer_decimateBlock(3,sampleData);
 	//copy to selected dma buffer
-	mixer_addDataToOutput(3,mixer_audioRouting[3],snareVoice.panL,snareVoice.panR, sampleData,&output[pos],&output[pos+1],&output2[pos],&output2[pos+1]);
+	mixer_addDataToOutput(mixer_audioRouting[3],snareVoice.panL,snareVoice.panR, sampleData,&output[pos],&output[pos+1],&output2[pos],&output2[pos+1]);
 
 	//calc cymbal
 	Cymbal_calcSyncBlock(sampleData,OUTPUT_DMA_SIZE);
 	//decimate voice
 	mixer_decimateBlock(4,sampleData);
 	//copy to selected dma buffer
-	mixer_addDataToOutput(4,mixer_audioRouting[4],cymbalVoice.panL,cymbalVoice.panR, sampleData,&output[pos],&output[pos+1],&output2[pos],&output2[pos+1]);
+	mixer_addDataToOutput(mixer_audioRouting[4],cymbalVoice.panL,cymbalVoice.panR, sampleData,&output[pos],&output[pos+1],&output2[pos],&output2[pos+1]);
 
 	//calc HiHat
 	HiHat_calcSyncBlock(sampleData,OUTPUT_DMA_SIZE);
 	//decimate voice
 	mixer_decimateBlock(5,sampleData);
 	//copy to selected dma buffer
-	mixer_addDataToOutput(5,mixer_audioRouting[5],hatVoice.panL,hatVoice.panR, sampleData,&output[pos],&output[pos+1],&output2[pos],&output2[pos+1]);
+	mixer_addDataToOutput(mixer_audioRouting[5],hatVoice.panL,hatVoice.panR, sampleData,&output[pos],&output[pos+1],&output2[pos],&output2[pos+1]);
 
 	//update dma buffer position
 	//dmaBufferPtr += (OUTPUT_DMA_SIZE*2);

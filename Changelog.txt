@@ -7,6 +7,7 @@ Firmware v0.19
 - added menu toggle to settings mennu
 - mod target reselection necessary after target voice change - fixed
 - synth now keeps track of sound,preset and morphsound preset numbers separatrely
+- changed mixer routine to use saturating math (prevent integer overflow clipping)
 
 
 Firmware v0.18
