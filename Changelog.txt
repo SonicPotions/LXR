@@ -4,6 +4,7 @@ Firmware v0.19
 - fixed double triggering of select buttons in voice mode (introduced in last update)
 - fixed mod target bug in saved morph sounds
 - fixed some buttons functions
+- added menu toggle to settings mennu
 
 
 Firmware v0.18

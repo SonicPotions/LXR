@@ -215,8 +215,14 @@ void buttonHandler_handleModeButtons(uint8_t mode)
 		break;
 			
 		case SELECT_MODE_MENU:
+		{
+			uint8_t toggle = (menu_getActivePage() == MENU_MIDI_PAGE);
 			menu_switchPage(MENU_MIDI_PAGE);
-
+			
+			if(toggle) {
+				menu_switchSubPage(menu_getSubPage()); //to enable toggle
+			}				
+		}
 		break;
 			
 		case SELECT_MODE_SOM_GEN:
