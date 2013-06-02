@@ -161,13 +161,6 @@ void preset_loadGlobals()
 #endif	
 }
 //----------------------------------------------------
-void checkRange(Parameter* p)
-{
-	
-	//p->dtype
-}
-//----------------------------------------------------
-
 uint8_t preset_loadDrumset(uint8_t presetNr, uint8_t isMorph)
 {
 	
@@ -206,7 +199,7 @@ uint8_t preset_loadDrumset(uint8_t presetNr, uint8_t isMorph)
 			{
 				f_read((FIL*)&preset_File,&parameters[i].value,1,&bytesRead);	
 				
-				checkRange(&parameters[i]);
+				//checkRange(&parameters[i]);
 				
 			}	
 			

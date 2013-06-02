@@ -1238,6 +1238,20 @@ void menu_handleSaveScreenKnobValue(uint8_t potNr, uint8_t value)
 			case 0:
 				x = value/(256/4); //0-4
 				menu_saveOptions.what = x;
+				switch(menu_saveOptions.what)
+				{
+						
+					case WHAT_PATTERN: {
+						preset_getPatternName(menu_currentPresetNr[menu_saveOptions.what]);
+					}
+					break;
+						
+					case WHAT_MORPH:
+					case WHAT_SOUND: {
+						preset_getDrumsetName(menu_currentPresetNr[menu_saveOptions.what]);
+					}				
+					break;
+				}
 				//force complete repaint
 				menu_repaintAll();
 			break;
@@ -1928,7 +1942,7 @@ void menu_switchPage(uint8_t pageNr)
 			{
 				//when coming from another page, do a complete reset and show the sound select page
 				menu_resetSaveParameters();
-				menu_saveOptions.what	= WHAT_SOUND;
+				//menu_saveOptions.what	= WHAT_SOUND;
 			}
 
 			//if we are already on the load/save page, toggle between load/save
