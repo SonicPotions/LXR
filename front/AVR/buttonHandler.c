@@ -594,7 +594,7 @@ void buttonHandler_buttonReleased(uint8_t buttonNr)
 					buttonHandler_selectActiveStep(ledNr, seqButtonPressed);
 				} else if ( (buttonHandler_getMode() == SELECT_MODE_STEP) )
 				{
-					buttonHandler_setRemoveStep(ledNr,seqButtonPressed);
+					//buttonHandler_setRemoveStep(ledNr,seqButtonPressed);
 				}
 				
 			}
@@ -667,7 +667,7 @@ void buttonHandler_buttonReleased(uint8_t buttonNr)
 				if(buttonHandler_TimerActionOccured())return;
 				
 				buttonHandler_buttonTimerStepNr = NO_STEP_SELECTED;
-				buttonHandler_handleSelectButton(buttonNr-BUT_SELECT1);
+				//buttonHandler_handleSelectButton(buttonNr-BUT_SELECT1);
 			}			
 
 		break;
@@ -795,7 +795,7 @@ return;
 					buttonHandler_setTimeraction(buttonNr);
 				} else {
 					
-					//buttonHandler_handleSelectButton(buttonNr-BUT_SELECT1);
+					buttonHandler_handleSelectButton(buttonNr-BUT_SELECT1);
 				}				
 
 			}				

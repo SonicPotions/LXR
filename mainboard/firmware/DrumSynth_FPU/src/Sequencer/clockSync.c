@@ -2,7 +2,7 @@
  * clockSync.c
  *
  *  Created on: 03.02.2013
- *      Author: Julian
+ *      Author: Julian Schmidt
  */
 
 
