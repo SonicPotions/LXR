@@ -1229,7 +1229,57 @@ void menu_repaint()
 void menu_handleSaveScreenKnobValue(uint8_t potNr, uint8_t value)
 {
 	int x;
-	if(menu_saveOptions.state >=2 && menu_saveOptions.state <=9)
+	
+	if(menu_saveOptions.state >=SAVE_STATE_EDIT_TYPE && menu_saveOptions.state <=SAVE_STATE_EDIT_PRESET_NR)
+	{
+		switch(potNr)
+		{
+			// change type
+			case 0:
+				x = value/(256/4); //0-4
+				menu_saveOptions.what = x;
+				//force complete repaint
+				menu_repaintAll();
+			break;
+		
+			// change preset nr
+			/*
+			case 1:
+				x = value/(256/127); //0-127
+				menu_currentPresetNr[menu_saveOptions.what] = x;
+				switch(menu_saveOptions.what)
+				{
+						
+					case WHAT_PATTERN: {
+						preset_getPatternName(menu_currentPresetNr[menu_saveOptions.what]);
+					}
+					break;
+						
+					case WHAT_SOUND: {
+						preset_loadDrumset(menu_currentPresetNr[menu_saveOptions.what],0);
+						preset_getDrumsetName(menu_currentPresetNr[menu_saveOptions.what]);
+					}				
+					break;
+						
+					case WHAT_MORPH: {
+						//load to morph buffer
+						preset_loadDrumset(menu_currentPresetNr[menu_saveOptions.what],1);
+						preset_getDrumsetName(menu_currentPresetNr[menu_saveOptions.what]);								
+					}	
+					break;
+				}
+										
+				menu_repaintAll();
+				
+			break;
+			*/
+			
+			default:
+			break;
+		}			
+				
+	}
+	else if(menu_saveOptions.state >=2 && menu_saveOptions.state <=9)
 	{
 		switch(potNr)
 		{
@@ -2280,7 +2330,7 @@ void menu_parseKnobValue(uint8_t potNr, uint8_t value)
 {
 	screensaver_touch();
 	
-	if(menu_activePage == SAVE_PAGE) {
+	if( (menu_activePage == SAVE_PAGE) || (menu_activePage == LOAD_PAGE)) {
 		menu_handleSaveScreenKnobValue(potNr, value);
 	} else {
 		const uint8_t activePage		= (menuIndex&MASK_PAGE)>>PAGE_SHIFT;

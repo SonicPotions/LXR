@@ -8,6 +8,7 @@ Firmware v0.19
 - mod target reselection necessary after target voice change - fixed
 - synth now keeps track of sound,preset and morphsound preset numbers separatrely
 - changed mixer routine to use saturating math (prevent integer overflow clipping)
+- 1st knob selects type (sound, pattern, morph) on load/save page
 
 
 Firmware v0.18
