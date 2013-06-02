@@ -205,11 +205,11 @@ inline void mixer_addDataToOutput(uint8_t dest, const float panL, const float pa
 	case MIXER_ROUTING_DAC1_STEREO:
 		for(i=0;i<OUTPUT_DMA_SIZE;i++)
 		{
-			*outL2 = __QADD16(*outL2,data[i] * panL) & 0xFFFF;
+			*outL2 = __QADD16(*outL2,(int16_t)(data[i] * panL)) & 0xFFFF;
 			//*outL2 += data[i] * panL;
 			outL2 += 2;
 
-			*outR2 = __QADD16(*outR2,data[i] * panR) & 0xFFFF;
+			*outR2 = __QADD16(*outR2,(int16_t)(data[i] * panR)) & 0xFFFF;
 			//*outR2 += data[i] * panR;
 			outR2 += 2;
 		}
@@ -217,11 +217,11 @@ inline void mixer_addDataToOutput(uint8_t dest, const float panL, const float pa
 	case MIXER_ROUTING_DAC2_STEREO:
 		for(i=0;i<OUTPUT_DMA_SIZE;i++)
 		{
-			*outL = __QADD16(*outL,data[i] * panL) & 0xFFFF;
+			*outL = __QADD16(*outL,(int16_t)(data[i] * panL)) & 0xFFFF;
 			//*outL += data[i] * panL;
 			outL += 2;
 
-			*outR = __QADD16(*outR,data[i] * panR) & 0xFFFF;
+			*outR = __QADD16(*outR,(int16_t)(data[i] * panR)) & 0xFFFF;
 			//*outR += data[i] * panR;
 			outR += 2;
 		}
