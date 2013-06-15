@@ -1,3 +1,7 @@
+Firmware v0.20
+---------------------------
+- fixed clear menu missing characters
+
 Firmware v0.19
 ---------------------------
 - multiple step buttons can be pressed simultaniously to add/remove steps
@@ -11,6 +15,8 @@ Firmware v0.19
 - 1st knob selects type (sound, pattern, morph) on load/save page
 - load/save type is not reset anymore (stays on last selected item)
 - fixed roll rate initialisation after power up
+- LED update for recorded notes
+- prevent double notes in midi recording mode (1st substep is cleared on inative main steps)
 
 
 Firmware v0.18

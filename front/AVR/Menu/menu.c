@@ -475,10 +475,13 @@ void sendDisplayBuffer()
 void menu_repaintAll()
 {
 
-	memset(editDisplayBuffer,' ',2*17);	
-	memset(currentDisplayBuffer,127,2*16);
+	//if(copyClear_Mode == MODE_NONE)
+	{
+		memset(editDisplayBuffer,' ',2*17);	
+		memset(currentDisplayBuffer,127,2*16);
 
-	menu_repaint();
+		menu_repaint();
+	}		
 }
 //-----------------------------------------------------------------
 void menu_repaintLoadSavePage()
@@ -1548,7 +1551,7 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 	//	inc = inc>0?1:-1;
 	}		
 
-	if(menu_activePage >= LOAD_PAGE && menu_activePage <= SAVE_PAGE) {
+	if(menu_activePage == LOAD_PAGE || menu_activePage == SAVE_PAGE) {
 		menu_handleLoadSaveMenu(inc, button);
 	} else{
 		//handle the button
@@ -1827,13 +1830,14 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 		
 		
 			} //not in edit mode
-		}					
+		//update the button state
+		lastEncoderButton = button;
+		menu_repaint();	
+		}	
+			
 	}		
 		
-	//update the button state
-	lastEncoderButton = button;
-	
-	menu_repaint();
+
 	
 };
 //-----------------------------------------------------------------
