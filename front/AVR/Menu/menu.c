@@ -1831,13 +1831,13 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 		
 			} //not in edit mode
 		//update the button state
-		lastEncoderButton = button;
+		
 		menu_repaint();	
 		}	
 			
 	}		
 		
-
+	lastEncoderButton = button;
 	
 };
 //-----------------------------------------------------------------
