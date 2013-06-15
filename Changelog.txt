@@ -1,6 +1,7 @@
 Firmware v0.20
 ---------------------------
 - fixed clear menu missing characters
+- added toggle between 1st/2nd menu page for step parameter menu
 
 Firmware v0.19
 ---------------------------

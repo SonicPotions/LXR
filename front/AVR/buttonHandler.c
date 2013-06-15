@@ -597,7 +597,7 @@ void buttonHandler_buttonReleased(uint8_t buttonNr)
 				if( (buttonHandler_getMode() == SELECT_MODE_VOICE) )
 				{
 					//sequencer mode -> buttons select active step
-					buttonHandler_selectActiveStep(ledNr, seqButtonPressed);
+					//buttonHandler_selectActiveStep(ledNr, seqButtonPressed);
 				} else if ( (buttonHandler_getMode() == SELECT_MODE_STEP) )
 				{
 					//buttonHandler_setRemoveStep(ledNr,seqButtonPressed);
@@ -613,7 +613,7 @@ void buttonHandler_buttonReleased(uint8_t buttonNr)
 						//do nothing if timer action occured
 						if(buttonHandler_TimerActionOccured())return;
 						
-						buttonHandler_selectActiveStep(ledNr, seqButtonPressed);
+						//buttonHandler_selectActiveStep(ledNr, seqButtonPressed);
 					break;
 					//--- edit the pattern -> button sets and removes a step ---
 					case SELECT_MODE_VOICE:
@@ -685,6 +685,11 @@ void buttonHandler_selectActiveStep(uint8_t ledNr, uint8_t seqButtonPressed)
 	
 	led_setBlinkLed(selectedStepLed,0);
 	led_setValue(0,selectedStepLed);
+	
+	if(buttonHandler_selectedStep == (seqButtonPressed*8))
+	{
+		menu_switchSubPage(menu_getSubPage()); //to enable toggle
+	}		
 				
 	//update active step
 	buttonHandler_selectedStep = seqButtonPressed*8;
