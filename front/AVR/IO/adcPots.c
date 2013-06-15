@@ -63,6 +63,7 @@ void adc_checkPots()
 	   {
 		   adc_potValues[i] = newValue;
 		   menu_parseKnobValue(i,newValue>>2);
+		   menu_repaintAll();
 	   } 
 	}
 };
