@@ -131,7 +131,7 @@ void SVF_calcBlockZDF(ResonantFilter* filter, const uint8_t type, int16_t* buf, 
 #if ENABLE_NONLINEAR_INTEGRATORS
 		const float scale = 0.5f;
 		const float t0 = tanhXdX(scale* (ih - 2*R*filter->s1 - filter->s2 ) );
-		const float t1 = 1;//tanhXdX(scale* (filter->s1 ) );
+		const float t1 = tanhXdX(scale* (filter->s1 ) );
 #else
 		const float t0 = 1;
 		const float t1 = 1;
@@ -159,6 +159,8 @@ void SVF_calcBlockZDF(ResonantFilter* filter, const uint8_t type, int16_t* buf, 
 		switch(type)
 		{
 		default:
+			return;
+			break;
 		case FILTER_LP:
 #if USE_SHAPER_NONLINEARITY
 

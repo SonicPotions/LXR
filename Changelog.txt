@@ -3,6 +3,8 @@ Firmware v0.20
 - fixed clear menu missing characters
 - added toggle between 1st/2nd menu page for step parameter menu
 - changed transient wave 0 to 'snap' control (short pitch EG)
+- changed transient wave 1 to wave offset
+- all transient waves shifted by 2 (old wave 0 is now wave 2)
 
 Firmware v0.19
 ---------------------------

@@ -89,19 +89,27 @@ void Drum_trigger(const uint8_t voiceNr, const uint8_t vol, const uint8_t note)
 	modNode_updateValue(&velocityModulators[voiceNr],vol/127.f);
 
 	//only reset phase if envelope is closed
-	if(voiceArray[voiceNr].volEgValueBlock[15]<=0.01f)
+	if((voiceArray[voiceNr].volEgValueBlock[15]<=0.01f) || (voiceArray[voiceNr].transGen.waveform==1))
 	{
+		float offset = 1;
+		if(voiceArray[voiceNr].transGen.waveform==1) //offset mode
+		{
+			offset -= voiceArray[voiceNr].transGen.volume;
+			setOnePoleCoef(&voiceArray[voiceNr].ampFilter,1.0f); //turn off amp filter for super snappy attack
+		} else {
+			setOnePoleCoef(&voiceArray[voiceNr].ampFilter,0.05f);
+		}
 		if(voiceArray[voiceNr].osc.waveform == SINE)
-			voiceArray[voiceNr].osc.phase = 0x3ff<<20;//voiceArray[voiceNr].osc.startPhase ;
+			voiceArray[voiceNr].osc.phase = (0x3ff<<20)*offset;//voiceArray[voiceNr].osc.startPhase ;
 		else if(voiceArray[voiceNr].osc.waveform > SINE && voiceArray[voiceNr].osc.waveform <= REC)
-			voiceArray[voiceNr].osc.phase = 0xff<<20;
+			voiceArray[voiceNr].osc.phase = (0xff<<20)*offset;
 		else
 			voiceArray[voiceNr].osc.phase = 0;
 
 		if(voiceArray[voiceNr].modOsc.waveform == SINE)
-			voiceArray[voiceNr].modOsc.phase = 0x3ff<<20;//voiceArray[voiceNr].osc.startPhase ;
+			voiceArray[voiceNr].modOsc.phase = (0x3ff<<20)*offset;//voiceArray[voiceNr].osc.startPhase ;
 		else if(voiceArray[voiceNr].modOsc.waveform > SINE && voiceArray[voiceNr].modOsc.waveform <= REC)
-			voiceArray[voiceNr].modOsc.phase = 0xff<<20;
+			voiceArray[voiceNr].modOsc.phase = (0xff<<20)*offset;
 		else
 			voiceArray[voiceNr].modOsc.phase = 0;
 	}

@@ -6,7 +6,7 @@
  */
 #include "snapEg.h"
 
-#define SNAP_MAX_VALUE 12.f
+#define SNAP_MAX_VALUE 24.f
 #define SNAP_REDUCTION 0.2f
 
 //float SNAP_MAX_VALUE = 12.f;

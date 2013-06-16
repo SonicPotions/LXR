@@ -72,7 +72,23 @@ void Cymbal_trigger( const uint8_t vel, const uint8_t note)
 	//update velocity modulation
 	modNode_updateValue(&velocityModulators[4],vel/127.f);
 
-	cymbalVoice.osc.phase = 0;
+
+	//if((cymbalVoice.volEgValueBlock[15]<=0.01f) || (snareVoice.transGen.waveform==1))
+	{
+		float offset = 1;
+		if(cymbalVoice.transGen.waveform==1) //offset mode
+		{
+			offset -= cymbalVoice.transGen.volume;
+		}
+		if(cymbalVoice.osc.waveform == SINE)
+			cymbalVoice.osc.phase = (0x3ff<<20)*offset;//voiceArray[voiceNr].osc.startPhase ;
+		else if(cymbalVoice.osc.waveform > SINE && cymbalVoice.osc.waveform <= REC)
+			cymbalVoice.osc.phase = (0xff<<20)*offset;
+		else
+			cymbalVoice.osc.phase = 0;
+	}
+
+	//cymbalVoice.osc.phase = 0;
 	cymbalVoice.modOsc.phase = 0;
 	cymbalVoice.modOsc2.phase = 0;
 
@@ -93,17 +109,19 @@ void Cymbal_calcAsync()
 	//calc the osc  vol eg
 	cymbalVoice.egValueOscVol = slopeEg2_calc(&cymbalVoice.oscVolEg);
 
+	//calc snap EG if transient sample 0 is activated
+	if(cymbalVoice.transGen.waveform == 0)
+	{
+		const float snapVal = SnapEg_calc(&cymbalVoice.snapEg,cymbalVoice.transGen.pitch);
+		cymbalVoice.osc.pitchMod = 1 + snapVal*cymbalVoice.transGen.volume;
+	}
+
 	//update osc phaseInc
 	osc_setFreq(&cymbalVoice.osc);
 	osc_setFreq(&cymbalVoice.modOsc);
 	osc_setFreq(&cymbalVoice.modOsc2);
 
-	//calc snap EG if transient sample 0 is activated
-	if(cymbalVoice.transGen.waveform == 0)
-	{
-		const float snapVal = SnapEg_calc(&cymbalVoice,cymbalVoice.transGen.pitch);
-		cymbalVoice.osc.pitchMod = 1 + snapVal*cymbalVoice.transGen.volume;
-	}
+
 }
 //---------------------------------------------------
 void Cymbal_calcSyncBlock(int16_t* buf, const uint8_t size)

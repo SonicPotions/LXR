@@ -76,6 +76,22 @@ void HiHat_trigger( uint8_t vel, uint8_t isOpen, const uint8_t note)
 	//update velocity modulation
 	modNode_updateValue(&velocityModulators[5],vel/127.f);
 
+
+
+	float offset = 1;
+	if(hatVoice.transGen.waveform==1) //offset mode
+	{
+		offset -= hatVoice.transGen.volume;
+	}
+	if(hatVoice.osc.waveform == SINE)
+		hatVoice.osc.phase = (0x3ff<<20)*offset;//voiceArray[voiceNr].osc.startPhase ;
+	else if(hatVoice.osc.waveform > SINE && hatVoice.osc.waveform <= REC)
+		hatVoice.osc.phase = (0xff<<20)*offset;
+	else
+		hatVoice.osc.phase = 0;
+
+
+
 	osc_setBaseNote(&hatVoice.osc,note);
 	osc_setBaseNote(&hatVoice.modOsc,note);
 	osc_setBaseNote(&hatVoice.modOsc2,note);
@@ -94,16 +110,18 @@ void HiHat_calcAsync( )
 	//calc the osc  vol eg
 	hatVoice.egValueOscVol = slopeEg2_calc(&hatVoice.oscVolEg);
 
-	osc_setFreq(&hatVoice.osc);
-	osc_setFreq(&hatVoice.modOsc);
-	osc_setFreq(&hatVoice.modOsc2);
-
 	//calc snap EG if transient sample 0 is activated
 	if(hatVoice.transGen.waveform == 0)
 	{
 		const float snapVal = SnapEg_calc(&hatVoice.snapEg, hatVoice.transGen.pitch);
 		hatVoice.osc.pitchMod = 1 + snapVal*hatVoice.transGen.volume;
 	}
+
+	osc_setFreq(&hatVoice.osc);
+	osc_setFreq(&hatVoice.modOsc);
+	osc_setFreq(&hatVoice.modOsc2);
+
+
 }
 //---------------------------------------------------
 void HiHat_calcSyncBlock(int16_t* buf, const uint8_t size)

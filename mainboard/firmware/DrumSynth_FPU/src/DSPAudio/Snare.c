@@ -78,14 +78,29 @@ void Snare_trigger(const uint8_t vel, const uint8_t note)
 	//update velocity modulation
 	modNode_updateValue(&velocityModulators[3],vel/127.f);
 
-//	voiceArray[voiceNr].status |= IS_PLAYING;
-	snareVoice.osc.phase = 0;
-	//snareVoice.noiseOsc.phase = 0;
+
+	//snareVoice.osc.phase = 0;
+
+	//only reset phase if envelope is closed
+	//if((snareVoice.volEgValueBlock[15]<=0.01f) || (snareVoice.transGen.waveform==1))
+	{
+		float offset = 1;
+		if(snareVoice.transGen.waveform==1) //offset mode
+		{
+			offset -= snareVoice.transGen.volume;
+		}
+		if(snareVoice.osc.waveform == SINE)
+			snareVoice.osc.phase = (0x3ff<<20)*offset;//voiceArray[voiceNr].osc.startPhase ;
+		else if(snareVoice.osc.waveform > SINE && snareVoice.osc.waveform <= REC)
+			snareVoice.osc.phase = (0xff<<20)*offset;
+		else
+			snareVoice.osc.phase = 0;
+	}
+
 
 	DecayEg_trigger(&snareVoice.oscPitchEg);
 	slopeEg2_trigger(&snareVoice.oscVolEg);
 	snareVoice.velo = vel/127.f;
-//	ADEG_trigger(&snareVoice[voiceNr].noiseVolEg);
 
 	osc_setBaseNote(&snareVoice.osc,note);
 	//TODO noise muss mit transponiert werden
@@ -109,16 +124,17 @@ void Snare_calcAsync()
 	//calc the osc  vol eg
 	snareVoice.egValueOscVol = slopeEg2_calc(&snareVoice.oscVolEg);
 
-
-	osc_setFreq(&snareVoice.osc);
-	osc_setFreq(&snareVoice.noiseOsc);
-
 	//calc snap EG if transient sample 0 is activated
 	if(snareVoice.transGen.waveform == 0)
 	{
 		const float snapVal = SnapEg_calc(&snareVoice.snapEg, snareVoice.transGen.pitch);
-		snareVoice.osc.pitchMod = 1 + snapVal*snareVoice.transGen.volume;;
+		snareVoice.osc.pitchMod += snapVal*snareVoice.transGen.volume;;
 	}
+
+	osc_setFreq(&snareVoice.osc);
+	osc_setFreq(&snareVoice.noiseOsc);
+
+
 
 
 }

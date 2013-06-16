@@ -28,13 +28,19 @@ void transient_trigger(TransientGenerator* transient)
 //---------------------------------------------------------------
 void transient_calcBlock(TransientGenerator* transient, int16_t* buf, const uint8_t size)
 {
+	if(transient->waveform<=1)
+	{
+		memset(buf,0,size*sizeof(int16_t));
+		return; //snapEg and offset
+	}
+
 	uint8_t i;
 	for(i=0;i<size;i++)
 	{
 		uint32_t phase = transient->phase;
 		phase = phase >> 20;
 
-		buf[i] = transient->volume*(transientData[transient->waveform][phase]<<8) * (phase < TRANSIENT_SAMPLE_LENGTH);//* transientVolumeTable[phase>>5];
+		buf[i] = transient->volume*(transientData[transient->waveform-2][phase]<<8) * (phase < TRANSIENT_SAMPLE_LENGTH);//* transientVolumeTable[phase>>5];
 
 		//if phase is < then table size, we increment it
 		transient->phase += (transient->phase<2311061504u) * (transient->pitch*(1<<20)); //2311061504 => 2204<<20

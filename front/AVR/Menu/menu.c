@@ -1535,10 +1535,11 @@ void menu_handleLoadSaveMenu(int8_t inc, uint8_t button)
 						}
 					}
 				}
-				//force complete repaint
-				menu_repaintAll();
+
 			}	
-		}							
+		}
+		//force complete repaint
+		menu_repaintAll();							
 }
 //-----------------------------------------------------------------
 void menu_parseEncoder(int8_t inc, uint8_t button)

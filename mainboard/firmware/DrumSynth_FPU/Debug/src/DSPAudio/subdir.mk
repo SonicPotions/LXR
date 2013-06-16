@@ -21,6 +21,7 @@ C_SRCS += \
 ../src/DSPAudio/mixer.c \
 ../src/DSPAudio/modulationNode.c \
 ../src/DSPAudio/random.c \
+../src/DSPAudio/snapEg.c \
 ../src/DSPAudio/squareRootLut.c \
 ../src/DSPAudio/transientGenerator.c \
 ../src/DSPAudio/transientTables.c \
@@ -44,6 +45,7 @@ OBJS += \
 ./src/DSPAudio/mixer.o \
 ./src/DSPAudio/modulationNode.o \
 ./src/DSPAudio/random.o \
+./src/DSPAudio/snapEg.o \
 ./src/DSPAudio/squareRootLut.o \
 ./src/DSPAudio/transientGenerator.o \
 ./src/DSPAudio/transientTables.o \
@@ -67,6 +69,7 @@ C_DEPS += \
 ./src/DSPAudio/mixer.d \
 ./src/DSPAudio/modulationNode.d \
 ./src/DSPAudio/random.d \
+./src/DSPAudio/snapEg.d \
 ./src/DSPAudio/squareRootLut.d \
 ./src/DSPAudio/transientGenerator.d \
 ./src/DSPAudio/transientTables.d \

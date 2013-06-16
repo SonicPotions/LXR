@@ -323,6 +323,7 @@ void buttonHandler_handleSelectButton(uint8_t buttonNr)
 				
 				const uint8_t selectButtonNr = stepNr%8;
 				led_setBlinkLed(LED_PART_SELECT1 + selectButtonNr,1);
+				
 			}	
 			break;
 			
@@ -333,6 +334,7 @@ void buttonHandler_handleSelectButton(uint8_t buttonNr)
 			//go to 1st parameter on sub page
 			menu_resetActiveParameter();
 			led_setActiveSelectButton(buttonNr);
+			menu_repaintAll();
 			break;
 		
 			case SELECT_MODE_PERF:
@@ -673,7 +675,10 @@ void buttonHandler_buttonReleased(uint8_t buttonNr)
 				if(buttonHandler_TimerActionOccured())return;
 				
 				buttonHandler_buttonTimerStepNr = NO_STEP_SELECTED;
-				//buttonHandler_handleSelectButton(buttonNr-BUT_SELECT1);
+				if(buttonHandler_stateMemory.selectButtonMode == SELECT_MODE_VOICE)
+				{
+					buttonHandler_handleSelectButton(buttonNr-BUT_SELECT1);
+				}					
 			}			
 
 		break;
