@@ -250,17 +250,6 @@ void buttonHandler_handleSelectButton(uint8_t buttonNr)
 		switch(buttonHandler_stateMemory.selectButtonMode)
 		{
 			case SELECT_MODE_STEP:
-			/*
-			//change sub page -> osc, filter, mod etc...
-			menu_switchSubPage(buttonNr);
-			//go to 1st parameter on sub page
-			menu_resetActiveParameter();
-			led_setActiveSelectButton(buttonNr);
-			*/
-			
-			//set/remove sub steps
-			//break;
-			
 			case SELECT_MODE_VOICE: {
 				//select buttons represent sub steps
 		

@@ -132,7 +132,6 @@ uint32_t lfo_calcPhaseInc(float freq, uint8_t sync)
 
 	float bpm =  seq_getBpm();
 
-	//TODO BPM 0 == external clock
 	float tempoAsFrequency = bpm > 0.0 ? bpm / 60.f /4: 0.0f; //bpm/60 = beat duration /4 = bar duration
 
 	float scaler;

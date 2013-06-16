@@ -32,8 +32,11 @@
 //-----------------------------------------------
 
 
+
+
 int main(void) 
 {
+	_delay_ms(100);
 	//set PD2 as out pin (LED start stop)
 	DDRD   |= (1<<PD2); //configure as output
 	PORTD  &= ~(1<<PD2);//disable pull up	
@@ -143,6 +146,8 @@ int main(void)
 	preset_loadDrumset(0,0);
 #endif		
 
+	//initialize empty pattern
+	copyClear_clearCurrentPattern();
 
 	//main loop
 	while(1) 

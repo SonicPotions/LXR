@@ -32,6 +32,7 @@ extern uint8_t copyClear_Mode;
 
 void copyClear_executeClear();
 void copyClear_clearCurrentTrack();
+void copyClear_clearCurrentPattern();
 void copyClear_copyTrack();
 void copyClear_copyPattern();
 uint8_t copyClear_getClearTarget();
