@@ -169,7 +169,7 @@ const Name valueNames[NUM_NAMES] PROGMEM =
 	{SHORT_MORPH,CAT_SOUND,LONG_MORPH},					//TEXT_X_FADE
 		
 		
-	{SHORT_VOL,CAT_STEP,LONG_VOL},						//TEXT_STEP_VOLUME	
+	{SHORT_VELOCITY,CAT_STEP,LONG_VELOCITY},			//TEXT_STEP_VELOCITY
 	{SHORT_NOTE,CAT_STEP,LONG_NOTE},					//TEXT_NOTE	
 	{SHORT_PROBABILITY,CAT_STEP,LONG_PROBABILITY},		//TEXT_PROBABILITY,
 	{SHORT_STEP,CAT_STEP,LONG_NUMBER},					//TEXT_ACTIVE_STEP
@@ -340,6 +340,15 @@ void menu_init()
 	parameters[PAR_PAN4].dtype = DTYPE_PM63;
 	parameters[PAR_PAN5].dtype = DTYPE_PM63;
 	parameters[PAR_PAN6].dtype = DTYPE_PM63;
+	
+	parameters[PAR_TRANS1_WAVE].dtype = DTYPE_MENU | (MENU_TRANS<<4);
+	parameters[PAR_TRANS2_WAVE].dtype = DTYPE_MENU | (MENU_TRANS<<4);
+	parameters[PAR_TRANS3_WAVE].dtype = DTYPE_MENU | (MENU_TRANS<<4);
+	parameters[PAR_TRANS4_WAVE].dtype = DTYPE_MENU | (MENU_TRANS<<4);
+	parameters[PAR_TRANS5_WAVE].dtype = DTYPE_MENU | (MENU_TRANS<<4);
+	parameters[PAR_TRANS6_WAVE].dtype = DTYPE_MENU | (MENU_TRANS<<4);
+	
+	
 	
 	parameters[PAR_P1_DEST].dtype = DTYPE_AUTOM_TARGET;
 	parameters[PAR_P2_DEST].dtype = DTYPE_AUTOM_TARGET;
@@ -902,6 +911,10 @@ void menu_repaint()
 							const uint8_t menuId = (parameters[parNr].dtype>>4);
 							switch(menuId)
 							{
+								case MENU_TRANS:
+									memcpy_P(&editDisplayBuffer[1][13],&transientNames[parameters[parNr].value+1],3);
+								break;
+								
 								case MENU_AUDIO_OUT:
 									memcpy_P(&editDisplayBuffer[1][13],&outputNames[parameters[parNr].value+1],3);
 									//sprintf(&editDisplayBuffer[1][13],"%s",outputNames[parameters[parNr].value]);		
@@ -1088,6 +1101,11 @@ void menu_repaint()
 								const uint8_t menuId = (parameters[parNr].dtype>>4);
 								switch(menuId)
 								{
+									
+									case MENU_TRANS:
+										memcpy_P(&valueAsText,transientNames[parameters[parNr].value+1],3);	
+									break;
+									
 									case MENU_AUDIO_OUT:
 										memcpy_P(&valueAsText,outputNames[parameters[parNr].value+1],3);		
 									break;
@@ -1673,7 +1691,10 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 					case DTYPE_0b1:
 						 if(*paramValue > 1)
 							*paramValue = 1;
-						break;				
+						break;		
+						
+	
+							
 					case DTYPE_MENU:
 					{
 						//get the used menu (upper 4 bit)
@@ -1682,6 +1703,10 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 						uint8_t numEntries;
 						switch(menuId)
 						{
+							case MENU_TRANS:
+								numEntries = transientNames[0][0];
+							break;
+							
 							case MENU_AUDIO_OUT:
 								numEntries = outputNames[0][0];
 						
@@ -2275,6 +2300,8 @@ uint8_t getDtypeValue(uint8_t value, uint8_t paramNr)
 			return 127*frac;
 			break;
 			
+	
+			
 		case DTYPE_AUTOM_TARGET:
 		case DTYPE_0B255:
 			return value;
@@ -2299,6 +2326,10 @@ uint8_t getDtypeValue(uint8_t value, uint8_t paramNr)
 			uint8_t numEntries;
 			switch(menuId)
 			{
+				case MENU_TRANS:
+					numEntries = transientNames[0][0];
+				break;
+				
 				case MENU_AUDIO_OUT:
 					numEntries = outputNames[0][0];
 						

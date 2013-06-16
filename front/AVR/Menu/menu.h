@@ -135,7 +135,7 @@ enum NamesEnum
 	TEXT_ROLL_SPEED,
 	TEXT_X_FADE,
 	
-	TEXT_STEP_VOLUME,
+	TEXT_STEP_VELOCITY,
 	TEXT_NOTE,
 	TEXT_PROBABILITY,
 	TEXT_ACTIVE_STEP,
@@ -349,6 +349,7 @@ enum longNamesEnum
 	LONG_X,
 	LONG_Y,
 	LONG_FLUX,
+	LONG_VELOCITY,
 	
 	
 };
@@ -403,6 +404,7 @@ enum Datatypes
 	DTYPE_VOICE_LFO,
 	DTYPE_AUTOM_TARGET,
 	DTYPE_0b1,
+
 };
 
 //-----------------------------------------------------------------

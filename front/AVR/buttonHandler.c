@@ -675,7 +675,7 @@ void buttonHandler_buttonReleased(uint8_t buttonNr)
 				if(buttonHandler_TimerActionOccured())return;
 				
 				buttonHandler_buttonTimerStepNr = NO_STEP_SELECTED;
-				if(buttonHandler_stateMemory.selectButtonMode == SELECT_MODE_VOICE)
+				if(buttonHandler_getShift() && buttonHandler_stateMemory.selectButtonMode == SELECT_MODE_VOICE)
 				{
 					buttonHandler_handleSelectButton(buttonNr-BUT_SELECT1);
 				}					

@@ -5,6 +5,9 @@ Firmware v0.20
 - changed transient wave 0 to 'snap' control (short pitch EG)
 - changed transient wave 1 to wave offset
 - all transient waves shifted by 2 (old wave 0 is now wave 2)
+- transient wave selection limited to available waves
+- optimized overall snappyness of vol EG 
+- changed "Note Volume" to "Note Velocity" on step properties page
 
 Firmware v0.19
 ---------------------------

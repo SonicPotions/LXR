@@ -14,6 +14,8 @@
 #include "ParameterArray.h"
 #include "modulationNode.h"
 
+
+float ampSmoothValue = 0.1f;
 //---------------------------------------------------
 DrumVoice voiceArray[NUM_VOICES];
 //---------------------------------------------------
@@ -71,7 +73,7 @@ void initDrumVoice()
 		setDistortionShape(&voiceArray[i].distortion, 2.f);
 
 		initOnePole(&voiceArray[i].ampFilter);
-		setOnePoleCoef(&voiceArray[i].ampFilter,0.05f);
+		setOnePoleCoef(&voiceArray[i].ampFilter,ampSmoothValue);
 
 #if ENABLE_MIX_OSC
 		voiceArray[i].mixOscs = true;
@@ -81,6 +83,7 @@ void initDrumVoice()
 	}
 }
 //---------------------------------------------------
+
 void Drum_trigger(const uint8_t voiceNr, const uint8_t vol, const uint8_t note)
 {
 	lfo_retrigger(voiceNr);
@@ -97,7 +100,7 @@ void Drum_trigger(const uint8_t voiceNr, const uint8_t vol, const uint8_t note)
 			offset -= voiceArray[voiceNr].transGen.volume;
 			setOnePoleCoef(&voiceArray[voiceNr].ampFilter,1.0f); //turn off amp filter for super snappy attack
 		} else {
-			setOnePoleCoef(&voiceArray[voiceNr].ampFilter,0.05f);
+			setOnePoleCoef(&voiceArray[voiceNr].ampFilter,ampSmoothValue);
 		}
 		if(voiceArray[voiceNr].osc.waveform == SINE)
 			voiceArray[voiceNr].osc.phase = (0x3ff<<20)*offset;//voiceArray[voiceNr].osc.startPhase ;

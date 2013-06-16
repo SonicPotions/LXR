@@ -19,6 +19,7 @@
 #define MENU_RETRIGGER		7
 #define MENU_NEXT_PATTERN	8
 #define MENU_SEQ_QUANT		9
+#define MENU_TRANS			10
 //-----------------------------------------------------------------
 const char quantisationNames[][4] PROGMEM  = 
 {
@@ -28,6 +29,25 @@ const char quantisationNames[][4] PROGMEM  =
 	{"16"},
 	{"32"},
 	{"64"},
+};
+//-----------------------------------------------------------------
+const char transientNames[][4] PROGMEM  = 
+{
+	{13},		//number of entries
+	{"snp"},
+	{"off"},
+	{"1"},
+	{"2"},
+	{"3"},
+	{"4"},
+	{"5"},
+	{"6"},
+	{"7"},
+	{"8"},
+	{"9"},
+	{"10"},
+	{"11"},
+	
 };
 //-----------------------------------------------------------------
 const char nextPatternNames[][4] PROGMEM  = 
@@ -302,6 +322,7 @@ const char longNames[][16] PROGMEM =
 	{"X Position"},
 	{"Y Position"},
 	{"Flux"},
+	{"Velocity"},	
 };
 
 
