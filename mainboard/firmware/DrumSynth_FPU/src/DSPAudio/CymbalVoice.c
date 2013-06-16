@@ -20,6 +20,8 @@ void Cymbal_setPan(const uint8_t pan)
 
 void Cymbal_init()
 {
+
+	SnapEg_init(&cymbalVoice.snapEg);
 	Cymbal_setPan(0.f);
 	cymbalVoice.vol = 0.8f;
 
@@ -82,6 +84,8 @@ void Cymbal_trigger( const uint8_t vel, const uint8_t note)
 	cymbalVoice.velo = vel/127.f;
 
 	transient_trigger(&cymbalVoice.transGen);
+
+	SnapEg_trigger(&cymbalVoice.snapEg);
 }
 //---------------------------------------------------
 void Cymbal_calcAsync()
@@ -93,6 +97,13 @@ void Cymbal_calcAsync()
 	osc_setFreq(&cymbalVoice.osc);
 	osc_setFreq(&cymbalVoice.modOsc);
 	osc_setFreq(&cymbalVoice.modOsc2);
+
+	//calc snap EG if transient sample 0 is activated
+	if(cymbalVoice.transGen.waveform == 0)
+	{
+		const float snapVal = SnapEg_calc(&cymbalVoice,cymbalVoice.transGen.pitch);
+		cymbalVoice.osc.pitchMod = 1 + snapVal*cymbalVoice.transGen.volume;
+	}
 }
 //---------------------------------------------------
 void Cymbal_calcSyncBlock(int16_t* buf, const uint8_t size)
@@ -105,6 +116,8 @@ void Cymbal_calcSyncBlock(int16_t* buf, const uint8_t size)
 
 		//combine both mod oscs to 1 modulation signal
 		bufferTool_addBuffersSaturating(mod,mod2,size);
+
+
 
 		calcNextOscSampleFmBlock(&cymbalVoice.osc,mod,buf,size,1.f) ;
 		SVF_calcBlockZDF(&cymbalVoice.filter,cymbalVoice.filterType,buf,size);

@@ -18,6 +18,7 @@
 #include "lfo.h"
 #include "1PoleLp.h"
 #include "transientGenerator.h"
+#include "snapEg.h"
 //------------------------------------------------------------------------
 enum
 {
@@ -67,6 +68,7 @@ typedef struct VoiceStruct
 
 	float decimationCnt;
 	float decimationRate;
+	SnapEg snapEg;
 
 	uint8_t volumeMod;	//modulate volume by midi velocity if 1
 } DrumVoice;

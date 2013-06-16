@@ -2,6 +2,7 @@ Firmware v0.20
 ---------------------------
 - fixed clear menu missing characters
 - added toggle between 1st/2nd menu page for step parameter menu
+- changed transient wave 0 to 'snap' control (short pitch EG)
 
 Firmware v0.19
 ---------------------------

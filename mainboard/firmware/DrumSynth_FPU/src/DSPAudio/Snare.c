@@ -31,6 +31,7 @@ void Snare_setPan(const uint8_t pan)
 void Snare_init()
 {
 
+		SnapEg_init(&snareVoice.snapEg);
 		Snare_setPan(0.f);
 		snareVoice.vol = 0.8f;
 
@@ -91,6 +92,8 @@ void Snare_trigger(const uint8_t vel, const uint8_t note)
 
 	transient_trigger(&snareVoice.transGen);
 
+	SnapEg_trigger(&snareVoice.snapEg);
+
 }
 //---------------------------------------------------
 void Snare_calcAsync()
@@ -109,6 +112,13 @@ void Snare_calcAsync()
 
 	osc_setFreq(&snareVoice.osc);
 	osc_setFreq(&snareVoice.noiseOsc);
+
+	//calc snap EG if transient sample 0 is activated
+	if(snareVoice.transGen.waveform == 0)
+	{
+		const float snapVal = SnapEg_calc(&snareVoice.snapEg, snareVoice.transGen.pitch);
+		snareVoice.osc.pitchMod = 1 + snapVal*snareVoice.transGen.volume;;
+	}
 
 
 }

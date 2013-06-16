@@ -18,6 +18,7 @@
 #include "BufferTools.h"
 #include "lfo.h"
 #include "distortion.h"
+#include "snapEg.h"
 
 
 //#define NUM_HAT 1
@@ -59,6 +60,7 @@ typedef struct HiHatStruct
 	SlopeEg2		oscVolEg;
 	float 		egValueOscVol;
 	Lfo 		lfo;
+	SnapEg snapEg;
 	uint8_t volumeMod;	//modulate volume by midi velocity if 1
 
 } HiHatVoice;

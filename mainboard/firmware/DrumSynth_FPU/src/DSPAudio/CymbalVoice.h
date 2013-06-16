@@ -18,6 +18,7 @@
 #include "BufferTools.h"
 #include "lfo.h"
 #include "distortion.h"
+#include "snapEg.h"
 
 typedef struct CymbalStruct
 {
@@ -48,6 +49,8 @@ typedef struct CymbalStruct
 	float 		egValueOscVol;
 
 	uint8_t volumeMod;	//modulate volume by midi velocity if 1
+
+	SnapEg snapEg;
 
 } CymbalVoice;
 

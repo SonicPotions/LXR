@@ -24,6 +24,7 @@ void HiHat_setPan(const uint8_t pan)
 
 void HiHat_init()
 {
+	SnapEg_init(&hatVoice.snapEg);
 	HiHat_setPan(0.f);
 	hatVoice.vol = 0.8f;
 
@@ -84,6 +85,8 @@ void HiHat_trigger( uint8_t vel, uint8_t isOpen, const uint8_t note)
 	slopeEg2_trigger(&hatVoice.oscVolEg);
 	hatVoice.velo = vel/127.f;
 	transient_trigger(&hatVoice.transGen);
+
+	SnapEg_trigger(&hatVoice.snapEg);
 }
 //---------------------------------------------------
 void HiHat_calcAsync( )
@@ -94,6 +97,13 @@ void HiHat_calcAsync( )
 	osc_setFreq(&hatVoice.osc);
 	osc_setFreq(&hatVoice.modOsc);
 	osc_setFreq(&hatVoice.modOsc2);
+
+	//calc snap EG if transient sample 0 is activated
+	if(hatVoice.transGen.waveform == 0)
+	{
+		const float snapVal = SnapEg_calc(&hatVoice.snapEg, hatVoice.transGen.pitch);
+		hatVoice.osc.pitchMod = 1 + snapVal*hatVoice.transGen.volume;
+	}
 }
 //---------------------------------------------------
 void HiHat_calcSyncBlock(int16_t* buf, const uint8_t size)

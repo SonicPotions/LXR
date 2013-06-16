@@ -36,6 +36,8 @@ void initDrumVoice()
 	int i;
 	for(i=0;i<NUM_VOICES;i++)
 	{
+
+		SnapEg_init(&voiceArray[i].snapEg);
 		setPan(i,0.f);
 		voiceArray[i].vol = 0.8f;
 		voiceArray[i].panModifier = 1.f;
@@ -113,6 +115,8 @@ void Drum_trigger(const uint8_t voiceNr, const uint8_t vol, const uint8_t note)
 	voiceArray[voiceNr].velo = vol/127.f;
 
 	transient_trigger(&voiceArray[voiceNr].transGen);
+
+	SnapEg_trigger(&voiceArray[voiceNr].snapEg);
 }
 //---------------------------------------------------
 void calcDrumVoiceAsync(const uint8_t voiceNr)
@@ -121,6 +125,13 @@ void calcDrumVoiceAsync(const uint8_t voiceNr)
 	const float egPitchVal = DecayEg_calc(&voiceArray[voiceNr].oscPitchEg);
 	const float pitchEgValue = egPitchVal*voiceArray[voiceNr].egPitchModAmount;
 	voiceArray[voiceNr].osc.pitchMod = 1+pitchEgValue;
+
+	//calc snap EG if transient sample 0 is activated
+	if(voiceArray[voiceNr].transGen.waveform == 0)
+	{
+		const float snapVal = SnapEg_calc(&voiceArray[voiceNr].snapEg, voiceArray[voiceNr].transGen.pitch);
+		voiceArray[voiceNr].osc.pitchMod += snapVal*voiceArray[voiceNr].transGen.volume;
+	}
 
 	// fm amount with pitch eg
 	voiceArray[voiceNr].osc.fmMod = voiceArray[voiceNr].fmModAmount * egPitchVal;

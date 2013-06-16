@@ -18,6 +18,7 @@
 #include "transientGenerator.h"
 #include "BufferTools.h"
 #include "lfo.h"
+#include "snapEg.h"
 //#define NUM_SNARES 1//NUM_VOICES-1
 
 #define USE_PEAK 0
@@ -61,6 +62,7 @@ typedef struct SnareStruct
 	float 		egValueOscVol;
 //	AdEg		noiseVolEg;
 	Distortion distortion;
+	SnapEg snapEg;
 
 
 	uint8_t volumeMod;	//modulate volume by midi velocity if 1
