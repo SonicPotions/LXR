@@ -94,7 +94,11 @@ void Drum_trigger(const uint8_t voiceNr, const uint8_t vol, const uint8_t note)
 	modNode_updateValue(&velocityModulators[voiceNr],vol/127.f);
 
 	//only reset phase if envelope is closed
+#ifdef USE_AMP_FILTER
 	if((voiceArray[voiceNr].volEgValueBlock[15]<=0.01f) || (voiceArray[voiceNr].transGen.waveform==1))
+#else
+	//	if((voiceArray[voiceNr].ampFilterInput<=0.01f) || (voiceArray[voiceNr].transGen.waveform==1))
+#endif
 	{
 		float offset = 1;
 		if(voiceArray[voiceNr].transGen.waveform==1) //offset mode
@@ -154,8 +158,22 @@ void calcDrumVoiceAsync(const uint8_t voiceNr)
 
 	//calc the osc + noise vol eg
 #if (AMP_EG_SYNC==0)
-	voiceArray[voiceNr].lastGain = voiceArray[voiceNr].ampFilterInput;
-	voiceArray[voiceNr].ampFilterInput = slopeEg2_calc(&voiceArray[voiceNr].oscVolEg);
+
+	//check if in attack phase
+	if( (voiceArray[voiceNr].oscVolEg.attack == 1 ) && ((voiceArray[voiceNr].oscVolEg.state == EG_A) || (voiceArray[voiceNr].oscVolEg.state == EG_REPEAT)) )
+	{
+		if(voiceArray[voiceNr].oscVolEg.attack == 1 )
+		{
+			//if attack is set to 0 -> no interpolation
+			voiceArray[voiceNr].ampFilterInput = slopeEg2_calc(&voiceArray[voiceNr].oscVolEg);
+			voiceArray[voiceNr].lastGain = voiceArray[voiceNr].ampFilterInput;voiceArray[voiceNr].lastGain = voiceArray[voiceNr].ampFilterInput;
+		}
+	}
+	else
+	{
+		voiceArray[voiceNr].lastGain = voiceArray[voiceNr].ampFilterInput;
+		voiceArray[voiceNr].ampFilterInput = slopeEg2_calc(&voiceArray[voiceNr].oscVolEg);
+	}
 #endif
 
 	//update osc phaseInc
@@ -204,6 +222,8 @@ void calcDrumVoiceSyncBlock(const uint8_t voiceNr, int16_t* buf, const uint8_t s
 	bufferTool_multiplyWithFloatBufferDithered(&voiceArray[voiceNr].dither, buf,voiceArray[voiceNr].volEgValueBlock,size);
 #else
 	//bufferTool_addGainDithered(&voiceArray[voiceNr].dither, buf,voiceArray[voiceNr].ampFilterInput,size);
+
+
 	bufferTool_addGainInterpolated(buf,voiceArray[voiceNr].ampFilterInput, voiceArray[voiceNr].lastGain, size);
 #endif
 

@@ -58,7 +58,10 @@ typedef struct VoiceStruct
 	uint8_t		filterType; // bit 0 = lp, bit 1 = hp, bit 3 = bp on/off
 #endif
 
+#ifdef USE_AMP_FILTER
 	OnePoleFilter ampFilter;
+#endif
+
 #if (AMP_EG_SYNC==0)
 	float ampFilterInput;
 	float lastGain;
