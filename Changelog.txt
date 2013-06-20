@@ -1,3 +1,9 @@
+Firmware v0.21
+---------------------------
+- improved volume envelope resolution
+- improved volume envelope reaction times (more clickyness!)
+- improved snap transient mode
+
 Firmware v0.20
 ---------------------------
 - fixed clear menu missing characters

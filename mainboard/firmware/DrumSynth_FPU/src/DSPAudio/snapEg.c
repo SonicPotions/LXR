@@ -24,13 +24,15 @@ void SnapEg_trigger(SnapEg* eg)
 
 float SnapEg_calc(SnapEg* eg, float time)
 {
+	float ret = 0;
 	if(eg->value>0)
 	{
+		ret =  eg->value* eg->value * SNAP_MAX_VALUE;
 		eg->value -= SNAP_REDUCTION*time;
-		return eg->value* eg->value * SNAP_MAX_VALUE;
-	} else {
-		return 0;
+
 	}
+
+	return ret;
 }
 
 void SnapEg_calcBlock(SnapEg* eg,int16_t* buf, const uint8_t size)
