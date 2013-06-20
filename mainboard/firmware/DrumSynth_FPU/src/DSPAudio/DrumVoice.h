@@ -19,6 +19,7 @@
 #include "1PoleLp.h"
 #include "transientGenerator.h"
 #include "snapEg.h"
+#include "dither.h"
 //------------------------------------------------------------------------
 enum
 {
@@ -60,6 +61,7 @@ typedef struct VoiceStruct
 	OnePoleFilter ampFilter;
 #if (AMP_EG_SYNC==0)
 	float ampFilterInput;
+	float lastGain;
 #endif
 
 #if ENABLE_MIX_OSC
@@ -71,6 +73,8 @@ typedef struct VoiceStruct
 	SnapEg snapEg;
 
 	uint8_t volumeMod;	//modulate volume by midi velocity if 1
+
+	Dither dither;
 } DrumVoice;
 //------------------------------------------------------------------------
 

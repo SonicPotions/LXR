@@ -17,6 +17,7 @@ C_SRCS += \
 ../src/DSPAudio/Snare.c \
 ../src/DSPAudio/automationNode.c \
 ../src/DSPAudio/distortion.c \
+../src/DSPAudio/dither.c \
 ../src/DSPAudio/lfo.c \
 ../src/DSPAudio/mixer.c \
 ../src/DSPAudio/modulationNode.c \
@@ -41,6 +42,7 @@ OBJS += \
 ./src/DSPAudio/Snare.o \
 ./src/DSPAudio/automationNode.o \
 ./src/DSPAudio/distortion.o \
+./src/DSPAudio/dither.o \
 ./src/DSPAudio/lfo.o \
 ./src/DSPAudio/mixer.o \
 ./src/DSPAudio/modulationNode.o \
@@ -65,6 +67,7 @@ C_DEPS += \
 ./src/DSPAudio/Snare.d \
 ./src/DSPAudio/automationNode.d \
 ./src/DSPAudio/distortion.d \
+./src/DSPAudio/dither.d \
 ./src/DSPAudio/lfo.d \
 ./src/DSPAudio/mixer.d \
 ./src/DSPAudio/modulationNode.d \

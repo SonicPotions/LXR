@@ -72,8 +72,10 @@ void initDrumVoice()
 		slopeEg2_init(&voiceArray[i].oscVolEg);
 		setDistortionShape(&voiceArray[i].distortion, 2.f);
 
+#ifdef USE_AMP_FILTER
 		initOnePole(&voiceArray[i].ampFilter);
 		setOnePoleCoef(&voiceArray[i].ampFilter,ampSmoothValue);
+#endif
 
 #if ENABLE_MIX_OSC
 		voiceArray[i].mixOscs = true;
@@ -98,9 +100,12 @@ void Drum_trigger(const uint8_t voiceNr, const uint8_t vol, const uint8_t note)
 		if(voiceArray[voiceNr].transGen.waveform==1) //offset mode
 		{
 			offset -= voiceArray[voiceNr].transGen.volume;
+#ifdef USE_AMP_FILTER
 			setOnePoleCoef(&voiceArray[voiceNr].ampFilter,1.0f); //turn off amp filter for super snappy attack
+
 		} else {
 			setOnePoleCoef(&voiceArray[voiceNr].ampFilter,ampSmoothValue);
+#endif
 		}
 		if(voiceArray[voiceNr].osc.waveform == SINE)
 			voiceArray[voiceNr].osc.phase = (0x3ff<<20)*offset;//voiceArray[voiceNr].osc.startPhase ;
@@ -149,6 +154,7 @@ void calcDrumVoiceAsync(const uint8_t voiceNr)
 
 	//calc the osc + noise vol eg
 #if (AMP_EG_SYNC==0)
+	voiceArray[voiceNr].lastGain = voiceArray[voiceNr].ampFilterInput;
 	voiceArray[voiceNr].ampFilterInput = slopeEg2_calc(&voiceArray[voiceNr].oscVolEg);
 #endif
 
@@ -163,7 +169,9 @@ void calcDrumVoiceSyncBlock(const uint8_t voiceNr, int16_t* buf, const uint8_t s
 	int16_t modBuf[size];
 
 	//calc vol EG
+#ifdef USE_AMP_FILTER
 	calcOnePoleBlockFixedInput(&voiceArray[voiceNr].ampFilter, voiceArray[voiceNr].ampFilterInput,voiceArray[voiceNr].volEgValueBlock, size);
+#endif
 
 	//calc next mod osc sampleBlock
 	calcNextOscSampleBlock(&voiceArray[voiceNr].modOsc,modBuf,size,voiceArray[voiceNr].fmModAmount);
@@ -190,7 +198,14 @@ void calcDrumVoiceSyncBlock(const uint8_t voiceNr, int16_t* buf, const uint8_t s
 	SVF_calcBlockZDF(&voiceArray[voiceNr].filter,voiceArray[voiceNr].filterType,buf,size);
 
 	//attentuate main OSCs by amp EG
-	bufferTool_multiplyWithFloatBuffer(buf,voiceArray[voiceNr].volEgValueBlock,size);
+	//bufferTool_multiplyWithFloatBuffer(buf,voiceArray[voiceNr].volEgValueBlock,size);
+
+#ifdef USE_AMP_FILTER
+	bufferTool_multiplyWithFloatBufferDithered(&voiceArray[voiceNr].dither, buf,voiceArray[voiceNr].volEgValueBlock,size);
+#else
+	//bufferTool_addGainDithered(&voiceArray[voiceNr].dither, buf,voiceArray[voiceNr].ampFilterInput,size);
+	bufferTool_addGainInterpolated(buf,voiceArray[voiceNr].ampFilterInput, voiceArray[voiceNr].lastGain, size);
+#endif
 
 	//MIDI velocity
 	if(voiceArray[voiceNr].volumeMod)

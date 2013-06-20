@@ -71,6 +71,26 @@ inline void bufferTool_addGain(int16_t* buf, const float gain, const uint8_t siz
 	}
 }
 //---------------------------------------------------
+inline void bufferTool_addGainDithered(Dither* dither, int16_t* buf, const float gain, const uint8_t size)
+{
+	uint8_t i;
+	for(i=0;i<size;i++)
+	{
+		buf[i] = dither_process(dither,(buf[i]/32768.0f) * gain);
+	}
+}
+//---------------------------------------------------
+inline void bufferTool_addGainInterpolated(int16_t* buf, const float gain, const float lastGain, const uint8_t size)
+{
+	uint8_t i;
+	for(i=0;i<size;i++)
+	{
+		const float frac = i/(size-1.f);
+		const float currentGain = lastGain + frac*(gain - lastGain);
+		buf[i] = buf[i] * currentGain;
+	}
+}
+//---------------------------------------------------
 inline void bufferTool_mulInt(int16_t* buf, const int16_t gain, const uint8_t size)
 {
 	uint8_t i;
@@ -86,6 +106,16 @@ inline void bufferTool_multiplyWithFloatBuffer(int16_t* buf, float* fltBuf, cons
 	for(i=0;i<size;i++)
 	{
 		buf[i] *= fltBuf[i];
+	}
+}
+//---------------------------------------------------
+inline void bufferTool_multiplyWithFloatBufferDithered(Dither* dither, int16_t* buf, float* fltBuf, const uint8_t size)
+{
+	uint8_t i;
+	for(i=0;i<size;i++)
+	{
+		buf[i] = dither_process(dither,(buf[i]/32768.0f) * fltBuf[i]);
+
 	}
 }
 //---------------------------------------------------
