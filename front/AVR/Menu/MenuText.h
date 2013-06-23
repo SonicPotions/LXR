@@ -33,20 +33,21 @@ const char quantisationNames[][4] PROGMEM  =
 //-----------------------------------------------------------------
 const char transientNames[][4] PROGMEM  = 
 {
-	{13},		//number of entries
-	{"snp"},
-	{"off"},
-	{"1"},
-	{"2"},
-	{"3"},
-	{"4"},
-	{"5"},
-	{"6"},
-	{"7"},
-	{"8"},
-	{"9"},
-	{"10"},
-	{"11"},
+	{14},		//number of entries
+	{"Snp"},
+	{"Off"},
+	{"Clk"},
+	{"Ck2"},
+	{"Tik"},
+	{"Kik"},
+	{"Rim"},
+	{"Drp"},
+	{"Hat"},
+	{"Clp"},
+	{"Ki2"},
+	{"Sna"},
+	{"Tom"},
+	{"Sp2"},
 	
 };
 //-----------------------------------------------------------------
@@ -310,7 +311,7 @@ const char longNames[][16] PROGMEM =
 	{"Next Pattern"},
 	{"Phase"},
 	{"Mode"},
-	{"Velocity mod."},		
+	{"Volume mod."},		
 	{"Fetch"},	
 	{"Follow"},	
 	{"Quantisation"},
