@@ -3,6 +3,9 @@ Firmware v0.21
 - improved volume envelope resolution
 - improved volume envelope reaction times (more clickyness!)
 - improved snap transient mode
+- transients have short names instead of numbers
+- corrected label "Velocity modulation" to "Volume modulation" on the velocity mod page.
+
 
 Firmware v0.20
 ---------------------------
