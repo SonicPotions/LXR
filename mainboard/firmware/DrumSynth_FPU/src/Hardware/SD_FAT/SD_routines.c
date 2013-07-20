@@ -8,7 +8,7 @@
 //			  www.dharmanitech.com
 //Date		: 24 Apr 2011
 //
-//modified	: Julian Schmidt
+//modified for STM32	: Julian Schmidt
 //Date		: 24.10.2012
 //**************************************************************
 

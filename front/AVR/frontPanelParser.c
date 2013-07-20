@@ -441,8 +441,8 @@ void frontPanel_parseData(uint8_t data)
 						
 						break;
 					}						
-				}
-				else
+				}								
+				else if(frontParser_midiMsg.status == NOTE_ON)
 				{
 					if(frontParser_midiMsg.data1 > 6) return;
 					//only SELECT_MODE_VOICE and SELECT_MODE_MUTE
