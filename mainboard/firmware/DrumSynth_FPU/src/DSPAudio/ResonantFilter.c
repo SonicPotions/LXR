@@ -79,6 +79,7 @@ void SVF_directSetFilterValue(ResonantFilter* filter, float val)
 {
 	filter->f = val*(0.5f*0.90f);
 	filter->g  = fastTan(M_PI * filter->f );
+
 }
 //------------------------------------------------------------------------------------
 #if ENABLE_NONLINEAR_INTEGRATORS
@@ -105,8 +106,9 @@ float softClipTwo(float in)
 void SVF_calcBlockZDF(ResonantFilter* filter, const uint8_t type, int16_t* buf, const uint8_t size)
 {
 	uint8_t i;
-	const float R 	= filter->q;
 	const float f 	= filter->g;
+	//fix unstable filter for high f and r settings
+	const float R 	= filter->f >= 0.4499f ? 1 : filter->q;
 	const float ff 	= f*f;
 
 	for(i=0;i<size;i++)
