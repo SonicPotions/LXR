@@ -321,6 +321,8 @@ void frontPanel_parseData(uint8_t data)
 						*/
 						
 						case SEQ_CHANGE_PAT:
+						
+						if(frontParser_midiMsg.data2 > 7) return;
 						//ack message that the sequencer changed to the requested pattern
 						
 						//stop blinking pattern led
@@ -376,6 +378,9 @@ void frontPanel_parseData(uint8_t data)
 					{
 						
 						case LED_CURRENT_STEP_NR: {
+							
+							if(frontParser_midiMsg.data2 >=128) return;
+							
 							uint8_t shownPattern = menu_getViewedPattern();
 							uint8_t playedPattern = menu_playedPattern;
 							
@@ -411,7 +416,7 @@ void frontPanel_parseData(uint8_t data)
 								//parse sub steps
 								
 								
-								uint8_t stepNr = frontParser_midiMsg.data2 ;//& 0x7f;
+								uint8_t stepNr = frontParser_midiMsg.data2 & 0x7f;
 								uint8_t subStepRange = buttonHandler_selectedStep;
 								//check if received step is a valid sub step
 								if( (stepNr >= subStepRange) && (stepNr<(subStepRange+8)) )
@@ -439,6 +444,7 @@ void frontPanel_parseData(uint8_t data)
 				}
 				else
 				{
+					if(frontParser_midiMsg.data1 > 6) return;
 					//only SELECT_MODE_VOICE and SELECT_MODE_MUTE
 					led_pulseLed(LED_VOICE1+frontParser_midiMsg.data1);
 				}
