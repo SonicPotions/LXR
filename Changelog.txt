@@ -1,3 +1,9 @@
+Firmware v0.22
+---------------------------
+- fixed unstable filter with f=127 and high resonance
+- fixed crash with one shot trigger button 8
+- fixed blank screen when switching to performance mode
+
 Firmware v0.21
 ---------------------------
 - improved volume envelope resolution

@@ -1893,12 +1893,11 @@ void menu_switchSubPage(uint8_t subPageNr)
 	//lock all parameters
 	lockPotentiometerFetch();
 	
-	//
-	
+	//get current position
 	uint8_t activeParameter	= menuIndex & MASK_PARAMETER;
 	uint8_t activePage		= (menuIndex&MASK_PAGE)>>PAGE_SHIFT;
 	
-	if( has2ndPage(activePage) &&(subPageNr == activePage))
+	if( has2ndPage(subPageNr) &&(subPageNr == activePage))
 	{
 		//toggle between 1st and 2nd page
 		if(activeParameter>=4)
@@ -1910,11 +1909,10 @@ void menu_switchSubPage(uint8_t subPageNr)
 		
 		menuIndex &= ~(MASK_PARAMETER);
 		menuIndex |= (activeParameter&MASK_PARAMETER);
-		
 	} else
 	{		
 		//prevent empty pages
-		if(!has2ndPage(activePage)) 
+		if(!has2ndPage(subPageNr)) 
 		{
 			if(activeParameter>=4)
 			{
@@ -1924,9 +1922,9 @@ void menu_switchSubPage(uint8_t subPageNr)
 			menuIndex |= (activeParameter&MASK_PARAMETER);	
 					
 		}
-		//got to page 1, parameter 1
+		//got to selected sub page
 		menuIndex &= ~(MASK_PAGE);
-		menuIndex |= (subPageNr&MASK_PARAMETER)<<PAGE_SHIFT;	
+		menuIndex |= (subPageNr)<<PAGE_SHIFT;	
 	}		
 };
 //-----------------------------------------------------------------
@@ -1946,11 +1944,8 @@ uint8_t menu_getSubPage()
 //-----------------------------------------------------------------
 void menu_switchPage(uint8_t pageNr)
 {
-	//go to 1st parameter on sub page
-	menu_resetActiveParameter();
-	
-	
-	
+
+		
 	//clear all sequencer buttons
 	led_clearSequencerLeds();
 	
@@ -2029,14 +2024,12 @@ void menu_switchPage(uint8_t pageNr)
 	{
 		led_setActiveVoiceLeds(1<<menu_getActiveVoice());
 	}
-		
 	
-
+	//go to 1st parameter on sub page
+	menu_resetActiveParameter();
 
 	//force complete repaint
 	menu_repaintAll();
-	
-	//menu_repaint();
 };
 //-----------------------------------------------------------------
 void menu_sendAllGlobals()

@@ -194,6 +194,8 @@ void buttonHandler_handleModeButtons(uint8_t mode)
 			lastActiveSubPage	= menu_getSubPage();
 			menu_switchPage(PERFORMANCE_PAGE);
 			menu_switchSubPage(0);
+			menu_repaintAll();
+
 				
 		}
 		break;

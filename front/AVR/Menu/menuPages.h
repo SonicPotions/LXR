@@ -406,7 +406,7 @@ const Page menuPages[NUM_PAGES][NUM_SUB_PAGES] PROGMEM =
 
 	
 	//Page 10
-	//---------------- Mute Mode Menu pages ---------------------------
+	//---------------- Performance Mode Menu pages ---------------------------
 	//These pages are shown when the selected mode is the "mute/pattern select" page
 	//there is only one page with subpages shown for the whole mode
 	{
