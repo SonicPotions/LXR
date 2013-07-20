@@ -49,6 +49,8 @@
 
 #include "TriggerOut.h"
 
+
+
 //----------------------------------------------------------------
 //stub function for newlib
 void _exit(int status)
@@ -234,6 +236,15 @@ int main(void)
 	//--------------------------------------------------------------------
 	//------------------------- Main Loop --------------------------------
 	//--------------------------------------------------------------------
+
+#if UART_DEBUG_ECHO_MODE
+    while (1)
+    {
+    	//process incoming frontpanel data
+    			uart_processFront();
+    }
+#else
+
     while (1)
     {
 
@@ -281,5 +292,7 @@ int main(void)
 		trigger_tick();
 
     }
+#endif
 }
+
 

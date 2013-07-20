@@ -34,6 +34,7 @@
 #include "Uart.h"
 #include "FIFO.h"
 #include "frontPanelParser.h"
+#include "config.h"
 
  /* USART2 MIDI configured as follow:
 	 - BaudRate = 31250 baud
@@ -142,11 +143,20 @@ void uart_sendMidiByte(uint8_t data)
 //-----------------------------------------------------------------------------
 void uart_processFront()
 {
+#if UART_DEBUG_ECHO_MODE
+	uint8_t data;
+	if(fifoBig_bufferOut(&fifo_frontRx,&data))
+	{
+		//echo back received data
+		uart_sendFrontpanelByte(data);
+	}
+#else
 	uint8_t data;
 	if(fifoBig_bufferOut(&fifo_frontRx,&data))
 	{
 		frontParser_parseUartData(data);
 	}
+#endif
 }
 //-----------------------------------------------------------------------------
 void uart_sendFrontpanelByte(uint8_t data)

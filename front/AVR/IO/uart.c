@@ -8,7 +8,11 @@
 #include "uart.h"
 #include <avr/io.h>
 #include "../frontPanelParser.h"
-
+#include "../config.h"
+#if UART_DEBUG_ECHO_MODE
+#include <stdlib.h>
+#include "../Hardware/lcd.h"
+#endif
 #if 1
 /* 
   UART-Init: 
@@ -157,12 +161,27 @@ uint8_t uart_getc(uint8_t *data)
 //----------------------------------------------------
 void uart_checkAndParse()
 {
+#if UART_DEBUG_ECHO_MODE
+	uint8_t data;
+	if(uart_getc(&data))
+	{
+		//print received data on LCD
+		char text[5];
+		itoa(data,text,10);
+		lcd_clear();
+		lcd_home();
+		lcd_string(text);
+		
+	}
+
+#else
 	uint8_t data;
 	if(uart_getc(&data))
 	{
 		//there is new data available
 		frontPanel_parseData(data);
 	}
+#endif
 };
 //----------------------------------------------------
 

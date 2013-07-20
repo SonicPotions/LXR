@@ -33,10 +33,10 @@
 
 
 
-
 int main(void) 
 {
 	_delay_ms(100);
+	
 	//set PD2 as out pin (LED start stop)
 	DDRD   |= (1<<PD2); //configure as output
 	PORTD  &= ~(1<<PD2);//disable pull up	
@@ -52,13 +52,33 @@ int main(void)
 	//init the uart
 	uart_init();
 
+#if UART_DEBUG_ECHO_MODE
+	//print boot up message
+	lcd_string_F(PSTR("Sonic Potions"));
+	//goto 2nd line
+	lcd_setcursor(0,2);
+	lcd_string_F(PSTR("UART test"));
+
+#else
 	//print boot up message
 	lcd_string_F(PSTR("Sonic Potions"));
 	//goto 2nd line
 	lcd_setcursor(0,2);
 	lcd_string_F(PSTR("LXR Drums V"));
 	lcd_string(FIRMWARE_VERSION);
-	
+#endif
+#if UART_DEBUG_ECHO_MODE
+_delay_ms(1000);
+sei();
+	uint8_t debucCounter = 0;
+	while(1) 
+	{	
+		uart_checkAndParse();
+		_delay_ms(1000);
+		uart_putc(debucCounter++);
+		
+	}		
+#endif
 	
 	adc_init();
 	
@@ -148,6 +168,7 @@ int main(void)
 
 	//initialize empty pattern
 	copyClear_clearCurrentPattern();
+
 
 	//main loop
 	while(1) 

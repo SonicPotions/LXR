@@ -17,6 +17,8 @@
 #define true 1
 #define false 0
 
+#define UART_DEBUG_ECHO_MODE 0
+
 #define OUTPUT_DMA_SIZE 32
 #define DMA_MASK ((OUTPUT_DMA_SIZE*2)-1)
 #define UNIT_GAIN_DRIVE 0
