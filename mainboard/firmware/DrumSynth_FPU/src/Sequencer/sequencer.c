@@ -798,6 +798,8 @@ void seq_sendStepInfoToFront(uint16_t stepNr)
 //-------------------------------------------------------------------------------
 void seq_setRoll(uint8_t voice, uint8_t onOff)
 {
+	if(voice >= 7) return;
+
 	if(onOff) {
 		seq_rollState |= (1<<voice);
 		if(seq_rollRate == 0xff) {
