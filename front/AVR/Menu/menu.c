@@ -534,7 +534,7 @@ void menu_repaintLoadSavePage()
 				
 			case WHAT_MORPH:
 			{
-				strcpy_P(&editDisplayBuffer[0][6],PSTR("MorphSnd"));
+				strcpy_P(&editDisplayBuffer[0][6],PSTR("MorphKit"));
 				if(menu_saveOptions.state == SAVE_STATE_EDIT_TYPE)
 				{
 					if(editModeActive) {
@@ -665,7 +665,7 @@ void menu_repaintLoadSavePage()
 				
 			case WHAT_MORPH:
 			{
-				strcpy_P(&editDisplayBuffer[0][6],PSTR("MorphSnd"));
+				strcpy_P(&editDisplayBuffer[0][6],PSTR("MorphKit"));
 				if(menu_saveOptions.state == SAVE_STATE_EDIT_TYPE)
 				{
 					if(editModeActive)
