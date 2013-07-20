@@ -32,7 +32,7 @@ the upper bits indicate the active page no.
 static uint8_t menuIndex = 0; 
 
 //preset vars
-#define NUM_PRESET_LOCATIONS 3 //sound, pattern, morph sound
+#define NUM_PRESET_LOCATIONS 3 //kit, pattern, morph sound
 static uint8_t menu_currentPresetNr[NUM_PRESET_LOCATIONS];
 
 uint8_t menu_shownPattern = 0;
@@ -52,7 +52,7 @@ uint8_t menu_getViewedPattern()
 //enum for the save what parameter
 enum loadSaveEnum
 {
-	WHAT_SOUND = 0,
+	WHAT_KIT = 0,
 	WHAT_PATTERN,
 	WHAT_MORPH,
 	WHAT_GLO,
@@ -75,8 +75,8 @@ enum saveStateEnum
 
 /** a struct for some save page parameters.*/
 static volatile struct {
-   unsigned what:3;		/**< 0= save sound, 1 = save pattern, 2 = morph sound */
-   unsigned state:4;		/**< 0=edit sound/pat, 1=edit preset nr, 2-9 = edit name, 10=ok*/
+   unsigned what:3;		/**< 0= save kit, 1 = save pattern, 2 = morph sound */
+   unsigned state:4;		/**< 0=edit kit/pat, 1=edit preset nr, 2-9 = edit name, 10=ok*/
  
 } menu_saveOptions;
 //static volatile char menu_currentPresetName[9]; //8 chars + '\0'
@@ -504,8 +504,8 @@ void menu_repaintLoadSavePage()
 			
 		switch(menu_saveOptions.what)
 		{
-			case WHAT_SOUND:
-			strcpy_P(&editDisplayBuffer[0][6],PSTR("Sound   "));
+			case WHAT_KIT:
+			strcpy_P(&editDisplayBuffer[0][6],PSTR("Kit     "));
 			if(menu_saveOptions.state == SAVE_STATE_EDIT_TYPE) {
 				if(editModeActive) {
 					editDisplayBuffer[0][5]='[';
@@ -644,9 +644,9 @@ void menu_repaintLoadSavePage()
 			}
 			break;
 				
-			case WHAT_SOUND:
+			case WHAT_KIT:
 			{
-				strcpy_P(&editDisplayBuffer[0][6],PSTR("Sound  "));
+				strcpy_P(&editDisplayBuffer[0][6],PSTR("Kit    "));
 				if(menu_saveOptions.state == SAVE_STATE_EDIT_TYPE)
 				{
 					if(editModeActive)
@@ -1274,7 +1274,7 @@ void menu_handleSaveScreenKnobValue(uint8_t potNr, uint8_t value)
 					break;
 						
 					case WHAT_MORPH:
-					case WHAT_SOUND: {
+					case WHAT_KIT: {
 						preset_getDrumsetName(menu_currentPresetNr[menu_saveOptions.what]);
 					}				
 					break;
@@ -1391,8 +1391,8 @@ void menu_handleLoadSaveMenu(int8_t inc, uint8_t button)
 					preset_savePattern(menu_currentPresetNr[WHAT_PATTERN]);
 					break;
 						
-					case WHAT_SOUND:
-					preset_saveDrumset(menu_currentPresetNr[WHAT_SOUND],0);
+					case WHAT_KIT:
+					preset_saveDrumset(menu_currentPresetNr[WHAT_KIT],0);
 					break;
 						
 					case WHAT_MORPH:
@@ -1437,9 +1437,9 @@ void menu_handleLoadSaveMenu(int8_t inc, uint8_t button)
 	//=========================== handle encoder ===================================
 	if(editModeActive) {
 		//encoder changes value
-		///**< 0=edit sound/pat, 1=edit preset nr, 2 = edit name*/
+		///**< 0=edit kit/pat, 1=edit preset nr, 2 = edit name*/
 		switch(menu_saveOptions.state) {
-			case 0: //edit sound/Pat
+			case 0: //edit kit/Pat
 				if(inc<0) {
 					if(menu_saveOptions.what!=0) {
 						menu_saveOptions.what--;	
@@ -1455,8 +1455,8 @@ void menu_handleLoadSaveMenu(int8_t inc, uint8_t button)
 					}
 					break;
 						
-					case WHAT_SOUND: {
-						preset_getDrumsetName(menu_currentPresetNr[WHAT_SOUND]);
+					case WHAT_KIT: {
+						preset_getDrumsetName(menu_currentPresetNr[WHAT_KIT]);
 					}				
 					break;
 						
@@ -1490,7 +1490,7 @@ void menu_handleLoadSaveMenu(int8_t inc, uint8_t button)
 							}
 							break;
 						
-							case WHAT_SOUND: {
+							case WHAT_KIT: {
 								preset_loadDrumset(menu_currentPresetNr[menu_saveOptions.what],0);
 								preset_getDrumsetName(menu_currentPresetNr[menu_saveOptions.what]);
 							}				
@@ -1875,7 +1875,7 @@ void menu_resetSaveParameters()
 	if(menu_saveOptions.what == WHAT_GLO)
 	{
 		menu_saveOptions.state = SAVE_STATE_EDIT_TYPE;
-		menu_saveOptions.what = WHAT_SOUND;
+		menu_saveOptions.what = WHAT_KIT;
 	}
 	else
 	{
