@@ -45,8 +45,6 @@ void transient_init(TransientGenerator* transient)
 	transient->phase	= 0;
 	transient->waveform	= 0;
 	transient->volume	= 1.f;
-
-
 };
 //---------------------------------------------------------------
 void transient_trigger(TransientGenerator* transient)
@@ -94,9 +92,6 @@ void transient_calc(TransientGenerator* transient)
 	{
 		transient->output = transient->volume*(transientData[transient->waveform-1][phase]<<8) * transientVolumeTable[phase>>5];
 	}
-
-
-
 
 };
 //---------------------------------------------------------------

@@ -74,17 +74,6 @@ void DMA1_Stream7_IRQHandler(void)
 		 bCurrentSampleValid = 1-(dmaPtr&0x1);
 	}
 
-
-	  /* Do something*/
-	 // dma_buffer[0] = 32756;
-	//  audioCodec_start(dma_buffer,32);
-
-    /* Clear the Interrupt flag */
-   // DMA_ClearFlag(DMA1_Stream7, DMA_FLAG_TCIF7);
-
-
-
-
   /* Half Transfer complete interrupt */
   if (DMA_GetFlagStatus(DMA1_Stream7, DMA_FLAG_HTIF7) != RESET)
   {
@@ -96,39 +85,17 @@ void DMA1_Stream7_IRQHandler(void)
 
 
 #if 1
-/*
-  if(DMA_GetFlagStatus(DMA1_Stream7, DMA_FLAG_TEIF7) != RESET)
-  {
-
-	  int error=12;
-  }
-  else if (DMA_GetFlagStatus(DMA1_Stream7, DMA_FLAG_FEIF7) != RESET)
-  {
-	  int error=12;
-  }
-  else if (DMA_GetFlagStatus(DMA1_Stream7, DMA_FLAG_DMEIF7) != RESET)
-  {
-
-	  	  int error=12;
-  }
-*/
   /* FIFO Error interrupt */
   if ((DMA_GetFlagStatus(DMA1_Stream7, DMA_FLAG_TEIF7) != RESET) || \
      (DMA_GetFlagStatus(DMA1_Stream7, DMA_FLAG_FEIF7) != RESET) || \
      (DMA_GetFlagStatus(DMA1_Stream7, DMA_FLAG_DMEIF7) != RESET))
 
   {
-
-
     /* Clear the Interrupt flag */
     DMA_ClearFlag(DMA1_Stream7, DMA_FLAG_TEIF7 | DMA_FLAG_FEIF7 | \
     		DMA_FLAG_DMEIF7);
   }
 #endif //error flags
-
-
-
-
 }
 //----------------------------------------------------------------------------------
 void codec_initDma_DAC()
@@ -142,24 +109,23 @@ void codec_initDma_DAC()
 	    DMA_Cmd(DMA1_Stream7, DISABLE);
 	    DMA_DeInit(DMA1_Stream7);
 	    /* Set the parameters to be configured */
-	    DMA_InitStructure.DMA_Channel = DMA_Channel_0;
-	    DMA_InitStructure.DMA_PeripheralBaseAddr = CODEC_DAC1_I2S_ADDRESS;
-	    DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)0;      /* This field will be configured in play function */
-	    DMA_InitStructure.DMA_DIR = DMA_DIR_MemoryToPeripheral;
-	    DMA_InitStructure.DMA_BufferSize = (uint32_t)0xFFFE;      /* This field will be configured in play function */
-	    DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
-	    DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
-	    DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;
-	    DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;
-	   // DMA_InitStructure.DMA_Mode = DMA_Mode_Circular; //not needed when using double buffered mode
-	    DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;
+	    DMA_InitStructure.DMA_Channel 				= DMA_Channel_0;
+	    DMA_InitStructure.DMA_PeripheralBaseAddr 	= CODEC_DAC1_I2S_ADDRESS;
+	    DMA_InitStructure.DMA_Memory0BaseAddr 		= (uint32_t)0;      /* This field will be configured in play function */
+	    DMA_InitStructure.DMA_DIR 					= DMA_DIR_MemoryToPeripheral;
+	    DMA_InitStructure.DMA_BufferSize 			= (uint32_t)0xFFFE;      /* This field will be configured in play function */
+	    DMA_InitStructure.DMA_PeripheralInc 		= DMA_PeripheralInc_Disable;
+	    DMA_InitStructure.DMA_MemoryInc 			= DMA_MemoryInc_Enable;
+	    DMA_InitStructure.DMA_PeripheralDataSize 	= DMA_PeripheralDataSize_HalfWord;
+	    DMA_InitStructure.DMA_MemoryDataSize 		= DMA_MemoryDataSize_HalfWord;
+	  //DMA_InitStructure.DMA_Mode 					= DMA_Mode_Circular; //not needed when using double buffered mode
+	    DMA_InitStructure.DMA_Mode 					= DMA_Mode_Normal;
 
-
-	    DMA_InitStructure.DMA_Priority = DMA_Priority_High;
-	    DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Disable;
-	    DMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_1QuarterFull;
-	    DMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_Single;
-	    DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
+	    DMA_InitStructure.DMA_Priority 				= DMA_Priority_High;
+	    DMA_InitStructure.DMA_FIFOMode 				= DMA_FIFOMode_Disable;
+	    DMA_InitStructure.DMA_FIFOThreshold 		= DMA_FIFOThreshold_1QuarterFull;
+	    DMA_InitStructure.DMA_MemoryBurst 			= DMA_MemoryBurst_Single;
+	    DMA_InitStructure.DMA_PeripheralBurst 		= DMA_PeripheralBurst_Single;
 	    DMA_Init(DMA1_Stream7, &DMA_InitStructure);
 
 	    // enable the dma interrupts transfer complete, half transfer complete and error
@@ -168,10 +134,10 @@ void codec_initDma_DAC()
 	    DMA_ITConfig(DMA1_Stream7, DMA_IT_TE | DMA_IT_FE | DMA_IT_DME, ENABLE);
 
 	    /* I2S DMA IRQ Channel configuration */
-	    NVIC_InitStructure.NVIC_IRQChannel = DMA1_Stream7_IRQn;
+	    NVIC_InitStructure.NVIC_IRQChannel 				= DMA1_Stream7_IRQn;
 	    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = EVAL_AUDIO_IRQ_PREPRIO;
-	    NVIC_InitStructure.NVIC_IRQChannelSubPriority = EVAL_AUDIO_IRQ_SUBRIO;
-	    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	    NVIC_InitStructure.NVIC_IRQChannelSubPriority	= EVAL_AUDIO_IRQ_SUBRIO;
+	    NVIC_InitStructure.NVIC_IRQChannelCmd 			= ENABLE;
 	    NVIC_Init(&NVIC_InitStructure);
 
 	    /* Enable the I2S DMA request */
@@ -183,19 +149,17 @@ static void codec_AudioInterface_Init_DAC(uint32_t AudioFreq)
 {
   I2S_InitTypeDef I2S_InitStructure;
 
-
   /* Enable the CODEC_I2S peripheral clock */
   RCC_APB1PeriphClockCmd(CODEC_DAC1_I2S_CLK, ENABLE);
 
   /* CODEC_I2S peripheral configuration */
   SPI_I2S_DeInit(CODEC_DAC1_I2S);
-  I2S_InitStructure.I2S_AudioFreq = I2S_AudioFreq_44k;
-  I2S_InitStructure.I2S_Standard = I2S_STANDARD;
-  I2S_InitStructure.I2S_DataFormat = I2S_DataFormat_16b;
-  I2S_InitStructure.I2S_CPOL = I2S_CPOL_Low;
-  I2S_InitStructure.I2S_Mode = I2S_Mode_MasterTx;
-  I2S_InitStructure.I2S_MCLKOutput = I2S_MCLKOutput_Enable;
-
+  I2S_InitStructure.I2S_AudioFreq 	= I2S_AudioFreq_44k;
+  I2S_InitStructure.I2S_Standard 	= I2S_STANDARD;
+  I2S_InitStructure.I2S_DataFormat 	= I2S_DataFormat_16b;
+  I2S_InitStructure.I2S_CPOL 		= I2S_CPOL_Low;
+  I2S_InitStructure.I2S_Mode 		= I2S_Mode_MasterTx;
+  I2S_InitStructure.I2S_MCLKOutput 	= I2S_MCLKOutput_Enable;
 
   /* Initialize the I2S peripheral with the structure above */
   I2S_Init(CODEC_DAC1_I2S, &I2S_InitStructure);
@@ -224,7 +188,6 @@ void codec_start_dac1(uint32_t Addr, uint32_t Size)
 	}
 }
 //----------------------------------------------------------------------------------
-
 void codec_InitGPIO_DAC1(void)
 {
 	GPIO_InitTypeDef GPIO_InitStructure;
@@ -235,11 +198,11 @@ void codec_InitGPIO_DAC1(void)
 		RCC_AHB1PeriphClockCmd( CODEC_DAC1_I2S_GPIO_CLOCK, ENABLE);
 
 		/* CODEC_I2S pins configuration: WS, SCK and SD pins -----------------------------*/
-		GPIO_InitStructure.GPIO_Pin = CODEC_DAC1_I2S_SCK_PIN | CODEC_DAC1_I2S_SD_PIN;
-		GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-		GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-		GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-		GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+		GPIO_InitStructure.GPIO_Pin 	= CODEC_DAC1_I2S_SCK_PIN | CODEC_DAC1_I2S_SD_PIN;
+		GPIO_InitStructure.GPIO_Mode 	= GPIO_Mode_AF;
+		GPIO_InitStructure.GPIO_Speed 	= GPIO_Speed_50MHz;
+		GPIO_InitStructure.GPIO_OType 	= GPIO_OType_PP;
+		GPIO_InitStructure.GPIO_PuPd 	= GPIO_PuPd_NOPULL;
 		GPIO_Init(CODEC_DAC1_I2S_GPIO, &GPIO_InitStructure);
 
 		GPIO_InitStructure.GPIO_Pin = CODEC_DAC1_I2S_WS_PIN ;
@@ -253,11 +216,11 @@ void codec_InitGPIO_DAC1(void)
 
 		//Master Clock enable
 		/* CODEC_I2S pins configuration: MCK pin */
-		GPIO_InitStructure.GPIO_Pin = CODEC_DAC1_I2S_MCK_PIN;
-		GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-		GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-		GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-		GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+		GPIO_InitStructure.GPIO_Pin 	= CODEC_DAC1_I2S_MCK_PIN;
+		GPIO_InitStructure.GPIO_Mode 	= GPIO_Mode_AF;
+		GPIO_InitStructure.GPIO_Speed 	= GPIO_Speed_50MHz;
+		GPIO_InitStructure.GPIO_OType 	= GPIO_OType_PP;
+		GPIO_InitStructure.GPIO_PuPd 	= GPIO_PuPd_NOPULL;
 		GPIO_Init(CODEC_DAC1_I2S_GPIO, &GPIO_InitStructure);
 		/* Connect pins to I2S peripheral  */
 		GPIO_PinAFConfig(CODEC_DAC1_I2S_GPIO, 		CODEC_DAC1_I2S_MCK_PINSRC, CODEC_DAC1_I2S_GPIO_AF);
@@ -294,9 +257,6 @@ void DMA1_Stream4_IRQHandler(void)
 		   /* Enable the I2S DMA Stream*/
 		   DMA_Cmd(CODEC_I2S2_DMA_STREAM, ENABLE);
 
-		   //TODO eigene DMA buffer einbauen
-		   //now start next sample block calculation
-			 //bCurrentSampleValid = 1-(dmaPtr&0x1);
 		}
 
 
@@ -319,8 +279,6 @@ void DMA1_Stream4_IRQHandler(void)
 	     (DMA_GetFlagStatus(CODEC_I2S2_DMA_STREAM, CODEC_I2S2_DMA_FLAG_DME) != RESET))
 
 	  {
-
-
 	    /* Clear the Interrupt flag */
 	    DMA_ClearFlag(CODEC_I2S2_DMA_STREAM, CODEC_I2S2_DMA_FLAG_TE | CODEC_I2S2_DMA_FLAG_FE | \
 	    		CODEC_I2S2_DMA_FLAG_DME);
@@ -340,24 +298,24 @@ void codec_initDma_DAC2()
 	    DMA_Cmd(CODEC_I2S2_DMA_STREAM, DISABLE);
 	    DMA_DeInit(CODEC_I2S2_DMA_STREAM);
 	    /* Set the parameters to be configured */
-	    DMA_InitStructure2.DMA_Channel = DMA_Channel_0;
-	    DMA_InitStructure2.DMA_PeripheralBaseAddr = CODEC_DAC2_I2S_ADDRESS;
-	    DMA_InitStructure2.DMA_Memory0BaseAddr = (uint32_t)0;      /* This field will be configured in play function */
-	    DMA_InitStructure2.DMA_DIR = DMA_DIR_MemoryToPeripheral;
-	    DMA_InitStructure2.DMA_BufferSize = (uint32_t)0xFFFE;      /* This field will be configured in play function */
-	    DMA_InitStructure2.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
-	    DMA_InitStructure2.DMA_MemoryInc = DMA_MemoryInc_Enable;
-	    DMA_InitStructure2.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;
-	    DMA_InitStructure2.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;
-	   // DMA_InitStructure.DMA_Mode = DMA_Mode_Circular; //not needed when using double buffered mode
-	    DMA_InitStructure2.DMA_Mode = DMA_Mode_Normal;
+	    DMA_InitStructure2.DMA_Channel 				= DMA_Channel_0;
+	    DMA_InitStructure2.DMA_PeripheralBaseAddr 	= CODEC_DAC2_I2S_ADDRESS;
+	    DMA_InitStructure2.DMA_Memory0BaseAddr 		= (uint32_t)0;      /* This field will be configured in play function */
+	    DMA_InitStructure2.DMA_DIR 					= DMA_DIR_MemoryToPeripheral;
+	    DMA_InitStructure2.DMA_BufferSize 			= (uint32_t)0xFFFE;      /* This field will be configured in play function */
+	    DMA_InitStructure2.DMA_PeripheralInc 		= DMA_PeripheralInc_Disable;
+	    DMA_InitStructure2.DMA_MemoryInc 			= DMA_MemoryInc_Enable;
+	    DMA_InitStructure2.DMA_PeripheralDataSize 	= DMA_PeripheralDataSize_HalfWord;
+	    DMA_InitStructure2.DMA_MemoryDataSize 		= DMA_MemoryDataSize_HalfWord;
+	   // DMA_InitStructure.DMA_Mode 				= DMA_Mode_Circular; //not needed when using double buffered mode
+	    DMA_InitStructure2.DMA_Mode 				= DMA_Mode_Normal;
 
 
-	    DMA_InitStructure2.DMA_Priority = DMA_Priority_High;
-	    DMA_InitStructure2.DMA_FIFOMode = DMA_FIFOMode_Disable;
-	    DMA_InitStructure2.DMA_FIFOThreshold = DMA_FIFOThreshold_1QuarterFull;
-	    DMA_InitStructure2.DMA_MemoryBurst = DMA_MemoryBurst_Single;
-	    DMA_InitStructure2.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
+	    DMA_InitStructure2.DMA_Priority 			= DMA_Priority_High;
+	    DMA_InitStructure2.DMA_FIFOMode 			= DMA_FIFOMode_Disable;
+	    DMA_InitStructure2.DMA_FIFOThreshold 		= DMA_FIFOThreshold_1QuarterFull;
+	    DMA_InitStructure2.DMA_MemoryBurst 			= DMA_MemoryBurst_Single;
+	    DMA_InitStructure2.DMA_PeripheralBurst 		= DMA_PeripheralBurst_Single;
 	    DMA_Init(CODEC_I2S2_DMA_STREAM, &DMA_InitStructure2);
 
 	    // enable the dma interrupts transfer complete, half transfer complete and error
@@ -387,11 +345,11 @@ void codec_InitGPIO_DAC2(void)
 		RCC_AHB1PeriphClockCmd( CODEC_DAC2_I2S_GPIO_CLOCK, ENABLE);
 
 		/* CODEC_I2S pins configuration: WS, SCK and SD pins -----------------------------*/
-		GPIO_InitStructure.GPIO_Pin = CODEC_DAC2_I2S_WS_PIN | CODEC_DAC2_I2S_SCK_PIN | CODEC_DAC2_I2S_SD_PIN;
-		GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-		GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-		GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-		GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+		GPIO_InitStructure.GPIO_Pin 	= CODEC_DAC2_I2S_WS_PIN | CODEC_DAC2_I2S_SCK_PIN | CODEC_DAC2_I2S_SD_PIN;
+		GPIO_InitStructure.GPIO_Mode 	= GPIO_Mode_AF;
+		GPIO_InitStructure.GPIO_Speed 	= GPIO_Speed_50MHz;
+		GPIO_InitStructure.GPIO_OType 	= GPIO_OType_PP;
+		GPIO_InitStructure.GPIO_PuPd 	= GPIO_PuPd_NOPULL;
 		GPIO_Init(CODEC_DAC2_I2S_GPIO, &GPIO_InitStructure);
 
 		/* Connect pins to I2S peripheral  */
@@ -402,11 +360,11 @@ void codec_InitGPIO_DAC2(void)
 
 		//Master Clock enable
 		/* CODEC_I2S pins configuration: MCK pin */
-		GPIO_InitStructure.GPIO_Pin = CODEC_DAC2_I2S_MCK_PIN;
-		GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-		GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-		GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-		GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+		GPIO_InitStructure.GPIO_Pin 	= CODEC_DAC2_I2S_MCK_PIN;
+		GPIO_InitStructure.GPIO_Mode 	= GPIO_Mode_AF;
+		GPIO_InitStructure.GPIO_Speed 	= GPIO_Speed_50MHz;
+		GPIO_InitStructure.GPIO_OType 	= GPIO_OType_PP;
+		GPIO_InitStructure.GPIO_PuPd 	= GPIO_PuPd_NOPULL;
 		GPIO_Init(CODEC_DAC2_I2S_MCK_GPIO, &GPIO_InitStructure);
 		/* Connect pins to I2S peripheral  */
 		GPIO_PinAFConfig(CODEC_DAC2_I2S_MCK_GPIO, 		CODEC_DAC2_I2S_MCK_PINSRC, CODEC_DAC2_I2S_GPIO_AF);
@@ -442,12 +400,12 @@ static void codec_AudioInterface_Init_DAC2(uint32_t AudioFreq)
 
   /* CODEC_I2S peripheral configuration */
   SPI_I2S_DeInit(CODEC_DAC2_I2S);
-  I2S_InitStructure.I2S_AudioFreq = I2S_AudioFreq_44k;
-  I2S_InitStructure.I2S_Standard = I2S_STANDARD;
-  I2S_InitStructure.I2S_DataFormat = I2S_DataFormat_16b;
-  I2S_InitStructure.I2S_CPOL = I2S_CPOL_Low;
-  I2S_InitStructure.I2S_Mode = I2S_Mode_MasterTx;
-  I2S_InitStructure.I2S_MCLKOutput = I2S_MCLKOutput_Enable;
+  I2S_InitStructure.I2S_AudioFreq 	= I2S_AudioFreq_44k;
+  I2S_InitStructure.I2S_Standard 	= I2S_STANDARD;
+  I2S_InitStructure.I2S_DataFormat 	= I2S_DataFormat_16b;
+  I2S_InitStructure.I2S_CPOL 		= I2S_CPOL_Low;
+  I2S_InitStructure.I2S_Mode 		= I2S_Mode_MasterTx;
+  I2S_InitStructure.I2S_MCLKOutput 	= I2S_MCLKOutput_Enable;
 
 
   /* Initialize the I2S peripheral with the structure above */

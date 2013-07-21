@@ -40,20 +40,7 @@
 #include "globals.h"
 #include "cs4344_cs5343.h"
 
-
-
 #define DMA_MODE_ACTIVE 1
-
-//-----------------------------------
-
-#if DMA_MODE_ACTIVE
-
-												// and want to do double buffering = *2
-//extern volatile uint8_t dmaBufferPtr;
-//extern volatile uint8_t doubleBufferPos;
-#endif
-
-
 //-----------------------------------
 int CodecInit(uint32_t AudioFreq);
 

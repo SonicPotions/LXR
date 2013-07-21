@@ -54,7 +54,6 @@
 #define UNIT_GAIN_DRIVE 0
 #define SET_PARAM_ARRAY_IN_PARSER 1
 #define USE_FILTER_DRIVE 0
-//#define BLOCK_BASED_AUDIO 1
 #define CALC_TONE_CONTROL 0
 
 //if 1 the amp EGs will be calculated on a per sample basis
@@ -80,7 +79,6 @@
 
 #define USE_BOOTLOADER 1 	// if 1 the image will be loaded to offset 0x4000 (you also have to change stm32_flash.ld manually!!!)
 
-//#define USE_DMA 	0
 
 #define SYNTH_FS 			I2S_AudioFreq_44k		  	// the requested I2S samplerate => 44.1 kHz
 

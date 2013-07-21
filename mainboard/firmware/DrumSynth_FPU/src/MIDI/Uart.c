@@ -57,12 +57,6 @@ static Fifo fifo_frontTx;
 static FifoBig fifo_frontRx; //we use a bigger fifo here because we have lots of data coming in for the preset
 						//todo test if necessary!
 //-----------------------------------------------------------------------------
-/*
-uint8_t Usart2Get(void){
-	 while ( USART_GetFlagStatus(USART2, USART_FLAG_RXNE) == RESET);
-		return (uint8_t)USART_ReceiveData(USART2);
-}
-*/
 void uart_clearFrontFifo()
 {
 	fifo_clear(&fifo_frontTx);
@@ -200,23 +194,16 @@ void initMidiUart()
 	USART_ClockInitTypeDef USART_ClockInitStructure;
 
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE); // Enable GPIOA on APB1 peripheral clock
-	//RCC_APB2PeriphClockCmd(RCC_APB1Periph_AFIO, ENABLE); // Enable AFIO Clock
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE); // Enable USART2 Clock
-
 
     //Set USART2 Rx (PA.03) as AF push-pull
     GPIO_InitStructure.GPIO_Pin 	= GPIO_Pin_3;
     GPIO_InitStructure.GPIO_Mode 	= GPIO_Mode_AF ;
     GPIO_InitStructure.GPIO_Speed 	= GPIO_Speed_50MHz;
     GPIO_InitStructure.GPIO_OType	= GPIO_OType_PP;
-    //GPIO_InitStructure.GPIO_PuPd	= GPIO_PuPd_UP;
     GPIO_InitStructure.GPIO_PuPd	= GPIO_PuPd_DOWN;
 
-
     GPIO_Init(GPIOA, &GPIO_InitStructure);
-
-
-
 
     //TX pin
     GPIO_InitStructure.GPIO_Pin 	= GPIO_Pin_2;
@@ -227,10 +214,8 @@ void initMidiUart()
     GPIO_Init(GPIOA, &GPIO_InitStructure);
 
     //configure AF
-
-        GPIO_PinAFConfig(GPIOA,GPIO_PinSource2 ,GPIO_AF_USART2);
-        GPIO_PinAFConfig(GPIOA,GPIO_PinSource3 ,GPIO_AF_USART2);
-
+    GPIO_PinAFConfig(GPIOA,GPIO_PinSource2 ,GPIO_AF_USART2);
+    GPIO_PinAFConfig(GPIOA,GPIO_PinSource3 ,GPIO_AF_USART2);
 
     //uart clock
     USART_ClockStructInit(&USART_ClockInitStructure);
@@ -247,9 +232,7 @@ void initMidiUart()
 	USART_Init(USART2, &USART_InitStructure); // Now do the setup
 
 	//Enable USART2
-
 	USART_Cmd(USART2, ENABLE);
-
 
 	//Enable inmterrupt
 	//configure NVIC
@@ -268,7 +251,6 @@ void initMidiUart()
 	USART_ITConfig(USART2, USART_IT_TXE, DISABLE);
 	//enable Receive Data register not empty interrupt
 	USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
-
 }
 //-------------------------------------------------------------------------------------------
 
@@ -290,7 +272,6 @@ void initFrontpanelUart()
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE); // Enable GPIOD on APB1 peripheral clock
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE); // Enable USART3 Clock
 
-
     //Set USART3 Rx (PB.11) as AF push-pull
     GPIO_InitStructure.GPIO_Pin 	= GPIO_Pin_11;
     GPIO_InitStructure.GPIO_Mode 	= GPIO_Mode_AF ;
@@ -298,11 +279,7 @@ void initFrontpanelUart()
     GPIO_InitStructure.GPIO_OType	= GPIO_OType_PP;
     GPIO_InitStructure.GPIO_PuPd	= GPIO_PuPd_DOWN;
 
-
     GPIO_Init(GPIOB, &GPIO_InitStructure);
-
-  //  GPIO_PinAFConfig(GPIOD,GPIO_PinSource9 ,GPIO_AF_USART3);
-
 
     //TX pin
     GPIO_InitStructure.GPIO_Pin 	= GPIO_Pin_10;
@@ -313,7 +290,6 @@ void initFrontpanelUart()
     GPIO_Init(GPIOB, &GPIO_InitStructure);
 
     //configure AF
-
     GPIO_PinAFConfig(GPIOB,GPIO_PinSource11 ,GPIO_AF_USART3);
     GPIO_PinAFConfig(GPIOB,GPIO_PinSource10,GPIO_AF_USART3);
 
@@ -335,9 +311,7 @@ void initFrontpanelUart()
 	USART_Init(USART3, &USART_InitStructure); // Now do the setup
 
 	//Enable USART3
-
 	USART_Cmd(USART3, ENABLE);
-
 
 	//Enable inmterrupt
 	//configure NVIC
@@ -356,5 +330,4 @@ void initFrontpanelUart()
 	USART_ITConfig(USART3, USART_IT_TXE, DISABLE);
 	//enable Receive Data register not empty interrupt
 	USART_ITConfig(USART3, USART_IT_RXNE, ENABLE);
-
 }

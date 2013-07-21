@@ -235,11 +235,9 @@ inline void mixer_addDataToOutput(uint8_t dest, const float panL, const float pa
 		for(i=0;i<OUTPUT_DMA_SIZE;i++)
 		{
 			*outL2 = __QADD16(*outL2,(int16_t)(data[i] * panL)) & 0xFFFF;
-			//*outL2 += data[i] * panL;
 			outL2 += 2;
 
 			*outR2 = __QADD16(*outR2,(int16_t)(data[i] * panR)) & 0xFFFF;
-			//*outR2 += data[i] * panR;
 			outR2 += 2;
 		}
 		break;
@@ -247,11 +245,9 @@ inline void mixer_addDataToOutput(uint8_t dest, const float panL, const float pa
 		for(i=0;i<OUTPUT_DMA_SIZE;i++)
 		{
 			*outL = __QADD16(*outL,(int16_t)(data[i] * panL)) & 0xFFFF;
-			//*outL += data[i] * panL;
 			outL += 2;
 
 			*outR = __QADD16(*outR,(int16_t)(data[i] * panR)) & 0xFFFF;
-			//*outR += data[i] * panR;
 			outR += 2;
 		}
 		break;
@@ -259,7 +255,6 @@ inline void mixer_addDataToOutput(uint8_t dest, const float panL, const float pa
 		for(i=0;i<OUTPUT_DMA_SIZE;i++)
 		{
 			*outL2 = __QADD16(*outL2,data[i]) & 0xFFFF;
-			//*outL2 += data[i];
 			outL2 += 2;
 		}
 		break;
@@ -267,7 +262,6 @@ inline void mixer_addDataToOutput(uint8_t dest, const float panL, const float pa
 		for(i=0;i<OUTPUT_DMA_SIZE;i++)
 		{
 			*outR2 = __QADD16(*outR2,data[i]) & 0xFFFF;
-			//*outR2 += data[i];
 			outR2 += 2;
 		}
 		break;
@@ -275,7 +269,6 @@ inline void mixer_addDataToOutput(uint8_t dest, const float panL, const float pa
 		for(i=0;i<OUTPUT_DMA_SIZE;i++)
 		{
 			*outL = __QADD16(*outL,data[i]) & 0xFFFF;
-			//*outL += data[i];
 			outL += 2;
 		}
 		break;
@@ -283,7 +276,6 @@ inline void mixer_addDataToOutput(uint8_t dest, const float panL, const float pa
 		for(i=0;i<OUTPUT_DMA_SIZE;i++)
 		{
 			*outR = __QADD16(*outR,data[i]) & 0xFFFF;
-			//*outR += data[i];
 			outR += 2;
 		}
 		break;
@@ -326,9 +318,6 @@ void mixer_calcNextSampleBlock(int16_t* output,int16_t* output2)
 	//befor output distribution
 	int16_t sampleData[OUTPUT_DMA_SIZE];
 
-	//get the current position in the DMA buffer (wraps at 31)
-
-//	const uint8_t pos = dmaBufferPtr & ((OUTPUT_DMA_SIZE*2)-1);//&0x1f;
 	const uint8_t pos = 0;
 
 	bufferTool_clearBuffer(output,OUTPUT_DMA_SIZE*2);
@@ -339,8 +328,7 @@ void mixer_calcNextSampleBlock(int16_t* output,int16_t* output2)
 	//decimate voice
 	mixer_decimateBlock(0,sampleData);
 	//copy to selected dma buffer
-	//mixer_addDataToOutput(0,mixer_audioRouting[0],voiceArray[0].panL ,voiceArray[0].panR, sampleData,&output[pos],&output[pos+1],&output2[pos],&output2[pos+1]);
-	  mixer_addDataToOutput(mixer_audioRouting[0],squareRootLut[127-voiceArray[0].pan] ,squareRootLut[voiceArray[0].pan], sampleData,&output[pos],&output[pos+1],&output2[pos],&output2[pos+1]);
+	mixer_addDataToOutput(mixer_audioRouting[0],squareRootLut[127-voiceArray[0].pan] ,squareRootLut[voiceArray[0].pan], sampleData,&output[pos],&output[pos+1],&output2[pos],&output2[pos+1]);
 
 
 	//calc voice 2
@@ -377,9 +365,5 @@ void mixer_calcNextSampleBlock(int16_t* output,int16_t* output2)
 	mixer_decimateBlock(5,sampleData);
 	//copy to selected dma buffer
 	mixer_addDataToOutput(mixer_audioRouting[5],hatVoice.panL,hatVoice.panR, sampleData,&output[pos],&output[pos+1],&output2[pos],&output2[pos+1]);
-
-	//update dma buffer position
-	//dmaBufferPtr += (OUTPUT_DMA_SIZE*2);
-
 
 }

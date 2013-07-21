@@ -64,12 +64,10 @@ typedef struct VoiceStruct
 
 	float	 	vol;		// volume of the voice
 	float 		velo;
-	//float		panL;		// [0:1]
-	//float		panR;		// [0:1]
-	uint8_t 	pan; //
+	uint8_t 	pan;
 	float 		panModifier;
 
-	int16_t 		oscSample;
+	int16_t 	oscSample;
 
 	DecayEg		oscPitchEg;
 	float		egPitchModAmount;

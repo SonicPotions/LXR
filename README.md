@@ -1,7 +1,15 @@
-Drumsynth
-=========
+Sonic Potions LXR Drumsynth Firmware
+====================================
+
+The LXR is a digital drum synthesizer based on the 32-bit Cortex-M4 processor and an Atmega644 8-bit CPU.
 
 
+- The 'front' folder contains the AVR code
+
+- The 'mainboard' folder contains the STM32F4 code
+
+- The 'tools' folder contains the firmware image builder tool, to combine AVR 
+  and Cortex code into a single file, usable by the bootloader.
 
 
 Please note that there are libraries from ST and ARM used in the mainboard code of this project.

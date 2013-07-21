@@ -69,7 +69,6 @@
 #include "TriggerOut.h"
 
 
-
 //----------------------------------------------------------------
 //stub function for newlib
 void _exit(int status)
@@ -166,8 +165,6 @@ void initAudioJackDiscoverPins()
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
 
-
-
 	//r1 = pc4
 	//l2 = pc5
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);
@@ -182,8 +179,7 @@ void initAudioJackDiscoverPins()
 
 }
 
-
-//uint8_t calc = 0;
+//---------------------------------------------------------
 inline void calcNextSampleBlock()
 {
 #if USE_DAC2
@@ -193,13 +189,10 @@ inline void calcNextSampleBlock()
 #endif
 	bCurrentSampleValid = SAMPLE_VALID;
 }
-
-
+//---------------------------------------------------------
 int main(void)
 {
-
 	initSpiPins();
-
 
 	/* get system clock info*/
 	RCC_GetClocksFreq(&RCC_Clocks);
@@ -309,7 +302,6 @@ int main(void)
 
 		//handle trigger outs
 		trigger_tick();
-
     }
 #endif
 }

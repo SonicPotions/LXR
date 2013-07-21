@@ -74,12 +74,12 @@ typedef struct CymbalStruct
 	TransientGenerator transGen;
 	Distortion distortion;
 
-	SlopeEg2		oscVolEg;
+	SlopeEg2	oscVolEg;
 	float 		egValueOscVol;
 
-	uint8_t volumeMod;	//modulate volume by midi velocity if 1
+	uint8_t 	volumeMod;	//modulate volume by midi velocity if 1
 
-	SnapEg snapEg;
+	SnapEg 		snapEg;
 
 } CymbalVoice;
 

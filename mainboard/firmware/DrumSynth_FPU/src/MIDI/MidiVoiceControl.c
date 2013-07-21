@@ -47,7 +47,6 @@
 //------------------------------------------------------
 void voiceControl_noteOn(uint8_t note, uint8_t vel)
 {
-	//uint8_t voiceNr;
 	switch(note)
 	{
 	case NOTE_VOICE1:
@@ -61,12 +60,10 @@ void voiceControl_noteOn(uint8_t note, uint8_t vel)
 		Snare_trigger(vel,SEQ_DEFAULT_NOTE);
 		break;
 	case NOTE_VOICE5:
-	//	lcdFifo_bufferIn(c++);
 		Cymbal_trigger(vel,SEQ_DEFAULT_NOTE);
 		break;
 
 	case NOTE_VOICE6:
-	//	lcdFifo_bufferIn(c++);
 		HiHat_trigger(vel,0,SEQ_DEFAULT_NOTE);
 		break;
 
@@ -78,16 +75,9 @@ void voiceControl_noteOn(uint8_t note, uint8_t vel)
 		return;
 		break;
 	}
-/*
-	uart_sendFrontpanelByte(FRONT_STEP_LED_STATUS_BYTE);
-	uart_sendFrontpanelByte(FRONT_LED_TRIGGER_VOICE);
-	uart_sendFrontpanelByte(note-NOTE_VOICE1);
-	*/
 
 	//Recording Mode
 	seq_addNote(note-NOTE_VOICE1,vel);
-
-
 }
 //------------------------------------------------------
 void voiceControl_noteOff(uint8_t note, uint8_t vel)

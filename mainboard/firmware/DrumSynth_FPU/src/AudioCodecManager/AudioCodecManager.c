@@ -38,14 +38,10 @@
 //------------------------------------------------------------------
 #if DMA_MODE_ACTIVE
 volatile int16_t dma_buffer[OUTPUT_DMA_SIZE*4];
-//volatile uint8_t dmaBufferPtr=0;
- //volatile uint8_t doubleBufferPos=0;
-
- volatile int16_t dma_buffer2[OUTPUT_DMA_SIZE*4];
+volatile int16_t dma_buffer2[OUTPUT_DMA_SIZE*4];
 #endif
 
 uint8_t bCurrentSampleValid = 0;
-//__IO uint8_t codec_volume = 95;
 int16_t audioOutBuffer[2];
 //------------------------------------------------------------------
 int CodecInit(uint32_t AudioFreq)

@@ -63,26 +63,21 @@ things like this:  r3=(r1 & 0x7F)<<8; instead of calling rand() again.
 
 #define BITS 16
 #define RAND_MAX 32767
-#define DITHER_S (0.5f)              //set to 0.0f for no noise shaping
-#define DITHER_W 32768.f//(pow(2.0,BITS-1))   //word length (usually bits=16)
+#define DITHER_S (0.5f)              			//set to 0.0f for no noise shaping
+#define DITHER_W 32768.f//(pow(2.0,BITS-1))   	//word length (usually bits=16)
 #define DITHER_WI (1.0f/DITHER_W)
-#define DITHER_D (DITHER_WI / RAND_MAX)     //dither amplitude (2 lsb)
-#define DITHER_O (DITHER_WI * 0.5f)         //remove dc offset
+#define DITHER_D (DITHER_WI / RAND_MAX)     	//dither amplitude (2 lsb)
+#define DITHER_O (DITHER_WI * 0.5f)         	//remove dc offset
 
 typedef struct Dither_Struct
 {
-	  int16_t   r1, r2;                //rectangular-PDF random numbers
-	  float s1, s2;                //error feedback buffers
+	  int16_t   r1, r2;                			//rectangular-PDF random numbers
+	  float s1, s2;                				//error feedback buffers
 
 	  float in, tmp;
 	  int16_t   out;
 } Dither;
 
-
-
-
 int16_t dither_process(Dither* dither, float in);
-
-
 
 #endif /* DITHER_H_ */

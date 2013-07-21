@@ -54,7 +54,6 @@ typedef struct TransientGeneratorStruct
 	uint8_t		waveform;	// the selected transient table of the osc
 	float		volume;
 
-
 	//for midi
 	uint16_t	midiFreq;  //upper 8 bit coarse, lower 8 bit fine
 } TransientGenerator;

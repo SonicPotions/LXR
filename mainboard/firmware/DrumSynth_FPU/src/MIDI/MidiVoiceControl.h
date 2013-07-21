@@ -42,8 +42,6 @@
 
 
 //-------------- DEFINES ----------------------------
-
-
 //Note numbers to trigger drum channels
 #define NOTE_VOICE1		36
 #define NOTE_VOICE2		37

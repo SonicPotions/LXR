@@ -356,8 +356,6 @@ enum ParamEnums
 	//global params
 	PAR_BPM = PAR_BEGINNING_OF_GLOBALS,
 
-
-
 	PAR_MIDI_CHAN_1,
 	PAR_MIDI_CHAN_2,
 	PAR_MIDI_CHAN_3,
@@ -368,10 +366,7 @@ enum ParamEnums
 	PAR_FETCH,
 	PAR_FOLLOW,
 
-
 	PAR_QUANTISATION,
-
-
 
 	NUM_PARAMS
 };
@@ -384,7 +379,6 @@ typedef union
 	uint32_t itg;
 } ptrValue;
 
-
 typedef struct ParameterStruct
 {
 	void* 	ptr;
@@ -393,10 +387,7 @@ typedef struct ParameterStruct
 } Parameter;
 
 extern Parameter parameterArray[NUM_PARAMS];
-
 void paramArray_setParameter(uint16_t idx, ptrValue newValue);
-
 void parameterArray_init();
-
 
 #endif /* PARAMETERARRAY_H_ */

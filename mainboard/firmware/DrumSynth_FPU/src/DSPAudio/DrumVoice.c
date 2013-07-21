@@ -50,8 +50,6 @@ DrumVoice voiceArray[NUM_VOICES];
 //---------------------------------------------------
 void setPan(const uint8_t voiceNr, const uint8_t pan)
 {
-	//voiceArray[voiceNr].panL = squareRootLut[127-pan];
-	//voiceArray[voiceNr].panR = squareRootLut[pan];
 	voiceArray[voiceNr].pan = pan;
 }
 //---------------------------------------------------
@@ -114,7 +112,6 @@ void initDrumVoice()
 	}
 }
 //---------------------------------------------------
-
 void Drum_trigger(const uint8_t voiceNr, const uint8_t vol, const uint8_t note)
 {
 	lfo_retrigger(voiceNr);
@@ -245,14 +242,9 @@ void calcDrumVoiceSyncBlock(const uint8_t voiceNr, int16_t* buf, const uint8_t s
 	SVF_calcBlockZDF(&voiceArray[voiceNr].filter,voiceArray[voiceNr].filterType,buf,size);
 
 	//attentuate main OSCs by amp EG
-	//bufferTool_multiplyWithFloatBuffer(buf,voiceArray[voiceNr].volEgValueBlock,size);
-
 #ifdef USE_AMP_FILTER
 	bufferTool_multiplyWithFloatBufferDithered(&voiceArray[voiceNr].dither, buf,voiceArray[voiceNr].volEgValueBlock,size);
 #else
-	//bufferTool_addGainDithered(&voiceArray[voiceNr].dither, buf,voiceArray[voiceNr].ampFilterInput,size);
-
-
 	bufferTool_addGainInterpolated(buf,voiceArray[voiceNr].ampFilterInput, voiceArray[voiceNr].lastGain, size);
 #endif
 

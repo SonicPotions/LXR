@@ -46,7 +46,7 @@ float DecayEg_calcSlopeValue(float val, float slope)
 //-------------------------------------------------
 void DecayEg_init(DecayEg* eg)
 {
-	eg->decay 		= 0.01f;
+	eg->decay 	= 0.01f;
 	eg->value 	= 0;
 };
 //-------------------------------------------------

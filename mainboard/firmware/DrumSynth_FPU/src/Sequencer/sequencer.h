@@ -77,7 +77,6 @@ enum Seq_QuantisationEnum
 
 typedef struct StepStruct
 {
-	//uint8_t  	active;		// bit 0: on/off
 	uint8_t 	volume;		// 0-127 volume -> 0x7f => lower 7 bit, upper bit => active
 	uint8_t  	prob;		//step probability
 	uint8_t		note;		//midi note value 0-127 -> 0x7f, upper bit signals pattern end
@@ -118,22 +117,11 @@ extern uint8_t seq_newPatternAvailable;
 extern PatternSet seq_patternSet;
 extern TempPattern seq_tmpPattern;
 
-//extern uint8_t seq_midiChannel;
-/*
-extern volatile Step seq_subStepPattern[NUM_PATTERN][NUM_TRACKS][NUM_STEPS];
-extern volatile uint16_t seq_mainSteps[NUM_PATTERN][NUM_TRACKS];
-extern PatternSetting seq_patternSettings[NUM_PATTERN];
-*/
 
 extern uint8_t seq_syncStepCnt;
 extern uint8_t seq_selectedStep;
-//if != 0 the recording mode is active
-//extern uint8_t seq_recordActive;
 
 //------------------------------------------------------------------------------
-//PatternSet* seq_getActivePatternSet();
-//------------------------------------------------------------------------------
-//PatternSet* seq_getInactivePatternSet();
 void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note);
 //------------------------------------------------------------------------------
 void seq_setShuffle(float shuffle);
@@ -142,7 +130,6 @@ void seq_setTrackLength(uint8_t trackNr, uint8_t length);
 //------------------------------------------------------------------------------
 uint8_t seq_getTrackLength(uint8_t trackNr);
 //------------------------------------------------------------------------------
-//void seq_switchActivePatternSet();
 void seq_activateTmpPattern();
 //------------------------------------------------------------------------------
 void seq_init();
@@ -176,10 +163,6 @@ void seq_toggleStep(uint8_t voice, uint8_t stepNr, uint8_t patternNr);
 void seq_toggleMainStep(uint8_t voice, uint8_t stepNr, uint8_t patternNr);
 //------------------------------------------------------------------------------
 void seq_setStep(uint8_t voice, uint8_t stepNr, uint8_t onOff);
-//------------------------------------------------------------------------------
-//uint8_t seq_isStepActive(uint8_t voice, uint8_t stepNr);
-//------------------------------------------------------------------------------
-//void seq_setStepProbability(uint8_t voice, uint8_t stepNr, uint8_t value);
 //------------------------------------------------------------------------------
 void seq_setRunning(uint8_t isRunning);
 //------------------------------------------------------------------------------

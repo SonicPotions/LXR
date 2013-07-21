@@ -59,19 +59,18 @@
 #define MIDI_PRESCALER_MASK	0x04
 static uint8_t seq_prescaleCounter = 0;
 
-//uint8_t seq_midiChannel = 0x00;
-uint8_t seq_masterStepCnt=0;					/** keeps track of the played steps between 0 and 127 indipendend from the track counters*/
-uint8_t seq_rollRate = 0x08;					//start with roll rate = 1/16
+uint8_t seq_masterStepCnt=0;				/** keeps track of the played steps between 0 and 127 indipendend from the track counters*/
+uint8_t seq_rollRate = 0x08;				//start with roll rate = 1/16
 uint8_t seq_rollState = 0;					/**< each bit represents a voice. if bit is set, roll is active*/
 
-static int8_t 	seq_stepIndex[NUM_TRACKS];			/**< we have 16 steps consisting of 8 sub steps = 128 steps. each track has its own counter to allow different pattern lengths*/
+static int8_t 	seq_stepIndex[NUM_TRACKS];	/**< we have 16 steps consisting of 8 sub steps = 128 steps. each track has its own counter to allow different pattern lengths*/
 
-static uint16_t seq_tempo = 120;		/**< seq speed in bpm*/
+static uint16_t seq_tempo = 120;			/**< seq speed in bpm*/
 
 static uint32_t	seq_lastTick = 0;			/**< stores the time the last step change occured*/
-static float	seq_deltaT;				/**< time in [ms] until the next step
- 	 	 	 	 	 	 	 	 	 	 1000ms = 1 sec
- 	 	 	 	 	 	 	 	 	 	 1 min = 60 sec*/
+static float	seq_deltaT;					/**< time in [ms] until the next step
+ 	 	 	 	 	 	 	 	 	 	 	 1000ms = 1 sec
+ 	 	 	 	 	 	 	 	 	 	 	 1 min = 60 sec*/
 uint8_t seq_activeAutomTrack=0;
 
 uint8_t seq_isSyncExternal = 0;
@@ -84,17 +83,11 @@ static uint8_t seq_SomModeActive = 0;
 static int8_t seq_armedArmedAutomationStep = -1;
 static int8_t seq_armedArmedAutomationTrack = -1;
 
-//static uint32_t	midiClock_lastTick = 0;	 	/**<stores the last time a clock message was send*/
-//static float midiClock_deltaT;
-
-
-
-
 static uint8_t seq_mutedTracks=0;			/**< indicate which tracks are muted */
-uint8_t seq_running = 0;			/**< 1 if running, 0 if stopped*/
+uint8_t seq_running = 0;					/**< 1 if running, 0 if stopped*/
 
-uint8_t seq_activePattern = 0;		/**< the currently playing pattern*/
-uint8_t seq_pendingPattern = 0;	/**< next pattern to play*/
+uint8_t seq_activePattern = 0;				/**< the currently playing pattern*/
+uint8_t seq_pendingPattern = 0;				/**< next pattern to play*/
 
 uint8_t seq_selectedStep = 0;
 
@@ -110,25 +103,6 @@ static uint8_t seq_loadPendigFlag = 0;
 
 const float seq_shuffleTable[16] =
 {
-
-		/*
-		0.f,
-		0.015625f,
-		0.0625f,
-		0.140625f,
-		0.25f,
-		0.390625f,
-		0.5625f,
-		0.765625f,
-		1.f,
-		0.765625f,
-		0.5625f,
-		0.390625f,
-		0.25f,
-		0.140625f,
-		0.0625f,
-		0.015625f
-		*/
 		0.f,
 		0.015625f,
 		0.0625f,
@@ -145,8 +119,6 @@ const float seq_shuffleTable[16] =
 		0.609375f,
 		0.4375f,
 		0.234375f,
-
-
 };
 
 float seq_lastShuffle = 0;
@@ -257,20 +229,14 @@ void seq_calcDeltaT(uint16_t bpm)
 	seq_deltaT *= 4;
 	//32.f;					// zeit für einen beat / anzahl steps pro beat
 
-
-
 	//--- calc shuffle ---
 	if(seq_shuffle != 0)
 	{
 		//every 2nd and 4th 16th note in a beat is shifted full
 		//=> step 8 and step 24
-
 		//every 2nd 16th note in half a beat
-
 		//every beat has 32 steps => half = 16
 		uint8_t stepInHalfBeat = seq_masterStepCnt&0xf;
-
-
 		const float shuffleFactor = seq_shuffleTable[stepInHalfBeat] * seq_shuffle;
 		const float originalDeltaT = seq_deltaT;
 
@@ -279,12 +245,6 @@ void seq_calcDeltaT(uint16_t bpm)
 
 		seq_lastShuffle = shuffleFactor;
 	}
-
-	//midi clock
-//	midiClock_deltaT 	= (1000*60)/bpm; 		//bei 12 = 500ms = time for one beat
-//	midiClock_deltaT    = midiClock_deltaT/24.f;	//24 midi clock messages per beat
-
-
 }
 //------------------------------------------------------------------------------
 void seq_setBpm(uint16_t bpm)
@@ -301,7 +261,6 @@ uint16_t seq_getBpm()
 //------------------------------------------------------------------------------
 void seq_sync()
 {
-
 	sync_tick();
 }
 //------------------------------------------------------------------------------
@@ -316,7 +275,6 @@ void seq_sendMidi(uint8_t status, uint8_t data1, uint8_t data2)
 	//TODO midi out seq mode
 	//TODO usb und uart einjzeln aktivierbar
 
-
 	//send to usb midi
 	usb_sendMidi(status,data1,data2);
 
@@ -324,8 +282,6 @@ void seq_sendMidi(uint8_t status, uint8_t data1, uint8_t data2)
 	uart_sendMidiByte(status);
 	uart_sendMidiByte(data1);
 	uart_sendMidiByte(data2);
-
-
 }
 //------------------------------------------------------------------------------
 void seq_parseAutomationNodes(uint8_t track, Step* stepData)
@@ -397,10 +353,8 @@ void seq_nextStep()
 		//-------- check if the master track has ended and check if a pattern switch is necessary --------
 		if(masterStepPos == 0)
 		{
-
 			if(seq_activePattern == seq_pendingPattern)
 			{
-
 				//check pattern settings if we have to auto change patterns
 				if(seq_barCounter%(seq_patternSet.seq_patternSettings[seq_activePattern].changeBar+1) == 0)
 				{
@@ -418,7 +372,6 @@ void seq_nextStep()
 				}
 			}
 
-
 			// a new pattern is about to start
 			// set pendingPattern active
 			if((seq_activePattern != seq_pendingPattern) || seq_loadPendigFlag)
@@ -429,7 +382,6 @@ void seq_nextStep()
 				if(seq_newPatternAvailable)
 				{
 					seq_newPatternAvailable = 0;
-					//seq_switchActivePatternSet();
 					seq_activateTmpPattern();
 				}
 
@@ -469,7 +421,6 @@ void seq_nextStep()
 			//increment the step index
 			seq_stepIndex[i]++;
 			//check if track end is reached
-			//if(((seq_patternSet.seq_subStepPattern[seq_activePattern][i][seq_stepIndex[i]].note & PATTERN_END_MASK)>=PATTERN_END_MASK) || ((seq_stepIndex[i] & 0x7f) == 0))
 			if(((seq_patternSet.seq_subStepPattern[seq_activePattern][i][seq_stepIndex[i]].note & PATTERN_END)) || ((seq_stepIndex[i] & 0x7f) == 0))
 			{
 				//if end is reached reset track to step 0
@@ -485,30 +436,26 @@ void seq_nextStep()
 				//if track is not muted
 				if(!(seq_mutedTracks & (1<<i) ) )
 				{
+					//if main step + sub step is active
+					if(seq_isMainStepActive(i,seq_stepIndex[i]/8,seq_activePattern) && (seq_isStepActive(i,seq_stepIndex[i],seq_activePattern)))
+					{
+						//PROBABILITY
+						//every 8th step a new random value is generated
+						//thus every sub step block has only one random value to compare against
+						//allows randomisation of rolls by chance
 
-
-
-
-						//if main step + sub step is active
-						if(seq_isMainStepActive(i,seq_stepIndex[i]/8,seq_activePattern) && (seq_isStepActive(i,seq_stepIndex[i],seq_activePattern)))
+						if((seq_stepIndex[i] & 0x07) == 0x00) //every 8th step
 						{
-							//PROBABILITY
-							//every 8th step a new random value is generated
-							//thus every sub step block has only one random value to compare against
-							//allows randomisation of rolls by chance
-
-							if((seq_stepIndex[i] & 0x07) == 0x00) //every 8th step
-							{
-								seq_rndValue[i] = GetRngValue()&0x7f;
-							}
-
-							if( (seq_rndValue[i]) <= seq_patternSet.seq_subStepPattern[seq_activePattern][i][seq_stepIndex[i]].prob )
-							{
-								const uint8_t vol = seq_patternSet.seq_subStepPattern[seq_activePattern][i][seq_stepIndex[i]].volume&STEP_VOLUME_MASK;
-								const uint8_t note = seq_patternSet.seq_subStepPattern[seq_activePattern][i][seq_stepIndex[i]].note;
-								seq_triggerVoice(i,vol,note);
-							}
+							seq_rndValue[i] = GetRngValue()&0x7f;
 						}
+
+						if( (seq_rndValue[i]) <= seq_patternSet.seq_subStepPattern[seq_activePattern][i][seq_stepIndex[i]].prob )
+						{
+							const uint8_t vol = seq_patternSet.seq_subStepPattern[seq_activePattern][i][seq_stepIndex[i]].volume&STEP_VOLUME_MASK;
+							const uint8_t note = seq_patternSet.seq_subStepPattern[seq_activePattern][i][seq_stepIndex[i]].note;
+							seq_triggerVoice(i,vol,note);
+						}
+					}
 
 				}
 			}
@@ -522,10 +469,8 @@ void seq_nextStep()
 					{
 						if((seq_stepIndex[i]%seq_rollRate)==0)
 						{
-
 							const uint8_t vol = ROLL_VOLUME;
 
-							//const uint8_t vol = seq_track[seq_activePattern][i][seq_stepIndex[i]].volume&STEP_VOLUME_MASK;
 							const uint8_t note = seq_patternSet.seq_subStepPattern[seq_activePattern][i][seq_stepIndex[i]].note;
 							seq_triggerVoice(i,vol,note);
 
@@ -568,8 +513,6 @@ void seq_armAutomationStep(uint8_t stepNr, uint8_t track,uint8_t isArmed)
 //------------------------------------------------------------------------------
 void seq_resetDeltaAndTick()
 {
-
-
 	while(!seq_isNextStepSyncStep())
 	{
 		seq_nextStep();
@@ -577,15 +520,11 @@ void seq_resetDeltaAndTick()
 
 	seq_nextStep();
 
-	/*midiClock_lastTick =*/ seq_lastTick = systick_ticks;
+	seq_lastTick = systick_ticks;
 	seq_calcDeltaT(seq_tempo);
-
-
 
 	seq_syncStepCnt = 0;
 	seq_prescaleCounter = 0;
-	//seq_stepsSinceLastSync = 0;
-
 }
 //------------------------------------------------------------------------------
 /** call periodically to check if the next step has to be processed */
@@ -606,51 +545,22 @@ void seq_tick()
 			//advance only 2 steps automatically, then wait for sync message
 
 			if(seq_getExtSync()) {
-				//if(seq_syncStepCnt<3) {
 				if(seq_isNextStepSyncStep()==0) {
-
 					seq_nextStep();
 					seq_syncStepCnt++;
-
-					//seq_stepsSinceLastSync++;
 				}
-
 			} else {
 				seq_nextStep();
 			}
-
-
 		}
-
 
 		if((seq_prescaleCounter%MIDI_PRESCALER_MASK) == 0)
 		{
-
 			uart_sendMidiByte(MIDI_CLOCK);
 		}
-
 		seq_prescaleCounter++;
 		if(seq_prescaleCounter>=12)seq_prescaleCounter=0;
-
-
-
-
-
 	}
-/*
-	if(systick_ticks-midiClock_lastTick >= midiClock_deltaT)
-	{
-		float rest = systick_ticks-midiClock_lastTick - midiClock_deltaT;
-		midiClock_lastTick = systick_ticks;
-		uart_sendMidiByte(MIDI_CLOCK);
-
-		// for 4/4 -> 1 beat = 4 main steps = 4*8 = 32 sub steps
-		// 120 bpm 4/4tel = 120 * 1 beat / 60sec = 120 * 32 in 60 sec;
-		midiClock_deltaT 	= (1000*60)/seq_tempo; 		//bei 12 = 500ms = time for one beat
-		midiClock_deltaT    = midiClock_deltaT/24.f;	//24 midi clock messages per beat
-		midiClock_deltaT    = midiClock_deltaT - rest;
-	}
-	*/
 }
 //------------------------------------------------------------------------------
 void seq_setQuantisation(uint8_t value)
@@ -801,8 +711,6 @@ void seq_sendStepInfoToFront(uint16_t stepNr)
 	const uint8_t currentPattern 	= absPat - currentTrack*8;
 	const uint8_t currentStep		= stepNr - absPat*128;
 
-
-
 	//encode the data and send it back
 	Step *dataToSend = &seq_patternSet.seq_subStepPattern[currentPattern][currentTrack][currentStep];
 
@@ -835,17 +743,6 @@ void seq_setRoll(uint8_t voice, uint8_t onOff)
 		seq_rollState |= (1<<voice);
 		if(seq_rollRate == 0xff) {
 			//trigger one shot
-			/*
-			if(voice<3) {
-				Drum_trigger(voice,ROLL_VOLUME,SEQ_DEFAULT_NOTE);
-			} else if(voice<4) {
-				Snare_trigger(ROLL_VOLUME,SEQ_DEFAULT_NOTE);
-			} else if(voice<5) {
-				Cymbal_trigger(ROLL_VOLUME,SEQ_DEFAULT_NOTE);
-			} else {
-				HiHat_trigger(ROLL_VOLUME,voice-5,SEQ_DEFAULT_NOTE);
-			}
-			*/
 			seq_triggerVoice(voice,ROLL_VOLUME,SEQ_DEFAULT_NOTE);
 			//record roll notes
 			seq_addNote(voice,ROLL_VOLUME);
@@ -974,8 +871,6 @@ int8_t seq_quantize(int8_t step)
 		return ((itg + 1)*quantisationMultiplier)&0x7f;
 	}
 	return itg*quantisationMultiplier;
-
-
 }
 //------------------------------------------------------------------------
 void seq_recordAutomation(uint8_t voice, uint8_t dest, uint8_t value)
@@ -1008,8 +903,6 @@ void seq_recordAutomation(uint8_t voice, uint8_t dest, uint8_t value)
 			seq_patternSet.seq_subStepPattern[seq_activePattern][seq_armedArmedAutomationTrack][seq_armedArmedAutomationStep].param2Nr = dest;
 			seq_patternSet.seq_subStepPattern[seq_activePattern][seq_armedArmedAutomationTrack][seq_armedArmedAutomationStep].param2Val = value;
 		}
-
-
 	}
 }
 //------------------------------------------------------------------------
@@ -1023,17 +916,12 @@ void seq_addNote(uint8_t trackNr,uint8_t vel)
 		//special care must be taken when recording midi notes!
 		//since per default the 1st substep of a mainstep cluster is always active
 		//we will get double notes when a substep other than ss1 is recorded
-
-
 		if(!seq_isMainStepActive(trackNr, quantizedStep/8, seq_activePattern))
 		{
 			//if the mainstep is not active, we clear the 1st substep
 			//to prevent double notes while recording
 			seq_patternSet.seq_subStepPattern[seq_activePattern][trackNr][(quantizedStep/8)*8].volume 	&= ~STEP_ACTIVE_MASK;
 		}
-		//--
-
-
 
 		//set the current step in the requested track active
 		seq_patternSet.seq_subStepPattern[seq_activePattern][trackNr][quantizedStep].note 		= SEQ_DEFAULT_NOTE;	// default note

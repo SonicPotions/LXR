@@ -43,7 +43,7 @@ uint8_t sync_writePos = 0;
 uint8_t sync_armed = 0;
 
 uint8_t sync_clockCnt = 0;
-
+//---------------------------------------------------------
 uint16_t sync_calcBpm(float timePerPulse)
 {
 	// 1 Minute has 60 * 1000 [ms]
@@ -55,17 +55,10 @@ uint16_t sync_calcBpm(float timePerPulse)
 
 	return bpm;
 }
-
+//---------------------------------------------------------
 //called by midi clock
 void sync_tick()
 {
-/*
-	if(sync_armed)
-	{
-		sync_armed = 0;
-		seq_setRunning(1);
-	}
-	*/
 	float time = systick_ticks - sync_timeLast;
 	sync_timeLast = systick_ticks;
 
@@ -90,10 +83,8 @@ void sync_tick()
 		sync_clockCnt = 1;
 		seq_resetDeltaAndTick();
 	}
-
-
 }
-
+//---------------------------------------------------------
 void sync_midiStartStop(uint8_t isStart)
 {
 	if(isStart) {
@@ -107,8 +98,9 @@ void sync_midiStartStop(uint8_t isStart)
 		seq_setRunning(0);
 	}
 }
-
+//---------------------------------------------------------
 uint8_t sync_getClockCnt()
 {
 	return sync_clockCnt;
 }
+//---------------------------------------------------------

@@ -61,7 +61,6 @@ typedef struct HiHatStruct
 	float		fmModAmount1;
 	float		fmModAmount2;
 
-//	uint8_t		filterType; // bit 0 = lp, bit 1 = hp, bit 3 = bp on/off
 	float	 	vol;		// volume of the voice
 	float		panL;		// [0:1]
 	float		panR;		// [0:1]
@@ -69,11 +68,7 @@ typedef struct HiHatStruct
 
 	float 		velo;
 
-
-
 	int32_t		noiseSample;
-
-//	ToneControl toneControl;
 
 	ResonantFilter filter;
 	uint8_t		filterType;
@@ -85,7 +80,6 @@ typedef struct HiHatStruct
 
 	Distortion distortion;
 
-	//DecayEg		oscVolEg;
 	SlopeEg2		oscVolEg;
 	float 		egValueOscVol;
 	Lfo 		lfo;

@@ -47,6 +47,7 @@ void midiParser_parseUartData(unsigned char data);
 void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue);
 void midiParser_parseMidiMessage(MidiMsg msg);
 float midiParser_calcDetune(uint8_t value);
+void midiParser_handleSystemByte(unsigned char data);
 
 // a place to store all the incoming CC values
 //needed to know to which value the automation node should return

@@ -41,8 +41,6 @@
 
 HiHatVoice hatVoice;
 
-
-
 //---------------------------------------------------
 void HiHat_setPan(const uint8_t pan)
 {
@@ -96,16 +94,12 @@ void HiHat_init()
 	lfo_init(&hatVoice.lfo);
 }
 //---------------------------------------------------
-//---------------------------------------------------
 void HiHat_trigger( uint8_t vel, uint8_t isOpen, const uint8_t note)
 {
-
 	lfo_retrigger(5);
 
 	//update velocity modulation
 	modNode_updateValue(&velocityModulators[5],vel/127.f);
-
-
 
 	float offset = 1;
 	if(hatVoice.transGen.waveform==1) //offset mode
@@ -118,8 +112,6 @@ void HiHat_trigger( uint8_t vel, uint8_t isOpen, const uint8_t note)
 		hatVoice.osc.phase = (0xff<<20)*offset;
 	else
 		hatVoice.osc.phase = 0;
-
-
 
 	osc_setBaseNote(&hatVoice.osc,note);
 	osc_setBaseNote(&hatVoice.modOsc,note);
@@ -149,8 +141,6 @@ void HiHat_calcAsync( )
 	osc_setFreq(&hatVoice.osc);
 	osc_setFreq(&hatVoice.modOsc);
 	osc_setFreq(&hatVoice.modOsc2);
-
-
 }
 //---------------------------------------------------
 void HiHat_calcSyncBlock(int16_t* buf, const uint8_t size)

@@ -41,20 +41,14 @@
 #include "MidiNoteNumbers.h"
 #include "sequencer.h"
 
-//#define PHASE_SHIFT ((uint32_t)1000000)
-//#define F_SHIFT ((uint32_t)1)
-
-
 
 //TODO die phaseInc berechnung kann man doch sicher per LUT machen!
-
 //-----------------------------------------------------------
 __inline uint8_t fast_log2 (const uint32_t val)
 {
 	return 31-__CLZ(val);
 }
 //-----------------------------------------------------------
-//TODO hier wird *12 genommen und danach wieder durch 12 geteilt???
 __inline int freqToMidiNote(const float f)
 {
 	return (12*fast_log2((uint32_t)(f/440.f)))+70;
@@ -67,19 +61,16 @@ __inline uint8_t freqToTableIndex(const float f)
 //-----------------------------------------------------------
 __inline uint32_t freq2PhaseIncr(const float f) //4096
 {
-	//return 4;
 	return (((TABLESIZE*f)/REAL_FS))*1048576 ; // 1048576 <-> (<<20)
 }
 //-----------------------------------------------------------
 __inline uint32_t freq2PhaseIncr1024(const float f)
 {
-	//return 4;
 	return (((1024*f)/REAL_FS))*4194304 ; //(<<22)
 }
 //-----------------------------------------------------------
 __inline uint32_t freq2PhaseIncr32767(const float f)
 {
-	//return 4;
 	return (((1024*f)/REAL_FS))*131072 ; //(<<17)
 }
 //-----------------------------------------------------------
@@ -113,8 +104,6 @@ int16_t calcSine(OscInfo* osc)
 	const uint32_t oscPhase = osc->phase;
 	int16_t oscOut;
 
-	//const uint32_t inc = freq2PhaseIncr(osc->freq*osc->pitchMod*osc->modNodeValue);
-
 	const uint32_t index =  oscPhase;
 	uint32_t  itg	= index>>20;
 
@@ -122,7 +111,6 @@ int16_t calcSine(OscInfo* osc)
 	oscOut = sine_table[itg++];
 	float frac	= (index&0x7ffff)*0.0000019073486328125f;
 	oscOut += frac*(sine_table[itg] - oscOut);
-	//oscOut += frac*(oscOut - oscOut);
 #else
 	oscOut = sine_table[itg];
 #endif
@@ -141,7 +129,6 @@ void calcFmSineBlock(OscInfo* osc, int16_t* modBuffer, int16_t* buf, uint8_t siz
 		const uint32_t oscPhase = osc->phase;
 		int16_t oscOut ;
 
-		//const uint32_t inc = freq2PhaseIncr(osc->freq*osc->pitchMod*osc->modNodeValue);
 		const uint32_t index =  oscPhase + (((uint32_t)(modBuffer[i]*osc->fmMod))<<17);
 		uint32_t  itg	= index>>20;
 
@@ -149,24 +136,20 @@ void calcFmSineBlock(OscInfo* osc, int16_t* modBuffer, int16_t* buf, uint8_t siz
 		oscOut = sine_table[itg++];
 		const float frac	= (index&0x7ffff)*0.0000019073486328125f;
 		oscOut += frac*(sine_table[itg] - oscOut);
-		//oscOut += frac*(oscOut - oscOut);
 	#else
 		oscOut = sine_table[itg];
 	#endif
 
 		osc->phase = oscPhase + osc->phaseInc;
-		//osc->output = oscOut;
 		buf[i] =  oscOut * gain;
 	}
 }
 //-----------------------------------------------------------
 int16_t calcFmSine(OscInfo* osc, OscInfo* modOsc)
 {
-
 	const uint32_t oscPhase 	= osc->phase;
 	int16_t oscOut ;
 
-	//const uint32_t inc = freq2PhaseIncr(osc->freq*osc->pitchMod);
 	const uint32_t index =  oscPhase + (((uint32_t)(modOsc->output*osc->fmMod))<<17);
 	uint32_t  itg	= index>>20;
 
@@ -174,7 +157,6 @@ int16_t calcFmSine(OscInfo* osc, OscInfo* modOsc)
 	oscOut = sine_table[itg++];
 	const float frac	= (index&0x7ffff)*0.0000019073486328125f;
 	oscOut += frac*(sine_table[itg] - oscOut);
-	//oscOut += frac*(oscOut - oscOut);
 #else
 	oscOut = sine_table[itg];
 #endif
@@ -216,23 +198,14 @@ int16_t calcFm(OscInfo* osc, OscInfo* modOsc, const int16_t table[][1024])
 	const uint32_t oscPhase = osc->phase;
 	int16_t oscOut ;
 
-	//const float currentFreq = osc->freq*osc->pitchMod;
-	//const uint32_t inc = freq2PhaseIncr1024(currentFreq);
-
 	const uint32_t index =  oscPhase + (((uint32_t)(modOsc->output*osc->fmMod))<<19);
 
 	uint32_t  itg	= index>>22;
-
-	//uint8_t overtoneIndex = freqToTableIndex(currentFreq);
-	//overtoneIndex = overtoneIndex>10?10:overtoneIndex;
-
 
 #if INTERPOLATE_FM_OSC
 	oscOut = table[osc->tableOffset][itg++];
 	const float frac	= (index&0x003FFFFF)*2.38418579101562e-07f;
 	oscOut += frac*(table[osc->tableOffset][itg] - oscOut);
-//	oscOut += frac*(oscOut - oscOut);
-
 #else
 	oscOut = table[overtoneIndex][itg];
 #endif
@@ -275,7 +248,6 @@ void calcNextOscSampleFmBlock(OscInfo* osc, int16_t* modBuffer, int16_t* buf, ui
 			break;
 
 		}
-
 }
 //-----------------------------------------------------------
 int16_t calcNextOscSampleFm(OscInfo* osc,OscInfo* modOsc)
@@ -317,81 +289,24 @@ int16_t calcNextOscSampleFm(OscInfo* osc,OscInfo* modOsc)
 //-----------------------------------------------------------
 void calcNoiseBlock(OscInfo* osc, int16_t* buf, const uint8_t size ,const float gain)
 {
-
-
-
-#if 1 //use overflow flag
-
 	int i;
 	for(i=0;i<size;i++)
 	{
 		const uint32_t lastPhase = osc->phase;
 		osc->phase += osc->phaseInc;
 
-		//check overflow flag, ( if osc->phase == osc->phaseInc a reset occured ==> retrigger, too
-		/*
-		APSR_Type apsr;
-		apsr.w = __get_APSR();
-		if(apsr.b.V )//||  (osc->phase == osc->phaseInc))
-		*/
 		if(lastPhase > osc->phase)
 		{
 			//overflow happened -> phaseWrapped
 			osc->output = GetRngValue(); //normal pitched white noise
-/*
-			uint16_t rnd = GetRngValue();
-			if( rnd > 0x00ff)
-			{
-				if( rnd > 0x000f)
-				{
-					osc->output = 30000;//32767;
-
-				}
-				else
-				{
-					osc->output = 30000;//-32768;
-				}
-
-			}
-
-*/
-
-
 		}
-		/*
-		else
-		{
-				osc->output = 0;
-		}
-		*/
+
 		buf[i] = osc->output * gain;
 	}
-#else
-	int i;
-	for(i=0;i<size;i++)
-	{
-		const uint32_t lastPhase = osc->phase;
-		//TODO check C: Carry (or Unsigned Overflow) flag instead of compare with old value
-		osc->phase = lastPhase + osc->phaseInc;
-
-		if(lastPhase>osc->phase)
-		{
-			osc->output = (GetRngValue()&0xffff) * gain;
-
-		}
-		buf[i] = osc->output;
-	}
-
-#endif
 }
 //-----------------------------------------------------------
 int16_t calcNoise(OscInfo* osc)
 {
-
-
-#if 1 //use overflow flag
-
-
 	osc->phase += osc->phaseInc;
 
 	//check overflow flag, ( if osc->phase == osc->phaseInc a reset occured ==> retrigger, too
@@ -400,7 +315,6 @@ int16_t calcNoise(OscInfo* osc)
 	if(apsr.b.V ||  (osc->phase == osc->phaseInc))
 	{
 		//overflow happened -> phaseWrapped
-		//osc->output = GetRngValue(); //normal pitched white noise
 
 		uint16_t rnd = GetRngValue();
 		if( rnd > 0x00ff)
@@ -415,33 +329,12 @@ int16_t calcNoise(OscInfo* osc)
 			}
 
 		}
-
-
-
 	}
 	else
 	{
 			osc->output = 0;
 	}
 	return osc->output;
-#else
-//	const uint32_t inc = freq2PhaseIncr(osc->freq*osc->pitchMod);
-	const uint32_t lastPhase = osc->phase;
-	//TODO check C: Carry (or Unsigned Overflow) flag instead of compare with old value
-
-
-
-	osc->phase = lastPhase + osc->phaseInc;
-
-
-
-	if(lastPhase>osc->phase)
-	{
-		osc->output = GetRngValue();
-
-	}
-	return osc->output;
-#endif
 }
 //-----------------------------------------------------------
 void calcNextOscSampleBlock(OscInfo* osc, int16_t* buf, const uint8_t size, const float gain)
@@ -477,8 +370,6 @@ void calcNextOscSampleBlock(OscInfo* osc, int16_t* buf, const uint8_t size, cons
 		}
 }
 //-----------------------------------------------------------
-
-// calculate an oscillator
 int16_t calcNextOscSample(OscInfo* osc)
 {
 	switch(osc->waveform)
@@ -529,13 +420,11 @@ void calcWavetableOscBlock(OscInfo* osc, const int16_t table[][1024], int16_t* b
 			oscOut = table[osc->tableOffset][itg++];
 			const float frac = (itg&0x003FFFFF)*2.38418579101562e-07f; //2.38... => 1.f/0x3fffff
 			oscOut += frac*(table[osc->tableOffset][itg] - oscOut);
-			//oscOut += frac*(oscOut - oscOut);
 		#else
 			oscOut = table[osc->tableOffset][itg];
 		#endif
 
 			osc->phase = oscPhase + osc->phaseInc;
-			//osc->output = oscOut;
 			buf[i] = oscOut * gain;
 	}
 }
@@ -546,20 +435,13 @@ int16_t calcWavetableOsc(OscInfo* osc,  const int16_t table[][1024])
 	const uint32_t oscPhase = osc->phase;
 	int16_t oscOut ;
 
-//	const float currentFreq = osc->freq*osc->pitchMod;
-//	const uint32_t inc = freq2PhaseIncr1024(currentFreq);
-
 	uint32_t  itg	= oscPhase>>22;
-
-	//uint8_t overtoneIndex = freqToTableIndex(currentFreq);
-	//overtoneIndex = overtoneIndex>10?10:overtoneIndex;
 
 #if INTERPOLATE_OSC
 	//todo use ldm instead of ldr to laod multiple values from memory
 	oscOut = table[osc->tableOffset][itg++];
 	const float frac = (itg&0x003FFFFF)*2.38418579101562e-07f; //2.38... => 1.f/0x3fffff
 	oscOut += frac*(table[osc->tableOffset][itg] - oscOut);
-	//oscOut += frac*(oscOut - oscOut);
 #else
 	oscOut = table[osc->tableOffset][itg];
 #endif
@@ -578,7 +460,6 @@ void calcSampleOscFmBlock(OscInfo* osc,int16_t* modBuffer, int16_t* buf, uint8_t
 		const uint32_t oscPhase 	= osc->phase;
 		int16_t oscOut ;
 
-	//	const uint32_t inc = freq2PhaseIncr32767(osc->freq*osc->pitchMod);
 		const uint32_t index =  oscPhase + (((uint32_t)(modBuffer[i]*osc->fmMod))<<14);
 		uint32_t  itg	= index>>17;
 
@@ -586,7 +467,6 @@ void calcSampleOscFmBlock(OscInfo* osc,int16_t* modBuffer, int16_t* buf, uint8_t
 		oscOut = crashSample[itg++];
 		const float frac	= (index&20000)*0.00000762939453125f;//=> * 1/0x20000
 		oscOut += frac*(crashSample[itg] - oscOut);
-		//oscOut += frac*(oscOut - oscOut);
 	#else
 		oscOut = crashSample[itg];
 	#endif
@@ -605,7 +485,6 @@ int16_t calcSampleOscFm(OscInfo* osc, OscInfo* modOsc)
 	const uint32_t oscPhase 	= osc->phase;
 	int16_t oscOut ;
 
-//	const uint32_t inc = freq2PhaseIncr32767(osc->freq*osc->pitchMod);
 	const uint32_t index =  oscPhase + (((uint32_t)(modOsc->output*osc->fmMod))<<14);
 	uint32_t  itg	= index>>17;
 
@@ -613,7 +492,6 @@ int16_t calcSampleOscFm(OscInfo* osc, OscInfo* modOsc)
 	oscOut = crashSample[itg++];
 	const float frac	= (index&20000)*0.00000762939453125f;//=> * 1/0x20000
 	oscOut += frac*(crashSample[itg] - oscOut);
-	//oscOut += frac*(oscOut - oscOut);
 #else
 	oscOut = crashSample[itg];
 #endif
@@ -640,14 +518,12 @@ void calcSampleOscBlock(OscInfo* osc, int16_t* buf, const uint8_t size ,const fl
 		oscOut = crashSample[itg++];
 		const float frac = (oscPhase&20000)*0.00000762939453125f;//=> * 1/0x20000
 		oscOut += frac*(crashSample[itg] - oscOut);
-		//oscOut += frac*(oscOut - oscOut);
 	#else
 		oscOut = crashSample[itg];
 	#endif
 		oscOut = (oscOut - 127)*256;
 
 		osc->phase = oscPhase + osc->phaseInc;
-		//osc->output = oscOut;
 		buf[i] = oscOut * gain;
 	}
 }
@@ -657,21 +533,13 @@ int16_t calcSampleOsc(OscInfo* osc)
 	const uint32_t oscPhase = osc->phase;
 	int16_t oscOut ;
 
-	/*
-	const float currentFreq = osc->freq*osc->pitchMod;
-	const uint32_t inc = freq2PhaseIncr32767(currentFreq);
-	*/
-
 	uint32_t  itg	= oscPhase>>17;
-
-
 
 #if INTERPOLATE_OSC
 	//todo use ldm instead of ldr to laod multiple values from memory
 	oscOut = crashSample[itg++];
 	const float frac = (oscPhase&20000)*0.00000762939453125f;//=> * 1/0x20000
 	oscOut += frac*(crashSample[itg] - oscOut);
-	//oscOut += frac*(oscOut - oscOut);
 #else
 	oscOut = crashSample[itg];
 #endif
@@ -748,21 +616,12 @@ void osc_calcSampleFreq(OscInfo* osc)
 	 //get fine tune
 	 const float cent = midiParser_calcDetune(osc->midiFreq&0xff);
 	 //calc coarse tune
-	// uint16_t note =  MidiNoteFrequencies[osc->midiFreq>>8] + baseNote;
 	 int16_t note =  (osc->midiFreq>>8) + (baseNote-SEQ_DEFAULT_NOTE);
 	 if(note>127)note=127;
 	 if(note<0)note=0;
 
-	 /*
-	 if(note>=128)
-		 osc->freq = MidiNoteFrequencies[127]*cent;
-	 else
-		 */
-		 osc->freq = MidiNoteFrequencies[note]*cent;
-
+	 osc->freq = MidiNoteFrequencies[note]*cent;
 	 osc->baseNote = baseNote;
-
-	 //TODO midiParser muss noch angepasst werden und die base note wohl gespeichert. sonst tut modulieren per midi nicht
  };
 
  //-----------------------------------------------------------
@@ -771,17 +630,11 @@ void osc_calcSampleFreq(OscInfo* osc)
 	 //get fine tune
 	 const float cent = midiParser_calcDetune(osc->midiFreq&0xff);
 	 //calc coarse tune
-	 //uint16_t note =  MidiNoteFrequencies[osc->midiFreq>>8] + osc->baseNote;
 	 int16_t note =  (osc->midiFreq>>8) + (osc->baseNote-SEQ_DEFAULT_NOTE);
 
 	 if(note>127)note=127;
-	 	 if(note<0)note=0;
-/*
-	 if(note>=128)
-		 osc->freq = MidiNoteFrequencies[127]*cent;
-	 else
-		 */
-		 osc->freq = MidiNoteFrequencies[note]*cent;
+ 	 if(note<0)note=0;
 
+	 osc->freq = MidiNoteFrequencies[note]*cent;
  }
  //-----------------------------------------------------------

@@ -44,18 +44,12 @@
 void slopeEg2_init(SlopeEg2* eg)
 {
 	eg->attack	= 0.01f;
-	eg->decay = 0.01f;
+	eg->decay 	= 0.01f;
 	eg->value 	= 0;
 	eg->state 	= EG_STOPPED;
-
 	eg->repeat	= 0;
 
-	//eg->targetValue = 1;
-
 	slopeEg2_setSlope(eg,0.5f);
-
-//	initOnePole(&eg->filter);
-
 }
 //--------------------------------------------------
 void slopeEg2_trigger(SlopeEg2* eg)
@@ -73,26 +67,16 @@ void slopeEg2_trigger(SlopeEg2* eg)
 		//we use the attack time as a repeat phase decay time
 		 eg->value = 1.0f;
 	}
-//	setOnePoleCoef(&eg->filter,eg->a);
-//	eg->sampleToProcess = eg->attackTimeSamples;
-//	eg->targetValue = 1;
 	eg->repeatCnt = eg->repeat;
 }
 //--------------------------------------------------
 float slopeEg2_calcSlopeValue(float val, float slope)
 {
 	return (1+slope)*val/(1+slope*fabsf(val));
-
-	/*
-	 x = (1+slope)*val /  (1+slope*fabsf(val));
-	 x *(1+slope*fabsf(val))  / (1+slope)*val	= 1;
-
-	 */
 }
 //--------------------------------------------------
 float slopeEg2_calc(SlopeEg2* eg)
 {
-
 	register float val = eg->value;
 	switch(eg->state)
 	{
@@ -116,16 +100,13 @@ float slopeEg2_calc(SlopeEg2* eg)
 			if(eg->repeatCnt > 0)
 			{
 				//retrigger the decay phase and decrease repeat counter
-
 				val = 1.f;
-
 			}
 			else
 			{
 				//repeat counter reached zero -> go to real decay stage
 				eg->state = EG_D;
 				val = 1.f;
-				//return 1.f;
 			}
 		}
 		eg->value = val;
@@ -134,35 +115,11 @@ float slopeEg2_calc(SlopeEg2* eg)
 
 		break;
 	case EG_A:
-		//val = calcOnePole(&eg->filter,1.1f);
 		val += eg->attack;
-
 		if(val >= 1.0f)
 		{
-
 			val = 1.0f;
-
-			/*
-			 //removed - this code segment would repeat an rising attack phase which is not what we want
-
-			if(eg->repeatCnt > 0)
-			{
-				eg->repeatCnt--;
-				//setOnePoleValue(&eg->filter,0);
-				val = 0;
-				//eg->sampleToProcess = eg->attackTimeSamples;
-
-			}
-			else
-			{
-				*/
-				eg->state = EG_D;
-				//eg->sampleToProcess = eg->decayTimeSamples;
-				//setOnePoleCoef(&eg->filter,eg->d);
-				//eg->targetValue = 0;
-				/*
-			}
-			*/
+			eg->state = EG_D;
 		}
 
 		eg->value = val;
@@ -174,7 +131,6 @@ float slopeEg2_calc(SlopeEg2* eg)
 
 		if(val>0)
 		{
-			//val = calcOnePole(&eg->filter,0.f);
 			val -= eg->decay;
 			eg->value = val;
 			return slopeEg2_calcSlopeValue(val,eg->slope);
@@ -184,9 +140,6 @@ float slopeEg2_calc(SlopeEg2* eg)
 			eg->value = 0;
 			return 0;
 		}
-		//return val;
-
-
 		break;
 	}
 	return 0;

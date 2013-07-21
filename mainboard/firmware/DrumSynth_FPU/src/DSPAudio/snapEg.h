@@ -39,10 +39,8 @@
 
 #include "stm32f4xx.h"
 
-
 typedef struct Snap_EG_Struct
 {
-
 	float value;
 } SnapEg;
 

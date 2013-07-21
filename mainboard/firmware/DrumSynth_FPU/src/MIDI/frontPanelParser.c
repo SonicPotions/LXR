@@ -81,12 +81,8 @@ uint8_t frontParser_shownPattern = 0;
 /**send all active step numbers to frontpanel to light up corresponding LEDs*/
 void frontParser_updateTrackLeds(const uint8_t trackNr, uint8_t patternNr)
 {
-
-
 	if(trackNr<=6)
 	{
-
-		//uint8_t range = frontParser_lastRequestedStep/8;
 
 		frontParser_activeFrontTrack = trackNr;
 
@@ -102,20 +98,15 @@ void frontParser_updateTrackLeds(const uint8_t trackNr, uint8_t patternNr)
 			}
 		}
 
-
-		//for(i=0;i<128;i++)
 		uint8_t start = (frontParser_activeStep/8)*8;
 		for(i=start;i<(start+8);i++) //only send visible substeps
 		{
-
 			if(seq_isStepActive(trackNr,i,patternNr))
 			{
 				uart_sendFrontpanelByte(FRONT_STEP_LED_STATUS_BYTE);
 				uart_sendFrontpanelByte(FRONT_LED_SEQ_SUB_STEP);
 				uart_sendFrontpanelByte(i);
 			}
-
-
 		}
 	}
 }
@@ -124,7 +115,7 @@ void frontParser_parseUartData(unsigned char data)
 {
 
 	//TODO der ganze sysex kram kann sicher noch optimiert werden
-	//das das nicht andauernd abgefragt werdne muss
+	//das das nicht andauernd abgefragt werden muss
 
 	// if high byte set a new message starts
 	if(data&0x80)
@@ -134,19 +125,15 @@ void frontParser_parseUartData(unsigned char data)
 		frontParser_midiMsg.status = data;
 		if(data==SYSEX_START)
 		{
-			//set sysexActive flag != 0 to ommit any other data being send back to the front
-
 			frontParser_sysexActive = SYSEX_ACTIVE_MODE_NONE;
 			uart_clearFrontFifo();
 
 			//send SYSEX_START as ACK
 			uart_sendFrontpanelSysExByte(SYSEX_START);
 		}
-		else //if (frontParser_midiMsg.status == SYSEX_END)
+		else
 		{
 			frontParser_sysexActive = SYSEX_INACTIVE;
-			//send SYSEX_END as ACK
-			//uart_sendFrontpanelSysExByte(SYSEX_END);
 		}
 	}
 	else
@@ -160,7 +147,6 @@ void frontParser_parseUartData(unsigned char data)
 			// so when the SYSEX_START is received, all other communication is stopped until theSYSEX_END message is received
 			// no abort and no manufacturer id is supported
 
-			//else
 			{
 				//we have received sysex data
 				//first we receive a mode message
@@ -245,7 +231,7 @@ void frontParser_parseUartData(unsigned char data)
 						uint16_t mainStepData = frontParser_sysexBuffer[0] | frontParser_sysexBuffer[1]<<7 | frontParser_sysexBuffer[2]<<14;
 
 						//first load into inactive track
-						PatternSet* patternSet = &seq_patternSet;//seq_getInactivePatternSet();
+						PatternSet* patternSet = &seq_patternSet;
 
 						if( (currentPattern == seq_activePattern) && seq_isRunning() )
 						{
@@ -253,7 +239,7 @@ void frontParser_parseUartData(unsigned char data)
 						} else {
 							patternSet->seq_mainSteps[currentPattern][currentTrack] = mainStepData;
 						}
-						//seq_patternSet.seq_mainSteps[currentPattern][currentTrack] = mainStepData;
+
 
 						//inc the step counter
 						frontParser_sysexSeqStepNr++;
@@ -272,10 +258,6 @@ void frontParser_parseUartData(unsigned char data)
 					if(frontParser_rxCnt<7)
 					{
 						frontParser_sysexBuffer[frontParser_rxCnt++] = data;
-					//	lcd_setcursor(5,2);
-					//	itoa(frontParser_rxCnt,text,10);
-					//	lcd_string(text);
-
 					}
 					else
 					{
@@ -293,7 +275,6 @@ void frontParser_parseUartData(unsigned char data)
 						const uint8_t currentPattern 	= absPat - currentTrack*8;
 						const uint8_t currentStep		= frontParser_sysexSeqStepNr - absPat*128;
 
-						//PatternSet* patternSet = seq_getInactivePatternSet();
 						PatternSet* patternSet = &seq_patternSet;
 
 						//do not overwrite playing pattern
@@ -323,21 +304,11 @@ void frontParser_parseUartData(unsigned char data)
 
 						//inc the step counter
 						frontParser_sysexSeqStepNr++;
-
-						//lcd_setcursor(5,2);
-						//lcd_string("complete");
 					}
 
 					break;
-
-
 				}
-
-
-
-
 			}
-
 		}
 
 //normal operation
@@ -360,33 +331,20 @@ void frontParser_parseUartData(unsigned char data)
 //MIDI SYNTH MESSAGES
 			case MIDI_CC:
 
-				//correct parameter number offset
-				frontParser_midiMsg.data1 += 1;
+			//correct parameter number offset
+			frontParser_midiMsg.data1 += 1;
 
-				/*
-				if((frontParser_midiMsg.data1 >=OSC_WAVE_DRUM1) && (frontParser_midiMsg.data1 <=WAVE3_HH))
-				{
-					//frontParser_midiMsg.data2 /= (127/5);
-					//frontParser_midiMsg.data2 = frontParser_midiMsg.data2;///127.f * 5;
-				}
-				*/
+			//fix offset between front an cortex
+			// front params start at 1, cortex at 2 (because of midi in mod wheel==0x1
 
+			//because hh slope on front is 127 and on cortex is 0 wrap data1 at 127
+			frontParser_midiMsg.data1 &= 0x7f;
 
-				//fix offset between front an cortex
-				// front params start at 1, cortex at 2 (because of midi in mod wheel==0x1
+			midiParser_ccHandler(frontParser_midiMsg,1);
 
-				//because hh slope on front is 127 and on cortex is 0 wrap data1 at 127
-				frontParser_midiMsg.data1 &= 0x7f;
-
-
-				//usb_sendMidi(frontParser_midiMsg.status, frontParser_midiMsg.data1, frontParser_midiMsg.data2);
-
-				midiParser_ccHandler(frontParser_midiMsg,1);
-
-
-				//record automation if record is turned on
-				seq_recordAutomation(frontParser_activeTrack, frontParser_midiMsg.data1, frontParser_midiMsg.data2);
-				break;
+			//record automation if record is turned on
+			seq_recordAutomation(frontParser_activeTrack, frontParser_midiMsg.data1, frontParser_midiMsg.data2);
+			break;
 
 
 			case FRONT_CC_LFO_TARGET:
@@ -423,21 +381,18 @@ void frontParser_parseUartData(unsigned char data)
 			case FRONT_SET_P1_DEST: {
 					uint8_t hi = frontParser_midiMsg.data1;
 					uint8_t lo = frontParser_midiMsg.data2;
-					//seq_patternSet.seq_subStepPattern[seq_activePattern][frontParser_activeTrack][seq_selectedStep].param1Nr = ((hi<<7)|lo);
 					seq_patternSet.seq_subStepPattern[frontParser_shownPattern][frontParser_activeTrack][seq_selectedStep].param1Nr = ((hi<<7)|lo);
 				}
 				break;
 			case FRONT_SET_P2_DEST: {
 					uint8_t hi = frontParser_midiMsg.data1;
 					uint8_t lo = frontParser_midiMsg.data2;
-					//seq_patternSet.seq_subStepPattern[seq_activePattern][frontParser_activeTrack][seq_selectedStep].param2Nr = (hi<<7)|lo;
 					seq_patternSet.seq_subStepPattern[frontParser_shownPattern][frontParser_activeTrack][seq_selectedStep].param2Nr = (hi<<7)|lo;
 				}
 				break;
 			case FRONT_SET_P1_VAL: {
 					uint8_t stepNr = frontParser_midiMsg.data1;
 					uint8_t value = frontParser_midiMsg.data2;
-					//seq_patternSet.seq_subStepPattern[seq_activePattern][frontParser_activeTrack][stepNr].param1Val = value;
 					seq_patternSet.seq_subStepPattern[frontParser_shownPattern][frontParser_activeTrack][stepNr].param1Val = value;
 
 				}
@@ -445,7 +400,6 @@ void frontParser_parseUartData(unsigned char data)
 			case FRONT_SET_P2_VAL: {
 					uint8_t stepNr = frontParser_midiMsg.data1;
 					uint8_t value = frontParser_midiMsg.data2;
-					//seq_patternSet.seq_subStepPattern[seq_activePattern][frontParser_activeTrack][stepNr].param2Val = value;
 					seq_patternSet.seq_subStepPattern[frontParser_shownPattern][frontParser_activeTrack][stepNr].param2Val = value;
 				}
 				break;
@@ -491,18 +445,9 @@ void frontParser_parseUartData(unsigned char data)
 					uint8_t patternNr 	= frontParser_midiMsg.data1 & 0x7;
 					uint8_t stepNr 		= frontParser_midiMsg.data2;
 
-
 					//toggle the step in the seq
 					seq_toggleStep(voiceNr, stepNr, patternNr);
-/*
-					//if step active send led on message to front
-					if(seq_isStepActive(voiceNr, stepNr, patternNr))
-					{
-						uart_sendFrontpanelByte(FRONT_STEP_LED_STATUS_BYTE);
-						uart_sendFrontpanelByte(FRONT_LED_SEQ_BUTTON);
-						uart_sendFrontpanelByte(stepNr);
-					}
-					*/
+
 				}
 				break;
 
@@ -513,68 +458,17 @@ void frontParser_parseUartData(unsigned char data)
 					uint8_t value = ((upper&0x01)<<7) | lower;
 					uint8_t velModNr = (upper&0xfe)>>1;
 					modNode_setDestination(&velocityModulators[velModNr], value);
-
 				}
 				break;
 //CC2 above 127
 
 			case FRONT_CC_2:
-			{
-				midiParser_ccHandler(frontParser_midiMsg,1);
-
-				//record automation if record is turned on
-				seq_recordAutomation(frontParser_activeTrack, frontParser_midiMsg.data1+128, frontParser_midiMsg.data2);
-
-				/*
-				switch(frontParser_midiMsg.data1)
 				{
+					midiParser_ccHandler(frontParser_midiMsg,1);
 
-				case PAR_FILTER_FREQ_DRUM1:
-							case PAR_FILTER_FREQ_DRUM2:
-							case PAR_FILTER_FREQ_DRUM3:
-							{
-								const float f = frontParser_midiMsg.data2/127.f;
-								//exponential full range freq
-								SVF_directSetFilterValue(&voiceArray[frontParser_midiMsg.data1-PAR_FILTER_FREQ_DRUM1].filter,f*f*f );
-							}
-								break;
-							case PAR_RESO_DRUM1:
-							case PAR_RESO_DRUM2:
-							case PAR_RESO_DRUM3:
-								SVF_setReso(&voiceArray[frontParser_midiMsg.data1-PAR_RESO_DRUM1].filter, frontParser_midiMsg.data2/127.f);
-								break;
-							case PAR_FILTER_TYPE_DRUM1:
-							case PAR_FILTER_TYPE_DRUM2:
-							case PAR_FILTER_TYPE_DRUM3:
-								voiceArray[frontParser_midiMsg.data1-PAR_FILTER_TYPE_DRUM1].filterType = frontParser_midiMsg.data2;
-								break;
-							case PAR_FILTER_TYPE2:
-								//cymbal filter
-								cymbalVoice.filterType = frontParser_midiMsg.data2;
-								break;
-							case PAR_FILTER_TYPE3:
-								//Hihat filter
-								hatVoice.filterType = frontParser_midiMsg.data2;
-								break;*/
-				/*
-				case PAR_PHASE_VOICE1:
-				case PAR_PHASE_VOICE2:
-				case PAR_PHASE_VOICE3:
-					drum_setPhase(frontParser_midiMsg.data2,frontParser_midiMsg.data1-PAR_PHASE_VOICE1);
-					break;
-				case PAR_PHASE_VOICE4:
-				case PAR_PHASE_VOICE5:
-				case PAR_PHASE_VOICE6:
-
-					break;
-*/
+					//record automation if record is turned on
+					seq_recordAutomation(frontParser_activeTrack, frontParser_midiMsg.data1+128, frontParser_midiMsg.data2);
 				}
-
-				break;
-//Codec Control messages
-			case FRONT_CODEC_CONTROL:
-
-
 				break;
 
 //preset messages
@@ -598,36 +492,11 @@ void frontParser_parseUartData(unsigned char data)
 				break;
 #endif
 
-//VOICE option Messages
-
+			//VOICE option Messages
 			case VOICE_CC:
-				switch(frontParser_midiMsg.data1)
-				{
-
-				/*
-				case VOICE_AUDIO_OUT:
-					{
-						mixer_audioRouting[frontParser_activeTrack] = frontParser_midiMsg.data2;
-					}
-					break;
-					*/
-
-				case VOICE_MIDI_CHAN:
-
-					break;
-/*
-				case VOICE_DECIMATION:
-#if USE_DECIMATOR
-					mixer_decimation_rate[frontParser_activeTrack] = valueShaperI2F(frontParser_midiMsg.data2,-0.7f);
-
-					//mixer_decimation_rate[frontParser_activeTrack] = (frontParser_midiMsg.data2/127.f) * (frontParser_midiMsg.data2/127.f)* (frontParser_midiMsg.data2/127.f);
-#endif
-					break;*/
-				}
 				break;
 
-
-				//BPM MESSAGE
+			//BPM MESSAGE
 			case FRONT_SET_BPM: {
 					uint16_t bpm = frontParser_midiMsg.data1 |(uint16_t)(frontParser_midiMsg.data2<<7);
 					if(bpm == 0) {
@@ -640,7 +509,7 @@ void frontParser_parseUartData(unsigned char data)
 					}
 				}
 				break;
-//SEQ MESSAGES
+			//SEQ MESSAGES
 			case FRONT_SEQ_CC:
 				switch(frontParser_midiMsg.data1)
 				{
@@ -689,11 +558,8 @@ void frontParser_parseUartData(unsigned char data)
 						length += 1;
 						uint8_t pattern = frontParser_midiMsg.data2 & 0x7;
 
-						//const uint8_t currentLength = euklid_getLength(frontParser_activeTrack);
-						//if(currentLength != length)
 						{
 							euklid_setLength(frontParser_activeTrack, length, pattern);
-						//	frontParser_updateTrackLeds(frontParser_activeTrack, pattern);
 						}
 					}
 					break;
@@ -704,12 +570,8 @@ void frontParser_parseUartData(unsigned char data)
 						steps += 1;
 						uint8_t pattern = frontParser_midiMsg.data2 & 0x7;
 
-						//const uint8_t currentSteps = euklid_getSteps(frontParser_activeTrack);
-						//if(currentSteps != steps)
-						{
-							euklid_setSteps(frontParser_activeTrack,steps,pattern);
-							frontParser_updateTrackLeds(frontParser_activeTrack, pattern);
-						}
+						euklid_setSteps(frontParser_activeTrack,steps,pattern);
+						frontParser_updateTrackLeds(frontParser_activeTrack, pattern);
 					}
 					break;
 
@@ -876,14 +738,6 @@ void frontParser_parseUartData(unsigned char data)
 				}
 					break;
 
-					/*
-				case FRONT_SEQ_GET_ACTIVE_PAT:
-					uart_sendFrontpanelByte(FRONT_SEQ_CC);
-					uart_sendFrontpanelByte(FRONT_SEQ_GET_ACTIVE_PAT);
-					uart_sendFrontpanelByte(seq_activePattern);
-					break;
-					*/
-
 				case FRONT_SEQ_CHANGE_PAT:
 					//switch to one of the 8 patterns on the next pattern start
 					seq_setNextPattern(frontParser_midiMsg.data2&0x7);
@@ -893,28 +747,6 @@ void frontParser_parseUartData(unsigned char data)
 				case FRONT_SEQ_RUN_STOP:
 					seq_setRunning(frontParser_midiMsg.data2);
 					break;
-
-					/*
-				case FRONT_SEQ_V1_TOGGLE_STEP:
-				case FRONT_SEQ_V2_TOGGLE_STEP:
-				case FRONT_SEQ_V3_TOGGLE_STEP:
-				case FRONT_SEQ_V4_TOGGLE_STEP:
-				case FRONT_SEQ_V5_TOGGLE_STEP:
-				case FRONT_SEQ_V6_TOGGLE_STEP:
-				case FRONT_SEQ_V7_TOGGLE_STEP:
-					//toggle the step in the seq
-					seq_toggleStep(frontParser_midiMsg.data1-FRONT_SEQ_V1_TOGGLE_STEP,frontParser_midiMsg.data2);
-
-					//if step active send led on message to front
-					if(seq_isStepActive(frontParser_midiMsg.data1-FRONT_SEQ_V1_TOGGLE_STEP,frontParser_midiMsg.data2))
-					{
-						uart_sendFrontpanelByte(FRONT_STEP_LED_STATUS_BYTE);
-						uart_sendFrontpanelByte(FRONT_LED_SEQ_BUTTON);
-						uart_sendFrontpanelByte(frontParser_midiMsg.data2);
-					}
-
-					break;
-					*/
 
 				case FRONT_SEQ_MUTE_TRACK:
 					seq_setMute(frontParser_midiMsg.data2,1);
@@ -928,15 +760,15 @@ void frontParser_parseUartData(unsigned char data)
 					break;
 				}
 				break;
-//LED MESSAGES
+
+
+			//LED MESSAGES
 			case FRONT_STEP_LED_STATUS_BYTE:
 				switch(frontParser_midiMsg.data1)
 				{
 					//send all active step numbers to frontpanel to light up corresponding LEDs
 					case FRONT_LED_QUERY_SEQ_TRACK:
 					{
-
-
 						uint8_t trackNr = frontParser_midiMsg.data2 >> 4;
 						uint8_t patternNr = frontParser_midiMsg.data2 & 0x7;
 
@@ -953,10 +785,7 @@ void frontParser_parseUartData(unsigned char data)
 					break;
 				}
 				break;
-
 			}
-
-
 		}
 	}
 };

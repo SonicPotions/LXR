@@ -135,23 +135,6 @@ void lfo_dispatchNextValue(Lfo* lfo)
 //-------------------------------------------------------------
 uint32_t lfo_calcPhaseInc(float freq, uint8_t sync)
 {
-	/*
-	0 - no sync
-	1	4/1
-	2	2/1
-	3 - 1/1
-	4 - 1/2
-	5 - 1/3
-	6 - 1/4
-	7 - 1/6
-	8 - 1/8
-	9 - 1/12
-	10 - 1/16
-	11 - 1/32
-	*/
-
-
-
 	if(sync==0)//no sync
 	{
 		return freq/(LFO_SR) * 0xffffffff;

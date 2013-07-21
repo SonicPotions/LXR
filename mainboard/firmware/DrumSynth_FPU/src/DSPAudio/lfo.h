@@ -61,14 +61,14 @@
 //-------------------------------------------------------------
 typedef struct LfoStruct
 {
-	uint32_t phase;		// the current phase of the LFO (upper bits cnt 0-255)
-	uint32_t phaseInc;	// the phase increment controls the LFO frequency
-	uint8_t waveform;	// selects the waveform
-	uint8_t retrigger;	// defines the voice nr that retriggers the LFO (0=no retrigger)
-	uint32_t phaseOffset;// the phase value to which the LFO is retriggered
-	float rnd;
-	uint8_t sync;
-	float freq;
+	uint32_t 	phase;		// the current phase of the LFO (upper bits cnt 0-255)
+	uint32_t 	phaseInc;	// the phase increment controls the LFO frequency
+	uint8_t 	waveform;	// selects the waveform
+	uint8_t 	retrigger;	// defines the voice nr that retriggers the LFO (0=no retrigger)
+	uint32_t 	phaseOffset;// the phase value to which the LFO is retriggered
+	float 		rnd;
+	uint8_t 	sync;
+	float 		freq;
 	ModulationNode modTarget;
 	float		modNodeValue;
 } Lfo;

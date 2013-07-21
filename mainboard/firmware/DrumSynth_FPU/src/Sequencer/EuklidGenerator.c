@@ -69,7 +69,6 @@ inline uint8_t getObjSize(uint16_t group)
 	return ret;
 }
 //-----------------------------------------------------
-
 void euklid_calcRecursive(uint8_t length, uint8_t steps, uint8_t iteration, uint16_t group1, uint16_t group2)
 {
 	int i,j;
@@ -94,7 +93,7 @@ void euklid_calcRecursive(uint8_t length, uint8_t steps, uint8_t iteration, uint
 	euklid_nextCnt1 = objectCnt1>objCnt2?objCnt2:objectCnt1;
 
 	//if the 2nd group has only 1 or less objects left
-	//the algorhythm has finished
+	//the algorithm has finished
 	//--> write the generated pattern to euklid_patternBuffer
 	if(objCnt2<=1 )
 	{
@@ -106,7 +105,6 @@ void euklid_calcRecursive(uint8_t length, uint8_t steps, uint8_t iteration, uint
 			{
 				if(group1&(1<<j))
 				{
-					//printf("x");
 					euklid_patternBuffer |= (1<<bufferPos);
 				}
 				bufferPos++;
@@ -119,7 +117,6 @@ void euklid_calcRecursive(uint8_t length, uint8_t steps, uint8_t iteration, uint
 			{
 				if(group2&(1<<j))
 				{
-					//printf("x");
 					euklid_patternBuffer |= (1<<bufferPos);
 				}
 				bufferPos++;
@@ -189,9 +186,7 @@ uint8_t euklid_getSteps(uint8_t trackNr)
 void euklid_setLength(uint8_t trackNr, uint8_t value, uint8_t patternNr)
 {
 	if(value<=0)value=1;
-//	if(value<euklid_steps[trackNr] ) euklid_steps[trackNr] = value;
 	euklid_length[trackNr] = value;
-//	euklid_generate(trackNr, patternNr);
 }
 //-----------------------------------------------------
 void euklid_setSteps(uint8_t trackNr, uint8_t value, uint8_t patternNr)
@@ -207,38 +202,14 @@ void euklid_setSteps(uint8_t trackNr, uint8_t value, uint8_t patternNr)
 void euklid_transferPattern(uint8_t trackNr, uint8_t patternNr)
 {
 	int i;
-
-
-	//TODO wäre schön wenn der originale noten wert erhalten bleibt...
-	//dazu wäre aber ein flag auf bit 8 nötig das auch vom sequencer verstanden wird
-	//copy the temp buffer to the current pattern track
-
 	seq_patternSet.seq_mainSteps[patternNr][trackNr] = euklid_patternBuffer;
 
-	//for(i=0;i<euklid_length[trackNr]*8;i++)
 	for(i=0;i<128;i++)
 	{
-		//if(seq_patternSet.seq_subStepPattern[patternNr][trackNr][i].note >= PATTERN_END_MASK)
 		if(seq_patternSet.seq_subStepPattern[patternNr][trackNr][i].note & PATTERN_END)
 		{
-			//TODO: Attention! this resets pitch information
-			//seq_patternSet.seq_subStepPattern[patternNr][trackNr][i].note = SEQ_DEFAULT_NOTE;
 			seq_patternSet.seq_subStepPattern[patternNr][trackNr][i].note &= ~PATTERN_END;
 		}
-
-		//if(((i%8)==0) && (euklid_patternBuffer&(  1<<(15-(i/8))  )  ))
-		/*
-		if((i%8==0) && (euklid_patternBuffer&(1<<(i/8)) )   )
-		{
-			seq_patternSet.seq_subStepPattern[patternNr][trackNr][i].volume |= STEP_ACTIVE_MASK;
-
-
-		}
-		else
-		{
-			seq_patternSet.seq_subStepPattern[patternNr][trackNr][i].volume &= ~STEP_ACTIVE_MASK;
-		}
-		*/
 	}
 	if(euklid_length[trackNr] <16)
 	{

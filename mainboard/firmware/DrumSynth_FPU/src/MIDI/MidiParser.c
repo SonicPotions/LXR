@@ -48,7 +48,6 @@
 #include "valueShaper.h"
 #include "modulationNode.h"
 #include "frontPanelParser.h"
-//#include "arm_math.h"
 
 static uint16_t midiParser_activeNrpnNumber = 0;
 
@@ -70,39 +69,15 @@ enum State
 #define NUM_LFO 6
 uint8_t midiParser_selectedLfoVoice[NUM_LFO] = {0,0,0,0,0,0};
 
-#if 0
-//static float amount = 0.99f;
-const float k = 2*0.99f/(1-0.99f);
-
-
-inline float calcEgTime(uint8_t data2)
-{
-	const float val = (data2+1)/128.f;
-
-	/*
-	//const float eg =EG_SPEED-val*EG_SPEED;
-	const float eg = 1.f-val;
-	return eg*eg*eg;
-	*/
-	//x = input in [-1..1]
-	//y = output
-
-
-	return 1- ((1+k)*val/(1+k*fabsf(val)));
-}
-#endif
 //----------------------------------------------------------
 inline uint16_t calcSlopeEgTime(uint8_t data2)
 {
-//	const float val = (data2+1)/128.f;
-	//return data2>0?( ((1+k2)*val/(1+k2*fabsf(val))))*4000:1;
 	float val = (data2+1)/128.f;
 	return data2>0?val*val*data2*128:1;
 }
 //-----------------------------------------------------------
 inline float calcPitchModAmount(uint8_t data2)
 {
-	//data2/127.f*PITCH_AMOUNT_FACTOR
 	const float val = data2/127.f;
 	return val*val*PITCH_AMOUNT_FACTOR;
 }
@@ -110,10 +85,10 @@ inline float calcPitchModAmount(uint8_t data2)
 //-----------------------------------------------------------
 // vars
 //-----------------------------------------------------------
-uint8_t midi_globalMidiChannel=0;			// the currently selected midi channel
-MidiMsg midiMsg_tmp;		// buffer message where the incoming data is stored
-uint8_t msgLength;			// number of following data bytes for current status
-uint8_t parserState = MIDI_STATUS;// state of the parser state machine
+uint8_t midi_globalMidiChannel=0;	// the currently selected midi channel
+MidiMsg midiMsg_tmp;				// buffer message where the incoming data is stored
+uint8_t msgLength;					// number of following data bytes for current status
+uint8_t parserState = MIDI_STATUS;	// state of the parser state machine
 //-----------------------------------------------------------
 //macros
 //-----------------------------------------------------------
@@ -139,23 +114,16 @@ float midiParser_calcDetune(uint8_t value)
 //-----------------------------------------------------------
 void midiParser_nrpnHandler(uint16_t value)
 {
-	//uint8_t paramNr = midiParser_activeNrpnNumber +128;	//nrpns control all midi cc values above 127
-
 	MidiMsg msg2;
 	msg2.status = MIDI_CC2;
 	msg2.data1 = midiParser_activeNrpnNumber;
 	msg2.data2 = value;
 	midiParser_ccHandler(msg2,true);
-	//modNode_originalValueChanged(paramNr);
 }
 //-----------------------------------------------------------
 /** handle all incoming CCs and invoke action*/
 void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 {
-
-
-
-
 	if(msg.status == MIDI_CC)
 	{
 
@@ -166,9 +134,7 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 
 		switch(msg.data1)
 		{
-		//case CC_BANK_CHANGE:
 
-			//break;
 		case CC_MOD_WHEEL:
 
 			break;
@@ -187,13 +153,6 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 			midiParser_activeNrpnNumber &= 0x7f;	//clear upper 7 bit
 			midiParser_activeNrpnNumber |= (msg.data2<<7);
 			break;
-		//case CC_ALL_SOUND_OFF:
-
-			//break;
-	//	case CC_ALL_NOTES_OFF:
-
-		//	break;
-
 
 		case VOL_SLOPE1:
 			slopeEg2_setSlope(&voiceArray[0].oscVolEg,msg.data2);
@@ -239,18 +198,12 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 			SVF_setReso(&voiceArray[msg.data1-RESO_DRUM1].filter, msg.data2/127.f);
 			break;
 
-
-
-
 		case F_OSC1_COARSE:
 		{
 			//clear upper nibble
 			voiceArray[0].osc.midiFreq &= 0x00ff;
 			//set upper nibble
 			voiceArray[0].osc.midiFreq |= msg.data2 << 8;
-
-			//const float cent = midiParser_calcDetune(voiceArray[0].osc.midiFreq&0xff);
-			//voiceArray[0].osc.freq = MidiNoteFrequencies[msg.data2]*cent;
 			osc_recalcFreq(&voiceArray[0].osc);
 		}
 			break;
@@ -260,8 +213,6 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 			voiceArray[1].osc.midiFreq &= 0x00ff;
 			//set upper nibble
 			voiceArray[1].osc.midiFreq |= msg.data2 << 8;
-			//const float cent = midiParser_calcDetune(voiceArray[1].osc.midiFreq&0xff);
-			//voiceArray[1].osc.freq = MidiNoteFrequencies[msg.data2]*cent;
 			osc_recalcFreq(&voiceArray[1].osc);
 		}
 				break;
@@ -271,8 +222,6 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 			voiceArray[2].osc.midiFreq &= 0x00ff;
 			//set upper nibble
 			voiceArray[2].osc.midiFreq |= msg.data2 << 8;
-			//const float cent = midiParser_calcDetune(voiceArray[2].osc.midiFreq&0xff);
-			//voiceArray[2].osc.freq = MidiNoteFrequencies[msg.data2]*cent;
 			osc_recalcFreq(&voiceArray[2].osc);
 		}
 				break;
@@ -282,8 +231,6 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 			snareVoice.osc.midiFreq &= 0x00ff;
 			//set upper nibble
 			snareVoice.osc.midiFreq |= msg.data2 << 8;
-			//const float cent = midiParser_calcDetune(snareVoice.osc.midiFreq&0xff);
-			//snareVoice.osc.freq = MidiNoteFrequencies[msg.data2]*cent;
 			osc_recalcFreq(&snareVoice.osc);
 		}
 				break;
@@ -293,8 +240,6 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 			cymbalVoice.osc.midiFreq &= 0x00ff;
 			//set upper nibble
 			cymbalVoice.osc.midiFreq |= msg.data2 << 8;
-		//	const float cent = midiParser_calcDetune(cymbalVoice.osc.midiFreq&0xff);
-			//cymbalVoice.osc.freq = MidiNoteFrequencies[msg.data2]*cent;
 			osc_recalcFreq(&cymbalVoice.osc);
 		}
 				break;
@@ -305,8 +250,6 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 			voiceArray[0].osc.midiFreq &= 0xff00;
 			//set lower nibble
 			voiceArray[0].osc.midiFreq |= msg.data2;
-		//	const float cent = midiParser_calcDetune(msg.data2);
-			//voiceArray[0].osc.freq = MidiNoteFrequencies[voiceArray[0].osc.midiFreq>>8]*cent;
 			osc_recalcFreq(&voiceArray[0].osc);
 		}
 			break;
@@ -316,8 +259,6 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 			voiceArray[1].osc.midiFreq &= 0xff00;
 			//set lower nibble
 			voiceArray[1].osc.midiFreq |= msg.data2;
-		//	const float cent = midiParser_calcDetune(msg.data2);
-			//voiceArray[1].osc.freq = MidiNoteFrequencies[voiceArray[1].osc.midiFreq>>8]*cent;
 			osc_recalcFreq(&voiceArray[1].osc);
 		}
 				break;
@@ -327,21 +268,11 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 			voiceArray[2].osc.midiFreq &= 0xff00;
 			//set lower nibble
 			voiceArray[2].osc.midiFreq |= msg.data2;
-			//const float cent = midiParser_calcDetune(msg.data2);
-			//voiceArray[2].osc.freq = MidiNoteFrequencies[voiceArray[2].osc.midiFreq>>8]*cent;
 			osc_recalcFreq(&voiceArray[2].osc);
 		}
 				break;
 		case F_OSC4_FINE:
 		{
-			/*
-			//clear lower nibble
-			voiceArray[3].osc.midiFreq &= 0xff00;
-			//set lower nibble
-			voiceArray[3].osc.midiFreq |= msg.data2;
-			const float cent = calcDetune(msg.data2);
-			voiceArray[3].osc.freq = MidiNoteFrequencies[voiceArray[3].osc.midiFreq>>8]*cent;
-			*/
 			//TODO hier sollte was hin
 		}
 				break;
@@ -381,56 +312,40 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 #else
 			setDistortionShape(&voiceArray[0].distortion,msg.data2);
 #endif
-			//voiceArray[0].distortion.shape = msg.data2/127.f;
-
 			break;
 		case OSC2_DIST:
-			//voiceArray[1].distortion.shape = msg.data2*msg.data2/140.f;
-
 #if USE_FILTER_DRIVE
 			voiceArray[1].filter.drive = 0.5f + (msg.data2/127.f)*6;
 #else
 			setDistortionShape(&voiceArray[1].distortion,msg.data2);
 #endif
-			//voiceArray[1].distortion.shape = msg.data2/127.f;
 			break;
 		case OSC3_DIST:
-			//voiceArray[2].distortion.shape = msg.data2*msg.data2/140.f;
 #if USE_FILTER_DRIVE
 			voiceArray[3].filter.drive = 0.5f + (msg.data2/127.f)*6;
 #else
 			setDistortionShape(&voiceArray[2].distortion,msg.data2);
 #endif
-			//voiceArray[2].distortion.shape = msg.data2/127.f;
 			break;
 
 		case VELOA1:
-			//	voiceArray[0].oscVolEg.a = calcEgTime(msg.data2);
 			slopeEg2_setAttack(&voiceArray[0].oscVolEg,msg.data2,AMP_EG_SYNC);
 			break;
 
 		case VELOD1:
 		{
-			//voiceArray[0].oscVolEg.d = calcEgTime(msg.data2);
 			slopeEg2_setDecay(&voiceArray[0].oscVolEg,msg.data2,AMP_EG_SYNC);
 		}
 			break;
-	/*
-		case PITCHA1:
-			voiceArray[0].oscPitchEg.a = msg.data2/127.f;
-			break;
-	*/
+
 		case PITCHD1:
 		{
-			//voiceArray[0].oscPitchEg.d = calcEgTime(msg.data2);
 			DecayEg_setDecay(&voiceArray[0].oscPitchEg,msg.data2);
 		}
 			break;
 
 		case MODAMNT1:
-			//voiceArray[0].egPitchModAmount = msg.data2/127.f*PITCH_AMOUNT_FACTOR;
 			voiceArray[0].egPitchModAmount = calcPitchModAmount(msg.data2);
-
 			break;
 
 		case FMAMNT1:
@@ -442,13 +357,7 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 			voiceArray[0].modOsc.midiFreq &= 0x00ff;
 			//set upper nibble
 			voiceArray[0].modOsc.midiFreq |= msg.data2 << 8;
-
-		//	const float cent = midiParser_calcDetune(voiceArray[0].modOsc.midiFreq&0xff);
-		//	voiceArray[0].modOsc.freq = MidiNoteFrequencies[msg.data2];//*cent;
 			osc_recalcFreq(&voiceArray[0].modOsc);
-
-
-
 			break;
 
 		case VOL1:
@@ -457,37 +366,27 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 
 		case PAN1:
 			setPan(0,msg.data2);
-			//voiceArray[0].pan = msg.data2/127.f;
 			break;
 
 		case VELOA2:
 		{
-			//voiceArray[1].oscVolEg.a = calcEgTime(msg.data2);
 			slopeEg2_setAttack(&voiceArray[1].oscVolEg,msg.data2,AMP_EG_SYNC);
 		}
 			break;
 
 			case VELOD2:
 			{
-				//voiceArray[1].oscVolEg.d = calcEgTime(msg.data2);
 				slopeEg2_setDecay(&voiceArray[1].oscVolEg,msg.data2,AMP_EG_SYNC);
 			}
 				break;
-	/*
-			case PITCHA2:
-				voiceArray[1].oscPitchEg.a = msg.data2/127.f;
-				break;
-				*/
 
 			case PITCHD2:
 			{
 				DecayEg_setDecay(&voiceArray[1].oscPitchEg,msg.data2);
-				//voiceArray[1].oscPitchEg.d = calcEgTime(msg.data2);
 			}
 				break;
 
 			case MODAMNT2:
-				//voiceArray[1].egPitchModAmount = msg.data2/127.f*PITCH_AMOUNT_FACTOR;
 				voiceArray[1].egPitchModAmount = calcPitchModAmount(msg.data2);
 				break;
 
@@ -500,11 +399,7 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 				voiceArray[1].modOsc.midiFreq &= 0x00ff;
 				//set upper nibble
 				voiceArray[1].modOsc.midiFreq |= msg.data2 << 8;
-
-			//	const float cent = midiParser_calcDetune(voiceArray[0].modOsc.midiFreq&0xff);
-			//	voiceArray[1].modOsc.freq = MidiNoteFrequencies[msg.data2];//*cent;
 				osc_recalcFreq(&voiceArray[1].modOsc);
-				//voiceArray[1].modOsc.freq = MidiNoteFrequencies[msg.data2];
 				break;
 
 			case VOL2:
@@ -513,37 +408,28 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 
 			case PAN2:
 				setPan(1,msg.data2);
-				//voiceArray[1].pan = msg.data2/127.f;
 				break;
 
 
 			case VELOA3:
 			{
 				slopeEg2_setAttack(&voiceArray[2].oscVolEg,msg.data2,AMP_EG_SYNC);
-				//voiceArray[2].oscVolEg.a = calcEgTime(msg.data2);
 			}
 				break;
 
 				case VELOD3:
 				{
-					//voiceArray[2].oscVolEg.d = calcEgTime(msg.data2);
 					slopeEg2_setDecay(&voiceArray[2].oscVolEg,msg.data2,AMP_EG_SYNC);
 				}
 					break;
-	/*
-				case PITCHA3:
-					voiceArray[2].oscPitchEg.a = msg.data2/127.f;
-					break;
-	*/
+
 				case PITCHD3:
 				{
-					//voiceArray[2].oscPitchEg.d = calcEgTime(msg.data2);
 					DecayEg_setDecay(&voiceArray[2].oscPitchEg,msg.data2);
 				}
 					break;
 
 				case MODAMNT3:
-					//voiceArray[2].egPitchModAmount = msg.data2/127.f*PITCH_AMOUNT_FACTOR;
 					voiceArray[2].egPitchModAmount = calcPitchModAmount(msg.data2);
 					break;
 
@@ -556,12 +442,7 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 					voiceArray[2].modOsc.midiFreq &= 0x00ff;
 					//set upper nibble
 					voiceArray[2].modOsc.midiFreq |= msg.data2 << 8;
-
-				//	const float cent = midiParser_calcDetune(voiceArray[0].modOsc.midiFreq&0xff);
-				//	voiceArray[2].modOsc.freq = MidiNoteFrequencies[msg.data2];//*cent;
 					osc_recalcFreq(&voiceArray[2].modOsc);
-
-					//voiceArray[2].modOsc.freq = MidiNoteFrequencies[msg.data2];
 					break;
 
 				case VOL3:
@@ -570,13 +451,9 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 
 				case PAN3:
 					setPan(2,msg.data2);
-					//voiceArray[2].pan = msg.data2/127.f;
 					break;
 
 				//snare
-
-
-
 				case VOL4:
 					snareVoice.vol = msg.data2/127.f;
 					break;
@@ -587,39 +464,27 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 					break;
 
 				case SNARE_NOISE_F:
-	/*
-					//clear upper nibble
-					snareVoice.noiseOsc.midiFreq &= 0x00ff;
-					//set upper nibble
-					snareVoice.noiseOsc.midiFreq |= msg.data2 << 8;
-					const float cent = calcDetune(snareVoice.noiseOsc.midiFreq&0xff);
-					*/
-					//snareVoice.noiseOsc.freq = MidiNoteFrequencies[msg.data2]*cent;
 					snareVoice.noiseOsc.freq = msg.data2/127.f*22000;
 					//TODO respond to midi note
 					break;
 				case VELOA4:
 				{
-					//snareVoice.oscVolEg.attackTimeSamples = calcSlopeEgTime(msg.data2);//calcEgTime(msg.data2);
 					slopeEg2_setAttack(&snareVoice.oscVolEg,msg.data2,false);
 				}
 					break;
 				case VELOD4:
 				{
-					//snareVoice.oscVolEg.decayTimeSamples = calcSlopeEgTime(msg.data2);//calcEgTime(msg.data2);
 					slopeEg2_setDecay(&snareVoice.oscVolEg,msg.data2,false);
 				}
 
 					break;
 				case PITCHD4:
 				{
-					//snareVoice.oscPitchEg.d = calcEgTime(msg.data2);
 					DecayEg_setDecay(&snareVoice.oscPitchEg,msg.data2);
 				}
 
 					break;
 				case MODAMNT4:
-					//snareVoice.egPitchModAmount = msg.data2/127.f*PITCH_AMOUNT_FACTOR;
 					snareVoice.egPitchModAmount = calcPitchModAmount(msg.data2);
 					break;
 				case SNARE_FILTER_F:
@@ -646,13 +511,7 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 					snareVoice.mix = msg.data2/127.f;
 					break;
 
-					//snare 2
-
-					/*
-				case FILTER_TYPE2:
-					snareVoice[1].filterType = msg.data2;
-					break;
-					*/
+				//snare 2
 				case VOL5:
 					cymbalVoice.vol = msg.data2/127.f;
 				break;
@@ -662,22 +521,14 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 
 					break;
 
-					/*
-				case SNARE_NOISE_F2:
-					snareVoice[1].noiseOsc.freq = msg.data2/127.f*22000;
-					break;
-
-					*/
 				case VELOA5:
 				{
-					//cymbalVoice.oscVolEg.attackTimeSamples = calcSlopeEgTime(msg.data2);//calcEgTime(msg.data2);
 					slopeEg2_setAttack(&cymbalVoice.oscVolEg,msg.data2,false);
 				}
 
 					break;
 				case VELOD5:
 				{
-					//cymbalVoice.oscVolEg.decayTimeSamples = calcSlopeEgTime(msg.data2);//calcEgTime(msg.data2);
 					slopeEg2_setDecay(&cymbalVoice.oscVolEg,msg.data2,false);
 				}
 					break;
@@ -705,7 +556,6 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 
 					break;
 				case CYM_MOD_OSC_F2:
-					//cymbalVoice.modOsc2.freq = MidiNoteFrequencies[msg.data2];
 					//clear upper nibble
 					cymbalVoice.modOsc2.midiFreq &= 0x00ff;
 					//set upper nibble
@@ -718,18 +568,7 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 				case CYM_MOD_OSC_GAIN2:
 					cymbalVoice.fmModAmount2 = msg.data2/127.f;
 					break;
-					/*
-				case PITCHD5:
-				{
-					snareVoice[1].oscPitchEg.d = calcEgTime(msg.data2);
-				}
 
-
-					break;
-				case MODAMNT5:
-					snareVoice[1].egPitchModAmount = msg.data2/127.f*PITCH_AMOUNT_FACTOR;
-					break;
-				*/
 				case CYM_FIL_FREQ:
 				{
 					const float f = msg.data2/127.f;
@@ -746,17 +585,10 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 					cymbalVoice.oscVolEg.repeat = msg.data2;
 					break;
 				case CYM_SLOPE:
-					//cymbalVoice.oscVolEg.slope = 1+msg.data2/16.f;
 					slopeEg2_setSlope(&cymbalVoice.oscVolEg,msg.data2);
 					break;
-					/*
-				case SNARE_MIX2:
-					snareVoice[1].mix = msg.data2/127.f;
-					break;
-					*/
 
-	// hat
-
+				// hat
 				case WAVE1_HH:
 					hatVoice.osc.waveform = msg.data2;
 					break;
@@ -769,7 +601,6 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 
 				case VELOD6:
 					hatVoice.decayClosed = slopeEg2_calcDecay(msg.data2);
-					//hatVoice.oscVolEg.d = calcEgTime(msg.data2);
 					break;
 
 				case VELOD6_OPEN:
@@ -802,14 +633,11 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 					hatVoice.osc.midiFreq &= 0x00ff;
 					//set upper nibble
 					hatVoice.osc.midiFreq |= msg.data2 << 8;
-					//const float cent = midiParser_calcDetune(hatVoice.osc.midiFreq&0xff);
-					//hatVoice.osc.freq = MidiNoteFrequencies[msg.data2]*cent;
 					osc_recalcFreq(&hatVoice.osc);
 				}
 						break;
 
 				case MOD_OSC_F1:
-					//hatVoice.modOsc.freq = MidiNoteFrequencies[msg.data2];
 					//clear upper nibble
 					hatVoice.modOsc.midiFreq &= 0x00ff;
 					//set upper nibble
@@ -818,7 +646,6 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 					break;
 
 				case MOD_OSC_F2:
-					//hatVoice.modOsc2.freq = MidiNoteFrequencies[msg.data2];
 					//clear upper nibble
 					hatVoice.modOsc2.midiFreq &= 0x00ff;
 					//set upper nibble
@@ -836,7 +663,6 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 
 				case VELOA6:
 					slopeEg2_setAttack(&hatVoice.oscVolEg,msg.data2,false);
-					//hatVoice.oscVolEg.a = calcEgTime(msg.data2);
 					break;
 
 				case REPEAT1:
@@ -845,8 +671,6 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 
 
 				case EG_SNARE1_SLOPE:
-					//snareVoice.oscVolEg.slope = 1+msg.data2/16.f;
-
 					slopeEg2_setSlope(&snareVoice.oscVolEg,msg.data2);
 					break;
 
@@ -904,12 +728,8 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 
 				default:
 					break;
-
-
-
 		}
 		modNode_originalValueChanged(paramNr);
-
 	}
 
 	else //MIDI_CC2
@@ -922,10 +742,9 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 		switch(msg.data1)
 		{
 
-
-		case CC2_TRANS1_WAVE:
+			case CC2_TRANS1_WAVE:
 					voiceArray[0].transGen.waveform = msg.data2;
-					break;
+				break;
 
 			case CC2_TRANS1_VOL:
 				voiceArray[0].transGen.volume = msg.data2/127.f;
@@ -958,7 +777,6 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 			case CC2_TRANS3_FREQ:
 				voiceArray[2].transGen.pitch = 1.f + ((msg.data2/33.9f)-0.75f) ;
 				break;
-
 
 			case CC2_TRANS4_WAVE:
 				snareVoice.transGen.waveform = msg.data2;
@@ -1017,7 +835,6 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 				voiceArray[msg.data1-CC2_FILTER_DRIVE_1].filter.drive = (msg.data2/127.f);
 #else
 				SVF_setDrive(&voiceArray[msg.data1-CC2_FILTER_DRIVE_1].filter,msg.data2);
-				//voiceArray[msg.data1-CC2_FILTER_DRIVE_1].filter.drive = 0.4f + (msg.data2/127.f)*(msg.data2/127.f)*6;
 #endif
 				break;
 			case CC2_FILTER_DRIVE_4:
@@ -1025,7 +842,6 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 				snareVoice.filter.drive = (msg.data2/127.f);
 #else
 				SVF_setDrive(&snareVoice.filter, msg.data2);
-				//snareVoice.filter.drive = 0.4f + (msg.data2/127.f)*(msg.data2/127.f)*6;
 #endif
 
 				break;
@@ -1034,7 +850,6 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 				cymbalVoice.filter.drive = (msg.data2/127.f);
 #else
 				SVF_setDrive(&cymbalVoice.filter, msg.data2);
-				//cymbalVoice.filter.drive = 0.4f + (msg.data2/127.f)*(msg.data2/127.f)*6;
 #endif
 
 				break;
@@ -1043,7 +858,6 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 				hatVoice.filter.drive = (msg.data2/127.f);
 #else
 				SVF_setDrive(&hatVoice.filter, msg.data2);
-				//hatVoice.filter.drive =  0.4f + (msg.data2/127.f)*(msg.data2/127.f)*6;
 #endif
 
 				break;
@@ -1078,9 +892,6 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 				velocityModulators[msg.data1-CC2_VELO_MOD_AMT_1].amount = msg.data2/127.f;
 				break;
 
-
-
-
 			case CC2_WAVE_LFO1:
 			case CC2_WAVE_LFO2:
 			case CC2_WAVE_LFO3:
@@ -1095,9 +906,6 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 			case CC2_WAVE_LFO6:
 				hatVoice.lfo.waveform = msg.data2;
 				break;
-
-
-
 
 			case CC2_RETRIGGER_LFO1:
 			case CC2_RETRIGGER_LFO2:
@@ -1135,8 +943,6 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 			case CC2_VOICE_LFO4:
 			case CC2_VOICE_LFO5:
 			case CC2_VOICE_LFO6:
-				//midiParser_selectedLfoVoice[msg.data1-CC2_VOICE_LFO1] = msg.data2-1;
-				//if(midiParser_selectedLfoVoice[msg.data1-CC2_VOICE_LFO1] > 5) midiParser_selectedLfoVoice[msg.data1-CC2_VOICE_LFO1] = 5;
 				break;
 
 			case CC2_TARGET_LFO1:
@@ -1145,10 +951,6 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 			case CC2_TARGET_LFO4:
 			case CC2_TARGET_LFO5:
 			case CC2_TARGET_LFO6:
-				//get selected voice
-
-				//set dest
-				//modNode_setDestination(&voiceArray[midiParser_selectedLfoVoice[msg.data1-CC2_TARGET_LFO1]].lfo.modTarget, msg.data2);
 				break;
 
 
@@ -1177,52 +979,11 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 				mixer_audioRouting[msg.data1-CC2_AUDIO_OUT1] = msg.data2;
 				break;
 
-
-#if 0
-			case CC2_ROLL:
-				seq_setRollRate(msg.data2/(128.f/15.f));
-				break;
-
-			case CC2_MORPH:
-
-				break;
-
-				//placeholder CC2ameters for the step CC2am display
-				//TODO don't have to go into preset
-			case CC2_ACTIVE_STEP:
-			case CC2_STEP_VOLUME:
-			case CC2_STEP_PROB:
-			case CC2_STEP_NOTE:
-
-			case CC2_EUKLID_LENGTH:
-			case CC2_EUKLID_STEPS:
-
-				//global CC2ams
-			case CC2_BPM:
-				seq_setBpm(msg.data2); //muss nicht gespeichert werden!!!
-				break;
-	/*
-			case CC2_PHASE_VOICE1:
-			case CC2_PHASE_VOICE2:
-			case CC2_PHASE_VOICE3:
-				drum_setPhase(msg.data2,msg.data1-CC2_PHASE_VOICE1);
-				break;
-			case CC2_PHASE_VOICE4:
-			case CC2_PHASE_VOICE5:
-			case CC2_PHASE_VOICE6:
-
-				break;
-				*/
-	#endif
-
 			default:
 				break;
 		}
 		modNode_originalValueChanged(paramNr);
-
 	}
-
-
 }
 //-----------------------------------------------------------
 /** Parse incoming midi messages and invoke corresponding action
@@ -1232,7 +993,6 @@ void midiParser_parseMidiMessage(MidiMsg msg)
 	//only do something if the midi channel is right
 	if(midiParser_isValidMidiChannel(msg.status))
 	{
-
 		switch(msg.status)
 		{
 		case NOTE_OFF:
@@ -1248,7 +1008,6 @@ void midiParser_parseMidiMessage(MidiMsg msg)
 			else
 			{
 				voiceControl_noteOn(msg.data1, msg.data2);
-
 				//Also used in sequencer trigger note function
 				//to retrigger the LFOs the Frontpanel AVR needs to know about note ons
 				uart_sendFrontpanelByte(msg.status);
@@ -1299,7 +1058,6 @@ void midiParser_handleSystemByte(unsigned char data)
 			seq_sync();
 		}
 		break;
-
 
 	case MIDI_START:
 		if(seq_getExtSync())
@@ -1357,7 +1115,6 @@ void midiParser_handleStatusByte(unsigned char data)
 			//unkown status byte - ignore
 			parserState = IGNORE;
 			break;
-
 		}
 	}
 	else
@@ -1392,7 +1149,6 @@ void midiParser_handleDataByte(unsigned char data)
 
 	default:
 		//we are expecting no data byte.
-
 		break;
 	}
 }

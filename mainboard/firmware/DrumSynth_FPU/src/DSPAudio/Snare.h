@@ -48,7 +48,6 @@
 #include "BufferTools.h"
 #include "lfo.h"
 #include "snapEg.h"
-//#define NUM_SNARES 1//NUM_VOICES-1
 
 #define USE_PEAK 0
 //------------------------------------------------------------------------
@@ -75,33 +74,25 @@ typedef struct SnareStruct
 #else
 	ResonantFilter filter;
 #endif
-//	uint8_t		filterMode; // bit 1: LP on/off - bit 2: HP on/off - bit 3: BP on/off
-
 
 	DecayEg		oscPitchEg;
 	float		egPitchModAmount;
 
-//	ToneControl toneControl;
 	Lfo 		lfo;
 	TransientGenerator transGen;
 
-
-	//AdEg		oscVolEg;
 	SlopeEg2		oscVolEg;
 	float 		egValueOscVol;
-//	AdEg		noiseVolEg;
+
 	Distortion distortion;
 	SnapEg snapEg;
 
-
 	uint8_t volumeMod;	//modulate volume by midi velocity if 1
-
 
 } SnareVoice;
 
 //array holding all the voices
 extern SnareVoice snareVoice;
-
 
 //initialize all the parameters to sane values
 void Snare_init();

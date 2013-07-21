@@ -45,13 +45,9 @@
 
  Parameter parameterArray[NUM_PARAMS];
 //the parameter numbers from the AVR/Frontpanel
-
-
-
 //####################################################################
 void paramArray_setParameter(uint16_t idx, ptrValue newValue)
 {
-
 	if(idx>=NUM_PARAMS) return;
 
 	switch(parameterArray[idx].type)
@@ -116,28 +112,28 @@ void parameterArray_init()
 	parameterArray[PAR_FINE2].type 			= TYPE_SPECIAL_F;
 
 	parameterArray[PAR_COARSE3].ptr 		= &voiceArray[2].osc.modNodeValue;
-	parameterArray[PAR_COARSE3].type 	= TYPE_SPECIAL_F;
+	parameterArray[PAR_COARSE3].type 		= TYPE_SPECIAL_F;
 
-	parameterArray[PAR_FINE3].ptr 		= &voiceArray[2].osc.modNodeValue;
-	parameterArray[PAR_FINE3].type 		= TYPE_SPECIAL_F;
+	parameterArray[PAR_FINE3].ptr 			= &voiceArray[2].osc.modNodeValue;
+	parameterArray[PAR_FINE3].type 			= TYPE_SPECIAL_F;
 
-	parameterArray[PAR_COARSE4].ptr 				= &snareVoice.osc.modNodeValue;
-	parameterArray[PAR_COARSE4].type 				= TYPE_SPECIAL_F;
+	parameterArray[PAR_COARSE4].ptr 		= &snareVoice.osc.modNodeValue;
+	parameterArray[PAR_COARSE4].type 		= TYPE_SPECIAL_F;
 
-	parameterArray[PAR_FINE4].ptr 					= &snareVoice.osc.modNodeValue;
-	parameterArray[PAR_FINE4].type 					= TYPE_SPECIAL_F;
+	parameterArray[PAR_FINE4].ptr 			= &snareVoice.osc.modNodeValue;
+	parameterArray[PAR_FINE4].type 			= TYPE_SPECIAL_F;
 
-	parameterArray[PAR_COARSE5].ptr 				= &cymbalVoice.osc.modNodeValue;
-	parameterArray[PAR_COARSE5].type 				= TYPE_SPECIAL_F;
+	parameterArray[PAR_COARSE5].ptr 		= &cymbalVoice.osc.modNodeValue;
+	parameterArray[PAR_COARSE5].type 		= TYPE_SPECIAL_F;
 
-	parameterArray[PAR_FINE5].ptr 					= &cymbalVoice.osc.modNodeValue;
-	parameterArray[PAR_FINE5].type		 			= TYPE_SPECIAL_F;
+	parameterArray[PAR_FINE5].ptr 			= &cymbalVoice.osc.modNodeValue;
+	parameterArray[PAR_FINE5].type		 	= TYPE_SPECIAL_F;
 
-	parameterArray[PAR_COARSE6].ptr 				= &hatVoice.osc.modNodeValue;
-	parameterArray[PAR_COARSE6].type 				= TYPE_SPECIAL_F;
+	parameterArray[PAR_COARSE6].ptr 		= &hatVoice.osc.modNodeValue;
+	parameterArray[PAR_COARSE6].type 		= TYPE_SPECIAL_F;
 
-	parameterArray[PAR_FINE6].ptr 					= &hatVoice.osc.modNodeValue;
-	parameterArray[PAR_FINE6].type 					= TYPE_SPECIAL_F;
+	parameterArray[PAR_FINE6].ptr 			= &hatVoice.osc.modNodeValue;
+	parameterArray[PAR_FINE6].type 			= TYPE_SPECIAL_F;
 
 
 	parameterArray[PAR_MOD_WAVE_DRUM1].ptr 	= &voiceArray[0].modOsc.waveform;
@@ -163,16 +159,16 @@ void parameterArray_init()
 	parameterArray[PAR_WAVE3_HH].ptr 		= &hatVoice.modOsc2.waveform;
 	parameterArray[PAR_OSC_WAVE_DRUM3].type = TYPE_UINT8;
 
-	parameterArray[PAR_NOISE_FREQ1].ptr 			= &snareVoice.noiseOsc.modNodeValue;
-	parameterArray[PAR_NOISE_FREQ1].type 			= TYPE_SPECIAL_F;
-	parameterArray[PAR_MIX1].ptr 					= &snareVoice.mix;
-	parameterArray[PAR_MIX1].type 					= TYPE_FLT;
+	parameterArray[PAR_NOISE_FREQ1].ptr 	= &snareVoice.noiseOsc.modNodeValue;
+	parameterArray[PAR_NOISE_FREQ1].type 	= TYPE_SPECIAL_F;
+	parameterArray[PAR_MIX1].ptr 			= &snareVoice.mix;
+	parameterArray[PAR_MIX1].type 			= TYPE_FLT;
 
-	parameterArray[PAR_MOD_OSC_F1_CYM].ptr 			= &cymbalVoice.modOsc.modNodeValue;
-	parameterArray[PAR_MOD_OSC_F1_CYM].type 		= TYPE_SPECIAL_F;
+	parameterArray[PAR_MOD_OSC_F1_CYM].ptr 	= &cymbalVoice.modOsc.modNodeValue;
+	parameterArray[PAR_MOD_OSC_F1_CYM].type = TYPE_SPECIAL_F;
 
-	parameterArray[PAR_MOD_OSC_F2_CYM].ptr 			= &cymbalVoice.modOsc2.modNodeValue;
-	parameterArray[PAR_MOD_OSC_F2_CYM].type 		= TYPE_SPECIAL_F;		//70
+	parameterArray[PAR_MOD_OSC_F2_CYM].ptr 	= &cymbalVoice.modOsc2.modNodeValue;
+	parameterArray[PAR_MOD_OSC_F2_CYM].type = TYPE_SPECIAL_F;		//70
 
 	parameterArray[PAR_MOD_OSC_GAIN1_CYM].ptr 		= &cymbalVoice.fmModAmount1;
 	parameterArray[PAR_MOD_OSC_GAIN1_CYM].type 		= TYPE_FLT;
@@ -180,204 +176,204 @@ void parameterArray_init()
 	parameterArray[PAR_MOD_OSC_GAIN2_CYM].ptr 		= &cymbalVoice.fmModAmount2;
 	parameterArray[PAR_MOD_OSC_GAIN2_CYM].type		= TYPE_FLT;
 
-	parameterArray[PAR_MOD_OSC_F1].ptr 				= &hatVoice.modOsc.modNodeValue;
-	parameterArray[PAR_MOD_OSC_F1].type 			= TYPE_SPECIAL_F;
+	parameterArray[PAR_MOD_OSC_F1].ptr 		= &hatVoice.modOsc.modNodeValue;
+	parameterArray[PAR_MOD_OSC_F1].type 	= TYPE_SPECIAL_F;
 
-	parameterArray[PAR_MOD_OSC_F2].ptr 				= &hatVoice.modOsc2.modNodeValue;;
-	parameterArray[PAR_MOD_OSC_F2].type 			= TYPE_SPECIAL_F;
+	parameterArray[PAR_MOD_OSC_F2].ptr 		= &hatVoice.modOsc2.modNodeValue;;
+	parameterArray[PAR_MOD_OSC_F2].type 	= TYPE_SPECIAL_F;
 
-	parameterArray[PAR_MOD_OSC_GAIN1].ptr 			= &hatVoice.fmModAmount1;
-	parameterArray[PAR_MOD_OSC_GAIN1].type 			= TYPE_FLT;
+	parameterArray[PAR_MOD_OSC_GAIN1].ptr 	= &hatVoice.fmModAmount1;
+	parameterArray[PAR_MOD_OSC_GAIN1].type 	= TYPE_FLT;
 
-	parameterArray[PAR_MOD_OSC_GAIN2].ptr 			= &hatVoice.fmModAmount2;
-	parameterArray[PAR_MOD_OSC_GAIN2].type 			= TYPE_FLT;
+	parameterArray[PAR_MOD_OSC_GAIN2].ptr 	= &hatVoice.fmModAmount2;
+	parameterArray[PAR_MOD_OSC_GAIN2].type 	= TYPE_FLT;
 
-	parameterArray[PAR_FILTER_FREQ_1].ptr 			= &voiceArray[0].filter.f;
-	parameterArray[PAR_FILTER_FREQ_1].type 			= TYPE_FLT;//TYPE_SPECIAL_FILTER_F;
+	parameterArray[PAR_FILTER_FREQ_1].ptr 	= &voiceArray[0].filter.f;
+	parameterArray[PAR_FILTER_FREQ_1].type 	= TYPE_FLT;//TYPE_SPECIAL_FILTER_F;
 
-	parameterArray[PAR_FILTER_FREQ_2].ptr 			= &voiceArray[1].filter.f;
-	parameterArray[PAR_FILTER_FREQ_2].type 			= TYPE_FLT;//TYPE_SPECIAL_FILTER_F;
+	parameterArray[PAR_FILTER_FREQ_2].ptr 	= &voiceArray[1].filter.f;
+	parameterArray[PAR_FILTER_FREQ_2].type 	= TYPE_FLT;//TYPE_SPECIAL_FILTER_F;
 
-	parameterArray[PAR_FILTER_FREQ_3].ptr 			= &voiceArray[2].filter.f;
-	parameterArray[PAR_FILTER_FREQ_3].type 			= TYPE_FLT;//TYPE_SPECIAL_FILTER_F;
+	parameterArray[PAR_FILTER_FREQ_3].ptr 	= &voiceArray[2].filter.f;
+	parameterArray[PAR_FILTER_FREQ_3].type 	= TYPE_FLT;//TYPE_SPECIAL_FILTER_F;
 
-	parameterArray[PAR_FILTER_FREQ_4].ptr 			= &snareVoice.filter.f;
-	parameterArray[PAR_FILTER_FREQ_4].type 			= TYPE_FLT;//TYPE_SPECIAL_FILTER_F;
+	parameterArray[PAR_FILTER_FREQ_4].ptr 	= &snareVoice.filter.f;
+	parameterArray[PAR_FILTER_FREQ_4].type 	= TYPE_FLT;//TYPE_SPECIAL_FILTER_F;
 
-	parameterArray[PAR_FILTER_FREQ_5].ptr 			= &cymbalVoice.filter.f;
-	parameterArray[PAR_FILTER_FREQ_5].type 			= TYPE_FLT;//TYPE_SPECIAL_FILTER_F;
+	parameterArray[PAR_FILTER_FREQ_5].ptr 	= &cymbalVoice.filter.f;
+	parameterArray[PAR_FILTER_FREQ_5].type 	= TYPE_FLT;//TYPE_SPECIAL_FILTER_F;
 
-	parameterArray[PAR_FILTER_FREQ_6].ptr 			= &hatVoice.filter.f;
-	parameterArray[PAR_FILTER_FREQ_6].type 			= TYPE_FLT;//TYPE_SPECIAL_FILTER_F;
+	parameterArray[PAR_FILTER_FREQ_6].ptr 	= &hatVoice.filter.f;
+	parameterArray[PAR_FILTER_FREQ_6].type 	= TYPE_FLT;//TYPE_SPECIAL_FILTER_F;
 
-	parameterArray[PAR_RESO_1].ptr 					= &voiceArray[0].filter.q;
-	parameterArray[PAR_RESO_1].type 				= TYPE_FLT;
+	parameterArray[PAR_RESO_1].ptr 			= &voiceArray[0].filter.q;
+	parameterArray[PAR_RESO_1].type 		= TYPE_FLT;
 
-	parameterArray[PAR_RESO_2].ptr 					= &voiceArray[1].filter.q;
-	parameterArray[PAR_RESO_2].type 				= TYPE_FLT;
+	parameterArray[PAR_RESO_2].ptr 			= &voiceArray[1].filter.q;
+	parameterArray[PAR_RESO_2].type 		= TYPE_FLT;
 
-	parameterArray[PAR_RESO_3].ptr 					= &voiceArray[2].filter.q;
-	parameterArray[PAR_RESO_3].type 				= TYPE_FLT;
+	parameterArray[PAR_RESO_3].ptr 			= &voiceArray[2].filter.q;
+	parameterArray[PAR_RESO_3].type 		= TYPE_FLT;
 
-	parameterArray[PAR_RESO_4].ptr 					= &snareVoice.filter.q;
-	parameterArray[PAR_RESO_4].type 					= TYPE_FLT;
+	parameterArray[PAR_RESO_4].ptr 			= &snareVoice.filter.q;
+	parameterArray[PAR_RESO_4].type 		= TYPE_FLT;
 
 
-	parameterArray[PAR_RESO_5].ptr 					= &cymbalVoice.filter.q;
-	parameterArray[PAR_RESO_5].type 					= TYPE_FLT;
+	parameterArray[PAR_RESO_5].ptr 			= &cymbalVoice.filter.q;
+	parameterArray[PAR_RESO_5].type 		= TYPE_FLT;
 
-	parameterArray[PAR_RESO_6].ptr 					= &hatVoice.filter.q;
-	parameterArray[PAR_RESO_6].type 					= TYPE_FLT;
+	parameterArray[PAR_RESO_6].ptr 			= &hatVoice.filter.q;
+	parameterArray[PAR_RESO_6].type 		= TYPE_FLT;
 
-	parameterArray[PAR_VELOA1].ptr 		= &voiceArray[0].oscVolEg.attack;
+	parameterArray[PAR_VELOA1].ptr 			= &voiceArray[0].oscVolEg.attack;
 	parameterArray[PAR_VELOA1].type 		= TYPE_FLT;
 
-	parameterArray[PAR_VELOD1].ptr 		= &voiceArray[0].oscVolEg.decay;
+	parameterArray[PAR_VELOD1].ptr 			= &voiceArray[0].oscVolEg.decay;
 	parameterArray[PAR_VELOD1].type 		= TYPE_FLT;
 
-	parameterArray[PAR_VELOA2].ptr 		= &voiceArray[1].oscVolEg.attack;
+	parameterArray[PAR_VELOA2].ptr 			= &voiceArray[1].oscVolEg.attack;
 	parameterArray[PAR_VELOA2].type 		= TYPE_FLT;
 
-	parameterArray[PAR_VELOD2].ptr 		= &voiceArray[1].oscVolEg.decay;
+	parameterArray[PAR_VELOD2].ptr 			= &voiceArray[1].oscVolEg.decay;
 	parameterArray[PAR_VELOD2].type 		= TYPE_FLT;
 
-	parameterArray[PAR_VELOA3].ptr 		= &voiceArray[2].oscVolEg.attack;
+	parameterArray[PAR_VELOA3].ptr 			= &voiceArray[2].oscVolEg.attack;
 	parameterArray[PAR_VELOA3].type 		= TYPE_FLT;
 
-	parameterArray[PAR_VELOD3].ptr 		= &voiceArray[2].oscVolEg.decay;
+	parameterArray[PAR_VELOD3].ptr 			= &voiceArray[2].oscVolEg.decay;
 	parameterArray[PAR_VELOD3].type 		= TYPE_FLT;
 
-	parameterArray[PAR_VELOA4].ptr 					= &snareVoice.oscVolEg.attack;
-	parameterArray[PAR_VELOA4].type 				= TYPE_FLT;
+	parameterArray[PAR_VELOA4].ptr 			= &snareVoice.oscVolEg.attack;
+	parameterArray[PAR_VELOA4].type 		= TYPE_FLT;
 
-	parameterArray[PAR_VELOD4].ptr 					= &snareVoice.oscVolEg.decay;
-	parameterArray[PAR_VELOD4].type 				= TYPE_FLT;
+	parameterArray[PAR_VELOD4].ptr 			= &snareVoice.oscVolEg.decay;
+	parameterArray[PAR_VELOD4].type 		= TYPE_FLT;
 
-	parameterArray[PAR_VELOA5].ptr 					= &cymbalVoice.oscVolEg.attack;
-	parameterArray[PAR_VELOA5].type 				= TYPE_FLT;
+	parameterArray[PAR_VELOA5].ptr 			= &cymbalVoice.oscVolEg.attack;
+	parameterArray[PAR_VELOA5].type 		= TYPE_FLT;
 
-	parameterArray[PAR_VELOD5].ptr 					= &cymbalVoice.oscVolEg.decay;
-	parameterArray[PAR_VELOD5].type 				= TYPE_FLT;
+	parameterArray[PAR_VELOD5].ptr 			= &cymbalVoice.oscVolEg.decay;
+	parameterArray[PAR_VELOD5].type 		= TYPE_FLT;
 
-	parameterArray[PAR_VELOA6].ptr 					= &hatVoice.oscVolEg.attack;
-	parameterArray[PAR_VELOA6].type 				= TYPE_FLT;
+	parameterArray[PAR_VELOA6].ptr 			= &hatVoice.oscVolEg.attack;
+	parameterArray[PAR_VELOA6].type 		= TYPE_FLT;
 
-	parameterArray[PAR_VELOD6_CLOSED].ptr 			= &hatVoice.decayClosed;
-	parameterArray[PAR_VELOD6_CLOSED].type 			= TYPE_FLT;
+	parameterArray[PAR_VELOD6_CLOSED].ptr 	= &hatVoice.decayClosed;
+	parameterArray[PAR_VELOD6_CLOSED].type 	= TYPE_FLT;
 
-	parameterArray[PAR_VELOD6_OPEN].ptr 			= &hatVoice.decayOpen;
-	parameterArray[PAR_VELOD6_OPEN].type 			= TYPE_FLT;
+	parameterArray[PAR_VELOD6_OPEN].ptr 	= &hatVoice.decayOpen;
+	parameterArray[PAR_VELOD6_OPEN].type 	= TYPE_FLT;
 
-	parameterArray[PAR_VOL_SLOPE1].ptr 				= &voiceArray[0].oscVolEg.slope;
-	parameterArray[PAR_VOL_SLOPE1].type 			= TYPE_FLT;
+	parameterArray[PAR_VOL_SLOPE1].ptr 		= &voiceArray[0].oscVolEg.slope;
+	parameterArray[PAR_VOL_SLOPE1].type 	= TYPE_FLT;
 
-	parameterArray[PAR_VOL_SLOPE2].ptr 				= &voiceArray[1].oscVolEg.slope;
-	parameterArray[PAR_VOL_SLOPE2].type 			= TYPE_FLT;
+	parameterArray[PAR_VOL_SLOPE2].ptr 		= &voiceArray[1].oscVolEg.slope;
+	parameterArray[PAR_VOL_SLOPE2].type 	= TYPE_FLT;
 
-	parameterArray[PAR_VOL_SLOPE3].ptr 				= &voiceArray[2].oscVolEg.slope;
-	parameterArray[PAR_VOL_SLOPE3].type 			= TYPE_FLT;
+	parameterArray[PAR_VOL_SLOPE3].ptr 		= &voiceArray[2].oscVolEg.slope;
+	parameterArray[PAR_VOL_SLOPE3].type 	= TYPE_FLT;
 
-	parameterArray[PAR_VOL_SLOPE4].ptr 				= &snareVoice.oscVolEg.slope;
-	parameterArray[PAR_VOL_SLOPE4].type 			= TYPE_FLT;
+	parameterArray[PAR_VOL_SLOPE4].ptr 		= &snareVoice.oscVolEg.slope;
+	parameterArray[PAR_VOL_SLOPE4].type 	= TYPE_FLT;
 
-	parameterArray[PAR_VOL_SLOPE5].ptr 				= &cymbalVoice.oscVolEg.slope;
-	parameterArray[PAR_VOL_SLOPE5].type 			= TYPE_FLT;
+	parameterArray[PAR_VOL_SLOPE5].ptr 		= &cymbalVoice.oscVolEg.slope;
+	parameterArray[PAR_VOL_SLOPE5].type 	= TYPE_FLT;
 
-	parameterArray[PAR_VOL_SLOPE6].ptr 				= &hatVoice.oscVolEg.slope;
-	parameterArray[PAR_VOL_SLOPE6].type 			= TYPE_FLT;
+	parameterArray[PAR_VOL_SLOPE6].ptr 		= &hatVoice.oscVolEg.slope;
+	parameterArray[PAR_VOL_SLOPE6].type 	= TYPE_FLT;
 
-	parameterArray[PAR_REPEAT4].ptr 				= &snareVoice.oscVolEg.repeat;
-	parameterArray[PAR_REPEAT4].type 				= TYPE_UINT8;
+	parameterArray[PAR_REPEAT4].ptr 		= &snareVoice.oscVolEg.repeat;
+	parameterArray[PAR_REPEAT4].type 		= TYPE_UINT8;
 
-	parameterArray[PAR_REPEAT5].ptr 				= &cymbalVoice.oscVolEg.repeat;
-	parameterArray[PAR_REPEAT5].type 				= TYPE_UINT8;
+	parameterArray[PAR_REPEAT5].ptr 		= &cymbalVoice.oscVolEg.repeat;
+	parameterArray[PAR_REPEAT5].type 		= TYPE_UINT8;
 
-	parameterArray[PAR_MOD_EG1].ptr 				= &voiceArray[0].oscPitchEg.decay;
-	parameterArray[PAR_MOD_EG1].type 				= TYPE_FLT;
+	parameterArray[PAR_MOD_EG1].ptr 		= &voiceArray[0].oscPitchEg.decay;
+	parameterArray[PAR_MOD_EG1].type 		= TYPE_FLT;
 
-	parameterArray[PAR_MOD_EG2].ptr 				= &voiceArray[1].oscPitchEg.decay;
-	parameterArray[PAR_MOD_EG2].type 				= TYPE_FLT;
+	parameterArray[PAR_MOD_EG2].ptr 		= &voiceArray[1].oscPitchEg.decay;
+	parameterArray[PAR_MOD_EG2].type 		= TYPE_FLT;
 
-	parameterArray[PAR_MOD_EG3].ptr 				= &voiceArray[2].oscPitchEg.decay;
-	parameterArray[PAR_MOD_EG3].type 				= TYPE_FLT;
+	parameterArray[PAR_MOD_EG3].ptr 		= &voiceArray[2].oscPitchEg.decay;
+	parameterArray[PAR_MOD_EG3].type 		= TYPE_FLT;
 
-	parameterArray[PAR_MOD_EG4].ptr 				= &snareVoice.oscPitchEg.decay;
-	parameterArray[PAR_MOD_EG4].type 				= TYPE_FLT;
-	parameterArray[PAR_MODAMNT1].ptr 	= &voiceArray[0].egPitchModAmount;
-	parameterArray[PAR_MODAMNT1].type 	= TYPE_FLT;
-	parameterArray[PAR_MODAMNT2].ptr 	= &voiceArray[1].egPitchModAmount;
-	parameterArray[PAR_MODAMNT2].type 	= TYPE_FLT;
-	parameterArray[PAR_MODAMNT3].ptr 	= &voiceArray[2].egPitchModAmount;
-	parameterArray[PAR_MODAMNT3].type 	= TYPE_FLT;
+	parameterArray[PAR_MOD_EG4].ptr 		= &snareVoice.oscPitchEg.decay;
+	parameterArray[PAR_MOD_EG4].type 		= TYPE_FLT;
+	parameterArray[PAR_MODAMNT1].ptr 		= &voiceArray[0].egPitchModAmount;
+	parameterArray[PAR_MODAMNT1].type 		= TYPE_FLT;
+	parameterArray[PAR_MODAMNT2].ptr 		= &voiceArray[1].egPitchModAmount;
+	parameterArray[PAR_MODAMNT2].type 		= TYPE_FLT;
+	parameterArray[PAR_MODAMNT3].ptr 		= &voiceArray[2].egPitchModAmount;
+	parameterArray[PAR_MODAMNT3].type 		= TYPE_FLT;
 
-	parameterArray[PAR_MODAMNT4].ptr 				= &snareVoice.egPitchModAmount;
-	parameterArray[PAR_MODAMNT4].type 				= TYPE_FLT;
+	parameterArray[PAR_MODAMNT4].ptr 		= &snareVoice.egPitchModAmount;
+	parameterArray[PAR_MODAMNT4].type 		= TYPE_FLT;
 
-	parameterArray[PAR_PITCH_SLOPE1].ptr 				= &voiceArray[0].oscPitchEg.slope;
-	parameterArray[PAR_PITCH_SLOPE1].type 				= TYPE_FLT;
+	parameterArray[PAR_PITCH_SLOPE1].ptr 	= &voiceArray[0].oscPitchEg.slope;
+	parameterArray[PAR_PITCH_SLOPE1].type 	= TYPE_FLT;
 
-	parameterArray[PAR_PITCH_SLOPE2].ptr 				= &voiceArray[1].oscPitchEg.slope;
-	parameterArray[PAR_PITCH_SLOPE2].type 				= TYPE_FLT;
+	parameterArray[PAR_PITCH_SLOPE2].ptr 	= &voiceArray[1].oscPitchEg.slope;
+	parameterArray[PAR_PITCH_SLOPE2].type 	= TYPE_FLT;
 
-	parameterArray[PAR_PITCH_SLOPE3].ptr 				= &voiceArray[2].oscPitchEg.slope;
-	parameterArray[PAR_PITCH_SLOPE3].type 				= TYPE_FLT;
+	parameterArray[PAR_PITCH_SLOPE3].ptr 	= &voiceArray[2].oscPitchEg.slope;
+	parameterArray[PAR_PITCH_SLOPE3].type 	= TYPE_FLT;
 
-	parameterArray[PAR_PITCH_SLOPE4].ptr 				= &snareVoice.oscPitchEg.slope;
-	parameterArray[PAR_PITCH_SLOPE4].type 				= TYPE_FLT;
+	parameterArray[PAR_PITCH_SLOPE4].ptr 	= &snareVoice.oscPitchEg.slope;
+	parameterArray[PAR_PITCH_SLOPE4].type 	= TYPE_FLT;
 
 	parameterArray[PAR_FMAMNT1].ptr 		= &voiceArray[0].fmModAmount;
-	parameterArray[PAR_FMAMNT1].type 	= TYPE_FLT;
+	parameterArray[PAR_FMAMNT1].type 		= TYPE_FLT;
 
-	parameterArray[PAR_FM_FREQ1].ptr 	= &voiceArray[0].modOsc.modNodeValue;
-	parameterArray[PAR_FM_FREQ1].type 	= TYPE_SPECIAL_F;//TYPE_UINT32;
+	parameterArray[PAR_FM_FREQ1].ptr 		= &voiceArray[0].modOsc.modNodeValue;
+	parameterArray[PAR_FM_FREQ1].type 		= TYPE_SPECIAL_F;//TYPE_UINT32;
 
 	parameterArray[PAR_FMAMNT2].ptr 		= &voiceArray[1].fmModAmount;
-	parameterArray[PAR_FMAMNT2].type 	= TYPE_FLT;
+	parameterArray[PAR_FMAMNT2].type 		= TYPE_FLT;
 
-	parameterArray[PAR_FM_FREQ2].ptr 	= &voiceArray[1].modOsc.modNodeValue;
-	parameterArray[PAR_FM_FREQ2].type 	= TYPE_SPECIAL_F;//TYPE_UINT32;
+	parameterArray[PAR_FM_FREQ2].ptr 		= &voiceArray[1].modOsc.modNodeValue;
+	parameterArray[PAR_FM_FREQ2].type 		= TYPE_SPECIAL_F;//TYPE_UINT32;
 
 	parameterArray[PAR_FMAMNT3].ptr 		= &voiceArray[2].fmModAmount;
-	parameterArray[PAR_FMAMNT3].type 	= TYPE_FLT;
+	parameterArray[PAR_FMAMNT3].type 		= TYPE_FLT;
 
-	parameterArray[PAR_FM_FREQ3].ptr 	= &voiceArray[2].modOsc.modNodeValue;
-	parameterArray[PAR_FM_FREQ3].type 	= TYPE_SPECIAL_F;//TYPE_UINT32;
+	parameterArray[PAR_FM_FREQ3].ptr 		= &voiceArray[2].modOsc.modNodeValue;
+	parameterArray[PAR_FM_FREQ3].type 		= TYPE_SPECIAL_F;//TYPE_UINT32;
 
 
-	parameterArray[PAR_VOL1].ptr 		= &voiceArray[0].vol;
-	parameterArray[PAR_VOL1].type		= TYPE_FLT;
-	parameterArray[PAR_VOL2].ptr 		= &voiceArray[1].vol;
-	parameterArray[PAR_VOL2].type		= TYPE_FLT;
-	parameterArray[PAR_VOL3].ptr 		= &voiceArray[2].vol;
-	parameterArray[PAR_VOL3].type		= TYPE_FLT;
-	parameterArray[PAR_VOL4].ptr 		= &snareVoice.vol;
-	parameterArray[PAR_VOL4].type 		= TYPE_FLT;
-	parameterArray[PAR_VOL5].ptr 		= &cymbalVoice.vol;
-	parameterArray[PAR_VOL5].type 		= TYPE_FLT;
-	parameterArray[PAR_VOL6].ptr 		= &hatVoice.vol;
-	parameterArray[PAR_VOL6].type 		= TYPE_FLT;
+	parameterArray[PAR_VOL1].ptr 			= &voiceArray[0].vol;
+	parameterArray[PAR_VOL1].type			= TYPE_FLT;
+	parameterArray[PAR_VOL2].ptr 			= &voiceArray[1].vol;
+	parameterArray[PAR_VOL2].type			= TYPE_FLT;
+	parameterArray[PAR_VOL3].ptr 			= &voiceArray[2].vol;
+	parameterArray[PAR_VOL3].type			= TYPE_FLT;
+	parameterArray[PAR_VOL4].ptr 			= &snareVoice.vol;
+	parameterArray[PAR_VOL4].type 			= TYPE_FLT;
+	parameterArray[PAR_VOL5].ptr 			= &cymbalVoice.vol;
+	parameterArray[PAR_VOL5].type 			= TYPE_FLT;
+	parameterArray[PAR_VOL6].ptr 			= &hatVoice.vol;
+	parameterArray[PAR_VOL6].type 			= TYPE_FLT;
 
-	parameterArray[PAR_PAN1].ptr 		= &voiceArray[0].pan;
-	parameterArray[PAR_PAN1].type 		= TYPE_UINT8;
-	parameterArray[PAR_PAN2].ptr 		= &voiceArray[1].pan;
-	parameterArray[PAR_PAN2].type 		= TYPE_UINT8;
-	parameterArray[PAR_PAN3].ptr 		= &voiceArray[2].pan;
-	parameterArray[PAR_PAN3].type 		= TYPE_UINT8;
-	parameterArray[PAR_PAN4].ptr 		= 0;//&snareVoice.pan;
-	parameterArray[PAR_PAN4].type 		= TYPE_SPECIAL_P;
-	parameterArray[PAR_PAN5].ptr 		= 0;
-	parameterArray[PAR_PAN5].type 		= TYPE_SPECIAL_P;
-	parameterArray[PAR_PAN6].ptr 		= 0;
-	parameterArray[PAR_PAN6].type 		= TYPE_SPECIAL_P;
+	parameterArray[PAR_PAN1].ptr 			= &voiceArray[0].pan;
+	parameterArray[PAR_PAN1].type 			= TYPE_UINT8;
+	parameterArray[PAR_PAN2].ptr 			= &voiceArray[1].pan;
+	parameterArray[PAR_PAN2].type 			= TYPE_UINT8;
+	parameterArray[PAR_PAN3].ptr 			= &voiceArray[2].pan;
+	parameterArray[PAR_PAN3].type 			= TYPE_UINT8;
+	parameterArray[PAR_PAN4].ptr 			= 0;//&snareVoice.pan;
+	parameterArray[PAR_PAN4].type 			= TYPE_SPECIAL_P;
+	parameterArray[PAR_PAN5].ptr 			= 0;
+	parameterArray[PAR_PAN5].type 			= TYPE_SPECIAL_P;
+	parameterArray[PAR_PAN6].ptr 			= 0;
+	parameterArray[PAR_PAN6].type 			= TYPE_SPECIAL_P;
 
-	parameterArray[PAR_DRIVE1].ptr 		= &voiceArray[0].distortion.shape;
-	parameterArray[PAR_DRIVE1].type 	= TYPE_FLT;
+	parameterArray[PAR_DRIVE1].ptr 			= &voiceArray[0].distortion.shape;
+	parameterArray[PAR_DRIVE1].type 		= TYPE_FLT;
 
-	parameterArray[PAR_DRIVE2].ptr 		= &voiceArray[1].distortion.shape;
-	parameterArray[PAR_DRIVE2].type 	= TYPE_FLT;
+	parameterArray[PAR_DRIVE2].ptr 			= &voiceArray[1].distortion.shape;
+	parameterArray[PAR_DRIVE2].type 		= TYPE_FLT;
 
-	parameterArray[PAR_DRIVE3].ptr 		= &voiceArray[2].distortion.shape;
-	parameterArray[PAR_DRIVE3].type 	= TYPE_FLT;
+	parameterArray[PAR_DRIVE3].ptr 			= &voiceArray[2].distortion.shape;
+	parameterArray[PAR_DRIVE3].type 		= TYPE_FLT;
 
 	parameterArray[PAR_SNARE_DISTORTION].ptr 	= &snareVoice.distortion.shape;
 	parameterArray[PAR_SNARE_DISTORTION].type 	= TYPE_FLT;
@@ -403,18 +399,18 @@ void parameterArray_init()
 	parameterArray[PAR_VOICE_DECIMATION_ALL].ptr= &mixer_decimation_rate[6];
 	parameterArray[PAR_VOICE_DECIMATION_ALL].type 	= TYPE_FLT;
 
-	parameterArray[PAR_FREQ_LFO1].ptr 			= &voiceArray[0].lfo.modNodeValue;
-	parameterArray[PAR_FREQ_LFO1].type 			= TYPE_SPECIAL_F;//TYPE_FLT;
-	parameterArray[PAR_FREQ_LFO2].ptr 			= &voiceArray[1].lfo.modNodeValue;
-	parameterArray[PAR_FREQ_LFO2].type 			= TYPE_SPECIAL_F;//TYPE_FLT;
-	parameterArray[PAR_FREQ_LFO3].ptr 			= &voiceArray[2].lfo.modNodeValue;
-	parameterArray[PAR_FREQ_LFO3].type 			= TYPE_SPECIAL_F;//TYPE_FLT;
-	parameterArray[PAR_FREQ_LFO4].ptr 			= &snareVoice.lfo.modNodeValue;
-	parameterArray[PAR_FREQ_LFO4].type 			= TYPE_SPECIAL_F;//TYPE_FLT;
-	parameterArray[PAR_FREQ_LFO5].ptr 			= &cymbalVoice.lfo.modNodeValue;
-	parameterArray[PAR_FREQ_LFO5].type 			= TYPE_SPECIAL_F;//TYPE_FLT;
-	parameterArray[PAR_FREQ_LFO6].ptr 			= &hatVoice.lfo.modNodeValue;
-	parameterArray[PAR_FREQ_LFO6].type 			= TYPE_SPECIAL_F;//TYPE_FLT;
+	parameterArray[PAR_FREQ_LFO1].ptr 		= &voiceArray[0].lfo.modNodeValue;
+	parameterArray[PAR_FREQ_LFO1].type 		= TYPE_SPECIAL_F;//TYPE_FLT;
+	parameterArray[PAR_FREQ_LFO2].ptr 		= &voiceArray[1].lfo.modNodeValue;
+	parameterArray[PAR_FREQ_LFO2].type 		= TYPE_SPECIAL_F;//TYPE_FLT;
+	parameterArray[PAR_FREQ_LFO3].ptr 		= &voiceArray[2].lfo.modNodeValue;
+	parameterArray[PAR_FREQ_LFO3].type 		= TYPE_SPECIAL_F;//TYPE_FLT;
+	parameterArray[PAR_FREQ_LFO4].ptr 		= &snareVoice.lfo.modNodeValue;
+	parameterArray[PAR_FREQ_LFO4].type 		= TYPE_SPECIAL_F;//TYPE_FLT;
+	parameterArray[PAR_FREQ_LFO5].ptr 		= &cymbalVoice.lfo.modNodeValue;
+	parameterArray[PAR_FREQ_LFO5].type 		= TYPE_SPECIAL_F;//TYPE_FLT;
+	parameterArray[PAR_FREQ_LFO6].ptr 		= &hatVoice.lfo.modNodeValue;
+	parameterArray[PAR_FREQ_LFO6].type 		= TYPE_SPECIAL_F;//TYPE_FLT;
 
 	parameterArray[PAR_AMOUNT_LFO1].ptr 	= &voiceArray[0].lfo.modTarget.amount;
 	parameterArray[PAR_OSC_WAVE_DRUM3].type = TYPE_FLT;
@@ -433,32 +429,32 @@ void parameterArray_init()
 	//######## PARAM NR 127 REACHED ########
 	//######################################
 
-	parameterArray[PAR_FILTER_DRIVE_1].ptr 				= &voiceArray[0].filter.drive;
-	parameterArray[PAR_FILTER_DRIVE_1].type 			= TYPE_FLT;
+	parameterArray[PAR_FILTER_DRIVE_1].ptr 	= &voiceArray[0].filter.drive;
+	parameterArray[PAR_FILTER_DRIVE_1].type = TYPE_FLT;
 
-	parameterArray[PAR_FILTER_DRIVE_2].ptr 				= &voiceArray[1].filter.drive;
-	parameterArray[PAR_FILTER_DRIVE_2].type 			= TYPE_FLT;
+	parameterArray[PAR_FILTER_DRIVE_2].ptr 	= &voiceArray[1].filter.drive;
+	parameterArray[PAR_FILTER_DRIVE_2].type = TYPE_FLT;
 
-	parameterArray[PAR_FILTER_DRIVE_3].ptr 				= &voiceArray[2].filter.drive;
-	parameterArray[PAR_FILTER_DRIVE_3].type 			= TYPE_FLT;
+	parameterArray[PAR_FILTER_DRIVE_3].ptr 	= &voiceArray[2].filter.drive;
+	parameterArray[PAR_FILTER_DRIVE_3].type = TYPE_FLT;
 
-	parameterArray[PAR_FILTER_DRIVE_4].ptr 				= &snareVoice.filter.drive;
-	parameterArray[PAR_FILTER_DRIVE_4].type 			= TYPE_FLT;
+	parameterArray[PAR_FILTER_DRIVE_4].ptr 	= &snareVoice.filter.drive;
+	parameterArray[PAR_FILTER_DRIVE_4].type = TYPE_FLT;
 
-	parameterArray[PAR_FILTER_DRIVE_5].ptr 				= &cymbalVoice.filter.drive;
-	parameterArray[PAR_FILTER_DRIVE_5].type 			= TYPE_FLT;
+	parameterArray[PAR_FILTER_DRIVE_5].ptr 	= &cymbalVoice.filter.drive;
+	parameterArray[PAR_FILTER_DRIVE_5].type = TYPE_FLT;
 
-	parameterArray[PAR_FILTER_DRIVE_6].ptr 				= &hatVoice.filter.drive;
-	parameterArray[PAR_FILTER_DRIVE_6].type 			= TYPE_FLT;
+	parameterArray[PAR_FILTER_DRIVE_6].ptr 	= &hatVoice.filter.drive;
+	parameterArray[PAR_FILTER_DRIVE_6].type = TYPE_FLT;
 
-	parameterArray[PAR_MIX_MOD_1].ptr 					= &voiceArray[0].mixOscs;
-	parameterArray[PAR_MIX_MOD_1].type 					= TYPE_UINT8;
+	parameterArray[PAR_MIX_MOD_1].ptr 		= &voiceArray[0].mixOscs;
+	parameterArray[PAR_MIX_MOD_1].type 		= TYPE_UINT8;
 
-	parameterArray[PAR_MIX_MOD_2].ptr 					= &voiceArray[1].mixOscs;
-	parameterArray[PAR_MIX_MOD_2].type 					= TYPE_UINT8;
+	parameterArray[PAR_MIX_MOD_2].ptr 		= &voiceArray[1].mixOscs;
+	parameterArray[PAR_MIX_MOD_2].type 		= TYPE_UINT8;
 
-	parameterArray[PAR_MIX_MOD_3].ptr 					= &voiceArray[2].mixOscs;
-	parameterArray[PAR_MIX_MOD_3].type 					= TYPE_UINT8;
+	parameterArray[PAR_MIX_MOD_3].ptr 		= &voiceArray[2].mixOscs;
+	parameterArray[PAR_MIX_MOD_3].type 		= TYPE_UINT8;
 
 
 
@@ -480,83 +476,55 @@ void parameterArray_init()
 	parameterArray[PAR_VOLUME_MOD_ON_OFF6].ptr 			= &hatVoice.volumeMod;
 	parameterArray[PAR_VOLUME_MOD_ON_OFF6].type 		= TYPE_UINT8;
 
-	parameterArray[PAR_VELO_MOD_AMT_1].ptr 				= &velocityModulators[0].amount;
-	parameterArray[PAR_VELO_MOD_AMT_1].type 			= TYPE_FLT;
+	parameterArray[PAR_VELO_MOD_AMT_1].ptr 	= &velocityModulators[0].amount;
+	parameterArray[PAR_VELO_MOD_AMT_1].type = TYPE_FLT;
 
-	parameterArray[PAR_VELO_MOD_AMT_2].ptr 				= &velocityModulators[1].amount;
-	parameterArray[PAR_VELO_MOD_AMT_2].type 			= TYPE_FLT;
+	parameterArray[PAR_VELO_MOD_AMT_2].ptr 	= &velocityModulators[1].amount;
+	parameterArray[PAR_VELO_MOD_AMT_2].type = TYPE_FLT;
 
-	parameterArray[PAR_VELO_MOD_AMT_3].ptr 				= &velocityModulators[2].amount;
-	parameterArray[PAR_VELO_MOD_AMT_3].type 			= TYPE_FLT;
+	parameterArray[PAR_VELO_MOD_AMT_3].ptr 	= &velocityModulators[2].amount;
+	parameterArray[PAR_VELO_MOD_AMT_3].type = TYPE_FLT;
 
-	parameterArray[PAR_VELO_MOD_AMT_4].ptr 				= &velocityModulators[3].amount;
-	parameterArray[PAR_VELO_MOD_AMT_4].type 			= TYPE_FLT;
+	parameterArray[PAR_VELO_MOD_AMT_4].ptr 	= &velocityModulators[3].amount;
+	parameterArray[PAR_VELO_MOD_AMT_4].type = TYPE_FLT;
 
-	parameterArray[PAR_VELO_MOD_AMT_5].ptr 				= &velocityModulators[4].amount;
-	parameterArray[PAR_VELO_MOD_AMT_5].type 			= TYPE_FLT;
+	parameterArray[PAR_VELO_MOD_AMT_5].ptr 	= &velocityModulators[4].amount;
+	parameterArray[PAR_VELO_MOD_AMT_5].type = TYPE_FLT;
 
-	parameterArray[PAR_VELO_MOD_AMT_6].ptr 				= &velocityModulators[5].amount;
-	parameterArray[PAR_VELO_MOD_AMT_6].type 			= TYPE_FLT;
+	parameterArray[PAR_VELO_MOD_AMT_6].ptr 	= &velocityModulators[5].amount;
+	parameterArray[PAR_VELO_MOD_AMT_6].type = TYPE_FLT;
 
-	parameterArray[PAR_VEL_DEST_1].ptr 					= &velocityModulators[0].destination;
-	parameterArray[PAR_VEL_DEST_1].type 				= TYPE_UINT8;
+	parameterArray[PAR_VEL_DEST_1].ptr 		= &velocityModulators[0].destination;
+	parameterArray[PAR_VEL_DEST_1].type 	= TYPE_UINT8;
 
-	parameterArray[PAR_VEL_DEST_2].ptr 					= &velocityModulators[1].destination;
-	parameterArray[PAR_VEL_DEST_2].type 				= TYPE_UINT8;
+	parameterArray[PAR_VEL_DEST_2].ptr 		= &velocityModulators[1].destination;
+	parameterArray[PAR_VEL_DEST_2].type 	= TYPE_UINT8;
 
-	parameterArray[PAR_VEL_DEST_3].ptr 					= &velocityModulators[2].destination;
-	parameterArray[PAR_VEL_DEST_3].type 				= TYPE_UINT8;
+	parameterArray[PAR_VEL_DEST_3].ptr 		= &velocityModulators[2].destination;
+	parameterArray[PAR_VEL_DEST_3].type 	= TYPE_UINT8;
 
-	parameterArray[PAR_VEL_DEST_4].ptr 					= &velocityModulators[3].destination;
-	parameterArray[PAR_VEL_DEST_4].type 				= TYPE_UINT8;
+	parameterArray[PAR_VEL_DEST_4].ptr 		= &velocityModulators[3].destination;
+	parameterArray[PAR_VEL_DEST_4].type 	= TYPE_UINT8;
 
-	parameterArray[PAR_VEL_DEST_5].ptr 					= &velocityModulators[4].destination;
-	parameterArray[PAR_VEL_DEST_5].type 				= TYPE_UINT8;
+	parameterArray[PAR_VEL_DEST_5].ptr 		= &velocityModulators[4].destination;
+	parameterArray[PAR_VEL_DEST_5].type 	= TYPE_UINT8;
 
-	parameterArray[PAR_VEL_DEST_6].ptr 					= &velocityModulators[5].destination;
-	parameterArray[PAR_VEL_DEST_6].type 				= TYPE_UINT8;
+	parameterArray[PAR_VEL_DEST_6].ptr 		= &velocityModulators[5].destination;
+	parameterArray[PAR_VEL_DEST_6].type 	= TYPE_UINT8;
 
-	parameterArray[PAR_WAVE_LFO1].ptr 					= &voiceArray[0].lfo.waveform;
-	parameterArray[PAR_OSC_WAVE_DRUM3].type 			= TYPE_UINT8;
-	parameterArray[PAR_WAVE_LFO2].ptr 					= &voiceArray[1].lfo.waveform;
-	parameterArray[PAR_OSC_WAVE_DRUM3].type 			= TYPE_UINT8;
-	parameterArray[PAR_WAVE_LFO3].ptr 					= &voiceArray[2].lfo.waveform;
-	parameterArray[PAR_OSC_WAVE_DRUM3].type 			= TYPE_UINT8;
-	parameterArray[PAR_WAVE_LFO4].ptr 					= &snareVoice.lfo.waveform;
-	parameterArray[PAR_OSC_WAVE_DRUM3].type 			= TYPE_UINT8;
-	parameterArray[PAR_WAVE_LFO5].ptr 					= &cymbalVoice.lfo.waveform;
-	parameterArray[PAR_OSC_WAVE_DRUM3].type 			= TYPE_UINT8;
-	parameterArray[PAR_WAVE_LFO6].ptr 					= &hatVoice.lfo.waveform;
-	parameterArray[PAR_OSC_WAVE_DRUM3].type 			= TYPE_UINT8;
+	parameterArray[PAR_WAVE_LFO1].ptr 		= &voiceArray[0].lfo.waveform;
+	parameterArray[PAR_OSC_WAVE_DRUM3].type = TYPE_UINT8;
+	parameterArray[PAR_WAVE_LFO2].ptr 		= &voiceArray[1].lfo.waveform;
+	parameterArray[PAR_OSC_WAVE_DRUM3].type = TYPE_UINT8;
+	parameterArray[PAR_WAVE_LFO3].ptr 		= &voiceArray[2].lfo.waveform;
+	parameterArray[PAR_OSC_WAVE_DRUM3].type = TYPE_UINT8;
+	parameterArray[PAR_WAVE_LFO4].ptr 		= &snareVoice.lfo.waveform;
+	parameterArray[PAR_OSC_WAVE_DRUM3].type = TYPE_UINT8;
+	parameterArray[PAR_WAVE_LFO5].ptr 		= &cymbalVoice.lfo.waveform;
+	parameterArray[PAR_OSC_WAVE_DRUM3].type = TYPE_UINT8;
+	parameterArray[PAR_WAVE_LFO6].ptr 		= &hatVoice.lfo.waveform;
+	parameterArray[PAR_OSC_WAVE_DRUM3].type = TYPE_UINT8;
 
-	/*
-	parameterArray[PAR_VOICE_LFO1].ptr 	= &voiceArray[0].lfo.;;
-	parameterArray[PAR_VOICE_LFO1].type = TYPE_UINT8;
-	parameterArray[PAR_VOICE_LFO2].ptr 	= ;
-	parameterArray[PAR_VOICE_LFO2].type = TYPE_UINT8;
-	parameterArray[PAR_VOICE_LFO3].ptr 	= ;
-	parameterArray[PAR_VOICE_LFO3].type = TYPE_UINT8;
-	parameterArray[PAR_VOICE_LFO4].ptr 	= ;
-	parameterArray[PAR_VOICE_LFO4].type = TYPE_UINT8;
-	parameterArray[PAR_VOICE_LFO5].ptr 	= ;
-	parameterArray[PAR_VOICE_LFO5].type = TYPE_UINT8;
-	parameterArray[PAR_VOICE_LFO6].ptr 	= ;
-	parameterArray[PAR_VOICE_LFO6].type = TYPE_UINT8;
-
-
-	parameterArray[PAR_TARGET_LFO1].ptr 	= ;
-	parameterArray[PAR_TARGET_LFO1].type = TYPE_UINT8;
-	parameterArray[PAR_TARGET_LFO2].ptr 	= ;
-	parameterArray[PAR_TARGET_LFO2].type = TYPE_UINT8;
-	parameterArray[PAR_TARGET_LFO3].ptr 	= ;
-	parameterArray[PAR_TARGET_LFO3].type = TYPE_UINT8;
-	parameterArray[PAR_TARGET_LFO4].ptr 	= ;
-	parameterArray[PAR_TARGET_LFO4].type = TYPE_UINT8;
-	parameterArray[PAR_TARGET_LFO5].ptr 	= ;
-	parameterArray[PAR_TARGET_LFO5].type = TYPE_UINT8;
-	parameterArray[PAR_TARGET_LFO6].ptr 	= ;
-	parameterArray[PAR_TARGET_LFO6].type = TYPE_UINT8;
-*/
 	parameterArray[PAR_RETRIGGER_LFO1].ptr 	= &voiceArray[0].lfo.retrigger;
 	parameterArray[PAR_RETRIGGER_LFO1].type = TYPE_UINT8;
 	parameterArray[PAR_RETRIGGER_LFO2].ptr 	= &voiceArray[1].lfo.retrigger;
@@ -596,73 +564,73 @@ void parameterArray_init()
 	parameterArray[PAR_OFFSET_LFO6].ptr 	= &hatVoice.lfo.phaseOffset;
 	parameterArray[PAR_OFFSET_LFO6].type 	= TYPE_UINT32;
 
-	parameterArray[PAR_FILTER_TYPE_1].ptr 			= &voiceArray[0].filterType;
-	parameterArray[PAR_FILTER_TYPE_1].type 			= TYPE_UINT8;
-	parameterArray[PAR_FILTER_TYPE_2].ptr 			= &voiceArray[1].filterType;
-	parameterArray[PAR_FILTER_TYPE_2].type 			= TYPE_UINT8;
-	parameterArray[PAR_FILTER_TYPE_3].ptr 			= &voiceArray[2].filterType;
-	parameterArray[PAR_FILTER_TYPE_3].type 			= TYPE_UINT8;
-	parameterArray[PAR_FILTER_TYPE_4].ptr 			= &snareVoice.filterType;
-	parameterArray[PAR_FILTER_TYPE_4].type 			= TYPE_UINT8;
-	parameterArray[PAR_FILTER_TYPE_5].ptr 			= &cymbalVoice.filterType;;
-	parameterArray[PAR_FILTER_TYPE_5].type 			= TYPE_UINT8;
-	parameterArray[PAR_FILTER_TYPE_6].ptr 			= &hatVoice.filterType;;
-	parameterArray[PAR_FILTER_TYPE_6].type 			= TYPE_UINT8;
+	parameterArray[PAR_FILTER_TYPE_1].ptr 	= &voiceArray[0].filterType;
+	parameterArray[PAR_FILTER_TYPE_1].type 	= TYPE_UINT8;
+	parameterArray[PAR_FILTER_TYPE_2].ptr 	= &voiceArray[1].filterType;
+	parameterArray[PAR_FILTER_TYPE_2].type 	= TYPE_UINT8;
+	parameterArray[PAR_FILTER_TYPE_3].ptr 	= &voiceArray[2].filterType;
+	parameterArray[PAR_FILTER_TYPE_3].type 	= TYPE_UINT8;
+	parameterArray[PAR_FILTER_TYPE_4].ptr 	= &snareVoice.filterType;
+	parameterArray[PAR_FILTER_TYPE_4].type 	= TYPE_UINT8;
+	parameterArray[PAR_FILTER_TYPE_5].ptr 	= &cymbalVoice.filterType;;
+	parameterArray[PAR_FILTER_TYPE_5].type 	= TYPE_UINT8;
+	parameterArray[PAR_FILTER_TYPE_6].ptr 	= &hatVoice.filterType;;
+	parameterArray[PAR_FILTER_TYPE_6].type 	= TYPE_UINT8;
 
-	parameterArray[PAR_TRANS1_VOL].ptr 				= &voiceArray[0].transGen.volume;
-	parameterArray[PAR_TRANS1_VOL].type 			= TYPE_FLT;
-	parameterArray[PAR_TRANS2_VOL].ptr 				= &voiceArray[1].transGen.volume;;
-	parameterArray[PAR_TRANS2_VOL].type 			= TYPE_FLT;
-	parameterArray[PAR_TRANS3_VOL].ptr 				= &voiceArray[2].transGen.volume;;
-	parameterArray[PAR_TRANS3_VOL].type 			= TYPE_FLT;
-	parameterArray[PAR_TRANS4_VOL].ptr 				= &snareVoice.transGen.volume;
-	parameterArray[PAR_TRANS4_VOL].type 			= TYPE_FLT;
-	parameterArray[PAR_TRANS5_VOL].ptr 				= &cymbalVoice.transGen.volume;
-	parameterArray[PAR_TRANS5_VOL].type 			= TYPE_FLT;
-	parameterArray[PAR_TRANS6_VOL].ptr 				= &hatVoice.transGen.volume;
-	parameterArray[PAR_TRANS6_VOL].type 			= TYPE_FLT;
-
-
-
-	parameterArray[PAR_TRANS1_WAVE].ptr 			= &voiceArray[0].transGen.waveform;
-	parameterArray[PAR_TRANS1_WAVE].type 			= TYPE_UINT8;
-	parameterArray[PAR_TRANS2_WAVE].ptr 			= &voiceArray[1].transGen.waveform;;
-	parameterArray[PAR_TRANS2_WAVE].type 			= TYPE_UINT8;
-	parameterArray[PAR_TRANS3_WAVE].ptr 			= &voiceArray[2].transGen.waveform;;
-	parameterArray[PAR_TRANS3_WAVE].type 			= TYPE_UINT8;
-	parameterArray[PAR_TRANS4_WAVE].ptr 			= &snareVoice.transGen.waveform;
-	parameterArray[PAR_TRANS4_WAVE].type 			= TYPE_UINT8;
-	parameterArray[PAR_TRANS5_WAVE].ptr 			= &cymbalVoice.transGen.waveform;
-	parameterArray[PAR_TRANS5_WAVE].type 			= TYPE_UINT8;
-	parameterArray[PAR_TRANS6_WAVE].ptr 			= &hatVoice.transGen.waveform;
-	parameterArray[PAR_TRANS6_WAVE].type 			= TYPE_UINT8;
+	parameterArray[PAR_TRANS1_VOL].ptr 		= &voiceArray[0].transGen.volume;
+	parameterArray[PAR_TRANS1_VOL].type 	= TYPE_FLT;
+	parameterArray[PAR_TRANS2_VOL].ptr 		= &voiceArray[1].transGen.volume;;
+	parameterArray[PAR_TRANS2_VOL].type 	= TYPE_FLT;
+	parameterArray[PAR_TRANS3_VOL].ptr 		= &voiceArray[2].transGen.volume;;
+	parameterArray[PAR_TRANS3_VOL].type 	= TYPE_FLT;
+	parameterArray[PAR_TRANS4_VOL].ptr 		= &snareVoice.transGen.volume;
+	parameterArray[PAR_TRANS4_VOL].type 	= TYPE_FLT;
+	parameterArray[PAR_TRANS5_VOL].ptr 		= &cymbalVoice.transGen.volume;
+	parameterArray[PAR_TRANS5_VOL].type 	= TYPE_FLT;
+	parameterArray[PAR_TRANS6_VOL].ptr 		= &hatVoice.transGen.volume;
+	parameterArray[PAR_TRANS6_VOL].type 	= TYPE_FLT;
 
 
-	parameterArray[PAR_TRANS1_FREQ].ptr 			= &voiceArray[0].transGen.pitch;
-	parameterArray[PAR_TRANS1_FREQ].type 			= TYPE_FLT;
-	parameterArray[PAR_TRANS2_FREQ].ptr 			= &voiceArray[1].transGen.pitch;
-	parameterArray[PAR_TRANS2_FREQ].type 			= TYPE_FLT;
-	parameterArray[PAR_TRANS3_FREQ].ptr 			= &voiceArray[2].transGen.pitch;;
-	parameterArray[PAR_TRANS3_FREQ].type 			= TYPE_FLT;
-	parameterArray[PAR_TRANS4_FREQ].ptr 			= &snareVoice.transGen.pitch;
-	parameterArray[PAR_TRANS4_FREQ].type 			= TYPE_FLT;
-	parameterArray[PAR_TRANS5_FREQ].ptr 			= &cymbalVoice.transGen.pitch;
-	parameterArray[PAR_TRANS5_FREQ].type 			= TYPE_FLT;
-	parameterArray[PAR_TRANS6_FREQ].ptr 			= &hatVoice.transGen.pitch;
-	parameterArray[PAR_TRANS6_FREQ].type 			= TYPE_FLT;
 
-	parameterArray[PAR_AUDIO_OUT1].ptr 				= &mixer_audioRouting[0];
-	parameterArray[PAR_AUDIO_OUT1].type 			= TYPE_UINT8;
-	parameterArray[PAR_AUDIO_OUT2].ptr 				= &mixer_audioRouting[1];
-	parameterArray[PAR_AUDIO_OUT2].type			 	= TYPE_UINT8;
-	parameterArray[PAR_AUDIO_OUT3].ptr 				= &mixer_audioRouting[2];
-	parameterArray[PAR_AUDIO_OUT3].type 			= TYPE_UINT8;
-	parameterArray[PAR_AUDIO_OUT4].ptr 				= &mixer_audioRouting[3];
-	parameterArray[PAR_AUDIO_OUT4].type 			= TYPE_UINT8;
-	parameterArray[PAR_AUDIO_OUT5].ptr 				= &mixer_audioRouting[4];
-	parameterArray[PAR_AUDIO_OUT5].type 			= TYPE_UINT8;
-	parameterArray[PAR_AUDIO_OUT6].ptr 				= &mixer_audioRouting[5];
-	parameterArray[PAR_AUDIO_OUT6].type 			= TYPE_UINT8;
+	parameterArray[PAR_TRANS1_WAVE].ptr 	= &voiceArray[0].transGen.waveform;
+	parameterArray[PAR_TRANS1_WAVE].type 	= TYPE_UINT8;
+	parameterArray[PAR_TRANS2_WAVE].ptr 	= &voiceArray[1].transGen.waveform;;
+	parameterArray[PAR_TRANS2_WAVE].type 	= TYPE_UINT8;
+	parameterArray[PAR_TRANS3_WAVE].ptr 	= &voiceArray[2].transGen.waveform;;
+	parameterArray[PAR_TRANS3_WAVE].type 	= TYPE_UINT8;
+	parameterArray[PAR_TRANS4_WAVE].ptr 	= &snareVoice.transGen.waveform;
+	parameterArray[PAR_TRANS4_WAVE].type 	= TYPE_UINT8;
+	parameterArray[PAR_TRANS5_WAVE].ptr 	= &cymbalVoice.transGen.waveform;
+	parameterArray[PAR_TRANS5_WAVE].type 	= TYPE_UINT8;
+	parameterArray[PAR_TRANS6_WAVE].ptr 	= &hatVoice.transGen.waveform;
+	parameterArray[PAR_TRANS6_WAVE].type 	= TYPE_UINT8;
+
+
+	parameterArray[PAR_TRANS1_FREQ].ptr 	= &voiceArray[0].transGen.pitch;
+	parameterArray[PAR_TRANS1_FREQ].type 	= TYPE_FLT;
+	parameterArray[PAR_TRANS2_FREQ].ptr 	= &voiceArray[1].transGen.pitch;
+	parameterArray[PAR_TRANS2_FREQ].type 	= TYPE_FLT;
+	parameterArray[PAR_TRANS3_FREQ].ptr 	= &voiceArray[2].transGen.pitch;;
+	parameterArray[PAR_TRANS3_FREQ].type 	= TYPE_FLT;
+	parameterArray[PAR_TRANS4_FREQ].ptr 	= &snareVoice.transGen.pitch;
+	parameterArray[PAR_TRANS4_FREQ].type 	= TYPE_FLT;
+	parameterArray[PAR_TRANS5_FREQ].ptr 	= &cymbalVoice.transGen.pitch;
+	parameterArray[PAR_TRANS5_FREQ].type 	= TYPE_FLT;
+	parameterArray[PAR_TRANS6_FREQ].ptr 	= &hatVoice.transGen.pitch;
+	parameterArray[PAR_TRANS6_FREQ].type 	= TYPE_FLT;
+
+	parameterArray[PAR_AUDIO_OUT1].ptr 		= &mixer_audioRouting[0];
+	parameterArray[PAR_AUDIO_OUT1].type 	= TYPE_UINT8;
+	parameterArray[PAR_AUDIO_OUT2].ptr 		= &mixer_audioRouting[1];
+	parameterArray[PAR_AUDIO_OUT2].type		= TYPE_UINT8;
+	parameterArray[PAR_AUDIO_OUT3].ptr 		= &mixer_audioRouting[2];
+	parameterArray[PAR_AUDIO_OUT3].type 	= TYPE_UINT8;
+	parameterArray[PAR_AUDIO_OUT4].ptr 		= &mixer_audioRouting[3];
+	parameterArray[PAR_AUDIO_OUT4].type 	= TYPE_UINT8;
+	parameterArray[PAR_AUDIO_OUT5].ptr 		= &mixer_audioRouting[4];
+	parameterArray[PAR_AUDIO_OUT5].type 	= TYPE_UINT8;
+	parameterArray[PAR_AUDIO_OUT6].ptr 		= &mixer_audioRouting[5];
+	parameterArray[PAR_AUDIO_OUT6].type 	= TYPE_UINT8;
 	//#########################################
 	//######## End of sound Parameters ########
 	//#########################################
