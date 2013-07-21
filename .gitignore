@@ -22,7 +22,14 @@
 # binaries
 *.hex
 *.elf
-*.bin
+!FIRMWARE.BIN
+front/AVR/Debug/*.bin
+front/AVR/Release/*.bin
+DrumSynthCortex.bin
+DrumSynthAvr.bin
+ausgelesen.bin
+tools/FirmwareImageBuilder/Debug/FIRMWARE.BIN
+tools/FirmwareImageBuilder/FirmwareImageBuilder/FIRMWARE.BIN
 *.lss
 
 
