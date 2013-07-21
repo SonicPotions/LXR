@@ -118,7 +118,6 @@ extern PatternSet seq_patternSet;
 extern TempPattern seq_tmpPattern;
 
 
-extern uint8_t seq_syncStepCnt;
 extern uint8_t seq_selectedStep;
 
 //------------------------------------------------------------------------------

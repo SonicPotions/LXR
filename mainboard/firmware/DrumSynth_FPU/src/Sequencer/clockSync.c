@@ -90,8 +90,6 @@ void sync_midiStartStop(uint8_t isStart)
 	if(isStart) {
 		// this message does NOT mean start immediately! it just 'arms' the seq to start at the next MIDI_CLOCK received
 		sync_clockCnt = 0;
-		seq_syncStepCnt = 3;
-		//sync_armed = 1;
 		seq_setRunning(1);
 		sync_timeLast = systick_ticks;
 	} else {

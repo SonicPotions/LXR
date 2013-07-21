@@ -73,8 +73,10 @@ static float	seq_deltaT;					/**< time in [ms] until the next step
  	 	 	 	 	 	 	 	 	 	 	 1 min = 60 sec*/
 uint8_t seq_activeAutomTrack=0;
 
+uint8_t seq_delayedSyncStepFlag = 0;		//normally sync steps will only be advanced by external midi clocks in ext. sync mode
+											//if the shuffle needs a delayed sync step, it is indicated here.
+
 uint8_t seq_isSyncExternal = 0;
-uint8_t seq_syncStepCnt = 3;
 
 float seq_shuffle = 0;
 
@@ -240,8 +242,8 @@ void seq_calcDeltaT(uint16_t bpm)
 		const float shuffleFactor = seq_shuffleTable[stepInHalfBeat] * seq_shuffle;
 		const float originalDeltaT = seq_deltaT;
 
-		seq_deltaT += shuffleFactor * originalDeltaT * 8.f;
-		seq_deltaT -= seq_lastShuffle * originalDeltaT * 8.f;
+		seq_deltaT += shuffleFactor * originalDeltaT * 16.f;
+		seq_deltaT -= seq_lastShuffle * originalDeltaT * 16.f;
 
 		seq_lastShuffle = shuffleFactor;
 	}
@@ -250,7 +252,7 @@ void seq_calcDeltaT(uint16_t bpm)
 void seq_setBpm(uint16_t bpm)
 {
 	seq_tempo 	= bpm;
-	seq_calcDeltaT(bpm);
+	//seq_calcDeltaT(bpm);
 	lfo_recalcSync();
 }
 //------------------------------------------------------------------------------
@@ -513,18 +515,61 @@ void seq_armAutomationStep(uint8_t stepNr, uint8_t track,uint8_t isArmed)
 //------------------------------------------------------------------------------
 void seq_resetDeltaAndTick()
 {
+	//if there are unplayed steps jump over them
 	while(!seq_isNextStepSyncStep())
 	{
 		seq_nextStep();
 	}
 
-	seq_nextStep();
+	//is shuffle delay necessary?
 
-	seq_lastTick = systick_ticks;
-	seq_calcDeltaT(seq_tempo);
+	if(seq_shuffle != 0)
+	{
+		//seq_deltaT = 0;^
 
-	seq_syncStepCnt = 0;
-	seq_prescaleCounter = 0;
+		seq_deltaT 	= (1000*60)/seq_tempo; 	//bei 12 = 500ms = zeit für einen beat
+		seq_deltaT /= 96.f; //we run the internal clock at 96ppq -> seq clock 32 ppq == prescaler 3, midi clock 24 ppq == prescale 4
+		seq_deltaT *= 4;
+
+
+		seq_lastTick = systick_ticks;
+
+		uint8_t stepInHalfBeat = seq_masterStepCnt&0xf;
+		const float shuffleFactor = seq_shuffleTable[stepInHalfBeat] * seq_shuffle;
+		const float originalDeltaT = seq_deltaT;
+
+		seq_deltaT = shuffleFactor * originalDeltaT * 1.f;
+		//seq_deltaT -= seq_lastShuffle * originalDeltaT * 8.f;
+
+		seq_lastShuffle = shuffleFactor;
+
+		//seq_calcDeltaT(seq_tempo);
+
+		if(seq_deltaT <= 0)
+		{
+			seq_nextStep();
+			seq_lastTick = systick_ticks;
+			seq_calcDeltaT(seq_tempo);
+		} else
+		{
+			seq_delayedSyncStepFlag =1;
+		}
+
+		seq_prescaleCounter = 0;
+
+	}
+	else
+	{
+		//play next sync step
+		seq_nextStep();
+
+		seq_lastTick = systick_ticks;
+		seq_calcDeltaT(seq_tempo);
+
+		seq_prescaleCounter = 0;
+	}
+
+
 }
 //------------------------------------------------------------------------------
 /** call periodically to check if the next step has to be processed */
@@ -546,8 +591,9 @@ void seq_tick()
 
 			if(seq_getExtSync()) {
 				if(seq_isNextStepSyncStep()==0) {
+					seq_delayedSyncStepFlag = 0;
+
 					seq_nextStep();
-					seq_syncStepCnt++;
 				}
 			} else {
 				seq_nextStep();
@@ -631,7 +677,6 @@ void seq_setRunning(uint8_t isRunning)
 		uart_sendMidiByte(MIDI_STOP);
 		trigger_reset(1);
 	} else {
-		seq_syncStepCnt = 0;
 		seq_prescaleCounter = 0;
 		uart_sendMidiByte(MIDI_START);
 		trigger_reset(0);
@@ -1065,6 +1110,12 @@ void seq_setActiveAutomationTrack(uint8_t trackNr)
 //------------------------------------------------------------------------------
 uint8_t seq_isNextStepSyncStep()
 {
+	if(seq_delayedSyncStepFlag)
+	{
+		seq_delayedSyncStepFlag = 0;
+		seq_prescaleCounter = 0;
+		return 0;
+	}
 	if( (seq_stepIndex[0] & 0x3) % 4 == 3) {
 		return 1;
 	}

@@ -4,7 +4,8 @@ Firmware v0.22
 - fixed crash with one shot trigger button 8
 - fixed blank screen when switching to performance mode
 - renamed "Sound" to "Kit"
-- 
+- more extreme shuffle possible
+- added swing to external clock sync mode
 
 Firmware v0.21
 ---------------------------
