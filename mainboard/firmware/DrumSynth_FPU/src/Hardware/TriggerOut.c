@@ -38,8 +38,8 @@
 #include "TriggerOut.h"
 #include "string.h"
 
-uint8_t trigger_dividerClock1 = 1;
-uint8_t trigger_dividerClock2 = 1;
+uint8_t trigger_dividerClock1 = 8;
+uint8_t trigger_dividerClock2 = 8;
 uint8_t trigger_clockCnt = 0;
 
 uint32_t trigger_pulseTimes[NUM_PINS];
@@ -58,7 +58,7 @@ void trigger_setPin(uint8_t index, uint8_t isOn)
 	case TRIGGER_6:
 	case TRIGGER_7:
 	case CLOCK_1:
-		if(isOn)
+		if(!isOn)
 		{
 			GPIOD->ODR |= (PIN_TRACK_1<<index) ;
 		} else {
@@ -69,7 +69,7 @@ void trigger_setPin(uint8_t index, uint8_t isOn)
 
 	case CLOCK_2:
 	case TRIGGER_RESET:
-		if(isOn)
+		if(!isOn)
 		{
 			GPIOA->ODR |= (PIN_CLOCK_2<<(index-CLOCK_2)) ;
 		} else {
