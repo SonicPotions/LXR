@@ -305,7 +305,6 @@ void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note)
 	if(voiceNr < 3)
 	{
 		Drum_trigger(voiceNr,vol, note);
-
 	}
 	else if(voiceNr<4)
 	{
@@ -513,6 +512,11 @@ void seq_armAutomationStep(uint8_t stepNr, uint8_t track,uint8_t isArmed)
 	}
 }
 //------------------------------------------------------------------------------
+void seq_setDeltaT(float delta)
+{
+	seq_deltaT = delta;
+}
+//------------------------------------------------------------------------------
 void seq_resetDeltaAndTick()
 {
 	//if there are unplayed steps jump over them
@@ -575,6 +579,12 @@ void seq_resetDeltaAndTick()
 /** call periodically to check if the next step has to be processed */
 void seq_tick()
 {
+	if(seq_deltaT == -1)
+	{
+		seq_deltaT = 32000;
+		seq_nextStep();
+		return;
+	}
 	if(systick_ticks-seq_lastTick >= seq_deltaT)
 	{
 

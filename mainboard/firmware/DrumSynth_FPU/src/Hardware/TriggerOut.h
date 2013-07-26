@@ -51,6 +51,9 @@
 #define PIN_CLOCK_2 GPIO_Pin_9	//Port A
 #define PIN_RESET GPIO_Pin_10	//Port A
 
+#define PIN_CLOCK_IN GPIO_Pin_9 //Port C
+#define PIN_RESET_IN GPIO_Pin_8 //Port A
+
 #define PULSE_LENGTH_MS 20 //[ms]
 #define PULSE_LENGTH (PULSE_LENGTH_MS*4) //systick 0.25ms
 

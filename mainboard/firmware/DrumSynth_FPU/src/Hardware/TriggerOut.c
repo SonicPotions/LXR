@@ -37,13 +37,53 @@
 
 #include "TriggerOut.h"
 #include "string.h"
+#include "sequencer.h"
 
 uint8_t trigger_dividerClock1 = 8;
 uint8_t trigger_dividerClock2 = 8;
+uint8_t trigger_dividerClock_Input = 1;
+
 uint8_t trigger_clockCnt = 0;
+uint8_t trigger_clockCnt_Input = 0;
 
 uint32_t trigger_pulseTimes[NUM_PINS];
 uint8_t trigger_pulseActive[NUM_PINS];
+
+//--------------------------------------------------
+void EXTI9_5_IRQHandler()
+{
+	//reset in
+	if(EXTI_GetITStatus(EXTI_Line8) != RESET)
+	{
+		const uint8_t pinState = (GPIOA->IDR & GPIO_Pin_8);
+		if(pinState)
+		{
+			//reset pin is high -> stop and reset sequencer
+			seq_setRunning(0);
+		} else {
+			//reset pin is low -> start sequencer
+			seq_setRunning(1);
+		}
+
+		EXTI_ClearITPendingBit(EXTI_Line8);
+	}
+	//clock in
+	else if(EXTI_GetITStatus(EXTI_Line9) != RESET)
+    {
+        //Handle the interrupt
+		if(trigger_clockCnt_Input % trigger_dividerClock_Input == 0)
+		{
+			if(seq_isRunning()!=0)
+			{
+				seq_setDeltaT(-1);
+			}
+		}
+		trigger_clockCnt_Input++;
+
+        EXTI_ClearITPendingBit(EXTI_Line9);
+    }
+
+}
 //--------------------------------------------------
 void trigger_setPin(uint8_t index, uint8_t isOn)
 {
@@ -113,9 +153,12 @@ void trigger_init()
 
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);
 
 	GPIO_InitTypeDef GPIO_InitStructure;
 
+
+	//trigger output
 	GPIO_InitStructure.GPIO_Pin = PIN_TRACK_1 | PIN_TRACK_2| PIN_TRACK_3 | PIN_TRACK_4 | PIN_TRACK_5 | PIN_TRACK_6 | PIN_TRACK_7 | PIN_CLOCK_1;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
@@ -129,6 +172,63 @@ void trigger_init()
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+	//-------------- trigger input ---------------------------------------
+	EXTI_InitTypeDef   EXTI_InitStructure;
+	NVIC_InitTypeDef   NVIC_InitStructure;
+	 /* Enable SYSCFG clock */
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
+
+	//---- Reset In (PA8)------------------------------------------------------
+	GPIO_InitStructure.GPIO_Pin = PIN_RESET_IN;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP; //maybe floating?
+	GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+	/* Connect EXTI Line8 to PA8 pin */
+	SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOA, EXTI_PinSource8);
+
+	/* Configure EXTI Line8 */
+	EXTI_InitStructure.EXTI_Line = EXTI_Line8;
+	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
+	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising_Falling;
+	EXTI_InitStructure.EXTI_LineCmd = ENABLE;
+	EXTI_Init(&EXTI_InitStructure);
+
+	/* Enable and set EXTI Line8 Interrupt to the lowest priority */
+	/*//same irq as below
+	NVIC_InitStructure.NVIC_IRQChannel = EXTI9_5_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x0F;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x0F;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVIC_InitStructure);
+	*/
+
+
+	//---- Clock In (PC9)------------------------------------------------------
+	GPIO_InitStructure.GPIO_Pin = PIN_CLOCK_IN;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP; //maybe floating?
+	GPIO_Init(GPIOC, &GPIO_InitStructure);
+
+	/* Connect EXTI Line9 to PC9 pin */
+	SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOC, EXTI_PinSource9);
+
+	/* Configure EXTI Line9 */
+	EXTI_InitStructure.EXTI_Line = EXTI_Line9;
+	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
+	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling;
+	EXTI_InitStructure.EXTI_LineCmd = ENABLE;
+	EXTI_Init(&EXTI_InitStructure);
+
+	/* Enable and set EXTI Line9 Interrupt to the lowest priority */
+	NVIC_InitStructure.NVIC_IRQChannel = EXTI9_5_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x0F;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x0F;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVIC_InitStructure);
 
 }
 //--------------------------------------------------
