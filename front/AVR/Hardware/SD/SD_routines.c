@@ -31,6 +31,7 @@
 unsigned char SD_init(void)
 {
 	//SPI_CARD_DETECT_DDR;
+	SD_CARD_DETECT_DDR &= ~(SD_CARD_DETECT); //is input
 	SD_CARD_DETECT_PORT |= SD_CARD_DETECT; //activate pull up
 
 	unsigned char i, response, SD_version;
