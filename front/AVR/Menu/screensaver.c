@@ -14,7 +14,8 @@
 #define SCREENSAVER_ACTIVE 1
 
 //stuff for activation logic
-#define SCREENSAVER_TIMEOUT 3//[minutes]
+volatile uint16_t screensaver_timer = 0;
+#define SCREENSAVER_TIMEOUT 2//[minutes]
 #define SCREENSAVER_SYSTICK ((SCREENSAVER_TIMEOUT*60) / (1.f / ((F_CPU/1024.f)/256.f)))
 volatile uint8_t screensaver_Active=0;
 volatile uint16_t screensaver_Timeout=SCREENSAVER_SYSTICK;
@@ -46,23 +47,16 @@ uint8_t screensaver_pseudoRng()
 void screensaver_touch()
 {
 	#if SCREENSAVER_ACTIVE
-		screensaver_Timeout = time_sysTick + SCREENSAVER_SYSTICK;
-		
-		screensaver_lastSystick = time_sysTick;
-		
-		if(screensaver_Timeout < time_sysTick)
-		{
-			//prevent screensaver bug near wrap point
-			screensaver_Timeout = 0xffff;
-			
-		}
-		if(screensaver_Active)
-		{
-			//lcd_turnOn(1);
-			screensaver_Active = 0;
-			menu_repaintAll();
-		}	
-		#endif		
+	screensaver_timer = 0;
+	screensaver_Timeout = SCREENSAVER_SYSTICK;
+
+	if(screensaver_Active)
+	{
+		//lcd_turnOn(1);
+		screensaver_Active = 0;
+		menu_repaintAll();
+	}	
+	#endif		
 }
 //------------------------------------------------------------------
 //draw some fancy stuff on the LCD
@@ -141,13 +135,7 @@ void screensaver_check()
 	{
 		if( (!screensaver_Active) )
 		{
-			//prevent overflow screensaver hanging bug
-			 if( (screensaver_Timeout-time_sysTick) > SCREENSAVER_SYSTICK)
-			 {
-				 screensaver_Timeout = time_sysTick + SCREENSAVER_SYSTICK;
-			 }
-
-			if(time_sysTick >= screensaver_Timeout )
+			if(screensaver_timer >= screensaver_Timeout)
 			{
 				//lcd_turnOn(0);
 				screensaver_Active = 1;	

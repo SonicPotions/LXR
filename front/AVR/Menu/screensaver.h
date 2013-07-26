@@ -13,4 +13,6 @@
 void screensaver_touch();
 void screensaver_check();
 
+extern volatile uint16_t screensaver_timer;
+
 #endif /* SCREENSAVER_H_ */

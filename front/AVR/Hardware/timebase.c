@@ -34,6 +34,7 @@ ISR (TIMER2_OVF_vect)
   13,1072 ms * 65535 values = 858,980352 sec = 14,3163392 min
   */
   time_sysTick++;
+  screensaver_timer++;
 }
 //---------------------------------------------
 void time_initTimer()
