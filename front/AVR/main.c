@@ -25,7 +25,7 @@
 //-----------------------------------------------
 //defines
 //-----------------------------------------------
-#define FIRMWARE_VERSION "0.22"
+#define FIRMWARE_VERSION "0.23"
 #define CORTEX_RESET_PIN	PB0
 //-----------------------------------------------
 //code
@@ -35,12 +35,19 @@
 
 int main(void) 
 {
+	//init all ports as inputs
+	DDRA = 0;
+	DDRB = 0;
+	DDRC = 0;
+	DDRD = 0;
+	
+	PORTA = 0xff;
+	PORTB = 0xff;
+	PORTC = 0xff;
+	PORTD = 0xff;
+	
 	_delay_ms(100);
-	
-	//set PD2 as out pin (LED start stop)
-	DDRD   |= (1<<PD2); //configure as output
-	PORTD  &= ~(1<<PD2);//disable pull up	
-	
+		
 	//set the CORTEX_RESET line to input
 	DDRB = 0 ;
 	DDRB &= ~(1<<CORTEX_RESET_PIN);
@@ -48,12 +55,13 @@ int main(void)
 
 	//init the lcd display
 	lcd_init();
-	
+
 	//init the uart
 	uart_init();
 
 #if UART_DEBUG_ECHO_MODE
 	//print boot up message
+	lcd_home();
 	lcd_string_F(PSTR("Sonic Potions"));
 	//goto 2nd line
 	lcd_setcursor(0,2);
@@ -67,6 +75,8 @@ int main(void)
 	lcd_string_F(PSTR("LXR Drums V"));
 	lcd_string(FIRMWARE_VERSION);
 #endif
+
+	
 #if UART_DEBUG_ECHO_MODE
 _delay_ms(1000);
 sei();
@@ -91,14 +101,12 @@ sei();
 	//init the system timer
 	time_initTimer();
 	
-
-	//we have to toggle the first step sequencer led, otherwise it will be lit all the time
+	//toggle the first step sequencer led, otherwise it will be lit all the time
 	led_toggle(0);
 	
 	//show message for 1 sec
 	_delay_ms(2000);
 	lcd_clear();
-
 	
 	//enable interrupts
 	sei();
@@ -119,48 +127,6 @@ sei();
 	preset_loadGlobals();
 #endif
 
-
-
-	/*
-	{		
-		//read next button
-		din_readNextInput();
-		//update LEDs
-		dout_updateOutputs();
-		
-		uart_checkAndParse();
-		//get the encoder values
-		const int8_t encoderValue = encode_read4();  
-		
-		
-		const uint8_t button = encode_readButton();
-		
-		//update the menu according to the encoder values
-		menu_parseEncoder(encoderValue,button);	
-		//check the poti values
-		adc_checkPots();
-	
-		//check if there is data received for the parameters (from mainboard)
-		//4 times to speed up msg handling
-		uart_checkAndParse();
-		uart_checkAndParse();
-		uart_checkAndParse();
-		uart_checkAndParse();
-		
-	
-
-		led_tickHandler();
-
-		screensaver_check();
-		
-		buttonHandler_tick();
-		
-		//check if new sd card is available after remove
-		SD_checkCardAvailable();
-		
-	}
-		*/
-//	_delay_ms(500); //give the data some time to be transmitted
 #if USE_SD_CARD		
 	//load init preset
 	preset_loadDrumset(0,0);
@@ -168,7 +134,6 @@ sei();
 
 	//initialize empty pattern
 	copyClear_clearCurrentPattern();
-
 
 	//main loop
 	while(1) 
@@ -181,8 +146,6 @@ sei();
 		uart_checkAndParse();
 		//get the encoder values
 		const int8_t encoderValue = encode_read4();  
-		
-		
 		const uint8_t button = encode_readButton();
 		
 		//update the menu according to the encoder values
