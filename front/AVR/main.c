@@ -35,17 +35,6 @@
 
 int main(void) 
 {
-	//init all ports as inputs
-	DDRA = 0;
-	DDRB = 0;
-	DDRC = 0;
-	DDRD = 0;
-	
-	PORTA = 0xff;
-	PORTB = 0xff;
-	PORTC = 0xff;
-	PORTD = 0xff;
-	
 	_delay_ms(100);
 		
 	//set the CORTEX_RESET line to input
@@ -69,6 +58,7 @@ int main(void)
 
 #else
 	//print boot up message
+	lcd_home();
 	lcd_string_F(PSTR("Sonic Potions"));
 	//goto 2nd line
 	lcd_setcursor(0,2);

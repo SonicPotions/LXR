@@ -9,12 +9,16 @@
 #include "..\Menu\menu.h"
 
 #define HYSTERSIS     3
+#define MIN( a, b ) (a < b) ? a : b
 
-volatile uint16_t adc_potValues[4];
+
+uint16_t adc_potValues[4];
+uint16_t adc_potAvg[4];
 //------------------------------------------------------------------------
 void adc_init(void) {
  
   memset((void*)adc_potValues,0,8);
+  memset((void*)adc_potAvg,0,8);
   uint16_t result;
  
   // AVCC as ref voltage
@@ -51,20 +55,26 @@ uint16_t adc_readAvg( uint8_t channel, uint8_t nsamples )
   return (uint16_t)( sum / nsamples );
 }
 //------------------------------------------------------------------------ 
+uint8_t adcCnt = 0;
 void adc_checkPots()
 {
-	for(int i=0;i<4;i++)
-	{	
+	//adc_potAvg
+	
+	//if((adcCnt++)&0x07 == 0x00)
+	{
+		for(int i=0;i<4;i++)
+		{	
 		
-		uint16_t newValue = adc_readAvg(i,4);//adc_read(i);
+			uint16_t newValue = adc_readAvg(i,4);//adc_read(i);
 		
-	   if ((newValue > ( adc_potValues[i] + HYSTERSIS)) ||
-		   ( adc_potValues[i] > (newValue + HYSTERSIS)))
-	   {
-		   adc_potValues[i] = newValue;
-		   menu_parseKnobValue(i,newValue>>2);
-		   menu_repaintAll();
-	   } 
-	}
+		   if ((newValue > ( adc_potValues[i] + HYSTERSIS)) ||
+			   ( adc_potValues[i] > (newValue + HYSTERSIS)))
+		   {
+			   adc_potValues[i] = newValue;
+			   menu_parseKnobValue(i,(newValue>>2));
+			   menu_repaintAll();
+		   } 
+		}
+	}		
 };
 //------------------------------------------------------------------------
