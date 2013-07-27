@@ -1,6 +1,10 @@
 Firmware v0.23
 ---------------------------
 - Fixed inverted trigger outputs
+- added simple trigger clock input code
+- reduced AVR power consumption
+- fixed screensaver timer bug
+- added midi out pitch/note mode
 
 Firmware v0.22
 ---------------------------

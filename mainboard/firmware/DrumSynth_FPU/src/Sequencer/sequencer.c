@@ -326,8 +326,18 @@ void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note)
 	uart_sendFrontpanelByte(voiceNr);
 	uart_sendFrontpanelByte(0);
 
-	//send to midi out
-	seq_sendMidi(0x90 | midi_globalMidiChannel,NOTE_VOICE1+voiceNr,seq_patternSet.seq_subStepPattern[seq_activePattern][voiceNr][seq_stepIndex[voiceNr]].volume&STEP_VOLUME_MASK);
+	if(midi_mode == MIDI_MODE_TRIGGER)
+	{
+		uint8_t midiChan = midi_MidiChannels[0];
+		//send to midi out
+		seq_sendMidi(0x90 | midiChan,NOTE_VOICE1+voiceNr,seq_patternSet.seq_subStepPattern[seq_activePattern][voiceNr][seq_stepIndex[voiceNr]].volume&STEP_VOLUME_MASK);
+	}
+	else
+	{
+		uint8_t midiChan = midi_MidiChannels[voiceNr];
+		//send to midi out
+		seq_sendMidi(0x90 | midiChan,note,seq_patternSet.seq_subStepPattern[seq_activePattern][voiceNr][seq_stepIndex[voiceNr]].volume&STEP_VOLUME_MASK);
+	}
 }
 //------------------------------------------------------------------------------
 void seq_nextStep()

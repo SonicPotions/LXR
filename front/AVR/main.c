@@ -22,6 +22,7 @@
 #include "Menu\screensaver.h"
 #include "ledHandler.h"
 #include "buttonHandler.h"
+#include "Menu\copyClearTools.h"
 //-----------------------------------------------
 //defines
 //-----------------------------------------------

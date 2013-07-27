@@ -174,6 +174,7 @@ enum NamesEnum
 	TEXT_POS_Y,
 	TEXT_FLUX,
 	TEXT_SOM_FREQ,
+	TEXT_MIDI_MODE,
 	
 	NUM_NAMES
 };
@@ -255,6 +256,7 @@ enum shortNamesEnum
 	SHORT_X,
 	SHORT_Y,
 	SHORT_FLUX,
+	SHORT_MIDI,
 	
 
 	
@@ -288,6 +290,7 @@ enum catNamesEnum
 	CAT_PARAMETER,
 	CAT_SEQUENCER,
 	CAT_GENERATOR,
+	CAT_MIDI,
 	
 };
 //-----------------------------------------------------------------

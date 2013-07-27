@@ -434,6 +434,7 @@ enum
 #define FRONT_SEQ_FLUX					0x2b
 #define FRONT_SEQ_SOM_FREQ				0x2c
 #define FRONT_SEQ_MIDI_CHAN				0x2d	//voiceNr (0xf0) + channel (0x0f)
+#define FRONT_SEQ_MIDI_MODE				0x2e
 
 //codec control messages
 #define EQ_ON_OFF						0x01

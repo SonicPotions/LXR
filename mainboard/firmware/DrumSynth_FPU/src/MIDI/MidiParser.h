@@ -53,6 +53,14 @@ void midiParser_handleSystemByte(unsigned char data);
 //needed to know to which value the automation node should return
 extern uint8_t midiParser_originalCcValues[0xff];
 
-extern uint8_t midi_globalMidiChannel;
+extern uint8_t midi_MidiChannels[7];
+extern uint8_t midi_mode;
+
+enum MIDI_modeEnum
+{
+	MIDI_MODE_TRIGGER,
+	MIDI_MODE_NOTE,
+} MidiModes;
+
 
 #endif /* MIDIPARSER_H_ */

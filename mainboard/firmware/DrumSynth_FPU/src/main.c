@@ -234,6 +234,8 @@ int main(void)
 	seq_init();
 	seq_setBpm(120);
 
+	memset(midi_MidiChannels,0,7);
+
 	initDrumVoice();
 	Snare_init();
 	HiHat_init();

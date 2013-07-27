@@ -215,6 +215,7 @@ const Name valueNames[NUM_NAMES] PROGMEM =
 	{SHORT_Y,CAT_GENERATOR,LONG_Y},	//TEXT_POS_Y,
 	{SHORT_FLUX,CAT_GENERATOR,LONG_FLUX},	//TEXT_FLUX,
 	{SHORT_FREQ,CAT_GENERATOR,LONG_FREQ},	//TEXT_SOM_FREQ,
+	{SHORT_MIDI,CAT_MIDI,LONG_MODE},	//TEXT_MIDI_MODE
 		
 		
 		
@@ -277,6 +278,10 @@ void menu_init()
 	parameters[PAR_MIDI_CHAN_4].dtype		= DTYPE_1B16;
 	parameters[PAR_MIDI_CHAN_5].dtype		= DTYPE_1B16;
 	parameters[PAR_MIDI_CHAN_6].dtype		= DTYPE_1B16;
+	parameters[PAR_MIDI_CHAN_7].dtype		= DTYPE_1B16;
+	
+	parameters[PAR_MIDI_MODE].dtype			= DTYPE_MENU | (MENU_MIDI<<4);
+	
 	
 	parameters[PAR_AUDIO_OUT1].dtype		= DTYPE_MENU | (MENU_AUDIO_OUT<<4);
 	parameters[PAR_AUDIO_OUT2].dtype		= DTYPE_MENU | (MENU_AUDIO_OUT<<4);
@@ -949,6 +954,10 @@ void menu_repaint()
 								memcpy_P(&editDisplayBuffer[1][13],&quantisationNames[parameters[parNr].value+1],3);
 								break;
 								
+								case MENU_MIDI:
+								memcpy_P(&editDisplayBuffer[1][13],&midiModes[parameters[parNr].value+1],3);
+								break;
+								
 								case MENU_NEXT_PATTERN:
 								memcpy_P(&editDisplayBuffer[1][13],&nextPatternNames[parameters[parNr].value+1],3);
 								break;
@@ -1136,6 +1145,10 @@ void menu_repaint()
 									memcpy_P(&valueAsText,quantisationNames[parameters[parNr].value+1],3);
 									break;
 									
+									case MENU_MIDI:
+									memcpy_P(&valueAsText,midiModes[parameters[parNr].value+1],3);
+									break;
+								
 									case MENU_NEXT_PATTERN:
 										memcpy_P(&valueAsText,nextPatternNames[parameters[parNr].value+1],3);
 									break;
@@ -1730,7 +1743,11 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 						
 							case MENU_SEQ_QUANT:
 								numEntries = quantisationNames[0][0];
-							break;						
+							break;	
+							
+							case MENU_MIDI:
+							numEntries = midiModes[0][0];
+							break;												
 						
 							case MENU_NEXT_PATTERN:
 								numEntries = nextPatternNames[0][0];
@@ -2041,15 +2058,26 @@ void menu_sendAllGlobals()
 	}
 };
 //-----------------------------------------------------------------
-#define ALL_VOICES 0x7
 void menu_parseGlobalParam(uint8_t paramNr, uint8_t value)
 {
 	switch(paramNr)
 	{
 		
+		case PAR_MIDI_MODE:
+			frontPanel_sendData(SEQ_CC,SEQ_MIDI_MODE,parameters[PAR_MIDI_MODE].value);
+		break;
+		
+		case PAR_MIDI_CHAN_7:
+			paramNr -= 5; //because they are not after one another in the param list
 		case PAR_MIDI_CHAN_1:
+		case PAR_MIDI_CHAN_2:
+		case PAR_MIDI_CHAN_3:
+		case PAR_MIDI_CHAN_4:
+		case PAR_MIDI_CHAN_5:
+		case PAR_MIDI_CHAN_6:
+		
 		{
-			uint8_t voice = ALL_VOICES;
+			uint8_t voice = paramNr - PAR_MIDI_CHAN_1;
 			uint8_t channel = value-1;
 			frontPanel_sendData(SEQ_CC,SEQ_MIDI_CHAN,(voice<<4) | channel );	
 		}
@@ -2345,7 +2373,11 @@ uint8_t getDtypeValue(uint8_t value, uint8_t paramNr)
 				
 				case MENU_SEQ_QUANT:
 					numEntries = quantisationNames[0][0];
-				break;							
+				break;		
+				
+				case MENU_MIDI:
+					numEntries = midiModes[0][0];
+				break;																					
 										
 				case MENU_NEXT_PATTERN:
 					numEntries = nextPatternNames[0][0];

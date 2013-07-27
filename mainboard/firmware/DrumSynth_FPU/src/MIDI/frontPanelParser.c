@@ -604,8 +604,12 @@ void frontParser_parseUartData(unsigned char data)
 				{
 					uint8_t voice = frontParser_midiMsg.data2 >> 4;
 					uint8_t channel = frontParser_midiMsg.data2 & 0x0f;
-					midi_globalMidiChannel = channel;
+					midi_MidiChannels[voice] = channel;
 				}
+					break;
+
+				case FRONT_SEQ_MIDI_MODE:
+					midi_mode = frontParser_midiMsg.data2;
 					break;
 
 

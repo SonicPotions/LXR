@@ -85,15 +85,16 @@ inline float calcPitchModAmount(uint8_t data2)
 //-----------------------------------------------------------
 // vars
 //-----------------------------------------------------------
-uint8_t midi_globalMidiChannel=0;	// the currently selected midi channel
+uint8_t midi_MidiChannels[7];	// the currently selected midi channel
+uint8_t midi_mode;
 MidiMsg midiMsg_tmp;				// buffer message where the incoming data is stored
 uint8_t msgLength;					// number of following data bytes for current status
 uint8_t parserState = MIDI_STATUS;	// state of the parser state machine
 //-----------------------------------------------------------
 //macros
 //-----------------------------------------------------------
-/**check if the lower nibble of the status byte fits our midi channel*/
-#define midiParser_isValidMidiChannel(x) ((x&0x0f) == midi_globalMidiChannel)
+/**check if the lower nibble of the status byte fits our midi channel (track 1)*/
+#define midiParser_isValidMidiChannel(x) ((x&0x0f) == midi_MidiChannels[0])
 //-----------------------------------------------------------
 //takes a midi value from 0 to 127 and return +/- 50 cent detune factor
 float midiParser_calcDetune(uint8_t value)
