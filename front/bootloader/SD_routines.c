@@ -15,9 +15,9 @@
 #include <avr/pgmspace.h>
 #include "SPI_routines.h"
 #include "SD_routines.h"
-#include "UART_routines.h"
 
-volatile unsigned char sd_buffer[512];
+unsigned char sd_buffer[512];
+
 
 //******************************************************************
 //Function	: to initialize the SD/SDHC card in SPI mode
@@ -27,6 +27,10 @@ volatile unsigned char sd_buffer[512];
 //******************************************************************
 unsigned char SD_init(void)
 {
+	//SPI_CARD_DETECT_DDR;
+	SD_CARD_DETECT_DDR &= ~(SD_CARD_DETECT); //is input
+	SD_CARD_DETECT_PORT |= SD_CARD_DETECT; //activate pull up
+
 	unsigned char i, response, SD_version;
 	unsigned int retry=0 ;
 
@@ -171,40 +175,356 @@ SD_CS_DEASSERT;
 return response; //return state
 }
 
+//*****************************************************************
+//Function	: to erase specified no. of blocks of SD card
+//Arguments	: none
+//return	: unsigned char; will be 0 if no error,
+// 			  otherwise the response byte will be sent
+//*****************************************************************
+unsigned char SD_erase (unsigned long startBlock, unsigned long totalBlocks)
+{
+	unsigned char response;
+
+	response = SD_sendCommand(ERASE_BLOCK_START_ADDR, startBlock); //send starting block address
+	if(response != 0x00) //check for SD status: 0x00 - OK (No flags set)
+	  return response;
+
+	response = SD_sendCommand(ERASE_BLOCK_END_ADDR,(startBlock + totalBlocks - 1)); //send end block address
+	if(response != 0x00)
+	  return response;
+
+	response = SD_sendCommand(ERASE_SELECTED_BLOCKS, 0); //erase all selected blocks
+	if(response != 0x00)
+	  return response;
+
+	return 0; //normal return
+}
+
+
+//******************************************************************
+uint8_t sd_cardAvailable = 0;
+/*
+void SD_checkCardAvailable()
+{
+	uint8_t cardInserted = (SD_CARD_DETECT_PIN&SD_CARD_DETECT);
+	if(cardInserted && (sd_cardAvailable == 0) )
+	{
+		//remount the filesystem	
+		preset_init();
+	}
+	sd_cardAvailable = cardInserted;
+};
+*/
+
 //******************************************************************
 //Function	: to read a single block from SD card
 //Arguments	: none
 //return	: unsigned char; will be 0 if no error,
 // 			  otherwise the response byte will be sent
 //******************************************************************
+#if !USE_ELM_CHAN_FS
 unsigned char SD_readSingleBlock(unsigned long startBlock)
 {
-unsigned char response;
-unsigned int i, retry=0;
+	unsigned char response;
+	unsigned int i, retry=0;
 
- response = SD_sendCommand(READ_SINGLE_BLOCK, startBlock); //read a Block command
+	 response = SD_sendCommand(READ_SINGLE_BLOCK, startBlock); //read a Block command
  
- if(response != 0x00)
- {
-	 return response; //check for SD status: 0x00 - OK (No flags set)
- }	 
+	 if(response != 0x00) return response; //check for SD status: 0x00 - OK (No flags set)
 
-SD_CS_ASSERT;
+	SD_CS_ASSERT;
 
-retry = 0;
-while(SPI_receive() != 0xfe) //wait for start block token 0xfe (0x11111110)
-  if(retry++ > 0xfffe){SD_CS_DEASSERT; return 1;} //return if time-out
+	retry = 0;
+	while(SPI_receive() != 0xfe) //wait for start block token 0xfe (0x11111110)
+	  if(retry++ > 0xfffe){SD_CS_DEASSERT; return 1;} //return if time-out
 
-for(i=0; i<512; i++) //read 512 bytes
-  sd_buffer[i] = SPI_receive();
+	for(i=0; i<512; i++) //read 512 bytes
+	  sd_buffer[i] = SPI_receive();
 
-SPI_receive(); //receive incoming CRC (16-bit), CRC is ignored here
-SPI_receive();
+	SPI_receive(); //receive incoming CRC (16-bit), CRC is ignored here
+	SPI_receive();
 
-SPI_receive(); //extra 8 clock pulses
-SD_CS_DEASSERT;
+	SPI_receive(); //extra 8 clock pulses
+	SD_CS_DEASSERT;
 
-return 0;
+	return 0;
 }
+#endif
+//******************************************************************
+unsigned char SD_readSingleBlockCustomBuffer(unsigned long startBlock, uint8_t *target)
+{
+	//encode_setInterrupt(0);
+	
+	unsigned char response;
+	unsigned int i, retry=0;
+
+	 response = SD_sendCommand(READ_SINGLE_BLOCK, startBlock); //read a Block command
+ 
+	 if(response != 0x00) return response; //check for SD status: 0x00 - OK (No flags set)
+
+	SD_CS_ASSERT;
+
+	retry = 0;
+	while(SPI_receive() != 0xfe) //wait for start block token 0xfe (0x11111110)
+	  if(retry++ > 0xfffe){SD_CS_DEASSERT; return 1;} //return if time-out
+
+	for(i=0; i<512; i++) //read 512 bytes
+	  target[i] = SPI_receive();
+
+	SPI_receive(); //receive incoming CRC (16-bit), CRC is ignored here
+	SPI_receive();
+
+	SPI_receive(); //extra 8 clock pulses
+	SD_CS_DEASSERT;
+	
+	//encode_setInterrupt(1);
+
+	return 0;
+}
+//******************************************************************
+//Function	: to write to a single block of SD card
+//Arguments	: none
+//return	: unsigned char; will be 0 if no error,
+// 			  otherwise the response byte will be sent
+//******************************************************************
+#if 0
+unsigned char SD_writeSingleBlock(unsigned long startBlock)
+{
+	unsigned char response;
+	unsigned int i, retry=0;
+
+	 response = SD_sendCommand(WRITE_SINGLE_BLOCK, startBlock); //write a Block command
+  
+	 if(response != 0x00) return response; //check for SD status: 0x00 - OK (No flags set)
+
+	SD_CS_ASSERT;
+
+	SPI_transmit(0xfe);     //Send start block token 0xfe (0x11111110)
+
+	for(i=0; i<512; i++)    //send 512 bytes data
+	  SPI_transmit(buffer[i]);
+
+	SPI_transmit(0xff);     //transmit dummy CRC (16-bit), CRC is ignored here
+	SPI_transmit(0xff);
+
+	response = SPI_receive();
+
+	if( (response & 0x1f) != 0x05) //response= 0xXXX0AAA1 ; AAA='010' - data accepted
+	{                              //AAA='101'-data rejected due to CRC error
+	  SD_CS_DEASSERT;              //AAA='110'-data rejected due to write error
+	  return response;
+	}
+
+	while(!SPI_receive()) //wait for SD card to complete writing and get idle
+	if(retry++ > 0xfffe){SD_CS_DEASSERT; return 1;}
+
+	SD_CS_DEASSERT;
+	SPI_transmit(0xff);   //just spend 8 clock cycle delay before reasserting the CS line
+	SD_CS_ASSERT;         //re-asserting the CS line to verify if card is still busy
+
+	while(!SPI_receive()) //wait for SD card to complete writing and get idle
+	   if(retry++ > 0xfffe){SD_CS_DEASSERT; return 1;}
+	SD_CS_DEASSERT;
+
+	return 0;
+}
+#endif
+//**************************************************************************
+unsigned char SD_writeSingleBlockCustomBuffer(unsigned long startBlock, uint8_t *source)
+{
+	//encode_setInterrupt(0);
+	unsigned char response;
+	unsigned int i, retry=0;
+
+	 response = SD_sendCommand(WRITE_SINGLE_BLOCK, startBlock); //write a Block command
+  
+	 if(response != 0x00) return response; //check for SD status: 0x00 - OK (No flags set)
+
+	SD_CS_ASSERT;
+
+	SPI_transmit(0xfe);     //Send start block token 0xfe (0x11111110)
+
+	for(i=0; i<512; i++)    //send 512 bytes data
+	  SPI_transmit(source[i]);
+
+	SPI_transmit(0xff);     //transmit dummy CRC (16-bit), CRC is ignored here
+	SPI_transmit(0xff);
+
+	response = SPI_receive();
+
+	if( (response & 0x1f) != 0x05) //response= 0xXXX0AAA1 ; AAA='010' - data accepted
+	{                              //AAA='101'-data rejected due to CRC error
+	  SD_CS_DEASSERT;              //AAA='110'-data rejected due to write error
+	  return response;
+	}
+
+	while(!SPI_receive()) //wait for SD card to complete writing and get idle
+	if(retry++ > 0xfffe){SD_CS_DEASSERT; return 1;}
+
+	SD_CS_DEASSERT;
+	SPI_transmit(0xff);   //just spend 8 clock cycle delay before reasserting the CS line
+	SD_CS_ASSERT;         //re-asserting the CS line to verify if card is still busy
+
+	while(!SPI_receive()) //wait for SD card to complete writing and get idle
+	   if(retry++ > 0xfffe){SD_CS_DEASSERT; return 1;}
+	SD_CS_DEASSERT;
+
+	//encode_setInterrupt(1);
+	return 0;
+}
+#ifndef FAT_TESTING_ONLY
+
+//***************************************************************************
+//Function	: to read multiple blocks from SD card & send every block to UART
+//Arguments	: none
+//return	: unsigned char; will be 0 if no error,
+// 			  otherwise the response byte will be sent
+//****************************************************************************
+#if 0
+unsigned char SD_readMultipleBlock (unsigned long startBlock, unsigned long totalBlocks)
+{
+	unsigned char response;
+	unsigned int i, retry=0;
+
+	retry = 0;
+
+	response = SD_sendCommand(READ_MULTIPLE_BLOCKS, startBlock); //write a Block command
+  
+	if(response != 0x00) return response; //check for SD status: 0x00 - OK (No flags set)
+
+	SD_CS_ASSERT;
+
+	while( totalBlocks )
+	{
+	  retry = 0;
+	  while(SPI_receive() != 0xfe) //wait for start block token 0xfe (0x11111110)
+	  if(retry++ > 0xfffe){SD_CS_DEASSERT; return 1;} //return if time-out
+
+	  for(i=0; i<512; i++) //read 512 bytes
+		buffer[i] = SPI_receive();
+
+	  SPI_receive(); //receive incoming CRC (16-bit), CRC is ignored here
+	  SPI_receive();
+
+	  SPI_receive(); //extra 8 cycles
+	  TX_NEWLINE;
+	  transmitString_F(PSTR(" --------- "));
+	  TX_NEWLINE;
+
+	  for(i=0; i<512; i++) //send the block to UART
+	  {
+		if(buffer[i] == '~') break;
+		transmitByte ( buffer[i] );
+	  }
+
+	  TX_NEWLINE;
+	  transmitString_F(PSTR(" --------- "));
+	  TX_NEWLINE;
+	  totalBlocks--;
+	}
+
+	SD_sendCommand(STOP_TRANSMISSION, 0); //command to stop transmission
+	SD_CS_DEASSERT;
+	SPI_receive(); //extra 8 clock pulses
+
+	return 0;
+}
+
+//***************************************************************************
+//Function: to receive data from UART and write to multiple blocks of SD card
+//Arguments: none
+//return: unsigned char; will be 0 if no error,
+// otherwise the response byte will be sent
+//****************************************************************************
+unsigned char SD_writeMultipleBlock(unsigned long startBlock, unsigned long totalBlocks)
+{
+	unsigned char response, data;
+	unsigned int i, retry=0;
+	unsigned long blockCounter=0, size;
+
+	response = SD_sendCommand(WRITE_MULTIPLE_BLOCKS, startBlock); //write a Block command
+
+	if(response != 0x00) return response; //check for SD status: 0x00 - OK (No flags set)
+
+	SD_CS_ASSERT;
+
+	TX_NEWLINE;
+	transmitString_F(PSTR(" Enter text (End with ~): "));
+	TX_NEWLINE;
+
+	while( blockCounter < totalBlocks )
+	{
+	   i=0;
+	   do
+	   {
+		 data = receiveByte();
+		 if(data == 0x08)	//'Back Space' key pressed
+		 { 
+		   if(i != 0)
+		   { 
+			 transmitByte(data);
+			 transmitByte(' '); 
+			 transmitByte(data); 
+			 i--; 
+			 size--;
+		   } 
+		   continue;     
+		 }
+		 transmitByte(data);
+		 buffer[i++] = data;
+		 if(data == 0x0d)
+		 {
+			transmitByte(0x0a);
+			buffer[i++] = 0x0a;
+		 }
+		 if(i == 512) break;
+	   }while (data != '~');
+
+	   TX_NEWLINE;
+	   transmitString_F(PSTR(" ---- "));
+	   TX_NEWLINE;
+
+	   SPI_transmit(0xfc); //Send start block token 0xfc (0x11111100)
+
+	   for(i=0; i<512; i++) //send 512 bytes data
+		 SPI_transmit( buffer[i] );
+
+	   SPI_transmit(0xff); //transmit dummy CRC (16-bit), CRC is ignored here
+	   SPI_transmit(0xff);
+
+	   response = SPI_receive();
+	   if( (response & 0x1f) != 0x05) //response= 0xXXX0AAA1 ; AAA='010' - data accepted
+	   {                              //AAA='101'-data rejected due to CRC error
+		  SD_CS_DEASSERT;             //AAA='110'-data rejected due to write error
+		  return response;
+	   }
+
+	   while(!SPI_receive()) //wait for SD card to complete writing and get idle
+		 if(retry++ > 0xfffe){SD_CS_DEASSERT; return 1;}
+
+	   SPI_receive(); //extra 8 bits
+	   blockCounter++;
+	}
+
+	SPI_transmit(0xfd); //send 'stop transmission token'
+
+	retry = 0;
+
+	while(!SPI_receive()) //wait for SD card to complete writing and get idle
+	   if(retry++ > 0xfffe){SD_CS_DEASSERT; return 1;}
+
+	SD_CS_DEASSERT;
+	SPI_transmit(0xff); //just spend 8 clock cycle delay before reasserting the CS signal
+	SD_CS_ASSERT; //re assertion of the CS signal is required to verify if card is still busy
+
+	while(!SPI_receive()) //wait for SD card to complete writing and get idle
+	   if(retry++ > 0xfffe){SD_CS_DEASSERT; return 1;}
+	SD_CS_DEASSERT;
+
+	return 0;
+}
+//*********************************************
+#endif
+#endif
 
 //******** END ****** www.dharmanitech.com *****

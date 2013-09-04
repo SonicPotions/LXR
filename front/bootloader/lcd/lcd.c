@@ -170,7 +170,7 @@ void lcd_string_F( const char *data )
 {
   while (pgm_read_byte(&(*data))!= '\0')
    lcd_data(pgm_read_byte(&(*data++)));
-};
+}
  
 ////////////////////////////////////////////////////////////////////////////////
 // Schreibt ein Zeichen in den Character Generator RAM

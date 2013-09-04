@@ -16,6 +16,7 @@
 
 #include "config.h"
 
+#if !USE_ELM_CHAN_FS
 
 
 //Structure to access Master Boot Record for getting info about partioions
@@ -164,4 +165,5 @@ void freeMemoryUpdate (unsigned char flag, unsigned long size);
 unsigned long searchNextFreeCluster (unsigned long startCluster);
 #endif
 
+#endif
 #endif

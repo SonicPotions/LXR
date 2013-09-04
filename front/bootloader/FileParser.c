@@ -15,6 +15,7 @@
 #include "Bootloader/BootloaderCommands.h"
 //TODO: contributors für crc !!!
 #include "util/crc16.h"
+#include "dout.h"
 
 struct InfoHeader infoHeader;
 volatile uint32_t fileParser_bytesRead=0;
@@ -97,7 +98,7 @@ void fileParser_resetCortex()
 	CORTEX_RESET_PORT &= ~(1<<CORTEX_RESET_PIN);
 	_delay_ms(50);
 	
-};
+}
 
 //------------------------------------------------------------------------
 
@@ -109,8 +110,10 @@ uint8_t fileParser_parseNextBlock(unsigned long filesize)
 		case INFO_HEADER:
 		{
 			//--- read info header ---
-			struct InfoHeader *tmpHeader = (struct InfoHeader *) &sd_buffer[0];
+			struct InfoHeader *tmpHeader;
+			tmpHeader = (struct InfoHeader *) &sd_buffer[0];
 			infoHeader = *tmpHeader;
+
 	
 			if(	(infoHeader.headerId[0] != 'S') ||
 				(infoHeader.headerId[1] != 'P') ||
@@ -152,7 +155,9 @@ uint8_t fileParser_parseNextBlock(unsigned long filesize)
 			
 			for(int i=0; (i<(512/SPM_PAGESIZE)) && (fileParser_bytesRead < (infoHeader.avrCodeSize +  512)); i++ )
 			{
+				
 				boot_program_page(fileParser_pagesWritten,(uint8_t *)&sd_buffer[0+i*SPM_PAGESIZE]);
+
 				fileParser_bytesRead += SPM_PAGESIZE;
 				fileParser_pagesWritten+=SPM_PAGESIZE;
 			}
@@ -274,6 +279,7 @@ uint8_t fileParser_parseNextBlock(unsigned long filesize)
 					uart_tx(sd_buffer[i+2]);
 					uart_tx(sd_buffer[i+1]);
 					uart_tx(sd_buffer[i]);
+
 					//send calculated CRC
 					uart_tx(crc>>8);
 					uart_tx(crc&0xff);
@@ -310,4 +316,4 @@ uint8_t fileParser_parseNextBlock(unsigned long filesize)
 	}
 
 	return 1;
-};
+}

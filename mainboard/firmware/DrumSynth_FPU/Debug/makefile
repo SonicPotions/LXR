@@ -70,7 +70,7 @@ DrumSynth_FPU.lst: DrumSynth_FPU.elf
 
 DrumSynth_FPU.siz: DrumSynth_FPU.elf
 	@echo 'Invoking: ARM Windows GNU Print Size'
-	arm-none-eabi-size  --format=berkeley DrumSynth_FPU.elf
+	arm-none-eabi-size  --format=berkeley -t DrumSynth_FPU.elf
 	@echo 'Finished building: $@'
 	@echo ' '
 

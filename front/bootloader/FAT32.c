@@ -22,6 +22,8 @@
 #include "SD_routines.h"
 #include "FileParser.h"
 
+#if !USE_ELM_CHAN_FS
+
 //***************************************************************************
 //Function: to read data from boot sector of SD card, to determine important
 //parameters like bytesPerSector, sectorsPerCluster etc.
@@ -249,3 +251,4 @@ return;
 }
 
 //******** END ****** www.dharmanitech.com *****
+#endif

@@ -27,8 +27,13 @@
 //#define SD_CS_DEASSERT   PORTB |= 0x02
 
 //use following macros if SS (PB4) pin is used for Chip Select of SD
-#define SD_CS_ASSERT     PORTB &= ~0x10
-#define SD_CS_DEASSERT   PORTB |= 0x10
+#define SD_CS_ASSERT     PORTB &= ~(1<<PB4)
+#define SD_CS_DEASSERT   PORTB |= (1<<PB4)
+
+#define SD_CARD_DETECT_PORT		PORTD
+#define SD_CARD_DETECT_PIN		PIND
+#define SD_CARD_DETECT_DDR		DDRD
+#define SD_CARD_DETECT			(1<<PD2)
 
 //SD commands, many of these are not used here
 #define GO_IDLE_STATE            0
@@ -56,12 +61,20 @@
 
 volatile unsigned long startBlock, totalBlocks; 
 volatile unsigned char SDHC_flag, cardType;
-extern volatile unsigned char sd_buffer[512];
+extern unsigned char sd_buffer[512];
 
 unsigned char SD_init(void);
 unsigned char SD_sendCommand(unsigned char cmd, unsigned long arg);
 unsigned char SD_readSingleBlock(unsigned long startBlock);
-
+unsigned char SD_readSingleBlockCustomBuffer(unsigned long startBlock, uint8_t *target);
+unsigned char SD_writeSingleBlock(unsigned long startBlock);
+unsigned char SD_writeSingleBlockCustomBuffer(unsigned long startBlock, uint8_t *source);
 //unsigned char SD_readMultipleBlock (unsigned long startBlock, unsigned long totalBlocks);
+//unsigned char SD_writeMultipleBlock(unsigned long startBlock, unsigned long totalBlocks);
+unsigned char SD_erase (unsigned long startBlock, unsigned long totalBlocks);
+
+
+
+void SD_checkCardAvailable();
 
 #endif

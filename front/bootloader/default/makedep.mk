@@ -4,6 +4,10 @@
 
 dout.c
 
+elmChan\diskIo.c
+
+elmChan\ff.c
+
 FileParser.c
 
 lcd\lcd.c

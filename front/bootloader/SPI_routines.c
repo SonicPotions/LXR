@@ -16,8 +16,17 @@
 //clock rate: 125Khz
 void spi_init(void)
 {
-SPCR = 0x52; //setup SPI: Master mode, MSB first, SCK phase low, SCK idle low
-SPSR = 0x00;
+	
+	//init port
+	DDRB  |= (1<<PB7) | (1<<PB5) | (1<<PB4) ;//0xBF; //MISO line i/p, rest o/p
+	PORTB |= 0;//(1<<PB7) | (1<<PB6) | (1<<PB5);//0xEF
+	
+
+	
+	
+	//SPCR = 0x52; //setup SPI: Master mode, MSB first, SCK phase low, SCK idle low
+	SPCR = (1<<SPE) | (1<<MSTR) | (1<<SPR1); //clock FCPU/64 = 20000000/64= 312.5kHz
+	SPSR = 0x00;
 }
 
 unsigned char SPI_transmit(unsigned char data)

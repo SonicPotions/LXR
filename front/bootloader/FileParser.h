@@ -11,6 +11,7 @@
 
 #include <avr/io.h>
 #include "UART_routines.h"
+#include "config.h"
 
 /************************************************************************/
 /*  a firmware file consists of 3 elements

@@ -102,4 +102,4 @@ uint8_t uart_checkAck()
 				lcd_string("no ack");
 				while(1);
 	return 0;
-};
+}

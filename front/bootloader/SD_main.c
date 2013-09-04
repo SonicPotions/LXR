@@ -27,6 +27,14 @@
 #include "avr/wdt.h"
 #include "userInterface.h"
 #include "dout.h"
+#include "config.h"
+
+#if USE_ELM_CHAN_FS
+#include "./elmChan/ff.h"
+#include "FileParser.h"
+	FATFS firmwareFatfs;		/* File system object for the logical drive */
+	FIL firmwareFile;		/* place to hold 1 file*/
+#endif
 
 
 void port_init(void)
@@ -78,7 +86,7 @@ void init_devices(void)
 }
 //---------------------------------------------------------------------
 //*************************** MAIN *******************************//
-int __attribute__((OS_main)) __attribute__((noreturn))
+int __attribute__((OS_main)) 
   main(void)
 {
 	unsigned char error;
@@ -95,7 +103,7 @@ int __attribute__((OS_main)) __attribute__((noreturn))
 	if(ui_isButtonPressed())
 	{
 		init_devices();
-		lcd_string("Bootloader v1.1");
+		lcd_string("Bootloader v1.2");
 		_delay_ms(500);
 		cardType = 0;
 
@@ -123,15 +131,49 @@ int __attribute__((OS_main)) __attribute__((noreturn))
 			SPI_HIGH_SPEED;	//SCK - 4 MHz
 			_delay_ms(1);   //some delay
 
-			error = getBootSectorData (); //read boot sector and keep necessary data in global variables
-			if(error) 	
+#if USE_ELM_CHAN_FS
+			//mount the filesystem	
+			FRESULT res = f_mount(0,(FATFS*)&firmwareFatfs);
+			
+			if(res!=FR_OK)
 			{
 				lcd_clear();
 				lcd_string("FS error");
 				while(1)
 				{	
-		  		  //_delay_ms(500);
-				  //ui_ledToggle();
+				}	
+			}
+			res = f_open((FIL*)&firmwareFile,"FIRMWARE.BIN",FA_OPEN_EXISTING | FA_READ);
+			
+			if(res!=FR_OK)
+			{
+				lcd_clear();
+				lcd_string("File not found");
+				while(1)
+				{	
+				}				  
+			}
+			else
+			{
+				unsigned long size = f_size(&firmwareFile);
+				unsigned long pos = 0;
+				while(pos<size)
+				{
+					unsigned int bytesRead;
+					f_read((FIL*)&firmwareFile,(void*)sd_buffer,512,&bytesRead);		
+					fileParser_parseNextBlock(size);
+					pos+=512;
+				}					
+			}				
+#else
+			error = getBootSectorData (); //read boot sector and keep necessary data in global variables
+			if(error) 				
+		
+			{
+				lcd_clear();
+				lcd_string("FS error");
+				while(1)
+				{	
 				}				  
 			}
 			else
@@ -144,6 +186,7 @@ int __attribute__((OS_main)) __attribute__((noreturn))
 			//	cli();
 			//	start();
 			}
+#endif				
 		}	
 	}		
 	
@@ -165,6 +208,7 @@ int __attribute__((OS_main)) __attribute__((noreturn))
 	//EIND = 0;
     start(); 
 
+	while(1) {} 
 //	return 0;
 }
 

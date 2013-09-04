@@ -87,7 +87,7 @@ void dout_updateOutputs()
 	}
 	//output the data on the register pins
 	dout_load();
-};
+}
 //---------------------------------------------------------------------------------
 void dout_shift()
 {
@@ -95,11 +95,11 @@ void dout_shift()
 	DOUT_PORT |= DOUT_CLK_PIN;
 	//clock low
 	DOUT_PORT &= ~DOUT_CLK_PIN;
-};
+}
 //---------------------------------------------------------------------------------
 void dout_load()
 {
 	DOUT_PORT |= DOUT_LOAD_PIN;
 	DOUT_PORT &= ~DOUT_LOAD_PIN;
-};
+}
 //---------------------------------------------------------------------------------

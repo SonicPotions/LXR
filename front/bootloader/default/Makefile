@@ -32,12 +32,15 @@ OUTPUT_FILE_DEP:=
 # Every subdirectory with source files must be described here
 SUBDIRS :=  \
 ../lcd \
-../Bootloader
+../Bootloader \
+../elmChan
 
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS +=  \
 ../dout.c \
+../elmChan/diskIo.c \
+../elmChan/ff.c \
 ../FileParser.c \
 ../lcd/lcd.c \
 ../FAT32.c \
@@ -56,6 +59,8 @@ ASM_SRCS +=
 
 OBJS +=  \
 dout.o \
+elmChan/diskIo.o \
+elmChan/ff.o \
 FileParser.o \
 lcd/lcd.o \
 FAT32.o \
@@ -68,6 +73,8 @@ userInterface.o
 
 OBJS_AS_ARGS +=  \
 dout.o \
+elmChan/diskIo.o \
+elmChan/ff.o \
 FileParser.o \
 lcd/lcd.o \
 FAT32.o \
@@ -80,6 +87,8 @@ userInterface.o
 
 C_DEPS +=  \
 dout.d \
+elmChan/diskIo.d \
+elmChan/ff.d \
 FileParser.d \
 lcd/lcd.d \
 FAT32.d \
@@ -92,6 +101,8 @@ userInterface.d
 
 C_DEPS_AS_ARGS +=  \
 dout.d \
+elmChan/diskIo.d \
+elmChan/ff.d \
 FileParser.d \
 lcd/lcd.d \
 FAT32.d \
@@ -130,16 +141,26 @@ OUTPUT_FILE_DEP:= ./makedep.mk
 
 
 
+
+
+
+
 ./%.o: .././%.c
 	@echo Building file: $<
 	@echo Invoking: AVR/GNU C Compiler
-	$(QUOTE)C:\Program Files (x86)\Atmel\AVR Studio 5.1\extensions\Atmel\AVRGCC\3.3.1.27\AVRToolchain\bin\avr-gcc.exe$(QUOTE)  -funsigned-char -funsigned-bitfields -DF_CPU=20000000UL  -Os -mtiny-stack -fno-unit-at-a-time -fno-inline-small-functions  -mcall-prologues -fno-jump-tables -fno-move-loop-invariants -ffunction-sections -fpack-struct -fshort-enums -Wall -c -gdwarf-2 -std=gnu99  -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)"  -mmcu=atmega644p  -o"$@" "$<" 
+	$(QUOTE)C:\Program Files (x86)\Atmel\AVR Studio 5.1\extensions\Atmel\AVRGCC\3.3.1.27\AVRToolchain\bin\avr-gcc.exe$(QUOTE)  -funsigned-char -funsigned-bitfields -DF_CPU=20000000UL  -Os -mtiny-stack -fno-unit-at-a-time -fno-inline-small-functions  -mcall-prologues -fno-jump-tables -fno-move-loop-invariants -ffunction-sections -fpack-struct -fshort-enums -Wall -pedantic -c -gdwarf-2 -std=gnu99  -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)"  -mmcu=atmega644p  -o"$@" "$<" 
+	@echo Finished building: $<
+
+elmChan/%.o: ../elmChan/%.c
+	@echo Building file: $<
+	@echo Invoking: AVR/GNU C Compiler
+	$(QUOTE)C:\Program Files (x86)\Atmel\AVR Studio 5.1\extensions\Atmel\AVRGCC\3.3.1.27\AVRToolchain\bin\avr-gcc.exe$(QUOTE)  -funsigned-char -funsigned-bitfields -DF_CPU=20000000UL  -Os -mtiny-stack -fno-unit-at-a-time -fno-inline-small-functions  -mcall-prologues -fno-jump-tables -fno-move-loop-invariants -ffunction-sections -fpack-struct -fshort-enums -Wall -pedantic -c -gdwarf-2 -std=gnu99  -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)"  -mmcu=atmega644p  -o"$@" "$<" 
 	@echo Finished building: $<
 
 lcd/%.o: ../lcd/%.c
 	@echo Building file: $<
 	@echo Invoking: AVR/GNU C Compiler
-	$(QUOTE)C:\Program Files (x86)\Atmel\AVR Studio 5.1\extensions\Atmel\AVRGCC\3.3.1.27\AVRToolchain\bin\avr-gcc.exe$(QUOTE)  -funsigned-char -funsigned-bitfields -DF_CPU=20000000UL  -Os -mtiny-stack -fno-unit-at-a-time -fno-inline-small-functions  -mcall-prologues -fno-jump-tables -fno-move-loop-invariants -ffunction-sections -fpack-struct -fshort-enums -Wall -c -gdwarf-2 -std=gnu99  -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)"  -mmcu=atmega644p  -o"$@" "$<" 
+	$(QUOTE)C:\Program Files (x86)\Atmel\AVR Studio 5.1\extensions\Atmel\AVRGCC\3.3.1.27\AVRToolchain\bin\avr-gcc.exe$(QUOTE)  -funsigned-char -funsigned-bitfields -DF_CPU=20000000UL  -Os -mtiny-stack -fno-unit-at-a-time -fno-inline-small-functions  -mcall-prologues -fno-jump-tables -fno-move-loop-invariants -ffunction-sections -fpack-struct -fshort-enums -Wall -pedantic -c -gdwarf-2 -std=gnu99  -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)"  -mmcu=atmega644p  -o"$@" "$<" 
 	@echo Finished building: $<
 
 
