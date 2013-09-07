@@ -16,7 +16,7 @@
 #include <avr/pgmspace.h>
 
 #include "../config.h"
-#if USE_ELM_CHAN_FS
+
 
 //-------------------------------------------------------------------------
 static volatile DSTATUS Stat = STA_NOINIT;	/* Disk status */
@@ -176,4 +176,3 @@ DWORD get_fattime (void)
 }
 //-------------------------------------------------------------------------
 
-#endif

@@ -16,19 +16,9 @@
 
 #include "config.h"
 
-
-//Use following macro if you don't want to activate the multiple block access functions
-//those functions are not required for FAT32
-
-#define FAT_TESTING_ONLY
-
-//use following macros if PB1 pin is used for Chip Select of SD
-//#define SD_CS_ASSERT     PORTB &= ~0x02
-//#define SD_CS_DEASSERT   PORTB |= 0x02
-
 //use following macros if SS (PB4) pin is used for Chip Select of SD
-#define SD_CS_ASSERT     PORTB &= ~(1<<PB4)
-#define SD_CS_DEASSERT   PORTB |= (1<<PB4)
+#define SD_CS_ASSERT			PORTB &= ~(1<<PB4)
+#define SD_CS_DEASSERT			PORTB |= (1<<PB4)
 
 #define SD_CARD_DETECT_PORT		PORTD
 #define SD_CARD_DETECT_PIN		PIND
@@ -69,12 +59,6 @@ unsigned char SD_readSingleBlock(unsigned long startBlock);
 unsigned char SD_readSingleBlockCustomBuffer(unsigned long startBlock, uint8_t *target);
 unsigned char SD_writeSingleBlock(unsigned long startBlock);
 unsigned char SD_writeSingleBlockCustomBuffer(unsigned long startBlock, uint8_t *source);
-//unsigned char SD_readMultipleBlock (unsigned long startBlock, unsigned long totalBlocks);
-//unsigned char SD_writeMultipleBlock(unsigned long startBlock, unsigned long totalBlocks);
-unsigned char SD_erase (unsigned long startBlock, unsigned long totalBlocks);
 
-
-
-void SD_checkCardAvailable();
 
 #endif

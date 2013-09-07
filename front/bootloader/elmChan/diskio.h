@@ -2,7 +2,7 @@
 /  Low level disk interface modlue include file
 /-----------------------------------------------------------------------*/
 #include "../config.h"
-#if USE_ELM_CHAN_FS
+
 
 #ifndef _DISKIO
 
@@ -77,5 +77,4 @@ DRESULT disk_ioctl (BYTE, BYTE, void*);
 
 
 #define _DISKIO
-#endif
 #endif

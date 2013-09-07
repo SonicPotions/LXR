@@ -1,16 +1,12 @@
 //***********************************************************
 // **** MAIN routine for Sonic Potions SD Card Bootloader ***
 //***********************************************************
-//Controller: ATmega32 (Clock: 16 Mhz-external)
-//Compiler	: AVR-GCC (winAVR with AVRStudio)
-
-//Author original FAT32 and SD routines	: CC Dharmani, Chennai (India)
-//										  www.dharmanitech.com
+//Author original SD routines	: CC Dharmani, Chennai (India)
+//								  www.dharmanitech.com
 //Link to the original src: http://www.dharmanitech.com/2009/01/sd-card-interfacing-with-atmega8-fat32.html
 
-//Modified for bootloader:	Julian Schmidt
-//							www.sonic-potions.de
-//Date		: 7 Jul 2012
+//Modified for Sonic Potions bootloader:	Julian Schmidt
+//											www.sonic-potions.de
 //***********************************************************
 
 
@@ -22,41 +18,34 @@
 #include "SPI_routines.h"
 #include "SD_routines.h"
 #include "UART_routines.h"
-#include "FAT32.h"
 #include "lcd/lcd.h"
 #include "avr/wdt.h"
 #include "userInterface.h"
 #include "dout.h"
 #include "config.h"
-
-#if USE_ELM_CHAN_FS
 #include "./elmChan/ff.h"
 #include "FileParser.h"
-	FATFS firmwareFatfs;		/* File system object for the logical drive */
-	FIL firmwareFile;		/* place to hold 1 file*/
-#endif
-
-
+//---------------------------------------------------------------------
+FATFS firmwareFatfs;		/* File system object for the logical drive */
+FIL firmwareFile;		/* place to hold 1 file*/
+//---------------------------------------------------------------------
 void port_init(void)
 {
-PORTA = 0x00;
-DDRA  = 0x00;
-PORTB = 0xEF;
-DDRB  = 0xBF; //MISO line i/p, rest o/p
-PORTC = 0x00;
-DDRC  = 0x00;
-PORTD = 0x00;
-//DDRD  = 0xFE;
+	PORTA = 0x00;
+	DDRA  = 0x00;
+	PORTB = 0xEF;
+	DDRB  = 0xBF; //MISO line i/p, rest o/p
+	PORTC = 0x00;
+	DDRC  = 0x00;
+	PORTD = 0x00;
+	//DDRD  = 0xFE;
 
-//init cortex reset output pin
+	//init cortex reset output pin
 	//as input
 	CORTEX_RESET_DDR &= ~(1<<CORTEX_RESET_PIN);
 	//no pull up
 	CORTEX_RESET_PORT &= ~(1<<CORTEX_RESET_PIN);
-
-
 }
-
 //---------------------------------------------------------------------
 //jump to address 0x0000
 void (*start)( void ) = 0x0000;
@@ -64,25 +53,23 @@ void (*start)( void ) = 0x0000;
 //call this routine to initialize all peripherals
 void init_devices(void)
 {
- cli();  //all interrupts disabled
- port_init();
- spi_init();
+	cli();  //all interrupts disabled
+	port_init();
+	spi_init();
 
-// twi_init();
- uart_init();
+	// twi_init();
+	uart_init();
 
- MCUCR = 0x00;
-#ifdef MEGA32 
- GICR  = 0x00;
- TIMSK = 0x00; //timer interrupt sources
-#else
-// MCUCR  = 0x00;
- TIMSK0 = 0x00; //timer interrupt sources
-#endif
- //all peripherals are now initialized
- 
-  lcd_init();
- 
+	MCUCR = 0x00;
+	#ifdef MEGA32 
+	GICR  = 0x00;
+	TIMSK = 0x00; //timer interrupt sources
+	#else
+	// MCUCR  = 0x00;
+	TIMSK0 = 0x00; //timer interrupt sources
+	#endif
+	//all peripherals are now initialized
+ 	lcd_init();
 }
 //---------------------------------------------------------------------
 //*************************** MAIN *******************************//
@@ -92,12 +79,8 @@ int __attribute__((OS_main))
 	unsigned char error;
 	unsigned int i;
 	_delay_ms(100);  //delay for VCC stabilization
-	
 
-	
-	 //init user ui
 	ui_init();
-	
 	dout_init();
 	
 	if(ui_isButtonPressed())
@@ -119,19 +102,15 @@ int __attribute__((OS_main))
 			lcd_home();
 			lcd_string("SD error");
 			while(1)  //wait here forever if error in SD init 
-			{
-			  
+			{  
 			  _delay_ms(100);
-			  //ui_ledToggle();	  			  
 			}
 		}
 		else
 		{
-
 			SPI_HIGH_SPEED;	//SCK - 4 MHz
 			_delay_ms(1);   //some delay
 
-#if USE_ELM_CHAN_FS
 			//mount the filesystem	
 			FRESULT res = f_mount(0,(FATFS*)&firmwareFatfs);
 			
@@ -164,29 +143,7 @@ int __attribute__((OS_main))
 					fileParser_parseNextBlock(size);
 					pos+=512;
 				}					
-			}				
-#else
-			error = getBootSectorData (); //read boot sector and keep necessary data in global variables
-			if(error) 				
-		
-			{
-				lcd_clear();
-				lcd_string("FS error");
-				while(1)
-				{	
-				}				  
-			}
-			else
-			{
-				//name without dot -> 11 byte in fat entry
-				readFile((unsigned char*)"FIRMWAREBIN");	
-				
-				
-
-			//	cli();
-			//	start();
-			}
-#endif				
+			}						
 		}	
 	}		
 	
@@ -194,21 +151,8 @@ int __attribute__((OS_main))
 	/* vor Rücksprung eventuell benutzte Hardware deaktivieren
        und Interrupts global deaktivieren, da kein "echter" Reset erfolgt */
  
-    /* Interrupt Vektoren wieder gerade biegen */
     cli();
-    /*
-	temp = MCUCR;
-    MCUCR = temp | (1<<IVCE);
-    MCUCR = temp & ~(1<<IVSEL);
-	*/
- 
-    /* Rücksprung zur Adresse 0x0000 */
-//	SIGNAL_LED_PORT |= ((1<<SIGNAL_LED));
-
-	//EIND = 0;
     start(); 
-
 	while(1) {} 
-//	return 0;
 }
 

@@ -95,7 +95,7 @@
 #include "ff.h"			/* FatFs configurations and declarations */
 #include "diskio.h"		/* Declarations of low level disk I/O functions */
 #include "../config.h"
-#if USE_ELM_CHAN_FS
+
 
 /*--------------------------------------------------------------------------
 
@@ -4076,4 +4076,3 @@ int f_printf (
 
 #endif /* !_FS_READONLY */
 #endif /* _USE_STRFUNC */
-#endif

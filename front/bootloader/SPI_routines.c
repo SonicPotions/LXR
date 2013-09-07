@@ -1,30 +1,14 @@
-//**************************************************************
-// ****** FUNCTIONS FOR SPI COMMUNICATION *******
-//**************************************************************
-//Controller: ATmega32 (Clock: 8 Mhz-internal)
-//Compiler	: AVR-GCC (winAVR with AVRStudio)
-//Project V.: Version - 2.4.1
-//Author	: CC Dharmani, Chennai (India)
-//			  www.dharmanitech.com
-//Date		: 24 Apr 2011
-//**************************************************************
-
 #include <avr/io.h>
 #include "SPI_routines.h"
 
 //SPI initialize for SD card
-//clock rate: 125Khz
 void spi_init(void)
 {
 	
 	//init port
-	DDRB  |= (1<<PB7) | (1<<PB5) | (1<<PB4) ;//0xBF; //MISO line i/p, rest o/p
-	PORTB |= 0;//(1<<PB7) | (1<<PB6) | (1<<PB5);//0xEF
-	
-
-	
-	
-	//SPCR = 0x52; //setup SPI: Master mode, MSB first, SCK phase low, SCK idle low
+	DDRB  |= (1<<PB7) | (1<<PB5) | (1<<PB4) ;
+	PORTB |= 0;
+		
 	SPCR = (1<<SPE) | (1<<MSTR) | (1<<SPR1); //clock FCPU/64 = 20000000/64= 312.5kHz
 	SPSR = 0x00;
 }
@@ -54,4 +38,3 @@ data = SPDR;
 return data;
 }
 
-//******** END ****** www.dharmanitech.com *****

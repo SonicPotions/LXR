@@ -11,14 +11,8 @@
 
 #include "./lcd/lcd.h"
 
-#define USE_ELM_CHAN_FS 1
-
-#if USE_ELM_CHAN_FS
-	#include "./elmChan/ff.h"
-	extern FIL firmwareFile;		/* place to hold 1 file*/
-#endif
-
-#define SMALL 1
+#include "./elmChan/ff.h"
+extern FIL firmwareFile;		/* place to hold 1 file*/
 
 #define CORTEX_RESET_PIN	PD7
 #define CORTEX_RESET_PORT	PORTD

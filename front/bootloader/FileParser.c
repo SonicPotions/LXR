@@ -29,10 +29,7 @@ enum StateEnum
 };
 
 volatile uint8_t fileParser_parseState=INFO_HEADER;
-
 volatile uint32_t addressCounter=0;
-
-
 
 uint16_t calcCrc(uint8_t cmd, uint8_t* data)
 {
@@ -97,9 +94,7 @@ void fileParser_resetCortex()
 	//no pull up
 	CORTEX_RESET_PORT &= ~(1<<CORTEX_RESET_PIN);
 	_delay_ms(50);
-	
 }
-
 //------------------------------------------------------------------------
 
 uint8_t fileParser_parseNextBlock(unsigned long filesize)
@@ -114,7 +109,6 @@ uint8_t fileParser_parseNextBlock(unsigned long filesize)
 			tmpHeader = (struct InfoHeader *) &sd_buffer[0];
 			infoHeader = *tmpHeader;
 
-	
 			if(	(infoHeader.headerId[0] != 'S') ||
 				(infoHeader.headerId[1] != 'P') ||
 				(infoHeader.headerId[2] != 'F') ||
@@ -172,8 +166,6 @@ uint8_t fileParser_parseNextBlock(unsigned long filesize)
 			//check if AVR code end is reached
 			if(fileParser_bytesRead >= (infoHeader.avrCodeSize +  512) )
 			{
-				
-				
 				//reset cortex chip
 				lcd_home();
 				lcd_string("updating...(1/2)");
@@ -181,7 +173,6 @@ uint8_t fileParser_parseNextBlock(unsigned long filesize)
 				lcd_command(LCD_CURSOR_ON);
 				
 				fileParser_resetCortex();
-				
 				
 				//initialize the cortex bootloader
 				//try 10 times to give the cortex some time to boot and answer
@@ -288,14 +279,8 @@ uint8_t fileParser_parseNextBlock(unsigned long filesize)
 				
 				//transfer succeeded
 				addressCounter++;
-				
-				
-											
 			}	
 			dout_updateOutputs();			
-			
-			
-	
 				
 			fileParser_bytesRead+=512;
 			//send cortex bootloader data

@@ -12,8 +12,6 @@ FileParser.c
 
 lcd\lcd.c
 
-FAT32.c
-
 SD_main.c
 
 SD_routines.c

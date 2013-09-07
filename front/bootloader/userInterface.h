@@ -22,8 +22,6 @@
 
 
 void ui_init();
-//void ui_ledToggle();
-
 uint8_t ui_isButtonPressed();
 
 

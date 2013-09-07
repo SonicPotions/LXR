@@ -43,7 +43,6 @@ C_SRCS +=  \
 ../elmChan/ff.c \
 ../FileParser.c \
 ../lcd/lcd.c \
-../FAT32.c \
 ../SD_main.c \
 ../SD_routines.c \
 ../SPI_routines.c \
@@ -63,7 +62,6 @@ elmChan/diskIo.o \
 elmChan/ff.o \
 FileParser.o \
 lcd/lcd.o \
-FAT32.o \
 SD_main.o \
 SD_routines.o \
 SPI_routines.o \
@@ -77,7 +75,6 @@ elmChan/diskIo.o \
 elmChan/ff.o \
 FileParser.o \
 lcd/lcd.o \
-FAT32.o \
 SD_main.o \
 SD_routines.o \
 SPI_routines.o \
@@ -91,7 +88,6 @@ elmChan/diskIo.d \
 elmChan/ff.d \
 FileParser.d \
 lcd/lcd.d \
-FAT32.d \
 SD_main.d \
 SD_routines.d \
 SPI_routines.d \
@@ -105,7 +101,6 @@ elmChan/diskIo.d \
 elmChan/ff.d \
 FileParser.d \
 lcd/lcd.d \
-FAT32.d \
 SD_main.d \
 SD_routines.d \
 SPI_routines.d \
@@ -143,24 +138,22 @@ OUTPUT_FILE_DEP:= ./makedep.mk
 
 
 
-
-
 ./%.o: .././%.c
 	@echo Building file: $<
 	@echo Invoking: AVR/GNU C Compiler
-	$(QUOTE)C:\Program Files (x86)\Atmel\AVR Studio 5.1\extensions\Atmel\AVRGCC\3.3.1.27\AVRToolchain\bin\avr-gcc.exe$(QUOTE)  -funsigned-char -funsigned-bitfields -DF_CPU=20000000UL  -Os -mtiny-stack -fno-unit-at-a-time -fno-inline-small-functions  -mcall-prologues -fno-jump-tables -fno-move-loop-invariants -ffunction-sections -fpack-struct -fshort-enums -Wall -pedantic -c -gdwarf-2 -std=gnu99  -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)"  -mmcu=atmega644p  -o"$@" "$<" 
+	$(QUOTE)C:\Program Files (x86)\Atmel\AVR Studio 5.1\extensions\Atmel\AVRGCC\3.3.1.27\AVRToolchain\bin\avr-gcc.exe$(QUOTE)  -funsigned-char -funsigned-bitfields -DF_CPU=20000000UL  -Os -mtiny-stack -fno-unit-at-a-time -fno-inline-small-functions  -mcall-prologues -fno-jump-tables -fno-move-loop-invariants -ffunction-sections -fpack-struct -fshort-enums -Wall -pedantic -c -gdwarf-2 -std=gnu99  -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)"  -mmcu=atmega644  -o"$@" "$<" 
 	@echo Finished building: $<
 
 elmChan/%.o: ../elmChan/%.c
 	@echo Building file: $<
 	@echo Invoking: AVR/GNU C Compiler
-	$(QUOTE)C:\Program Files (x86)\Atmel\AVR Studio 5.1\extensions\Atmel\AVRGCC\3.3.1.27\AVRToolchain\bin\avr-gcc.exe$(QUOTE)  -funsigned-char -funsigned-bitfields -DF_CPU=20000000UL  -Os -mtiny-stack -fno-unit-at-a-time -fno-inline-small-functions  -mcall-prologues -fno-jump-tables -fno-move-loop-invariants -ffunction-sections -fpack-struct -fshort-enums -Wall -pedantic -c -gdwarf-2 -std=gnu99  -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)"  -mmcu=atmega644p  -o"$@" "$<" 
+	$(QUOTE)C:\Program Files (x86)\Atmel\AVR Studio 5.1\extensions\Atmel\AVRGCC\3.3.1.27\AVRToolchain\bin\avr-gcc.exe$(QUOTE)  -funsigned-char -funsigned-bitfields -DF_CPU=20000000UL  -Os -mtiny-stack -fno-unit-at-a-time -fno-inline-small-functions  -mcall-prologues -fno-jump-tables -fno-move-loop-invariants -ffunction-sections -fpack-struct -fshort-enums -Wall -pedantic -c -gdwarf-2 -std=gnu99  -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)"  -mmcu=atmega644  -o"$@" "$<" 
 	@echo Finished building: $<
 
 lcd/%.o: ../lcd/%.c
 	@echo Building file: $<
 	@echo Invoking: AVR/GNU C Compiler
-	$(QUOTE)C:\Program Files (x86)\Atmel\AVR Studio 5.1\extensions\Atmel\AVRGCC\3.3.1.27\AVRToolchain\bin\avr-gcc.exe$(QUOTE)  -funsigned-char -funsigned-bitfields -DF_CPU=20000000UL  -Os -mtiny-stack -fno-unit-at-a-time -fno-inline-small-functions  -mcall-prologues -fno-jump-tables -fno-move-loop-invariants -ffunction-sections -fpack-struct -fshort-enums -Wall -pedantic -c -gdwarf-2 -std=gnu99  -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)"  -mmcu=atmega644p  -o"$@" "$<" 
+	$(QUOTE)C:\Program Files (x86)\Atmel\AVR Studio 5.1\extensions\Atmel\AVRGCC\3.3.1.27\AVRToolchain\bin\avr-gcc.exe$(QUOTE)  -funsigned-char -funsigned-bitfields -DF_CPU=20000000UL  -Os -mtiny-stack -fno-unit-at-a-time -fno-inline-small-functions  -mcall-prologues -fno-jump-tables -fno-move-loop-invariants -ffunction-sections -fpack-struct -fshort-enums -Wall -pedantic -c -gdwarf-2 -std=gnu99  -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)"  -mmcu=atmega644  -o"$@" "$<" 
 	@echo Finished building: $<
 
 
@@ -188,12 +181,12 @@ all: $(OUTPUT_FILE_PATH) $(ADDITIONAL_DEPENDENCIES)
 $(OUTPUT_FILE_PATH): $(OBJS) $(USER_OBJS) $(OUTPUT_FILE_DEP)
 	@echo Building target: $@
 	@echo Invoking: AVR/GNU C Linker
-	$(QUOTE)C:\Program Files (x86)\Atmel\AVR Studio 5.1\extensions\Atmel\AVRGCC\3.3.1.27\AVRToolchain\bin\avr-gcc.exe$(QUOTE) -o$(OUTPUT_FILE_PATH_AS_ARGS) $(OBJS_AS_ARGS) $(USER_OBJS) $(LIBS) -Wl,-Map="SD_Card.map" -Wl,--gc-sections -mrelax -Ttext=0xE000   -mmcu=atmega644p  
+	$(QUOTE)C:\Program Files (x86)\Atmel\AVR Studio 5.1\extensions\Atmel\AVRGCC\3.3.1.27\AVRToolchain\bin\avr-gcc.exe$(QUOTE) -o$(OUTPUT_FILE_PATH_AS_ARGS) $(OBJS_AS_ARGS) $(USER_OBJS) $(LIBS) -Wl,-Map="SD_Card.map" -Wl,--gc-sections -mrelax -Ttext=0xE000   -mmcu=atmega644  
 	@echo Finished building target: $@
 	"C:\Program Files (x86)\Atmel\AVR Studio 5.1\extensions\Atmel\AVRGCC\3.3.1.27\AVRToolchain\bin\avr-objcopy.exe" -O ihex -R .eeprom -R .fuse -R .lock -R .signature  "SD_Card.elf" "SD_Card.hex"
 	"C:\Program Files (x86)\Atmel\AVR Studio 5.1\extensions\Atmel\AVRGCC\3.3.1.27\AVRToolchain\bin\avr-objcopy.exe" -j .eeprom  --set-section-flags=.eeprom=alloc,load --change-section-lma .eeprom=0  --no-change-warnings -O ihex "SD_Card.elf" "SD_Card.eep" || exit 0
 	"C:\Program Files (x86)\Atmel\AVR Studio 5.1\extensions\Atmel\AVRGCC\3.3.1.27\AVRToolchain\bin\avr-objdump.exe" -h -S "SD_Card.elf" > "SD_Card.lss"
-	"C:\Program Files (x86)\Atmel\AVR Studio 5.1\extensions\Atmel\AVRGCC\3.3.1.27\AVRToolchain\bin\avr-size.exe" -C --mcu=atmega644p  "SD_Card.elf"
+	"C:\Program Files (x86)\Atmel\AVR Studio 5.1\extensions\Atmel\AVRGCC\3.3.1.27\AVRToolchain\bin\avr-size.exe" -C --mcu=atmega644  "SD_Card.elf"
 	
 
 

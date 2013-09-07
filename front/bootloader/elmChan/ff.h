@@ -14,7 +14,7 @@
 /
 /----------------------------------------------------------------------------*/
 #include "../config.h"
-#if USE_ELM_CHAN_FS
+
 
 #ifndef _FATFS
 #define _FATFS	6502	/* Revision ID */
@@ -337,4 +337,3 @@ int ff_del_syncobj (_SYNC_t);		/* Delete a sync object */
 #endif
 
 #endif /* _FATFS */
-#endif

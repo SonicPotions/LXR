@@ -92,8 +92,6 @@ uint8_t uart_checkAck()
 	}
 	else if(data == NACK)
 	{
-//		lcd_setcursor(0,2);
-//lcd_string("nack");
 		while(1);
 		return NACK;
 	}
