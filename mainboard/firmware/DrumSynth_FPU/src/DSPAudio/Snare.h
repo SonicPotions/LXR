@@ -99,9 +99,9 @@ void Snare_init();
 
 void Snare_trigger(const uint8_t vel, const uint8_t note);
 
-void Snare_calcSyncBlock(int16_t* buf, const uint8_t size);
 /** claculate the oscillators and sample based stuff*/
-int16_t Snare_calcSync();
+void Snare_calcSyncBlock(int16_t* buf, const uint8_t size);
+
 /** calculate envelopes etc (all 16 samples */
 void Snare_calcAsync();
 

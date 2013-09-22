@@ -42,6 +42,6 @@
 
 #define DMA_MODE_ACTIVE 1
 //-----------------------------------
-int CodecInit(uint32_t AudioFreq);
+int CodecInit();
 
 #endif /* AUDIOCODECMANAGER_H_ */

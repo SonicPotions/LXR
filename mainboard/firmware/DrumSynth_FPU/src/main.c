@@ -67,7 +67,7 @@
 #include "MidiParser.h"
 
 #include "TriggerOut.h"
-
+#include <string.h>
 
 //----------------------------------------------------------------
 //stub function for newlib

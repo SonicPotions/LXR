@@ -136,7 +136,7 @@ DRESULT disk_ioctl (	BYTE drive,      /* Drive number */
 
 	switch (command) {
 		case GET_SECTOR_COUNT :	/* Get number of sectors on the disk (DWORD) */
-			//only used my f_mkfs
+			//only used by f_mkfs
 			//so nothing to do here
 			break;
 

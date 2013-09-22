@@ -177,41 +177,4 @@ void Snare_calcSyncBlock(int16_t* buf, const uint8_t size)
 
 	calcDistBlock(&snareVoice.distortion,buf,size);
 }
-//---------------------------------------------------
-int16_t Snare_calcSync()
-{
-	//calc next noise osc sample
-	calcNoise(&snareVoice.noiseOsc);
-
-	//SVF_calc(&snareVoice[voiceNr].filter,snareVoice[voiceNr].noiseOsc.output*0.7f);
-	SVF_calc(&snareVoice.filter,snareVoice.noiseOsc.output*1.2f);
-
-	snareVoice.noiseSample = 0;
-
-	snareVoice.noiseSample += (snareVoice.filterType&0x1)*SVF_getLP(&snareVoice.filter);
-	snareVoice.noiseSample += ((snareVoice.filterType&0x2)>>1)*SVF_getHP(&snareVoice.filter);
-	snareVoice.noiseSample += ((snareVoice.filterType&0x4)>>2)*SVF_getBP(&snareVoice.filter);
-
-	//calc transient sample
-	transient_calc(&snareVoice.transGen);
-
-	//snareVoice[voiceNr].noiseSample = SVF_getBP(&snareVoice[voiceNr].filter);
-	snareVoice.noiseSample = __SSAT(snareVoice.noiseSample,16)+snareVoice.transGen.output;
-
-
-	//calc next osc sample
-	snareVoice.oscSample = calcNextOscSample(&snareVoice.osc);
-
-
-	//mix osc and noise source
-	const float mixed = snareVoice.noiseSample*(snareVoice.mix) + snareVoice.oscSample*(1.f-snareVoice.mix);
-
-#if CALC_TONE_CONTROL
-	toneControl_calc(&snareVoice.toneControl,mixed);
-	return snareVoice.toneControl.output*snareVoice.egValueOscVol*snareVoice.vol*snareVoice.velo;
-#else
-	return mixed*snareVoice.egValueOscVol*snareVoice.vol*snareVoice.velo;
-#endif
-
-};
 //------------------------------------------------------------------------

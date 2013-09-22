@@ -145,7 +145,7 @@ void codec_initDma_DAC()
 
 }
 //----------------------------------------------------------------------------------
-static void codec_AudioInterface_Init_DAC(uint32_t AudioFreq)
+static void codec_AudioInterface_Init_DAC()
 {
   I2S_InitTypeDef I2S_InitStructure;
 
@@ -390,7 +390,7 @@ void codec_start_dac2(uint32_t Addr, uint32_t Size)
 	}
 }
 //-----------------------------------------------------------------------------------------------------
-static void codec_AudioInterface_Init_DAC2(uint32_t AudioFreq)
+static void codec_AudioInterface_Init_DAC2()
 {
   I2S_InitTypeDef I2S_InitStructure;
 

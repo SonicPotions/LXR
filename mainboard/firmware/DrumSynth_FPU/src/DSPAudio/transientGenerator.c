@@ -36,7 +36,7 @@
 
 
 #include "transientGenerator.h"
-
+#include <string.h>
 //---------------------------------------------------------------
 void transient_init(TransientGenerator* transient)
 {
