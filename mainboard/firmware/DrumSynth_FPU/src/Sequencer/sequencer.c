@@ -1136,7 +1136,7 @@ uint8_t seq_isNextStepSyncStep()
 		seq_prescaleCounter = 0;
 		return 0;
 	}
-	if( (seq_stepIndex[0] & 0x3) % 4 == 3) {
+	if( ((seq_stepIndex[0] & 0x3) % 4) == 3) {
 		return 1;
 	}
 	return 0;

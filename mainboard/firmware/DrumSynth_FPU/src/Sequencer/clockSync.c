@@ -53,7 +53,7 @@ uint16_t sync_calcBpm(float timePerPulse)
 	float quarterDuration = 24 * (timePerPulse*4);
 	float bpm = (60 * 1000) / quarterDuration;
 
-	return bpm;
+	return bpm>0?bpm:1;
 }
 //---------------------------------------------------------
 //called by midi clock
@@ -78,10 +78,13 @@ void sync_tick()
 
 	sync_clockCnt++;
 
-	//now handle sequencer transport (4 steps every 3 clocks)
-	if(sync_clockCnt == 1 || sync_clockCnt >= 4) {
-		sync_clockCnt = 1;
-		seq_resetDeltaAndTick();
+	if(seq_isRunning())
+	{
+		//now handle sequencer transport (4 steps every 3 clocks)
+		if(sync_clockCnt == 1 || sync_clockCnt >= 4) {
+			sync_clockCnt = 1;
+			seq_resetDeltaAndTick();
+		}
 	}
 }
 //---------------------------------------------------------
