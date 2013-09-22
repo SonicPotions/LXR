@@ -22,6 +22,7 @@
 #include "../buttonHandler.h"
 #include <ctype.h>
 
+
 #define ARROW_SIGN '>'
 //-----------------------------------------------------------------
 //vars
