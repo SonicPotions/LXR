@@ -34,9 +34,14 @@ uint8_t frontParser_nameIndex = 0;
 
 
 //------------------------------------------------------------
+#define NRPN_MUTE_1 93
+#define NRPN_MUTE_7 99
 void frontParser_parseNrpn(uint8_t value)
 {
-	parameters[frontParser_nrpnNr+128].value = value;
+	if(frontParser_nrpnNr+128 < NUM_PARAMS)
+	{
+		parameters[frontParser_nrpnNr+128].value = value;
+	}		
 	
 	if( (frontParser_nrpnNr+128 >= PAR_TARGET_LFO1) && (frontParser_nrpnNr+128 <= PAR_TARGET_LFO6) )
 	{
@@ -61,6 +66,12 @@ void frontParser_parseNrpn(uint8_t value)
 		upper = ((value&0x80)>>7) | (((frontParser_nrpnNr+128 - PAR_VEL_DEST_1)&0x3f)<<1);
 		lower = value&0x7f;
 		frontPanel_sendData(CC_VELO_TARGET,upper,lower);
+	} else if ( (frontParser_nrpnNr >= NRPN_MUTE_1) && (frontParser_nrpnNr <= NRPN_MUTE_7) )
+	{
+		const uint8_t voice = frontParser_nrpnNr - NRPN_MUTE_1;
+		const uint8_t onOff = value;
+		buttonHandler_muteVoice(voice,onOff);
+		
 	}
 }
 //------------------------------------------------------------

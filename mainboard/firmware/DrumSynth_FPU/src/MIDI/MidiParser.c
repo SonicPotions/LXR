@@ -980,6 +980,27 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 				mixer_audioRouting[msg.data1-CC2_AUDIO_OUT1] = msg.data2;
 				break;
 
+			case CC2_MUTE_1:
+			case CC2_MUTE_2:
+			case CC2_MUTE_3:
+			case CC2_MUTE_4:
+			case CC2_MUTE_5:
+			case CC2_MUTE_6:
+			case CC2_MUTE_7:
+			{
+				const uint8_t voiceNr = msg.data1 - CC2_MUTE_1;
+				if(msg.data2 == 0)
+				{
+					seq_setMute(voiceNr,0);
+				}
+				else
+				{
+					seq_setMute(voiceNr,1);
+				}
+
+			}
+				break;
+
 			default:
 				break;
 		}

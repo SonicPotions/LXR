@@ -349,6 +349,15 @@ enum
 	CC2_AUDIO_OUT5,
 	CC2_AUDIO_OUT6,
 
+	//Mute Button NRPN messages
+	CC2_MUTE_1,
+	CC2_MUTE_2,
+	CC2_MUTE_3,
+	CC2_MUTE_4,
+	CC2_MUTE_5,
+	CC2_MUTE_6,
+	CC2_MUTE_7,
+
 }Param2Enums;
 
 

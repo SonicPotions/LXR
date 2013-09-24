@@ -244,6 +244,21 @@ void buttonHandler_handleModeButtons(uint8_t mode)
 	}
 }
 //--------------------------------------------------------
+void buttonHandler_muteVoice(uint8_t voice, uint8_t isMuted)
+{
+	if(isMuted)
+	{
+		buttonHandler_mutedVoices |= (1<<voice);
+
+	} else
+	{
+		buttonHandler_mutedVoices &= ~(1<<voice);
+		
+	}
+	//muted tracks are lit
+	led_setActiveVoiceLeds(~buttonHandler_mutedVoices);
+};
+//--------------------------------------------------------
 void buttonHandler_handleSelectButton(uint8_t buttonNr)
 {
 
@@ -359,33 +374,7 @@ void buttonHandler_handleSelectButton(uint8_t buttonNr)
 					}
 					
 					
-#if 0
-					if(buttonNr == 7)
-					{
-						//unmute all tracks
-						for(int i=0;i<8;i++)
-						{
-							if(buttonHandler_mutedVoices & (1<<i))
-								frontPanel_sendData(SEQ_CC,SEQ_UNMUTE_TRACK,i);
-						}
-						buttonHandler_mutedVoices = 0;
-					}
-					else if(buttonHandler_mutedVoices & (1<<buttonNr))
-					{
-						//unmute tracks 0-7	
-						buttonHandler_mutedVoices &= ~(1<<buttonNr);
-						frontPanel_sendData(SEQ_CC,SEQ_UNMUTE_TRACK,buttonNr);
-					}
-					else
-					{
-						//mute tracks 0-7
-						buttonHandler_mutedVoices |= (1<<buttonNr);
-						frontPanel_sendData(SEQ_CC,SEQ_MUTE_TRACK,buttonNr);
-					}
-				
-					//muted tracks are lit
-					led_setMode2Leds(buttonHandler_mutedVoices);
-#endif
+
 				}
 				//----- Euklid Mode -----
 				else
@@ -887,36 +876,24 @@ return;
 			if(muteModeActive)
 			{
 				//un/mute
-				/*
-					if(buttonNr == 7)
-					{
-						//unmute all tracks
-						for(int i=0;i<8;i++)
-						{
-							if(buttonHandler_mutedVoices & (1<<i))
-								frontPanel_sendData(SEQ_CC,SEQ_UNMUTE_TRACK,i);
-						}
-						buttonHandler_mutedVoices = 0;
-					}
-					else
-					*/
-					const uint8_t voice = buttonNr-BUT_VOICE_1;
+				const uint8_t voice = buttonNr-BUT_VOICE_1;
+				
 					if(buttonHandler_mutedVoices & (1<<voice))
 					{
 						//unmute tracks 0-7	
-						buttonHandler_mutedVoices &= ~(1<<voice);
+						buttonHandler_muteVoice(voice,0);
 						frontPanel_sendData(SEQ_CC,SEQ_UNMUTE_TRACK,voice);
+						
 					}
 					else
 					{
 						//mute tracks 0-7
-						buttonHandler_mutedVoices |= (1<<voice);
+						buttonHandler_muteVoice(voice,1);
 						frontPanel_sendData(SEQ_CC,SEQ_MUTE_TRACK,voice);
+
 					}
 				
-					//muted tracks are lit
-					//led_setMode2Leds(buttonHandler_mutedVoices);
-					led_setActiveVoiceLeds(~buttonHandler_mutedVoices);
+
 			} 
 			else
 			{

@@ -121,4 +121,6 @@ uint8_t buttonHandler_getShift();
 //--------------------------------------------------------
 int8_t buttonHandler_getArmedAutomationStep();
 //--------------------------------------------------------
+void buttonHandler_muteVoice(uint8_t voice, uint8_t isMuted);
+//--------------------------------------------------------
 #endif /* BUTTONHANDLER_H_ */
