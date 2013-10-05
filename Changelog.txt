@@ -6,7 +6,7 @@ Firmware v0.24
 - internal MIDI Clock is no longer transmitted when running synced to an external clock
 - mute also mutes incoming midi notes
 - nrpn mute led update only when mute leds are visible
-
+- reorder the perf. params to: shu, Rol, mrp, sr
 Firmware v0.23
 ---------------------------
 - Fixed inverted trigger outputs
