@@ -256,8 +256,17 @@ void buttonHandler_muteVoice(uint8_t voice, uint8_t isMuted)
 		
 	}
 	//muted tracks are lit
-	led_setActiveVoiceLeds(~buttonHandler_mutedVoices);
+	if(menu_muteModeActive)
+	{
+		led_setActiveVoiceLeds(~buttonHandler_mutedVoices);
+	}		
 };
+//--------------------------------------------------------
+void buttonHandler_showMuteLEDs()
+{
+	led_setActiveVoiceLeds(~buttonHandler_mutedVoices);
+	menu_muteModeActive = 1;
+}
 //--------------------------------------------------------
 void buttonHandler_handleSelectButton(uint8_t buttonNr)
 {
@@ -538,7 +547,7 @@ void buttonHandler_buttonReleased(uint8_t buttonNr)
 			led_setActiveVoice(menu_getActiveVoice());
 		}else
 		{
-			led_setActiveVoiceLeds(~buttonHandler_mutedVoices);
+			buttonHandler_showMuteLEDs();
 		}	
 		
 		break;
@@ -909,7 +918,7 @@ return;
 								buttonHandler_mutedVoices &= ~(1<<i);
 							}								
 						}
-						led_setActiveVoiceLeds(~buttonHandler_mutedVoices);
+						buttonHandler_showMuteLEDs();
 						
 				}
 				else
@@ -1150,7 +1159,6 @@ return;
 				}	
 			
 			
-			//led_initPerformanceLeds();
 			led_setBlinkLed(LED_PART_SELECT1 + menu_getViewedPattern() ,1);
 		}else if(buttonHandler_getMode() == SELECT_MODE_STEP)
 		{
@@ -1158,13 +1166,8 @@ return;
 		}
 		
 		//show muted voices if pressed
-	//	if(buttonHandler_getMode() != SELECT_MODE_PERF) {
-			led_setActiveVoiceLeds(~buttonHandler_mutedVoices);
-	//	} else {
-			//show active voice if pressed
-		//	led_setActiveVoice(menu_getActiveVoice());
-	//	}
-		
+		buttonHandler_showMuteLEDs();
+
 		break;
 		//the mode selection for the 8 select buttons
 

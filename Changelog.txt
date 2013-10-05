@@ -5,6 +5,7 @@ Firmware v0.24
 - fixed external MIDI sync bug when starting in external mode
 - internal MIDI Clock is no longer transmitted when running synced to an external clock
 - mute also mutes incoming midi notes
+- nrpn mute led update only when mute leds are visible
 
 Firmware v0.23
 ---------------------------

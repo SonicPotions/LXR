@@ -37,6 +37,8 @@ static uint8_t menuIndex = 0;
 static uint8_t menu_currentPresetNr[NUM_PRESET_LOCATIONS];
 
 uint8_t menu_shownPattern = 0;
+uint8_t menu_muteModeActive = 0;
+
 
 void menu_setShownPattern(uint8_t patternNr)
 {
@@ -2048,10 +2050,11 @@ void menu_switchPage(uint8_t pageNr)
 	if(pageNr==PERFORMANCE_PAGE)
 	{
 		//light up mute leds
-		led_setActiveVoiceLeds(~buttonHandler_getMutedVoices());
+		buttonHandler_showMuteLEDs();
 	} else
 	{
 		led_setActiveVoiceLeds(1<<menu_getActiveVoice());
+		menu_muteModeActive = 0;
 	}
 	
 	//go to 1st parameter on sub page
@@ -2547,3 +2550,9 @@ void menu_setActiveVoice(uint8_t voiceNr)
 {
 	menu_activeVoice = voiceNr;
 };
+//----------------------------------------------------------------
+uint8_t menu_areMuteLedsShown()
+{
+	return menu_muteModeActive;
+}
+//----------------------------------------------------------------
