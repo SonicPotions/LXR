@@ -32,8 +32,18 @@
 //code
 //-----------------------------------------------
 
-
-
+//debug helper to catch unhandled interrupts
+//-----------------------------------------------
+ISR(__vector_default)
+{
+#if DEBUG_CRASH_MODE	
+	lcd_home();
+	lcd_string_F(PSTR("Int. Error!"));
+	while(1);
+#endif
+	
+} 
+//-----------------------------------------------
 int main(void) 
 {
 	_delay_ms(100);
@@ -98,9 +108,22 @@ sei();
 	//show message for 1 sec
 	_delay_ms(2000);
 	lcd_clear();
-	
+
+#if DEBUG_CRASH_MODE	
+	//debug helper crash
+	lcd_home();
+	lcd_string_F(PSTR("preparing sei()"));
+	_delay_ms(2000);
+#endif
 	//enable interrupts
 	sei();
+	
+#if DEBUG_CRASH_MODE		
+	//debug helper crash
+	lcd_home();
+	lcd_string_F(PSTR("sei() enabled"));
+	_delay_ms(2000);
+#endif	
 	
 	//init menu
 	menu_init();
