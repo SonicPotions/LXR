@@ -1625,9 +1625,20 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 				uint8_t *paramValue = &parameters[paramNr].value;
 
 				//increase parameter value		
-				//do not wrap
-				if(!((inc<0) && (*paramValue<abs(inc))))//abs(inc))))
-				*paramValue += inc;
+				if(inc>0) //positive increase
+				{
+					if(*paramValue != 255) //omit wrap for 0B255 dtypes
+					{
+						*paramValue += inc;
+					}
+				} 
+				else if (inc<0) //neg increase
+				{
+					if(*paramValue >= abs(inc)) //omit negative wrap. inc can also be -2 or -3 depending on turn speed!
+					{
+						*paramValue += inc;
+					}
+				}										
 					
 				switch(parameters[paramNr].dtype&0x0F)
 				{
