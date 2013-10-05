@@ -176,6 +176,8 @@ inline uint8_t seq_isMainStepActive(uint8_t voice, uint8_t mainStepNr, uint8_t p
 /** mutes and unmutes a track [0..maxTrack]*/
 void seq_setMute(uint8_t trackNr, uint8_t isMuted);
 //------------------------------------------------------------------------------
+uint8_t seq_isTrackMuted(uint8_t trackNr);
+//------------------------------------------------------------------------------
 /** send step data to front panel. the whole step struct for one step is transmitted*/
 void seq_sendStepInfoToFront(uint16_t stepNr);
 //------------------------------------------------------------------------------

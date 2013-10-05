@@ -4,6 +4,7 @@ Firmware v0.24
 - NRPNs for track mute added (NRPN 1000 to 1006)
 - fixed external MIDI sync bug when starting in external mode
 - internal MIDI Clock is no longer transmitted when running synced to an external clock
+- mute also mutes incoming midi notes
 
 Firmware v0.23
 ---------------------------

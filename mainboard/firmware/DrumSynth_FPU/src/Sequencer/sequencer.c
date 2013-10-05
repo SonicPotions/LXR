@@ -733,7 +733,15 @@ void seq_setMute(uint8_t trackNr, uint8_t isMuted)
 		}
 	}
 };
-
+//------------------------------------------------------------------------------
+uint8_t seq_isTrackMuted(uint8_t trackNr)
+{
+	if(seq_mutedTracks & (1<<trackNr) )
+	{
+		return 1;
+	}
+	return 0;
+}
 //------------------------------------------------------------------------------
 void seq_sendMainStepInfoToFront(uint16_t stepNr)
 {
