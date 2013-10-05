@@ -1,3 +1,10 @@
+Firmware v0.24
+---------------------------
+- fixed parameter wrap from 255 to 0 with encoder for morph parameter
+- NRPNs for track mute added (NRPN 93 to 99)
+- fixed external MIDI sync bug when starting in external mode
+- internal MIDI Clock is no longer transmitted when running synced to an external clock
+
 Firmware v0.23
 ---------------------------
 - Fixed inverted trigger outputs

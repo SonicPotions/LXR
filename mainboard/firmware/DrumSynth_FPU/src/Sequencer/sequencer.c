@@ -620,9 +620,12 @@ void seq_tick()
 			}
 		}
 
-		if((seq_prescaleCounter%MIDI_PRESCALER_MASK) == 0)
+		if(!seq_getExtSync()) //only send internal MIDI clock to output when external sync is off
 		{
-			uart_sendMidiByte(MIDI_CLOCK);
+			if((seq_prescaleCounter%MIDI_PRESCALER_MASK) == 0)
+			{
+				uart_sendMidiByte(MIDI_CLOCK);
+			}
 		}
 		seq_prescaleCounter++;
 		if(seq_prescaleCounter>=12)seq_prescaleCounter=0;
