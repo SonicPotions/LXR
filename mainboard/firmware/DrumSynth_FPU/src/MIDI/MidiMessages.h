@@ -350,7 +350,7 @@ enum
 	CC2_AUDIO_OUT6,
 
 	//Mute Button NRPN messages
-	CC2_MUTE_1,
+	CC2_MUTE_1 = 1000,
 	CC2_MUTE_2,
 	CC2_MUTE_3,
 	CC2_MUTE_4,

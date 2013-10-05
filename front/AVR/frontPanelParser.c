@@ -34,8 +34,8 @@ uint8_t frontParser_nameIndex = 0;
 
 
 //------------------------------------------------------------
-#define NRPN_MUTE_1 93
-#define NRPN_MUTE_7 99
+#define NRPN_MUTE_1 1000
+#define NRPN_MUTE_7 1006
 void frontParser_parseNrpn(uint8_t value)
 {
 	if(frontParser_nrpnNr+128 < NUM_PARAMS)
