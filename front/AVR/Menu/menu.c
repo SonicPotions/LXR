@@ -2448,7 +2448,12 @@ void menu_parseKnobValue(uint8_t potNr, uint8_t value)
 		//if parameter lock is off
 		if((parameterFetch & (1<<potNr)) == 0 )
 		{
-			parameters[paramNr].value = value = dtypeValue;//getDtypeValue(value,parameters[paramNr].dtype);
+			//make changes temporary while an automation step is armed - save original value
+			const uint8_t originalValue = parameters[paramNr].value;
+			
+			
+			//update parameter value
+			parameters[paramNr].value = value = dtypeValue;
 				
 			switch(parameters[paramNr].dtype&0x0F)
 			{
@@ -2493,6 +2498,11 @@ void menu_parseKnobValue(uint8_t potNr, uint8_t value)
 					break;
 			}		
 
+			//make changes temporary while an automation step is armed - revert to original value
+			if(buttonHandler_getArmedAutomationStep()!=NO_STEP_SELECTED)
+			{
+				parameters[paramNr].value = originalValue;
+			}
 	
 			if(paramNr<128) // => Sound Parameter
 			{

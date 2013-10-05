@@ -29,8 +29,10 @@ uint8_t lastActiveSubPage=0;
 uint8_t buttonHandler_selectedStep=0; //TODO ist das gleiche wie der parameter PAR_ACTIVE_STEP
 uint8_t selectedStepLed=LED_STEP1;
 
+
+
 static uint16_t buttonHandler_buttonTimer = 0;
-#define NO_STEP_SELECTED -1
+
 #define TIMER_ACTION_OCCURED -2
 static int8_t buttonHandler_buttonTimerStepNr = NO_STEP_SELECTED;
 
@@ -65,17 +67,15 @@ void buttonHandler_armTimerActionStep(uint8_t stepNr)
 		led_setBlinkLed(LED_PART_SELECT1 + selectButtonNr,1);
 	}
 	
-	frontPanel_sendData(ARM_AUTOMATION_STEP,stepNr,menu_getActiveVoice() | ARM_AUTOMATION);
 	
+	frontPanel_sendData(ARM_AUTOMATION_STEP,stepNr,menu_getActiveVoice() | ARM_AUTOMATION);
+
 	
 	
 }
 //--------------------------------------------------------
 void buttonHandler_disarmTimerActionStep()
 {
-	//TODO FALSCH das löscht danna uch blinke LEDs die anbleiben sollen!
-	//led_clearAllBlinkLeds();
-	
 	if(buttonHandler_armedAutomationStep != NO_STEP_SELECTED)
 	{
 		const uint8_t isMainStep = ( (buttonHandler_armedAutomationStep%8)==0 );
@@ -87,10 +87,14 @@ void buttonHandler_disarmTimerActionStep()
 			const uint8_t selectButtonNr = buttonHandler_armedAutomationStep%8;
 			led_setBlinkLed(LED_PART_SELECT1 + selectButtonNr,0);
 		}
+		
+		//revert to original sound
+		menu_sendAllParameters();
 	}
 	
 	buttonHandler_armedAutomationStep = NO_STEP_SELECTED;
 	frontPanel_sendData(ARM_AUTOMATION_STEP,0,DISARM_AUTOMATION);
+
 };
 //--------------------------------------------------------
 int8_t buttonHandler_getArmedAutomationStep()

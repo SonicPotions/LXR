@@ -14,7 +14,7 @@
 extern uint8_t buttonHandler_selectedStep;
 
 #define BUTTON_TIMEOUT (38) //~500[ms]
-
+#define NO_STEP_SELECTED -1
 /**indicates which of the 4 select button modes is active.
 0 = voice select
 select the active voice
