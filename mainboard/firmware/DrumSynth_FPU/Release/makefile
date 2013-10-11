@@ -54,7 +54,7 @@ all: DrumSynth_FPU.elf secondary-outputs
 DrumSynth_FPU.elf: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: ARM Windows GCC C Linker (Tools For Embedded)'
-	arm-none-eabi-gcc -T"C:/data/dev/LXR/mainboard/firmware/DrumSynth_FPU\stm32_flash.ld" -Xlinker --gc-sections -Wl,-Map,"DrumSynth_FPU.map" -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -o "DrumSynth_FPU.elf" $(OBJS) $(USER_OBJS) $(LIBS)
+	arm-none-eabi-gcc -T"C:/codez/LXR/mainboard/firmware/DrumSynth_FPU\stm32_flash.ld" -Xlinker --gc-sections -Wl,-Map,"DrumSynth_FPU.map" -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -o "DrumSynth_FPU.elf" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
