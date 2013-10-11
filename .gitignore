@@ -23,9 +23,11 @@
 *.hex
 *.elf
 !FIRMWARE.BIN
+old_FIRMWARE.BIN
 front/AVR/Debug/*.bin
 front/AVR/Release/*.bin
 DrumSynthCortex.bin
+DrumSynth_FPU.bin
 DrumSynthAvr.bin
 ausgelesen.bin
 tools/FirmwareImageBuilder/Debug/FIRMWARE.BIN
@@ -37,8 +39,6 @@ tools/FirmwareImageBuilder/FirmwareImageBuilder/FIRMWARE.BIN
 *.metadata
 *RemoteSystemsTempFiles
 *.settings
-*.cproject
-*.project
 *.bak
 *.svn
 *.map
