@@ -214,6 +214,7 @@ uint8_t preset_loadDrumset(uint8_t presetNr, uint8_t isMorph)
 				frontPanel_sendData(CC_VELO_TARGET,upper,lower);
 				
 				//LFO
+				if(parameters[PAR_VOICE_LFO1+i].value==0)parameters[PAR_VOICE_LFO1+i].value=1;
 				value = getModTargetValue(parameters[PAR_TARGET_LFO1+i].value,  parameters[PAR_VOICE_LFO1+i].value-1);
 				upper = ((value&0x80)>>7) | (((i)&0x3f)<<1);
 				lower = value&0x7f;

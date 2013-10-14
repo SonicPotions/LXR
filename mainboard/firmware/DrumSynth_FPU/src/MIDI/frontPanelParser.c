@@ -353,6 +353,7 @@ void frontParser_parseUartData(unsigned char data)
 				uint8_t lower = frontParser_midiMsg.data2;
 				uint8_t value = ((upper&0x01)<<7) | lower;
 				uint8_t lfoNr = (upper&0xfe)>>1;
+
 				switch(lfoNr)
 				{
 				case 0:
@@ -371,6 +372,9 @@ void frontParser_parseUartData(unsigned char data)
 
 				case 5:
 					modNode_setDestination(&hatVoice.lfo.modTarget, value);
+					break;
+
+				default:
 					break;
 				}
 

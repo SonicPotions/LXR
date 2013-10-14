@@ -1,4 +1,4 @@
-Firmware v0.24
+Firmware v0.24a
 ---------------------------
 - fixed parameter wrap from 255 to 0 with encoder for morph parameter
 - NRPNs for track mute added (NRPN 200 to 206)
@@ -8,6 +8,7 @@ Firmware v0.24
 - nrpn mute led update only when mute leds are visible
 - reorder the perf. params to: shu, Rol, mrp, sr
 - locking a parameter to single step (hold step mode) will not change the global parameter value
+- LFO crash fixed
 
 Firmware v0.23
 ---------------------------

@@ -20,7 +20,7 @@
 
 
 # binaries
-*.hex
+#*.hex
 *.elf
 !FIRMWARE.BIN
 front/AVR/Debug/*.bin

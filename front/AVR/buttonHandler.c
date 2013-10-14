@@ -35,6 +35,9 @@ static uint16_t buttonHandler_buttonTimer = 0;
 
 #define TIMER_ACTION_OCCURED -2
 static int8_t buttonHandler_buttonTimerStepNr = NO_STEP_SELECTED;
+uint8_t buttonHandler_originalParameter = 0;	//saves parameter number for step automation reset (stgep assign)
+uint8_t buttonHandler_originalValue = 0;		//saves the parameter value for reset
+uint8_t buttonHandler_resetLock = 0;
 
 volatile struct 
 {
@@ -89,7 +92,34 @@ void buttonHandler_disarmTimerActionStep()
 		}
 		
 		//revert to original sound
-		menu_sendAllParameters();
+		//make changes temporary while an automation step is armed - revert to original value
+		if(buttonHandler_resetLock==1)
+		{
+			parameters[buttonHandler_originalParameter].value = buttonHandler_originalValue;
+		}		
+		
+		buttonHandler_armedAutomationStep = NO_STEP_SELECTED;
+		frontPanel_sendData(ARM_AUTOMATION_STEP,0,DISARM_AUTOMATION);
+		
+		if(buttonHandler_resetLock==1)
+		{
+			buttonHandler_resetLock = 0;
+			//&revert to original value
+			if(buttonHandler_originalParameter<128) // => Sound Parameter
+				{
+					frontPanel_sendData(MIDI_CC,buttonHandler_originalParameter,buttonHandler_originalValue);
+				}
+				else if(buttonHandler_originalParameter>=128 && (buttonHandler_originalParameter < END_OF_SOUND_PARAMETERS)) // => Sound Parameter above 127
+				{
+					frontPanel_sendData(CC_2,buttonHandler_originalParameter-128,buttonHandler_originalValue);
+				}
+				else
+				{
+					menu_parseGlobalParam(buttonHandler_originalParameter,parameters[buttonHandler_originalParameter].value);
+				}
+				menu_repaintAll();
+		}		
+		return;
 	}
 	
 	buttonHandler_armedAutomationStep = NO_STEP_SELECTED;

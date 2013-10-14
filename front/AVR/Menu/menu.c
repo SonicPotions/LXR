@@ -1679,8 +1679,9 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 					{
 						if(*paramValue > (NUM_SUB_PAGES * 8 -1))
 							*paramValue = (NUM_SUB_PAGES * 8 -1); 		
-					
-						uint8_t value = getModTargetValue(*paramValue, parameters[PAR_VOICE_LFO1+ paramNr - PAR_TARGET_LFO1].value-1);
+						uint8_t voiceNr =  parameters[PAR_VOICE_LFO1+ paramNr - PAR_TARGET_LFO1].value-1;
+						if (voiceNr == 0) voiceNr = 1;
+						uint8_t value = getModTargetValue(*paramValue,voiceNr-1);
 				
 						uint8_t upper,lower;
 						upper = ((value&0x80)>>7) | (((paramNr - PAR_TARGET_LFO1)&0x3f)<<1);
@@ -2448,8 +2449,14 @@ void menu_parseKnobValue(uint8_t potNr, uint8_t value)
 		//if parameter lock is off
 		if((parameterFetch & (1<<potNr)) == 0 )
 		{
+			
 			//make changes temporary while an automation step is armed - save original value
-			const uint8_t originalValue = parameters[paramNr].value;
+			if((buttonHandler_resetLock==0) && buttonHandler_getArmedAutomationStep() != NO_STEP_SELECTED)
+			{
+				buttonHandler_originalValue = parameters[paramNr].value;
+				buttonHandler_originalParameter = paramNr;
+				buttonHandler_resetLock = 1;
+			}				
 			
 			
 			//update parameter value
@@ -2484,7 +2491,9 @@ void menu_parseKnobValue(uint8_t potNr, uint8_t value)
 				break;
 				case DTYPE_TARGET_SELECTION_LFO:
 				{
-					value = getModTargetValue(value,parameters[PAR_VOICE_LFO1+ paramNr - PAR_TARGET_LFO1].value-1);
+					uint8_t voiceNr =  parameters[PAR_VOICE_LFO1+ paramNr - PAR_TARGET_LFO1].value-1;
+						if (voiceNr == 0) voiceNr = 1;
+					value = getModTargetValue(value,voiceNr);
 				
 					uint8_t upper,lower;
 					upper = ((value&0x80)>>7) | (((paramNr - PAR_TARGET_LFO1)&0x3f)<<1);
@@ -2498,11 +2507,7 @@ void menu_parseKnobValue(uint8_t potNr, uint8_t value)
 					break;
 			}		
 
-			//make changes temporary while an automation step is armed - revert to original value
-			if(buttonHandler_getArmedAutomationStep()!=NO_STEP_SELECTED)
-			{
-				parameters[paramNr].value = originalValue;
-			}
+			
 	
 			if(paramNr<128) // => Sound Parameter
 			{

@@ -57,6 +57,7 @@
  
 #define LCD_DDADR_LINE1         0x00
 #define LCD_DDADR_LINE2         0x40
+//#define LCD_DDADR_LINE2 0x20
 #define LCD_DDADR_LINE3         0x10
 #define LCD_DDADR_LINE4         0x50
  
