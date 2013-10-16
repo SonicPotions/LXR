@@ -39,6 +39,7 @@ static uint8_t menu_currentPresetNr[NUM_PRESET_LOCATIONS];
 uint8_t menu_shownPattern = 0;
 uint8_t menu_muteModeActive = 0;
 
+static void setNoteName(uint8_t num, char *buf);
 
 void menu_setShownPattern(uint8_t patternNr)
 {
@@ -333,7 +334,7 @@ void menu_init()
 	parameters[PAR_ROLL].dtype			= DTYPE_MENU | (MENU_ROLL_RATES<<4);
 	
 	
-	parameters[PAR_STEP_NOTE].dtype			= DTYPE_PM63;
+	parameters[PAR_STEP_NOTE].dtype			= DTYPE_NOTE_NAME;
 	
 	parameters[PAR_FINE1].dtype = DTYPE_PM63;
 	parameters[PAR_FINE2].dtype = DTYPE_PM63;
@@ -980,7 +981,12 @@ void menu_repaint()
 							break;
 						case DTYPE_PM63:
 							sprintf(&editDisplayBuffer[1][13],"%3d",parameters[parNr].value - 63);	
-							break;	
+							break;
+						//--AS note names
+						case DTYPE_NOTE_NAME:
+							setNoteName(parameters[parNr].value, &editDisplayBuffer[1][13]);
+							break;
+
 							
 				
 				
@@ -1170,7 +1176,11 @@ void menu_repaint()
 								break;
 							case DTYPE_PM63:
 								sprintf(valueAsText,"%3d",parameters[parNr].value - 63);	
-								break;	
+								break;
+							//--AS note names
+							case DTYPE_NOTE_NAME:
+								setNoteName(parameters[parNr].value, valueAsText);
+								break;
 				
 				
 						}
@@ -2418,6 +2428,7 @@ uint8_t getDtypeValue(uint8_t value, uint8_t paramNr)
 			
 			break;
 		case DTYPE_PM63:
+		case DTYPE_NOTE_NAME:
 			return 127*frac;
 			break;	
 	}	
@@ -2571,3 +2582,16 @@ uint8_t menu_areMuteLedsShown()
 	return menu_muteModeActive;
 }
 //----------------------------------------------------------------
+
+//--AS given a 0-127 number will return a midi note name
+void setNoteName(uint8_t num, char *buf)
+{
+    uint8_t n = num%12; // get the note number (0 is C, 9 is A, 11 is B)
+    // get the note letter ascii A=65, C=67. All repeat twice except E and B.
+    // B is at the end, so only E presents a hurdle
+    buf[0]=(n>8 ? 60 : 67) + ((n+(n>4))/2);
+    // determine natural or sharp (# if the note is 1, 3, 6, 8, 10)
+    buf[1]=(n < 5 && n&1) || (n > 5 && !(n&1)) ? '#' : ' ';
+    // determine the octave 0=48
+    buf[2]=48+(num / 12);
+}

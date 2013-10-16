@@ -408,6 +408,7 @@ enum Datatypes
 	DTYPE_VOICE_LFO,
 	DTYPE_AUTOM_TARGET,
 	DTYPE_0b1,
+	DTYPE_NOTE_NAME, // --AS eg C#0, D 1 for note name
 
 };
 
