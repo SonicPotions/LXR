@@ -121,6 +121,9 @@ void led_setActiveVoice(uint8_t voiceNr)
 	dout_outputData[arrayPos] |= (1<<bitPos);
 	//since this is not a temp. change, store in led_originalLedState as well
 	led_originalLedState[arrayPos] |= (1<<bitPos);
+	
+	//reset mute mode
+	menu_muteModeActive = 0;
 };
 //---------------------------------------------
 void led_setValue(uint8_t val, uint8_t ledNr)

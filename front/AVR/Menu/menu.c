@@ -37,6 +37,8 @@ static uint8_t menuIndex = 0;
 static uint8_t menu_currentPresetNr[NUM_PRESET_LOCATIONS];
 
 uint8_t menu_shownPattern = 0;
+uint8_t menu_muteModeActive = 0;
+
 
 void menu_setShownPattern(uint8_t patternNr)
 {
@@ -1625,9 +1627,20 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 				uint8_t *paramValue = &parameters[paramNr].value;
 
 				//increase parameter value		
-				//do not wrap
-				if(!((inc<0) && (*paramValue<abs(inc))))//abs(inc))))
-				*paramValue += inc;
+				if(inc>0) //positive increase
+				{
+					if(*paramValue != 255) //omit wrap for 0B255 dtypes
+					{
+						*paramValue += inc;
+					}
+				} 
+				else if (inc<0) //neg increase
+				{
+					if(*paramValue >= abs(inc)) //omit negative wrap. inc can also be -2 or -3 depending on turn speed!
+					{
+						*paramValue += inc;
+					}
+				}										
 					
 				switch(parameters[paramNr].dtype&0x0F)
 				{
@@ -1666,8 +1679,9 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 					{
 						if(*paramValue > (NUM_SUB_PAGES * 8 -1))
 							*paramValue = (NUM_SUB_PAGES * 8 -1); 		
-					
-						uint8_t value = getModTargetValue(*paramValue, parameters[PAR_VOICE_LFO1+ paramNr - PAR_TARGET_LFO1].value-1);
+						uint8_t voiceNr =  parameters[PAR_VOICE_LFO1+ paramNr - PAR_TARGET_LFO1].value-1;
+						if (voiceNr == 0) voiceNr = 1;
+						uint8_t value = getModTargetValue(*paramValue,voiceNr-1);
 				
 						uint8_t upper,lower;
 						upper = ((value&0x80)>>7) | (((paramNr - PAR_TARGET_LFO1)&0x3f)<<1);
@@ -2037,10 +2051,11 @@ void menu_switchPage(uint8_t pageNr)
 	if(pageNr==PERFORMANCE_PAGE)
 	{
 		//light up mute leds
-		led_setActiveVoiceLeds(~buttonHandler_getMutedVoices());
+		buttonHandler_showMuteLEDs();
 	} else
 	{
 		led_setActiveVoiceLeds(1<<menu_getActiveVoice());
+		menu_muteModeActive = 0;
 	}
 	
 	//go to 1st parameter on sub page
@@ -2434,7 +2449,18 @@ void menu_parseKnobValue(uint8_t potNr, uint8_t value)
 		//if parameter lock is off
 		if((parameterFetch & (1<<potNr)) == 0 )
 		{
-			parameters[paramNr].value = value = dtypeValue;//getDtypeValue(value,parameters[paramNr].dtype);
+			
+			//make changes temporary while an automation step is armed - save original value
+			if((buttonHandler_resetLock==0) && buttonHandler_getArmedAutomationStep() != NO_STEP_SELECTED)
+			{
+				buttonHandler_originalValue = parameters[paramNr].value;
+				buttonHandler_originalParameter = paramNr;
+				buttonHandler_resetLock = 1;
+			}				
+			
+			
+			//update parameter value
+			parameters[paramNr].value = value = dtypeValue;
 				
 			switch(parameters[paramNr].dtype&0x0F)
 			{
@@ -2465,7 +2491,9 @@ void menu_parseKnobValue(uint8_t potNr, uint8_t value)
 				break;
 				case DTYPE_TARGET_SELECTION_LFO:
 				{
-					value = getModTargetValue(value,parameters[PAR_VOICE_LFO1+ paramNr - PAR_TARGET_LFO1].value-1);
+					uint8_t voiceNr =  parameters[PAR_VOICE_LFO1+ paramNr - PAR_TARGET_LFO1].value-1;
+						if (voiceNr == 0) voiceNr = 1;
+					value = getModTargetValue(value,voiceNr);
 				
 					uint8_t upper,lower;
 					upper = ((value&0x80)>>7) | (((paramNr - PAR_TARGET_LFO1)&0x3f)<<1);
@@ -2479,6 +2507,7 @@ void menu_parseKnobValue(uint8_t potNr, uint8_t value)
 					break;
 			}		
 
+			
 	
 			if(paramNr<128) // => Sound Parameter
 			{
@@ -2536,3 +2565,9 @@ void menu_setActiveVoice(uint8_t voiceNr)
 {
 	menu_activeVoice = voiceNr;
 };
+//----------------------------------------------------------------
+uint8_t menu_areMuteLedsShown()
+{
+	return menu_muteModeActive;
+}
+//----------------------------------------------------------------

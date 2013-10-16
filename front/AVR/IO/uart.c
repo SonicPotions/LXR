@@ -66,15 +66,17 @@ aus Taktrate und gewünschter Baudrate
 
 //RX complete - called when the UART has received some data
 //ISR(SIG_UART_RECV) 
+
 ISR(USART0_RX_vect) 
 {
-    /* Interrupt Code */
+    // Interrupt Code 
 	
 	//put the received data in the rx fifo
 	//fifo_bufferIn(&uart_rxBuffer,UDR);
 	fifo_bufferIn(&uart_rxBuffer,UDR0);
 	
 }
+
 
 //----------------------------------------------------
 // USART Data Register Empty - called when the UART is ready to transmit data 

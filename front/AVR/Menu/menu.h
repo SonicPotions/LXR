@@ -29,6 +29,7 @@ extern uint8_t menu_activePage;
 extern uint8_t menu_activeVoice;
 extern uint8_t menu_playedPattern;
 extern uint8_t menu_shownPattern;
+extern uint8_t menu_muteModeActive;
 
 void menu_setShownPattern(uint8_t patternNr);
 uint8_t menu_getViewedPattern();
@@ -455,8 +456,11 @@ void menu_sendAllParameters();
 /** get the currently active page nr*/
 uint8_t menu_getActivePage();
 //-----------------------------------------------------------------
+uint8_t menu_areMuteLedsShown();
+//-----------------------------------------------------------------
 /** get the currently active voice nr*/
 uint8_t menu_getActiveVoice();
+//-----------------------------------------------------------------
 void menu_setActiveVoice(uint8_t voiceNr);
 //-----------------------------------------------------------------
 /** used to upodate all global parameters that need processing after a preset is loaded*/

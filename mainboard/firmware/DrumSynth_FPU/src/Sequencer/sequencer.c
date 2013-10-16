@@ -620,9 +620,12 @@ void seq_tick()
 			}
 		}
 
-		if((seq_prescaleCounter%MIDI_PRESCALER_MASK) == 0)
+		if(!seq_getExtSync()) //only send internal MIDI clock to output when external sync is off
 		{
-			uart_sendMidiByte(MIDI_CLOCK);
+			if((seq_prescaleCounter%MIDI_PRESCALER_MASK) == 0)
+			{
+				uart_sendMidiByte(MIDI_CLOCK);
+			}
 		}
 		seq_prescaleCounter++;
 		if(seq_prescaleCounter>=12)seq_prescaleCounter=0;
@@ -730,7 +733,15 @@ void seq_setMute(uint8_t trackNr, uint8_t isMuted)
 		}
 	}
 };
-
+//------------------------------------------------------------------------------
+uint8_t seq_isTrackMuted(uint8_t trackNr)
+{
+	if(seq_mutedTracks & (1<<trackNr) )
+	{
+		return 1;
+	}
+	return 0;
+}
 //------------------------------------------------------------------------------
 void seq_sendMainStepInfoToFront(uint16_t stepNr)
 {
