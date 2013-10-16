@@ -331,12 +331,16 @@ void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note)
 		uint8_t midiChan = midi_MidiChannels[0];
 		//send to midi out
 		seq_sendMidi(0x90 | midiChan,NOTE_VOICE1+voiceNr,seq_patternSet.seq_subStepPattern[seq_activePattern][voiceNr][seq_stepIndex[voiceNr]].volume&STEP_VOLUME_MASK);
+		//--AS send midi off note
+		seq_sendMidi(0x80 | midiChan,NOTE_VOICE1+voiceNr,0);
 	}
 	else
 	{
 		uint8_t midiChan = midi_MidiChannels[voiceNr];
 		//send to midi out
 		seq_sendMidi(0x90 | midiChan,note,seq_patternSet.seq_subStepPattern[seq_activePattern][voiceNr][seq_stepIndex[voiceNr]].volume&STEP_VOLUME_MASK);
+		//--AS send midi off note
+		seq_sendMidi(0x80 | midiChan,note,0);
 	}
 }
 //------------------------------------------------------------------------------
