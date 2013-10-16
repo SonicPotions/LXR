@@ -104,9 +104,8 @@ uint8_t seq_barCounter;						/**< counts the absolute position in bars since the
 static uint8_t seq_loadPendigFlag = 0;
 
 // --AS keep track of which midi notes are playing
-// what note is playing on each channel
-static midi_chan_notes[16];
-static uint16_t midi_notes_on=0;
+static uint8_t midi_chan_notes[16];		    /**< what note is playing on each channel */
+static uint16_t midi_notes_on=0;		    /**< which channels have a note currently playing */
 
 const float seq_shuffleTable[16] =
 {
@@ -303,6 +302,9 @@ void seq_parseAutomationNodes(uint8_t track, Step* stepData)
 //------------------------------------------------------------------------------
 void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note)
 {
+	uint8_t midiChan; // which midi channel to send a note on
+	uint8_t midiNote; // which midi note to send
+
 	if(voiceNr > 6) return;
 
 	seq_parseAutomationNodes(voiceNr, &seq_patternSet.seq_subStepPattern[seq_activePattern][voiceNr][seq_stepIndex[voiceNr]]);
@@ -333,29 +335,29 @@ void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note)
 
 	if(midi_mode == MIDI_MODE_TRIGGER)
 	{
-		uint8_t midiChan = midi_MidiChannels[0];
-		//--AS if a note is on for that channel send off
-		if((1<<midiChan) & midi_notes_on)
-			seq_sendMidi(0x80 | midiChan,midi_chan_notes[midiChan],0);
-		//send to midi out
-		seq_sendMidi(0x90 | midiChan,NOTE_VOICE1+voiceNr,seq_patternSet.seq_subStepPattern[seq_activePattern][voiceNr][seq_stepIndex[voiceNr]].volume&STEP_VOLUME_MASK);
-		//--AS keep track of which notes are on so we can turn them off later
-		midi_chan_notes[midiChan]=NOTE_VOICE1+voiceNr;
-		midi_notes_on |= (1 << midiChan);
-
+		 midiChan = midi_MidiChannels[0];
+		 midiNote=NOTE_VOICE1+voiceNr;
 	}
 	else
 	{
-		uint8_t midiChan = midi_MidiChannels[voiceNr];
-		//--AS turn off old note
-		if((1<<midiChan) & midi_notes_on)
-			seq_sendMidi(0x80 | midiChan,midi_chan_notes[midiChan],0);
-		//send to midi out
-		seq_sendMidi(0x90 | midiChan,note,seq_patternSet.seq_subStepPattern[seq_activePattern][voiceNr][seq_stepIndex[voiceNr]].volume&STEP_VOLUME_MASK);
-		midi_chan_notes[midiChan]=note;
-		midi_notes_on |= (1 << midiChan);
-
+		midiChan = midi_MidiChannels[voiceNr];
+		midiNote = note;
 	}
+
+	//--AS if a note is on for that channel send note-off first
+	// The proper way to do a note off is with 0x80. 0x90 with velocity 0 is also used, however I think there is still
+	// synth gear out there that doesn't recognize that properly.
+	if((1<<midiChan) & midi_notes_on)
+		seq_sendMidi(0x80 | midiChan,midi_chan_notes[midiChan],0);
+	//send the new note to midi out
+	seq_sendMidi(0x90 | midiChan,midiNote,
+			seq_patternSet.seq_subStepPattern[seq_activePattern][voiceNr][seq_stepIndex[voiceNr]].volume&STEP_VOLUME_MASK);
+	// finally, keep track of which notes are on so we can turn them off later
+	midi_chan_notes[midiChan]=midiNote;
+	midi_notes_on |= (1 << midiChan);
+
+
+
 }
 //------------------------------------------------------------------------------
 void seq_nextStep()
@@ -717,7 +719,7 @@ void seq_setRunning(uint8_t isRunning)
 		seq_deltaT = 0;
 		uart_sendMidiByte(MIDI_STOP);
 
-		//--AS send all notes off on all channels TODO just send a midi all-notes-off
+		//--AS send notes off on all channels that have notes playing and reset our bitmap to reflect that
 		for(i=0;i<16;i++)
 			if((1<<i) & midi_notes_on)
 				seq_sendMidi(0x80 | i, midi_chan_notes[i],0);
