@@ -103,6 +103,11 @@ uint8_t seq_barCounter;						/**< counts the absolute position in bars since the
 
 static uint8_t seq_loadPendigFlag = 0;
 
+// --AS keep track of which midi notes are playing
+// what note is playing on each channel
+static midi_chan_notes[16];
+static uint16_t midi_notes_on=0;
+
 const float seq_shuffleTable[16] =
 {
 		0.f,
@@ -329,14 +334,27 @@ void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note)
 	if(midi_mode == MIDI_MODE_TRIGGER)
 	{
 		uint8_t midiChan = midi_MidiChannels[0];
+		//--AS if a note is on for that channel send off
+		if((1<<midiChan) & midi_notes_on)
+			seq_sendMidi(0x80 | midiChan,midi_chan_notes[midiChan],0);
 		//send to midi out
 		seq_sendMidi(0x90 | midiChan,NOTE_VOICE1+voiceNr,seq_patternSet.seq_subStepPattern[seq_activePattern][voiceNr][seq_stepIndex[voiceNr]].volume&STEP_VOLUME_MASK);
+		//--AS keep track of which notes are on so we can turn them off later
+		midi_chan_notes[midiChan]=NOTE_VOICE1+voiceNr;
+		midi_notes_on |= (1 << midiChan);
+
 	}
 	else
 	{
 		uint8_t midiChan = midi_MidiChannels[voiceNr];
+		//--AS turn off old note
+		if((1<<midiChan) & midi_notes_on)
+			seq_sendMidi(0x80 | midiChan,midi_chan_notes[midiChan],0);
 		//send to midi out
 		seq_sendMidi(0x90 | midiChan,note,seq_patternSet.seq_subStepPattern[seq_activePattern][voiceNr][seq_stepIndex[voiceNr]].volume&STEP_VOLUME_MASK);
+		midi_chan_notes[midiChan]=note;
+		midi_notes_on |= (1 << midiChan);
+
 	}
 }
 //------------------------------------------------------------------------------
@@ -620,9 +638,12 @@ void seq_tick()
 			}
 		}
 
-		if((seq_prescaleCounter%MIDI_PRESCALER_MASK) == 0)
+		if(!seq_getExtSync()) //only send internal MIDI clock to output when external sync is off
 		{
-			uart_sendMidiByte(MIDI_CLOCK);
+			if((seq_prescaleCounter%MIDI_PRESCALER_MASK) == 0)
+			{
+				uart_sendMidiByte(MIDI_CLOCK);
+			}
 		}
 		seq_prescaleCounter++;
 		if(seq_prescaleCounter>=12)seq_prescaleCounter=0;
@@ -683,7 +704,7 @@ void seq_setRunning(uint8_t isRunning)
 	//jump to 1st step if sequencer is stopped
 	if(!seq_running)
 	{
-		int i;
+		uint8_t i;
 		for(i=0;i<NUM_TRACKS;i++) {
 			seq_stepIndex[i] = -1;
 		}
@@ -695,6 +716,13 @@ void seq_setRunning(uint8_t isRunning)
 		//so the next seq_tick call will trigger the next step immediately
 		seq_deltaT = 0;
 		uart_sendMidiByte(MIDI_STOP);
+
+		//--AS send all notes off on all channels TODO just send a midi all-notes-off
+		for(i=0;i<16;i++)
+			if((1<<i) & midi_notes_on)
+				seq_sendMidi(0x80 | i, midi_chan_notes[i],0);
+		midi_notes_on=0;
+
 		trigger_reset(1);
 	} else {
 		seq_prescaleCounter = 0;
@@ -730,7 +758,15 @@ void seq_setMute(uint8_t trackNr, uint8_t isMuted)
 		}
 	}
 };
-
+//------------------------------------------------------------------------------
+uint8_t seq_isTrackMuted(uint8_t trackNr)
+{
+	if(seq_mutedTracks & (1<<trackNr) )
+	{
+		return 1;
+	}
+	return 0;
+}
 //------------------------------------------------------------------------------
 void seq_sendMainStepInfoToFront(uint16_t stepNr)
 {

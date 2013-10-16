@@ -19,24 +19,24 @@
 *.out
 *.app
 
+#except this tool
+!tools/bin/FirmwareImageBuilder.exe
 
 # binaries
 *.hex
 *.elf
-!FIRMWARE.BIN
-old_FIRMWARE.BIN
-front/AVR/Debug/*.bin
-front/AVR/Release/*.bin
-DrumSynthCortex.bin
-DrumSynth_FPU.bin
-DrumSynthAvr.bin
-ausgelesen.bin
-tools/FirmwareImageBuilder/Debug/FIRMWARE.BIN
-tools/FirmwareImageBuilder/FirmwareImageBuilder/FIRMWARE.BIN
+*.bin
 *.lss
 
+!firmware image/FIRMWARE.BIN
 
-# eclipse project files
+#eclipse staging areas
+mainboard/firmware/DrumSynth_FPU/Debug/
+mainboard/firmware/DrumSynth_FPU/Release/
+front/AVR/Debug/
+front/AVR/Release/
+
+# miscellaneous eclipse etc
 *.metadata
 *RemoteSystemsTempFiles
 *.settings
@@ -60,6 +60,3 @@ tools/FirmwareImageBuilder/FirmwareImageBuilder/FIRMWARE.BIN
 *.res
 *.dep
 *.htm
-
-
-*Firmware.bat

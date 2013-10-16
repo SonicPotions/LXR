@@ -34,8 +34,8 @@ uint8_t frontParser_nameIndex = 0;
 
 
 //------------------------------------------------------------
-#define NRPN_MUTE_1 93
-#define NRPN_MUTE_7 99
+#define NRPN_MUTE_1 1000
+#define NRPN_MUTE_7 1006
 void frontParser_parseNrpn(uint8_t value)
 {
 	if(frontParser_nrpnNr+128 < NUM_PARAMS)
@@ -49,6 +49,7 @@ void frontParser_parseNrpn(uint8_t value)
 		//we need to send back the right target param number to the cortex
 		//LFO
 		uint8_t lfoNr = (frontParser_nrpnNr+128)-PAR_TARGET_LFO1;
+		if(lfoNr>5)lfoNr=5;
 		value = getModTargetValue(parameters[frontParser_nrpnNr+128].value,  parameters[PAR_VOICE_LFO1+lfoNr].value-1);
 		uint8_t upper = ((value&0x80)>>7) | (((lfoNr)&0x3f)<<1);
 		uint8_t lower = value&0x7f;

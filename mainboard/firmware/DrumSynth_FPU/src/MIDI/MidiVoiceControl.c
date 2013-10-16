@@ -47,6 +47,13 @@
 //------------------------------------------------------
 void voiceControl_noteOn(uint8_t note, uint8_t vel)
 {
+
+	uint8_t voice = note-NOTE_VOICE1;
+	if(seq_isTrackMuted(voice))
+	{
+		return;
+	}
+
 	switch(note)
 	{
 	case NOTE_VOICE1:

@@ -12,9 +12,12 @@
 #include <avr/io.h>
 
 extern uint8_t buttonHandler_selectedStep;
+extern uint8_t buttonHandler_originalParameter;	//saves parameter number for step automation reset (stgep assign)
+extern uint8_t buttonHandler_originalValue; 
+extern uint8_t buttonHandler_resetLock;
 
 #define BUTTON_TIMEOUT (38) //~500[ms]
-
+#define NO_STEP_SELECTED -1
 /**indicates which of the 4 select button modes is active.
 0 = voice select
 select the active voice
@@ -122,5 +125,7 @@ uint8_t buttonHandler_getShift();
 int8_t buttonHandler_getArmedAutomationStep();
 //--------------------------------------------------------
 void buttonHandler_muteVoice(uint8_t voice, uint8_t isMuted);
+//--------------------------------------------------------
+void buttonHandler_showMuteLEDs();
 //--------------------------------------------------------
 #endif /* BUTTONHANDLER_H_ */

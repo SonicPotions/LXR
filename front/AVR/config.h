@@ -14,5 +14,6 @@
 
 
 #define UART_DEBUG_ECHO_MODE 0
+#define DEBUG_CRASH_MODE 0
 
 #endif /* CONFIG_H_ */

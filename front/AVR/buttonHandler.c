@@ -29,10 +29,15 @@ uint8_t lastActiveSubPage=0;
 uint8_t buttonHandler_selectedStep=0; //TODO ist das gleiche wie der parameter PAR_ACTIVE_STEP
 uint8_t selectedStepLed=LED_STEP1;
 
+
+
 static uint16_t buttonHandler_buttonTimer = 0;
-#define NO_STEP_SELECTED -1
+
 #define TIMER_ACTION_OCCURED -2
 static int8_t buttonHandler_buttonTimerStepNr = NO_STEP_SELECTED;
+uint8_t buttonHandler_originalParameter = 0;	//saves parameter number for step automation reset (stgep assign)
+uint8_t buttonHandler_originalValue = 0;		//saves the parameter value for reset
+uint8_t buttonHandler_resetLock = 0;
 
 volatile struct 
 {
@@ -65,17 +70,15 @@ void buttonHandler_armTimerActionStep(uint8_t stepNr)
 		led_setBlinkLed(LED_PART_SELECT1 + selectButtonNr,1);
 	}
 	
-	frontPanel_sendData(ARM_AUTOMATION_STEP,stepNr,menu_getActiveVoice() | ARM_AUTOMATION);
 	
+	frontPanel_sendData(ARM_AUTOMATION_STEP,stepNr,menu_getActiveVoice() | ARM_AUTOMATION);
+
 	
 	
 }
 //--------------------------------------------------------
 void buttonHandler_disarmTimerActionStep()
 {
-	//TODO FALSCH das löscht danna uch blinke LEDs die anbleiben sollen!
-	//led_clearAllBlinkLeds();
-	
 	if(buttonHandler_armedAutomationStep != NO_STEP_SELECTED)
 	{
 		const uint8_t isMainStep = ( (buttonHandler_armedAutomationStep%8)==0 );
@@ -87,10 +90,41 @@ void buttonHandler_disarmTimerActionStep()
 			const uint8_t selectButtonNr = buttonHandler_armedAutomationStep%8;
 			led_setBlinkLed(LED_PART_SELECT1 + selectButtonNr,0);
 		}
+		
+		//revert to original sound
+		//make changes temporary while an automation step is armed - revert to original value
+		if(buttonHandler_resetLock==1)
+		{
+			parameters[buttonHandler_originalParameter].value = buttonHandler_originalValue;
+		}		
+		
+		buttonHandler_armedAutomationStep = NO_STEP_SELECTED;
+		frontPanel_sendData(ARM_AUTOMATION_STEP,0,DISARM_AUTOMATION);
+		
+		if(buttonHandler_resetLock==1)
+		{
+			buttonHandler_resetLock = 0;
+			//&revert to original value
+			if(buttonHandler_originalParameter<128) // => Sound Parameter
+				{
+					frontPanel_sendData(MIDI_CC,buttonHandler_originalParameter,buttonHandler_originalValue);
+				}
+				else if(buttonHandler_originalParameter>=128 && (buttonHandler_originalParameter < END_OF_SOUND_PARAMETERS)) // => Sound Parameter above 127
+				{
+					frontPanel_sendData(CC_2,buttonHandler_originalParameter-128,buttonHandler_originalValue);
+				}
+				else
+				{
+					menu_parseGlobalParam(buttonHandler_originalParameter,parameters[buttonHandler_originalParameter].value);
+				}
+				menu_repaintAll();
+		}		
+		return;
 	}
 	
 	buttonHandler_armedAutomationStep = NO_STEP_SELECTED;
 	frontPanel_sendData(ARM_AUTOMATION_STEP,0,DISARM_AUTOMATION);
+
 };
 //--------------------------------------------------------
 int8_t buttonHandler_getArmedAutomationStep()
@@ -256,8 +290,17 @@ void buttonHandler_muteVoice(uint8_t voice, uint8_t isMuted)
 		
 	}
 	//muted tracks are lit
-	led_setActiveVoiceLeds(~buttonHandler_mutedVoices);
+	if(menu_muteModeActive)
+	{
+		led_setActiveVoiceLeds(~buttonHandler_mutedVoices);
+	}		
 };
+//--------------------------------------------------------
+void buttonHandler_showMuteLEDs()
+{
+	led_setActiveVoiceLeds(~buttonHandler_mutedVoices);
+	menu_muteModeActive = 1;
+}
 //--------------------------------------------------------
 void buttonHandler_handleSelectButton(uint8_t buttonNr)
 {
@@ -538,7 +581,7 @@ void buttonHandler_buttonReleased(uint8_t buttonNr)
 			led_setActiveVoice(menu_getActiveVoice());
 		}else
 		{
-			led_setActiveVoiceLeds(~buttonHandler_mutedVoices);
+			buttonHandler_showMuteLEDs();
 		}	
 		
 		break;
@@ -909,7 +952,7 @@ return;
 								buttonHandler_mutedVoices &= ~(1<<i);
 							}								
 						}
-						led_setActiveVoiceLeds(~buttonHandler_mutedVoices);
+						buttonHandler_showMuteLEDs();
 						
 				}
 				else
@@ -1150,7 +1193,6 @@ return;
 				}	
 			
 			
-			//led_initPerformanceLeds();
 			led_setBlinkLed(LED_PART_SELECT1 + menu_getViewedPattern() ,1);
 		}else if(buttonHandler_getMode() == SELECT_MODE_STEP)
 		{
@@ -1158,13 +1200,8 @@ return;
 		}
 		
 		//show muted voices if pressed
-	//	if(buttonHandler_getMode() != SELECT_MODE_PERF) {
-			led_setActiveVoiceLeds(~buttonHandler_mutedVoices);
-	//	} else {
-			//show active voice if pressed
-		//	led_setActiveVoice(menu_getActiveVoice());
-	//	}
-		
+		buttonHandler_showMuteLEDs();
+
 		break;
 		//the mode selection for the 8 select buttons
 

@@ -26,14 +26,24 @@
 //-----------------------------------------------
 //defines
 //-----------------------------------------------
-#define FIRMWARE_VERSION "0.24"
+#define FIRMWARE_VERSION "0.24a"
 #define CORTEX_RESET_PIN	PB0
 //-----------------------------------------------
 //code
 //-----------------------------------------------
 
-
-
+//debug helper to catch unhandled interrupts
+//-----------------------------------------------
+ISR(__vector_default)
+{
+#if DEBUG_CRASH_MODE	
+	lcd_home();
+	lcd_string_F(PSTR("Int. Error!"));
+	while(1);
+#endif
+	
+} 
+//-----------------------------------------------
 int main(void) 
 {
 	_delay_ms(100);
@@ -63,7 +73,7 @@ int main(void)
 	lcd_string_F(PSTR("Sonic Potions"));
 	//goto 2nd line
 	lcd_setcursor(0,2);
-	lcd_string_F(PSTR("LXR Drums V"));
+	lcd_string_F(PSTR("LXR*Drums V"));
 	lcd_string(FIRMWARE_VERSION);
 #endif
 
@@ -98,9 +108,22 @@ sei();
 	//show message for 1 sec
 	_delay_ms(2000);
 	lcd_clear();
-	
+
+#if DEBUG_CRASH_MODE	
+	//debug helper crash
+	lcd_home();
+	lcd_string_F(PSTR("preparing sei()"));
+	_delay_ms(2000);
+#endif
 	//enable interrupts
 	sei();
+	
+#if DEBUG_CRASH_MODE		
+	//debug helper crash
+	lcd_home();
+	lcd_string_F(PSTR("sei() enabled"));
+	_delay_ms(2000);
+#endif	
 	
 	//init menu
 	menu_init();
