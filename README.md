@@ -5,6 +5,7 @@ This is a fork of the LXR DrumSynth firmware. My intention for this fork is to a
 that are important to me. I will be freely offering any changes back to the SonicPotions repository.
 
 Here are a list of current changes (differences from main repos):
+-----------------------------------------------------------------
 - Midi Off - Will now send midi note off messages before the next midi note on message and also when
   the sequencer is stopped. This allows better interaction with external synths.
 - Add Eclipse CDT support for AVR. This allows all development of front and mainboard to be done in one 
@@ -15,6 +16,8 @@ Here are a list of current changes (differences from main repos):
 
 
 Instructions for building:
+--------------------------
+
 1.  Install Eclipse Juno CDT (You could install a later version, but this is the version I have working)
 
 2.  Install the Eclipse GNU ARM plugin. Go into the help menu, Install new Software, add a site: http://gnuarmeclipse.sourceforge.net/updates. Then check the box to install that plugin.
@@ -38,6 +41,9 @@ Instructions for building:
 11.  I've built the firmwareimagebuilder.exe in the \firmware image folder. I've also put a batch file that launches it and copies the binaries from the respective output directories to create FIRMWARE.BIN in that same dir. If you don't trust the .EXE I built, you will need to build it from tools\FirmwareImageBuilder\FirmwareImageBuilder. As is you will need visual studio. If you don't have it, you can try to install the free version, mingw, etc and compile the one file FirmwareImageBuilder.cpp (I've fixed it so it should build with any tool) and make your own exe and copy it to that dir.
 
 12.  Thats it, after running the batch file you will have your firmware file. 
+
+More Info
+---------
 
 Please visit https://github.com/SonicPotions/LXR for the original firmware
 
