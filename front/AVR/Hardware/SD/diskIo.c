@@ -21,7 +21,7 @@ static volatile DSTATUS Stat = STA_NOINIT;	/* Disk status */
 //-------------------------------------------------------------------------
 DSTATUS disk_initialize (BYTE drive)/* Physical drive number */
 {
-	
+
 	unsigned char error,i;
 	
 

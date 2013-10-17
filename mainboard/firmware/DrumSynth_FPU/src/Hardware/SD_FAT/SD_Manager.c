@@ -178,9 +178,7 @@ void sd_setActiveSample(uint8_t sampleNr)
 							{
 								//found sample
 								char filename[22] = "/samples/";
-								memcpy(&filename[9],fn,8);
-								filename[17] = '.';
-								memcpy(&filename[18],&fn[9],3);
+								memcpy(&filename[9],fn,13);
 								filename[21] = 0;
 
 								FRESULT res = f_open((FIL*)&sd_File,filename,FA_OPEN_EXISTING | FA_READ);
