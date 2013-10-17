@@ -95,7 +95,7 @@ void sampleMemory_loadSamples()
 	volatile uint32_t add = SAMPLE_INFO_START_ADDRESS ;
 	FLASH_If_Write(&add, (uint32_t*)(info), numSamples*sizeof(SampleInfo)/4 + 1);
 
-
+	spi_deInit();
 
 }
 //---------------------------------------------------------------

@@ -335,6 +335,7 @@ void frontParser_parseUartData(unsigned char data)
 					sampleMemory_init();
 					sampleMemory_loadSamples();
 					FLASH_Lock();
+
 					uart_sendFrontpanelByte(ACK);
 				break;
 

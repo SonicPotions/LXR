@@ -58,6 +58,7 @@ static SPI_InitTypeDef SPI_InitStructure;
 
 
 void spi_init(void);
+void spi_deInit();
 unsigned char SPI_transmit(unsigned char);
 unsigned char SPI_receive(void);
 
