@@ -49,6 +49,10 @@ extern uint8_t frontPanel_sysexMode;
 #define MAIN_STEP_CC		0xbe	//toggle main step
 #define ARM_AUTOMATION_STEP	0xbf	// status - stepNr - track | OnOff
 
+#define SAMPLE_CC			0xc0
+#define SAMPLE_START_UPLOAD 0x01
+#define SAMPLE_COUNT		0x02
+
 //preset status bytes
 #define PRESET_NAME				0xb4	/**< this message consists of 4 messages with status FRONT_PRESET_NAME and 2 data bytes each with 2 charactzers of the name*/
 #define PRESET					0xb5

@@ -9,6 +9,7 @@ RM := rm -rf
 # All of the sources participating in the build are defined here
 -include sources.mk
 -include src/Sequencer/subdir.mk
+-include src/SampleRom/subdir.mk
 -include src/MIDI/subdir.mk
 -include src/Hardware/USB/subdir.mk
 -include src/Hardware/SD_FAT/subdir.mk

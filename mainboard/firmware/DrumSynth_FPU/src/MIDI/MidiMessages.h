@@ -381,10 +381,10 @@ enum
 #define FRONT_MAIN_STEP_CC				0xbe	// toggle main step
 #define FRONT_ARM_AUTOMATION_STEP		0xbf	// status - stepNr - track | OnOff
 
-#if USE_SD_CARD
-#define FRONT_PRESET_NAME				0xb4	/**< this message consists of 4 messages with status FRONT_PRESET_NAME and 2 data bytes each with 2 charactzers of the name*/
-#define FRONT_PRESET					0xb5
-#endif
+#define SAMPLE_CC						0xc0
+#define FRONT_SAMPLE_START_UPLOAD 		0x01
+#define FRONT_SAMPLE_COUNT		 		0x02
+
 //message
 #define FRONT_CURRENT_STEP_NUMBER_CC	0x01	/**< send the current active chase light step number to the frontplate*/
 #define FRONT_LED_SEQ_BUTTON			0x02	/**< turn on a step seq. led*/
@@ -394,12 +394,6 @@ enum
 
 #define VOICE_MIDI_CHAN					0x02
 
-#if USE_SD_CARD
-//preset
-#define FRONT_PRESET_LOAD				0x01
-#define FRONT_PRESET_SAVE				0x02
-#define FRONT_PATTERN_LOAD				0x03
-#endif
 
 
 //Sequencer commands

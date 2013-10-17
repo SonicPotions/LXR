@@ -21,6 +21,7 @@ S_UPPER_DEPS :=
 SUBDIRS := \
 src \
 src/Sequencer \
+src/SampleRom \
 src/MIDI \
 src/Hardware \
 src/Hardware/USB \

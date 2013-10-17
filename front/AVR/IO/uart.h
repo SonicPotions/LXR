@@ -15,8 +15,11 @@
 
 #include "../fifo.h"
 
-//-------------------------------------------
 
+
+//-------------------------------------------
+#define ACK 1
+#define NACK -1
 //-------------------------------------------
 
 void uart_init();
@@ -24,6 +27,8 @@ uint8_t uart_putc(unsigned char c);
 void uart_puts (char *s);
 uint8_t uart_getc(uint8_t *data);
 
+//waits for a ACK message on the uart
+int8_t uart_waitAck();
 //check if there is some data received an parse it
 void uart_checkAndParse();
 

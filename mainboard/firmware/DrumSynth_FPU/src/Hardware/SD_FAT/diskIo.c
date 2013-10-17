@@ -69,6 +69,7 @@ DSTATUS disk_initialize (BYTE drive)/* Physical drive number */
 	spi_init();
 	
 	//init SD card for (i=0; i<10; i++)
+
 	for (i=0; i<10; i++)
 	{
 		error = SD_init();
@@ -76,7 +77,8 @@ DSTATUS disk_initialize (BYTE drive)/* Physical drive number */
 	}
 
 
-	if(error)
+	//if(error)
+	if(0)
 	{
 		/*
 		lcd_home();
@@ -97,7 +99,7 @@ DSTATUS disk_initialize (BYTE drive)/* Physical drive number */
 	//	lcd_string_F(PSTR("sd card ok"));
 		
 	
-		SPI_HIGH_SPEED;
+		//SPI_HIGH_SPEED;
 		wait(1);
 
 	}

@@ -59,9 +59,7 @@
 #include "modulationNode.h"
 #include "SomGenerator.h"
 
-#if USE_SD_CARD
-#include "SD_Manager.h"
-#endif
+
 
 #include "usb_manager.h"
 #include "MidiParser.h"
@@ -194,11 +192,16 @@ int main(void)
 {
 	initSpiPins();
 
+
+
 	/* get system clock info*/
 	RCC_GetClocksFreq(&RCC_Clocks);
 	/* set timebase systick to 1ms*/
 	//SysTick_Config(RCC_Clocks.HCLK_Frequency / 1000);
 	SysTick_Config(RCC_Clocks.HCLK_Frequency / 4000);
+
+
+
 
 	initAudioJackDiscoverPins();
 
@@ -241,9 +244,8 @@ int main(void)
 	HiHat_init();
 	Cymbal_init();
 
-#if USE_SD_CARD
-	sdManager_init();
-#endif
+
+
 
 	usb_init();
 
@@ -263,10 +265,7 @@ int main(void)
     {
 
     	usb_tick();
-#if USE_SD_CARD
-    	 //check if something needs to be send to the front
-    	sdManager_tick();
-#endif
+
     	//generate next sample if no valid sample is present
     	if(bCurrentSampleValid!= SAMPLE_VALID)
     	{

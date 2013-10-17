@@ -26,7 +26,7 @@ MEMORY
 
  /* FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 1024K*/
  /*we have to reserve the first sector (16k) for the bootloader*/ 
-   FLASH (rx)	  : ORIGIN = 0x08004000, LENGTH = 1008K 
+   FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 16K
  
   RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 112K
   

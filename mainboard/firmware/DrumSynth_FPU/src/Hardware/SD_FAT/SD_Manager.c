@@ -39,346 +39,197 @@
 #include "Uart.h"
 #include "MidiMessages.h"
 #include "sequencer.h"
+#include <string.h>
 
 //---------------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------------
-volatile FATFS preset_Fatfs;		/* File system object for the logical drive */
-volatile FIL preset_File;			/* place to hold 1 file*/
-char drumset_currentName[8];		/* buffer for the drumset name*/
-
-//state machine
-/** a state machine is used to read data from the sd card in time slices.
- * when a new sample needs to be calculated, the sd card load is interrupted
- * and continues on the next call to sdManager_tick()
- */
- uint8_t sdManager_state = SD_STATE_IDLE;
- uint16_t sdManager_stateIndex=0;
-
-uint8_t drumset_parameterValues[NUM_PARAMS+1]; //the last value indicates the index of the sent data
-#define PARAMETER_INDEX NUM_PARAMS // the position of the index of the sent data
+FATFS sd_Fatfs;		/* File system object for the logical drive */
+FIL sd_File;			/* place to hold 1 file*/
+DIR sd_Directory;
+uint8_t sd_initOkFlag = 0;
+uint8_t sd_foundSampleFiles = 0;
+uint32_t sd_currentSampleLength = 0;
+char sd_currentSampleName[12];
 //---------------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------------
 void sdManager_init()
 {
+	FRESULT res;
+	char *fn;   /* This function is assuming non-Unicode cfg. */
+
 	//init the Filesystem card
-	f_mount(0,(FATFS*)&preset_Fatfs);
+	f_mount(0,(FATFS*)&sd_Fatfs);
 
-	//TODO muss von front initialisiert werden, sonst bootet avr noch wenn cortwex sendet
-	sdManager_loadDrumset(4,0);
+	//goto sample directory
+	res = f_opendir(&sd_Directory, "/samples");                       /* Open the directory */
+    if (res == FR_OK)
+    {
+		//count .wav files in sample dir
+		FILINFO fno;
 
-
-	drumset_parameterValues[PARAMETER_INDEX] = 0;
-
-
-}
-//---------------------------------------------------------------------------------------
-void sdManager_sendName2Front(char* name)
-{
-	uart_sendFrontpanelByte(FRONT_PRESET_NAME);
-	uart_sendFrontpanelByte((name[0]&0x7f));
-	uart_sendFrontpanelByte( ((0x40) | ((name[0]>>7)&0x7f)));//set 7th bit to indicate beginning of new name
-
-	int i;
-	for(i=1; i<8 ; i++)
-	{
-		uart_sendFrontpanelByte(FRONT_PRESET_NAME);
-		uart_sendFrontpanelByte((name[i]&0x7f));
-		uart_sendFrontpanelByte((name[i]>>7)&0x7f);
-	}
-}
-//---------------------------------------------------------------------------------------
-void sdManager_sendParameters2Front(uint8_t index, uint8_t value)
-{
-	/*
-	uart_sendFrontpanelByte(MIDI_CC);
-	uart_sendFrontpanelByte(index+1);
-	uart_sendFrontpanelByte(value);
-	*/
-	drumset_parameterValues[index] = value;
-	//drumset_parameterValues[PARAMETER_INDEX] = index;
-
-}
-//---------------------------------------------------------------------------------------
-static volatile uint32_t counter_stateMachineSlice = 0;
-#define STATE_MACHINE_TIMEOUT 10 //parameters
-
-void sdManager_loadSoundState()
-{
-
-	//get current index
-	counter_stateMachineSlice = sdManager_stateIndex;
-
-
-
-	for(;sdManager_stateIndex<NUM_PARAMS;)
-	{
-
-		uint8_t data;
-		unsigned int bytesRead;
-		f_read((FIL*)&preset_File,&data,1,&bytesRead);
-
-		MidiMsg msg;
-		if(sdManager_stateIndex<PAR_BEGINNING_OF_GLOBALS)
+		while(1)
 		{
-			//sound parameters
-			msg.status = MIDI_CC;
-			msg.data1 = sdManager_stateIndex+1 ;	//the parameter number
-			msg.data2 = data;	//the value
+			res = f_readdir(&sd_Directory, &fno);
+			if (res != FR_OK || fno.fname[0] == 0) break;  /* Break on error or end of dir */
+			if (fno.fname[0] == '.') continue;             /* Ignore dot entry */
 
-			//osc waveform special case bring 0-4 value to 0-127
-			if((msg.data1  >=OSC_WAVE_DRUM1) && (msg.data1  <=WAVE3_HH))
-			{
-				msg.data2 /= (127/5);
-			}
+			fn = fno.fname; //8.3 format
 
+			if (fno.fattrib & AM_DIR) {                    /* It is a directory */
+				continue;									// skip directories
+			}else {                                       /* It is a file. */
+              //check if .wav file
 
-			midiParser_ccHandler(msg);
-		}
-		else
-		{
-			/*
-			//global parameters
-			msg.status = MIDI_CC2;
-			msg.data1 = i+1 ;	//the parameter number
-			msg.data2 = data;	//the value
-			midiParser_ccHandler(msg);
-			*/
-		}
-		//send parametger to front
-		sdManager_sendParameters2Front(sdManager_stateIndex,data);
-		//wait(10);
-		sdManager_stateIndex++;
+				//get ext
 
-		//if a new sampel calculation is needed, stop sd card loading
-		//if(bCurrentSampleValid!= SAMPLE_VALID) return;
-		if(sdManager_stateIndex-counter_stateMachineSlice >= STATE_MACHINE_TIMEOUT)
-		{
-			//int debug =1;
-			//debug += systick_ticks;
-			return;
-		}
-	}
-
-	//update all
-	drumset_parameterValues[PARAMETER_INDEX] = 0;
-
-	//close the file handle
-	f_close((FIL*)&preset_File);
-
-	//send name to front panel
-	sdManager_sendName2Front(drumset_currentName);
-
-	sdManager_state = SD_STATE_IDLE;
-}
-//---------------------------------------------------------------------------------------
-void sdManager_loadPatternState()
-{
-
-	//get current index
-	//counter_stateMachineSlice = sdManager_stateIndex;
-
-	unsigned int bytesRead;
-
-	if(sdManager_stateIndex<(NUM_STEPS*NUM_PATTERN*NUM_TRACKS))
-	{
-		//seq_track[NUM_PATTERN][NUM_TRACKS][128];
-		const uint8_t absPat 	= sdManager_stateIndex/128;
-		const uint8_t currentTrack 		= absPat / 8;
-		const uint8_t currentPattern 	= absPat - currentTrack*8;
-		const uint8_t currentStep		= sdManager_stateIndex - absPat*128;
-
-
-		f_read((FIL*)&preset_File,(void*)&seq_track[currentPattern][currentTrack][currentStep],sizeof(Step),&bytesRead);
-		sdManager_stateIndex++;
-
-		//if(sdManager_stateIndex-counter_stateMachineSlice >= STATE_MACHINE_TIMEOUT)
-		//{
-			return;
-		//}
-
-	}
-
-	//close the file handle
-	f_close((FIL*)&preset_File);
-
-	//send name to front panel
-	sdManager_sendName2Front(drumset_currentName);
-
-	//back to idle state - job finished
-	sdManager_state = SD_STATE_IDLE;
-
-}
-//---------------------------------------------------------------------------------------
-static volatile uint32_t startTicks_frontLimit = 0;
-
-void sdManager_tick()
-{
-
-	//parameter transfer to front
-	if(drumset_parameterValues[PARAMETER_INDEX] < 128 )
-	{
-		if(systick_ticks-startTicks_frontLimit >= 10)
-		{
-			//get current time
-			startTicks_frontLimit = systick_ticks;
-
-
-			//we have data to send
-			uart_sendFrontpanelByte(MIDI_CC);
-			uart_sendFrontpanelByte(drumset_parameterValues[PARAMETER_INDEX]+1);
-			uart_sendFrontpanelByte(drumset_parameterValues[drumset_parameterValues[PARAMETER_INDEX]]);
-
-			//increase the index
-			drumset_parameterValues[PARAMETER_INDEX]++;
-
-		}
-	}
-
-	//SD card state machine
-	switch(sdManager_state)
-	{
-	case SD_STATE_IDLE:
-
-		break;
-
-	case SD_STATE_LOAD_SOUND:
-		sdManager_loadSoundState();
-		break;
-
-	case SD_STATE_LOAD_PATTERN:
-		sdManager_loadPatternState();
-		break;
-	}
-
-}
-
-//---------------------------------------------------------------------------------------
-uint8_t sdManager_loadDrumset(uint8_t presetNr, uint8_t isMorph)
-{
-	//filename in 8.3  format
-	char filename[13];
-	sprintf(filename,"p%03d.snd",presetNr);
-	//open the file
-	FRESULT res = f_open((FIL*)&preset_File,filename,FA_OPEN_EXISTING | FA_READ);
-
-	if(res!=FR_OK)
-	{
-		//file open error... maybe the file does not exist?
-		return 0;
-	}
-	else
-	{
-		//now read the file content
-		unsigned int bytesRead;
-		//first the preset name
-		f_read((FIL*)&preset_File,(void*)drumset_currentName,8,&bytesRead);
-
-		//then the data
-
-		/*
-		if(isMorph)
-		{
-			for(i=0;i<PAR_BEGINNING_OF_GLOBALS;i++)
-			{
-				f_read((FIL*)&preset_File,&parameters2[i].value,1,&bytesRead);
-			}
-		}
-		else
-
-		{*/
-
-			sdManager_stateIndex=0;
-			sdManager_state = SD_STATE_LOAD_SOUND;
-
-#if 0
-			for(;sdManager_stateIndex<NUM_PARAMS;sdManager_stateIndex++)
-			{
-				uint8_t data;
-				f_read((FIL*)&preset_File,&data,1,&bytesRead);
-
-				MidiMsg msg;
-				if(i<PAR_BEGINNING_OF_GLOBALS)
+				int i;
+				for(i=0;i<12;i++)
 				{
-					//sound parameters
-					msg.status = MIDI_CC;
-					msg.data1 = i+1 ;	//the parameter number
-					msg.data2 = data;	//the value
-
-					//osc waveform special case bring 0-4 value to 0-127
-					if((msg.data1  >=OSC_WAVE_DRUM1) && (msg.data1  <=WAVE3_HH))
+					if(fn[i]=='.')
 					{
-						msg.data2 /= (127/5);
+						if( (fn[i+1]=='W') && (fn[i+2]=='A') && (fn[i+3]=='V') )
+						{
+							sd_foundSampleFiles++;
+						}
 					}
-
-
-					midiParser_ccHandler(msg);
 				}
-				else
-				{
-					/*
-					//global parameters
-					msg.status = MIDI_CC2;
-					msg.data1 = i+1 ;	//the parameter number
-					msg.data2 = data;	//the value
-					midiParser_ccHandler(msg);
-					*/
-				}
-				//send parametger to front
-				sdManager_sendParameters2Front(i,data);
-				//wait(1);
 
-				if(bCurrentSampleValid!= SAMPLE_VALID) break;
-			}
+            }
 		}
 
-		//update all
-		drumset_parameterValues[PARAMETER_INDEX] = 0;
-
-		//close the file handle
-		f_close((FIL*)&preset_File);
-
-		//send name to front panel
-		sdManager_sendName2Front(drumset_currentName);
-
-
-		//now we need to send the new param values to the cortex and repaint the menu
-		//menu_sendAllParameters();
-		//preset_morph(parameters[PAR_MORPH].value + (parameters[PAR_MORPH].value==127)*1);
-
-		//TODO send program change message
-#endif
-	}
-
-	return 1;
-};
-//-------------------------------------------------------------------------------------------
-void sdManager_loadPattern(uint8_t patternNr)
-{
-	//filename in 8.3  format
-	char filename[13];
-	sprintf(filename,"p%03d.pat",patternNr);
-	//open the file
-	FRESULT res = f_open((FIL*)&preset_File,filename,FA_OPEN_EXISTING | FA_READ);
-
-	//preset_File.
-
-	if(res!=FR_OK)
-	{
-		//file open error... maybe the file does not exist?
-		return;
-	}
-	else
-	{
-
-		//now read the file content
-		unsigned int bytesRead;
-		//first the preset name
-		f_read((FIL*)&preset_File,(void*)drumset_currentName,8,&bytesRead);
-
-		sdManager_stateIndex=0;
-		sdManager_state = SD_STATE_LOAD_PATTERN;
-	}
-
+		sd_initOkFlag = 1;
+    }
 
 }
+
+//---------------------------------------------------------------------------------------
+uint8_t sd_getNumSamples()
+{
+	return sd_foundSampleFiles;
+}
+//---------------------------------------------------------------------------------------
+/*
+ * set the file read pointer to the beginning of the sample data in the data chunk
+ * returns length of the data block in byte
+ */
+uint32_t findDataChunk()
+{
+	unsigned int bytesRead = 1;
+	uint8_t data[4];
+	memset(data,0,4);
+	uint8_t pos = 0;
+
+	//search substring 'data'
+	while(bytesRead == 1) //while !EOF
+	{
+		f_read((FIL*)&sd_File,(void*)&data[pos],1,&bytesRead);
+
+		//check
+		if( (data[pos] == 'a') && (data[(pos+1)%4] == 'd') && (data[(pos+2)%4] == 'a') && (data[(pos+3)%4] == 't'))
+		{
+			//found 'data' header
+			//-> read
+			uint32_t length;
+			f_read((FIL*)&sd_File,(void*)&length,4,&bytesRead);
+			return length;
+		}
+
+		pos++;
+		pos = pos%4;
+	}
+	return 0;
+}
+//---------------------------------------------------------------------------------------
+//selects the active sample from the folder
+void sd_setActiveSample(uint8_t sampleNr)
+{
+	FRESULT res;
+	uint8_t currentSample=0;
+	//goto sample directory
+	res = f_opendir(&sd_Directory, "/samples");                       /* Open the directory */
+    if (res == FR_OK)
+    {
+		//count .wav files in sample dir
+		FILINFO fno;
+
+		while(1)
+		{
+			res = f_readdir(&sd_Directory, &fno);
+			if (res != FR_OK || fno.fname[0] == 0) break;  /* Break on error or end of dir */
+			if (fno.fname[0] == '.') continue;             /* Ignore dot entry */
+
+			char *fn = fno.fname; //8.3 format
+
+			if (fno.fattrib & AM_DIR) {                    /* It is a directory */
+				continue;									// skip directories
+			}else {                                       /* It is a file. */
+              //check if .wav file
+				//get ext
+
+				int i;
+				for(i=0;i<12;i++)
+				{
+					if(fn[i]=='.')
+					{
+						if( (fn[i+1]=='W') && (fn[i+2]=='A') && (fn[i+3]=='V') )
+						{
+
+							if(sampleNr == currentSample)
+							{
+								//found sample
+								char filename[22] = "/samples/";
+								memcpy(&filename[9],fn,8);
+								filename[17] = '.';
+								memcpy(&filename[18],&fn[9],3);
+								filename[21] = 0;
+
+								FRESULT res = f_open((FIL*)&sd_File,filename,FA_OPEN_EXISTING | FA_READ);
+
+								if(res!=FR_OK)
+								{
+									//file open error... maybe the file does not exist?
+									return;
+								}
+								//copy name
+								memcpy(sd_currentSampleName,fn,11);
+								sd_currentSampleName[11] = 0;
+								//set read pointer to sample data
+								sd_currentSampleLength = findDataChunk();
+
+								return;
+							}
+							currentSample++;
+						}
+					}
+				}
+
+            }
+		}
+
+		sd_initOkFlag = 1;
+    }
+}
+//---------------------------------------------------------------------------------------
+uint32_t sd_getActiveSampleLength()
+{
+	return sd_currentSampleLength;
+}
+//---------------------------------------------------------------------------------------
+//read sample data from the active file.
+//returns the bytes read.
+//if 0 is returned the EOF is reached
+uint16_t sd_readSampleData(int16_t* data, uint16_t size)
+{
+	//read the file content
+	unsigned int bytesRead;
+	f_read((FIL*)&sd_File,(void*)data,size*2,&bytesRead);
+
+	return bytesRead;
+}
+//---------------------------------------------------------------------------------------
+char* sd_getActiveSampleName()
+{
+	return sd_currentSampleName;
+}
+//---------------------------------------------------------------------------------------
 #endif

@@ -47,19 +47,19 @@
 #include "ff.h"
 #include "FIFO.h"
 
-#define NUM_PARAMS 185
-#define PAR_BEGINNING_OF_GLOBALS 128
-
-#define SD_STATE_IDLE 			0
-#define SD_STATE_LOAD_SOUND		1
-#define SD_STATE_SAVE_SOUND		2
-#define SD_STATE_LOAD_PATTERN	3
 
 void sdManager_init();
-uint8_t sdManager_loadDrumset(uint8_t presetNr, uint8_t isMorph);
-void sdManager_loadPattern(uint8_t patternNr);
-void sdManager_tick(); //call periodically to ensure front panel is updated (needed because of fifo overruns when sending bulk data)
 
+//returns the number of samples in the sample folder /samples
+uint8_t sd_getNumSamples();
+//selects the active sample from the folder [0:NUM_SAMPLES]
+void sd_setActiveSample(uint8_t sampleNr);
+uint32_t sd_getActiveSampleLength();
+char* sd_getActiveSampleName();
+//read sample data from the active file.
+//returns the bytes read.
+//if 0 is returned the EOF is reached
+uint16_t sd_readSampleData(int16_t* data, uint16_t size);
 
 
 #endif /* SD_MANAGER_H_ */

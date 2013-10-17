@@ -35,6 +35,8 @@
 #ifndef MIDIUART_H_
 #define MIDIUART_H_
 
+#define ACK 1
+#define NACK -1
 
 void initMidiUart();
 

@@ -41,15 +41,17 @@
 #include "datatypes.h"
 #include "wavetable.h"
 #include "config.h"
+#include "../SampleRom/SampleMemory.h"
 //-----------------------------------------------------------
 
 //the available osc waveforms
-#define SINE 		0x00
-#define TRI			0x01
-#define SAW			0x02
-#define REC			0x03
-#define NOISE		0x04
-#define CRASH		0x05
+#define SINE 				0x00
+#define TRI					0x01
+#define SAW					0x02
+#define REC					0x03
+#define NOISE				0x04
+#define CRASH				0x05
+#define OSC_SAMPLE_START 	0x06
 
 
 #define phaseShift 1000
@@ -124,6 +126,8 @@ void calcNextOscSampleFmBlock(OscInfo* osc, int16_t* modBuffer, int16_t* buf, ui
 int16_t calcNextOscSampleFm(OscInfo* osc, OscInfo* modOsc);
 //-----------------------------------------------------------
 void calcSampleOscBlock(OscInfo* osc, int16_t* buf, const uint8_t size ,const float gain);
+//-----------------------------------------------------------
+void calcUserSampleOscBlock(OscInfo* osc, int16_t* buf, const uint8_t size ,const float gain);
 //-----------------------------------------------------------
 int16_t calcSampleOsc(OscInfo* osc);
 //-----------------------------------------------------------

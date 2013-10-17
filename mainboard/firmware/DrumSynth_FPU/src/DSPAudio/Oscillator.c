@@ -365,7 +365,10 @@ void calcNextOscSampleBlock(OscInfo* osc, int16_t* buf, const uint8_t size, cons
 			calcSampleOscBlock(osc,buf,size, gain);
 			break;
 
-		default:
+		default://sample playback
+			if( osc->waveform - OSC_SAMPLE_START > sampleMemory_getNumSamples() ) return; // return if out of range
+
+			calcUserSampleOscBlock(osc,buf,size, gain);
 			break;
 		}
 }
@@ -503,6 +506,46 @@ int16_t calcSampleOscFm(OscInfo* osc, OscInfo* modOsc)
 	return oscOut;
 };
 //---------------------------------------------------------------
+void calcUserSampleOscBlock(OscInfo* osc, int16_t* buf, const uint8_t size ,const float gain)
+{
+	//TODO optimize performance by moving sampleInfo to oscillator struct
+	SampleInfo info = sampleMemory_getSampleInfo(osc->waveform - OSC_SAMPLE_START);
+
+	//cast sample data to signed int16_t array
+	int16_t* sampleData = (int16_t*)((int8_t*)(info.offset));
+
+	uint8_t i;
+	for(i=0;i<size;i++)
+	{
+		const uint32_t oscPhase = osc->phase;
+		int16_t oscOut ;
+		uint32_t  itg	= oscPhase>>17;
+
+		if(itg >= info.size)
+		{
+			buf[i] = 0;
+			continue;
+		}
+
+	#if INTERPOLATE_OSC
+
+		oscOut = sampleData[itg++];
+		const float frac = (oscPhase&20000)*0.00000762939453125f;//=> * 1/0x20000
+		oscOut += frac*(sampleData[itg] - oscOut);
+	#else
+		oscOut = sampleData[itg];
+	#endif
+	//	oscOut = (oscOut - 127)*256;
+
+		//one shot
+		if(itg < info.size)
+		{
+			osc->phase = oscPhase + osc->phaseInc;
+		}
+		buf[i] = oscOut * gain;
+	}
+}
+//---------------------------------------------------------------
 void calcSampleOscBlock(OscInfo* osc, int16_t* buf, const uint8_t size ,const float gain)
 {
 	uint8_t i;
@@ -576,6 +619,12 @@ void osc_calcSampleFreq(OscInfo* osc)
 	osc->phaseInc = freq2PhaseIncr32767(currentFreq);
 }
 //-----------------------------------------------------------
+void osc_calcUserSampleFreq(OscInfo* osc)
+{
+	const float currentFreq = osc->freq*osc->pitchMod*osc->modNodeValue;
+	osc->phaseInc = freq2PhaseIncr32767(currentFreq);
+}
+//-----------------------------------------------------------
  void osc_setFreq(OscInfo* osc)
  {
 		switch(osc->waveform)
@@ -600,11 +649,14 @@ void osc_calcSampleFreq(OscInfo* osc)
 			osc_calcNoiseFreq(osc);
 			break;
 
+
 		case CRASH:
 			osc_calcSampleFreq(osc);
 			break;
 
+		//samples
 		default:
+			osc_calcUserSampleFreq(osc);
 			break;
 
 		}

@@ -23,6 +23,7 @@
 #include "ledHandler.h"
 #include "buttonHandler.h"
 #include "Menu\copyClearTools.h"
+#include "frontPanelParser.h"
 //-----------------------------------------------
 //defines
 //-----------------------------------------------
@@ -148,6 +149,9 @@ sei();
 
 	//initialize empty pattern
 	copyClear_clearCurrentPattern();
+	
+	//request number of samples
+	frontPanel_sendData(SAMPLE_CC,SAMPLE_COUNT,0x00);
 
 	//main loop
 	while(1) 
