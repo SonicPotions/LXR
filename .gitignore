@@ -15,6 +15,7 @@
 
 # Executables
 *.exe
+!FirmwareImageBuilder.exe
 *.out
 *.app
 
