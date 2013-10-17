@@ -77,8 +77,8 @@ DSTATUS disk_initialize (BYTE drive)/* Physical drive number */
 	}
 
 
-	//if(error)
-	if(0)
+	if(error)
+	//if(0)
 	{
 		/*
 		lcd_home();

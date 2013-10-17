@@ -57,6 +57,8 @@ void sdManager_init()
 	FRESULT res;
 	char *fn;   /* This function is assuming non-Unicode cfg. */
 
+	sd_foundSampleFiles = 0;
+
 	//init the Filesystem card
 	f_mount(0,(FATFS*)&sd_Fatfs);
 

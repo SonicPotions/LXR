@@ -1494,6 +1494,7 @@ void menu_handleLoadSaveMenu(int8_t inc, uint8_t button)
 					break;
 					
 					case SAVE_TYPE_SAMPLES:
+					spi_deInit();
 					//send load sample command to mainboard
 					frontPanel_sendData(SAMPLE_CC,SAMPLE_START_UPLOAD,0x00);
 					

@@ -84,6 +84,7 @@ void sampleMemory_loadSamples()
 			uint16_t bytesRead;
 			bytesRead = sd_readSampleData(data, BLOCKSIZE);
 			volatile uint32_t add = 4+SAMPLE_ROM_START_ADDRESS + 4*addr; //*4 because we write uint32
+
 			FLASH_If_Write(&add, (uint32_t*)data, BLOCKSIZE/2);
 
 			j += BLOCKSIZE*2;

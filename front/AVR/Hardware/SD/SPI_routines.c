@@ -31,7 +31,15 @@ void spi_init(void)
 	SPSR = 0x00;
 }
 
-
+void spi_deInit()
+{
+	//disable SPI
+	SPCR &= ~(1<<SPE);
+	//all SPI ports as input
+	DDRB &= ~((1<<PB5) | (1<<PB4) |(1<<PB7) );
+	PORTB &= ~((1<<PB5) | (1<<PB4) |(1<<PB7) );
+	
+}
 
 unsigned char SPI_transmit(unsigned char data)
 {
