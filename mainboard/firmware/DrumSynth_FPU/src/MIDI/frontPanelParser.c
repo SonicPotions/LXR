@@ -332,15 +332,10 @@ void frontParser_parseUartData(unsigned char data)
 				{
 
 				case FRONT_SAMPLE_START_UPLOAD:
-					DMA_Cmd(DMA1_Stream7, DISABLE);
 					sampleMemory_init();
 					sampleMemory_loadSamples();
 					FLASH_Lock();
-
 					uart_sendFrontpanelByte(ACK);
-					//uart_sendFrontpanelByte(ACK);
-					//uart_sendFrontpanelByte(ACK);
-					DMA_Cmd(DMA1_Stream7, ENABLE);
 				break;
 
 				case FRONT_SAMPLE_COUNT:
