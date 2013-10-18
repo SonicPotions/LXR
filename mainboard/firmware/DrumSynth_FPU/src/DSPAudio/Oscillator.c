@@ -245,6 +245,7 @@ void calcNextOscSampleFmBlock(OscInfo* osc, int16_t* modBuffer, int16_t* buf, ui
 			break;
 
 		default:
+			calcUserSampleOscFmBlock(osc,modBuffer,buf,size,gain);
 			break;
 
 		}
@@ -454,6 +455,7 @@ int16_t calcWavetableOsc(OscInfo* osc,  const int16_t table[][1024])
 	return oscOut;
 
 };
+
 //------------------------------------------------------------------
 void calcSampleOscFmBlock(OscInfo* osc,int16_t* modBuffer, int16_t* buf, uint8_t size ,const float gain)
 {
@@ -505,6 +507,41 @@ int16_t calcSampleOscFm(OscInfo* osc, OscInfo* modOsc)
 	osc->output = oscOut;
 	return oscOut;
 };
+//------------------------------------------------------------------
+void calcUserSampleOscFmBlock(OscInfo* osc,int16_t* modBuffer, int16_t* buf, uint8_t size ,const float gain)
+{
+	//TODO optimize performance by moving sampleInfo to oscillator struct
+	SampleInfo info = sampleMemory_getSampleInfo(osc->waveform - OSC_SAMPLE_START);
+
+	//cast sample data to signed int16_t array
+	int16_t* sampleData = (int16_t*)((int8_t*)(info.offset));
+
+	uint8_t i;
+	for(i=0;i<size;i++)
+	{
+		const uint32_t oscPhase 	= osc->phase;
+		int16_t oscOut ;
+
+		const uint32_t index =  oscPhase + (((uint32_t)(modBuffer[i]*osc->fmMod))<<14);
+		uint32_t  itg	= index>>17;
+
+	#if INTERPOLATE_FM_OSC
+		oscOut = sampleData[itg++];
+		const float frac	= (index&20000)*0.00000762939453125f;//=> * 1/0x20000
+		oscOut += frac*(sampleData[itg] - oscOut);
+	#else
+		oscOut = sampleData[itg];
+	#endif
+
+		//one shot
+		if(itg < info.size)
+		{
+			osc->phase = oscPhase + osc->phaseInc;
+		}
+		osc->output = oscOut;
+		buf[i] = oscOut * gain;
+	}
+}
 //---------------------------------------------------------------
 void calcUserSampleOscBlock(OscInfo* osc, int16_t* buf, const uint8_t size ,const float gain)
 {
@@ -521,11 +558,6 @@ void calcUserSampleOscBlock(OscInfo* osc, int16_t* buf, const uint8_t size ,cons
 		int16_t oscOut ;
 		uint32_t  itg	= oscPhase>>17;
 
-		if(itg >= info.size)
-		{
-			buf[i] = 0;
-			continue;
-		}
 
 	#if INTERPOLATE_OSC
 

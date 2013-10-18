@@ -1,3 +1,7 @@
+Firmware v0.25
+---------------------------
+- added user sample (.wav) import from SD card
+
 Firmware v0.24a
 ---------------------------
 - fixed parameter wrap from 255 to 0 with encoder for morph parameter
