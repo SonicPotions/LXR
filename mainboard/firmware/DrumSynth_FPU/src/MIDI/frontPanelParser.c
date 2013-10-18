@@ -332,6 +332,7 @@ void frontParser_parseUartData(unsigned char data)
 				{
 
 				case FRONT_SAMPLE_START_UPLOAD:
+					seq_setRunning(0);
 					sampleMemory_init();
 					sampleMemory_loadSamples();
 					FLASH_Lock();
