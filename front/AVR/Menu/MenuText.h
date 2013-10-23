@@ -21,13 +21,13 @@
 #define MENU_SEQ_QUANT		9
 #define MENU_TRANS			10
 #define MENU_MIDI			11
-//-----------------------------------------------------------------
-const char midiModes[][4] PROGMEM  = 
-{
-	{2},		//number of entries
-	{"trg"},
-	{"nte"},
-};
+//--AS -----------------------------------------------------------------
+//const char midiModes[][4] PROGMEM  =
+//{
+//	{2},		//number of entries
+//	{"trg"},
+//	{"nte"},
+//};
 //-----------------------------------------------------------------
 const char quantisationNames[][4] PROGMEM  = 
 {
