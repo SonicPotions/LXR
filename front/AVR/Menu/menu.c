@@ -828,25 +828,12 @@ void menu_repaint()
 			{
 				//Top row -> category
 				strcpy_P(&editDisplayBuffer[0][0],(const prog_char*)(&catNames[pgm_read_byte(&valueNames[parName].category)]));
-				//Bottom row -> long name
+				//Bottom row left -> long name
 				strcpy_P(&editDisplayBuffer[1][0],(const prog_char*)(&longNames[pgm_read_byte(&valueNames[parName].longName)]));
-				//Bottom row parameter value
-			} // parameter type is not automation target
-			//return;
-			/*
-			return;
-			if(parameters[parNr].dtype == DTYPE_AUTOM_TARGET)
-			{
-				//sprintf(&editDisplayBuffer[0][0],"Am");
-				editDisplayBuffer[0][0] = 'A';
-				editDisplayBuffer[0][1] = 'b';
-			}	
-			 */
+				//Bottom row right -> parameter value (set below)
 
-			// now set the value for the selected parameter
-			switch(parNr)
-			{
-			default: //switch(parNr)
+			//switch(parNr) {
+			//default: //switch(parNr)
 				switch(parameters[parNr].dtype&0x0F)
 				{
 				case DTYPE_TARGET_SELECTION_VELO: //switch(parameters[parNr].dtype&0x0F)
@@ -898,22 +885,6 @@ void menu_repaint()
 						sprintf(&editDisplayBuffer[1][13],"Off");
 					}
 					break;
-
-				case DTYPE_AUTOM_TARGET:  //switch(parameters[parNr].dtype&0x0F)
-				{
-					if(parameters[parNr].value == 0xff)
-					{
-						//sprintf(&editDisplayBuffer[1][13],"Off");
-					} else {
-
-						//const uint8_t voice = menu_cc2name[parameters[parNr].value].voiceNr;
-						//const uint8_t name = menu_cc2name[parameters[parNr].value].nameIdx;
-						//memcpy_P(&editDisplayBuffer[1][13],&shortNames[pgm_read_byte(&valueNames[name].shortName)],3);
-
-					}
-				}
-				break;
-
 
 				case DTYPE_MENU: //switch(parameters[parNr].dtype&0x0F)
 				{
@@ -978,8 +949,8 @@ void menu_repaint()
 					}
 
 				} // case DTYPE_MENU
-
 				break;
+
 				case DTYPE_PM63: //switch(parameters[parNr].dtype&0x0F)
 					sprintf(&editDisplayBuffer[1][13],"%3d",parameters[parNr].value - 63);
 					break;
@@ -988,9 +959,11 @@ void menu_repaint()
 					setNoteName(parameters[parNr].value, &editDisplayBuffer[1][13]);
 					break;
 
-				} // switch(parameters[parNr].dtype&0x0F)
+				} // switch(parameters[parNr].dtype&0x0F) end
 
-				break; //switch(parNr) default:
+				//break; //switch(parNr) default:
+/*--AS commented this out because it interferes with the note names, and the "end" text that
+ *  it displays doesn't seem to do much.
 
 			case PAR_STEP_NOTE: //switch(parNr)
 				if(parameters[parNr].value == PATTERN_END_MARKER)
@@ -1005,8 +978,9 @@ void menu_repaint()
 					sprintf(&editDisplayBuffer[1][13],"%3d",parameters[parNr].value-63);
 				}
 				break;
-			} //switch(parNr)
-
+--AS end comment*/
+			//} //switch(parNr)
+			} // parameter type is not automation target
 
 		} // if editmode active
 		else //show whole page
@@ -1024,6 +998,8 @@ void menu_repaint()
 			//NOT on text_empty
 			if(editDisplayBuffer[0][(activeParameter%4)*4] != 0) {
 				editDisplayBuffer[0][(activeParameter%4)*4] -= 32;
+				editDisplayBuffer[0][((activeParameter%4)*4)+1] -= 32;
+				editDisplayBuffer[0][((activeParameter%4)*4)+2] -= 32;
 			}			
 
 

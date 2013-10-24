@@ -345,7 +345,7 @@ enum ParamEnums
 	PAR_SCREENSAVER_ON_OFF,
 	PAR_MIDI_MODE,
 	PAR_MIDI_CHAN_7,
-	
+	// --AS beware, adding more parameters makes this enum a short
 	NUM_PARAMS	
 };
 

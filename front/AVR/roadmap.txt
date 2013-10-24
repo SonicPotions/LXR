@@ -1,0 +1,5 @@
+____globals____
+parameters - this is an array of all the parameters that are currently active in the front panel. these include all the settings for each voice. Each element consists of a value and a datatype. The datatype dictates how that parameter is rendered on the screen. It might be possible to move this datatype into progmem as it doesn't change. Right now there appear to be 255 parameters. Toward the end of this array are parameters that are updated based on the active step in the active pattern and voice
+
+____interesting functions_____
+menu.c:menu_repaint - this is the guts of the code that updates the display.

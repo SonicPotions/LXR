@@ -409,7 +409,7 @@ enum Datatypes
 	DTYPE_AUTOM_TARGET,
 	DTYPE_0b1,
 	DTYPE_NOTE_NAME, // --AS eg C#0, D 1 for note name
-
+	// --AS warning, we can only have 16 on this list the way things are laid out
 };
 
 //-----------------------------------------------------------------
