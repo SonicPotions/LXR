@@ -828,14 +828,14 @@ void menu_repaintGeneric()
 	//first get the active page and parameter from the menuIndex
 	const uint8_t activeParameter	= menuIndex & MASK_PARAMETER;
 	const uint8_t activePage		= (menuIndex&MASK_PAGE)>>PAGE_SHIFT;
-	// this drops code size by 64 bytes, adds 2 bytes to stack
+
 	const Page *ap=&menuPages[menu_activePage][activePage];
 
 	if(editModeActive) //show single parameter with full name
 	{
 		//get address from top1-4 from activeParameter (base adress top1 + offset)
-		uint8_t parName = pgm_read_byte(ap->top1 + activeParameter);
-		uint8_t parNr = pgm_read_byte(ap->bot1 + activeParameter);
+		uint8_t parName = pgm_read_byte(&ap->top1 + activeParameter);
+		uint8_t parNr = pgm_read_byte(&ap->bot1 + activeParameter);
 
 		if(parameters[parNr].dtype == DTYPE_AUTOM_TARGET)
 		{
@@ -1002,13 +1002,13 @@ void menu_repaintGeneric()
 		//paint the page
 		// top texts
 		memcpy_P(&editDisplayBuffer[0][0],
-			&shortNames[pgm_read_byte(&valueNames[pgm_read_byte(ap->top1+is2ndPage)].shortName)],3);
+			&shortNames[pgm_read_byte(&valueNames[pgm_read_byte(&ap->top1+is2ndPage)].shortName)],3);
 		memcpy_P(&editDisplayBuffer[0][4],
-			&shortNames[pgm_read_byte(&valueNames[pgm_read_byte(ap->top2+is2ndPage)].shortName)],3);
+			&shortNames[pgm_read_byte(&valueNames[pgm_read_byte(&ap->top2+is2ndPage)].shortName)],3);
 		memcpy_P(&editDisplayBuffer[0][8],
-			&shortNames[pgm_read_byte(&valueNames[pgm_read_byte(ap->top3+is2ndPage)].shortName)],3);
+			&shortNames[pgm_read_byte(&valueNames[pgm_read_byte(&ap->top3+is2ndPage)].shortName)],3);
 		memcpy_P(&editDisplayBuffer[0][12],
-			&shortNames[pgm_read_byte(&valueNames[pgm_read_byte(ap->top4+is2ndPage)].shortName)],3);
+			&shortNames[pgm_read_byte(&valueNames[pgm_read_byte(&ap->top4+is2ndPage)].shortName)],3);
 
 		// capitalize selected item
 		upr_three(&editDisplayBuffer[0][(activeParameter%4)*4]);
@@ -1025,7 +1025,7 @@ void menu_repaintGeneric()
 
 		for(int i=0;i<4;i++)
 		{
-			const uint8_t parNr = pgm_read_byte(ap->bot1 + i +is2ndPage);
+			const uint8_t parNr = pgm_read_byte(&ap->bot1 + i +is2ndPage);
 			//convert the parameter uint8_t value to a 3 place char
 			if(parNr==PAR_NONE) {
 				memcpy_P(valueAsText,PSTR("   "),3);
