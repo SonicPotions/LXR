@@ -23,6 +23,20 @@
 #include <ctype.h>
 
 
+/* fill up to 3 bytes of a buffer with string representation of a number */
+// space padded unsigned
+static void numtostrpu(char *buf, uint8_t num);
+// space padded signed
+static void numtostrps(char *buf, int8_t num);
+// non space padded unsigned
+static void numtostru(char *buf, uint8_t num);
+// non space padded signed
+static void numtostrs(char *buf, int8_t num);
+
+
+
+
+
 #define ARROW_SIGN '>'
 //-----------------------------------------------------------------
 //vars
@@ -230,38 +244,8 @@ const Name valueNames[NUM_NAMES] PROGMEM =
 
 };
 
-/* fill up to 3 bytes of a buffer with string representation of a number */
-// space padded
-static void numtostrp(char *buf, uint8_t num)
-{
-    if(num > 99) {
-        buf[0]='0'+(num / 100);
-        num %= 100;
-    } else {
-        buf[0]=' ';
-    }
-    if(num > 9) {
-        buf[1]='0'+(num / 10);
-        num %=10;
-    } else
-        buf[1]=' ';
-    buf[2]='0'+num;
-}
 
-// non space padded
-static void numtostrs(char *buf, uint8_t num)
-{
-    uint8_t b=0;
-    if(num > 99) {
-        buf[b++]='0'+(num / 100);
-        num %= 100;
-    }
-    if(num > 9) {
-        buf[b++]='0'+(num / 10);
-        num %=10;
-    }
-    buf[b]='0'+num;
-}
+
 
 // make 1st 3 letters of buffer uppercase
 static void upr_three(char *buf)
@@ -630,7 +614,7 @@ static void menu_repaintLoadSavePage()
 		if( menu_saveOptions.what != WHAT_GLO) //no mane and number for global settings
 		{
 			//the preset number
-			numtostrp(&editDisplayBuffer[1][1],menu_currentPresetNr[menu_saveOptions.what]);
+			numtostrpu(&editDisplayBuffer[1][1],menu_currentPresetNr[menu_saveOptions.what]);
 
 			if(menu_saveOptions.state == SAVE_STATE_EDIT_PRESET_NR)
 			{
@@ -762,7 +746,7 @@ static void menu_repaintLoadSavePage()
 
 		if( menu_saveOptions.what != WHAT_GLO) //no mane and number for global settings
 		{
-			numtostrp(&editDisplayBuffer[1][1], menu_currentPresetNr[menu_saveOptions.what]);
+			numtostrpu(&editDisplayBuffer[1][1], menu_currentPresetNr[menu_saveOptions.what]);
 
 			if(menu_saveOptions.state == SAVE_STATE_EDIT_PRESET_NR)
 			{
@@ -845,8 +829,8 @@ void menu_repaintGeneric()
 
 			//Top row (which destination (0 or 1) and which voice it's targeting)
 			memcpy_P(&editDisplayBuffer[0][0],PSTR("Autom.Dest.    V"),16);
-			numtostrp(&editDisplayBuffer[0][11], parNr - PAR_P1_DEST);
-			numtostrs(&editDisplayBuffer[0][16], menu_cc2name[parameters[parNr].value].voiceNr+1);
+			numtostrpu(&editDisplayBuffer[0][11], parNr - PAR_P1_DEST);
+			numtostru(&editDisplayBuffer[0][16], menu_cc2name[parameters[parNr].value].voiceNr+1);
 
 			memset(&editDisplayBuffer[1][0],' ',16);
 			// bottom row is the category and long name for the parameter being targeted
@@ -879,7 +863,12 @@ void menu_repaintGeneric()
 				const uint8_t page				= (parameters[parNr].value&MASK_PAGE)>>PAGE_SHIFT;
 				const uint8_t activeParameter	= parameters[parNr].value&MASK_PARAMETER;
 
-				memcpy_P(&editDisplayBuffer[1][13],&shortNames[pgm_read_byte(&valueNames[pgm_read_byte(&menuPages[voiceNr][page].top1 + activeParameter)].shortName)],3);
+				memcpy_P(&editDisplayBuffer[1][13],
+					&shortNames[
+					    pgm_read_byte(&valueNames[
+					        pgm_read_byte(&menuPages[voiceNr][page].top1 + activeParameter)
+					                             ].shortName)
+					           ],3);
 			}
 			break;
 			case DTYPE_TARGET_SELECTION_LFO: //switch(parameters[parNr].dtype&0x0F)
@@ -889,7 +878,12 @@ void menu_repaintGeneric()
 				const uint8_t page				= (parameters[parNr].value&MASK_PAGE)>>PAGE_SHIFT;
 				const uint8_t activeParameter	= parameters[parNr].value&MASK_PARAMETER;
 
-				memcpy_P(&editDisplayBuffer[1][13],&shortNames[pgm_read_byte(&valueNames[pgm_read_byte(&menuPages[voiceNr][page].top1 + activeParameter)].shortName)],3);
+				memcpy_P(&editDisplayBuffer[1][13],
+					&shortNames[
+					    pgm_read_byte(&valueNames[
+					        pgm_read_byte(&menuPages[voiceNr][page].top1 + activeParameter)
+					                             ].shortName)
+					           ],3);
 			}
 			break;
 
@@ -899,7 +893,7 @@ void menu_repaintGeneric()
 			case DTYPE_1B16:
 			case DTYPE_VOICE_LFO:
 			case DTYPE_0b1:
-				numtostrp(&editDisplayBuffer[1][13],parameters[parNr].value);
+				numtostrpu(&editDisplayBuffer[1][13],parameters[parNr].value);
 				break;
 
 			case DTYPE_MIX_FM: //switch(parameters[parNr].dtype&0x0F)
@@ -946,7 +940,7 @@ void menu_repaintGeneric()
 					break;
 
 				case MENU_SYNC_RATES:
-					numtostrp(&editDisplayBuffer[1][13],parameters[parNr].value);
+					numtostrpu(&editDisplayBuffer[1][13],parameters[parNr].value);
 					break;
 
 				case MENU_LFO_WAVES:
@@ -983,7 +977,8 @@ void menu_repaintGeneric()
 			break;
 
 			case DTYPE_PM63: //switch(parameters[parNr].dtype&0x0F)
-				numtostrp(&editDisplayBuffer[1][13],parameters[parNr].value - 63);
+				// -63 to +63
+				numtostrps(&editDisplayBuffer[1][13],parameters[parNr].value - 63);
 				break;
 				//--AS note names
 			case DTYPE_NOTE_NAME: //switch(parameters[parNr].dtype&0x0F)
@@ -1054,7 +1049,8 @@ void menu_repaintGeneric()
 				break;
 
 				case DTYPE_PM63: //switch(parameters[parNr].dtype&0x0F)
-					numtostrp(valueAsText,parameters[parNr].value - 63);
+					// -63 to 64
+					numtostrps(valueAsText,parameters[parNr].value - 63);
 					break;
 					//--AS note names
 				case DTYPE_NOTE_NAME: //switch(parameters[parNr].dtype&0x0F)
@@ -1079,11 +1075,11 @@ void menu_repaintGeneric()
 					if(parameters[parNr].value == 1)
 						memcpy_P(valueAsText,PSTR("Mix"),3);
 					else
-						memcpy_P(valueAsText,PSTR("FM"),2);
+						memcpy_P(valueAsText,PSTR("FM "),3);
 					break;
 				case DTYPE_ON_OFF: //switch(parameters[parNr].dtype&0x0F)
 					if(parameters[parNr].value == 1)
-						memcpy_P(valueAsText,PSTR("On"),2);
+						memcpy_P(valueAsText,PSTR("On "),3);
 					else
 						memcpy_P(valueAsText,PSTR("Off"),3);
 					break;
@@ -1145,6 +1141,7 @@ void menu_repaintGeneric()
 						break;
 					}
 				} //case DTYPE_MENU: switch(parameters[parNr].dtype&0x0F)
+				break;
 
 				default: //switch(parameters[parNr].dtype&0x0F)
 				case DTYPE_0B127:
@@ -1152,7 +1149,7 @@ void menu_repaintGeneric()
 				case DTYPE_1B16:
 				case DTYPE_VOICE_LFO:
 				case DTYPE_0b1:
-					numtostrp(valueAsText,parameters[parNr].value);
+					numtostrpu(valueAsText,parameters[parNr].value);
 					break;
 				} //switch(parameters[parNr].dtype&0x0F) end
 
@@ -2496,4 +2493,88 @@ void setNoteName(uint8_t num, char *buf)
 	buf[1]=(n < 5 && n&1) || (n > 5 && !(n&1)) ? '#' : ' ';
 	// determine the octave 0=48
 	buf[2]=48+(num / 12);
+}
+
+
+/* fill up to 3 bytes of a buffer with string representation of a number */
+// space padded unsigned
+void numtostrpu(char *buf, uint8_t num)
+{
+    if(num > 99) {
+        buf[0]='0'+(num / 100);
+        num %= 100;
+    } else {
+        buf[0]=' ';
+    }
+    if(num > 9) {
+        buf[1]='0'+(num / 10);
+        num %=10;
+    } else if(buf[0]==' ') {
+        buf[1]=' ';
+    } else
+        buf[1]='0';
+    buf[2]='0'+num;
+}
+
+// space padded signed
+void numtostrps(char *buf, int8_t num)
+{
+
+    if(num > 99) {
+        buf[0]='0'+(num / 100);
+        num %= 100;
+    } else if(num < 0) {
+        buf[0]='-';
+        num = -num;
+    } else {
+        buf[0]=' ';
+    }
+
+    if(num > 9) {
+        buf[1]='0'+(num / 10);
+        num %=10;
+    } else if(buf[0] < '0' /* space or minus */) {
+        buf[1]=' ';
+    } else {
+        buf[1]='0';
+    }
+    buf[2]='0'+num;
+}
+
+// non space padded unsigned
+void numtostru(char *buf, uint8_t num)
+{
+    uint8_t b=0;
+    if(num > 99) {
+        buf[b++]='0'+(num / 100);
+        num %= 100;
+        if(num < 10)
+            buf[b++]='0';
+    }
+    if(num > 9) {
+        buf[b++]='0'+(num / 10);
+        num %=10;
+    }
+    buf[b]='0'+num;
+}
+
+// non space padded signed
+void numtostrs(char *buf, int8_t num)
+{
+    uint8_t b=0;
+    if(num > 99) {
+        buf[b++]='0'+(num / 100);
+        num %= 100;
+        if(num < 10)
+            buf[b++]='0';
+    } else if(num < 0) {
+        buf[b++]='-';
+        num=-num;
+    }
+
+    if(num > 9) {
+        buf[b++]='0'+(num / 10);
+        num %=10;
+    }
+    buf[b]='0'+num;
 }
