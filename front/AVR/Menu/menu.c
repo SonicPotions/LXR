@@ -1510,10 +1510,8 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 		}
 
 		//============================= handle encoder ==============================
-		if (inc!=0)
-		{
-			if(copyClear_isClearModeActive())
-			{
+		if (inc!=0) {
+			if(copyClear_isClearModeActive()) {
 				//encoder selects clear target
 				uint8_t target = copyClear_getClearTarget();
 				if(inc<0) {
@@ -1528,7 +1526,7 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 				copyClear_setClearTarget(target);
 				return;
 
-			}		
+			} // copyClear_isClearModeActive()
 			else if(editModeActive) {
 				//we are in edit mode
 				//encoder controls parameter value
@@ -1600,7 +1598,7 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 					upper = ((value&0x80)>>7) | (((paramNr - PAR_TARGET_LFO1)&0x3f)<<1);
 					lower = value&0x7f;
 					frontPanel_sendData(CC_LFO_TARGET,upper,lower);
-					return;
+					//return; // --AS this was causing a failure to update
 				}
 				break;
 
@@ -1702,7 +1700,7 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 				break;
 
 
-				}				
+				} //switch(parameters[paramNr].dtype&0x0F)
 
 				//send parameter change to uart tx
 				if(paramNr<128) // => Sound Parameter
@@ -1719,7 +1717,7 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 				}
 
 				//frontPanel_sendData(0xb0,paramNr,*paramValue);
-			}
+			} //editModeActive
 			else //-------- not in edit mode --------
 			{
 				//we are not in edit mode
@@ -1801,10 +1799,11 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 
 
 			} //not in edit mode
-			//update the button state
 
+			//update the button state
 			menu_repaint();
-		}	
+
+		} // if inc !=0
 
 	}		
 
@@ -2407,7 +2406,7 @@ void menu_parseKnobValue(uint8_t potNr, uint8_t value)
 			{
 				uint8_t voiceNr =  parameters[PAR_VOICE_LFO1+ paramNr - PAR_TARGET_LFO1].value-1;
 				if (voiceNr == 0) voiceNr = 1;
-				value = getModTargetValue(value,voiceNr);
+				value = getModTargetValue(value,voiceNr-1); // --AS subtract 1 from voice nr ???
 
 				uint8_t upper,lower;
 				upper = ((value&0x80)>>7) | (((paramNr - PAR_TARGET_LFO1)&0x3f)<<1);
