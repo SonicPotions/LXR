@@ -230,6 +230,54 @@ const Name valueNames[NUM_NAMES] PROGMEM =
 
 };
 
+/* fill up to 3 bytes of a buffer with string representation of a number */
+// space padded
+static void numtostrp(char *buf, uint8_t num)
+{
+    if(num > 99) {
+        buf[0]='0'+(num / 100);
+        num %= 100;
+    } else {
+        buf[0]=' ';
+    }
+    if(num > 9) {
+        buf[1]='0'+(num / 10);
+        num %=10;
+    } else
+        buf[1]=' ';
+    buf[2]='0'+num;
+}
+
+// non space padded
+static void numtostrs(char *buf, uint8_t num)
+{
+    uint8_t b=0;
+    if(num > 99) {
+        buf[b++]='0'+(num / 100);
+        num %= 100;
+    }
+    if(num > 9) {
+        buf[b++]='0'+(num / 10);
+        num %=10;
+    }
+    buf[b]='0'+num;
+}
+
+// make 1st 3 letters of buffer uppercase
+static void upr_three(char *buf)
+{
+	if(*buf >='a' && *buf <= 'z')
+		(*buf) -=32;
+	buf++;
+	if(*buf >='a' && *buf <= 'z')
+		(*buf) -=32;
+	buf++;
+	if(*buf >='a' && *buf <= 'z')
+		(*buf) -=32;
+	buf++;
+}
+
+
 //-----------------------------------------------------------------
 /** array holding all the available parameter values*/
 Parameter parameters[NUM_PARAMS]; /**< the main sound parameters*/
@@ -505,7 +553,7 @@ void menu_repaintAll()
 	}		
 }
 //-----------------------------------------------------------------
-void menu_repaintLoadSavePage()
+static void menu_repaintLoadSavePage()
 {
 
 
@@ -582,10 +630,7 @@ void menu_repaintLoadSavePage()
 		if( menu_saveOptions.what != WHAT_GLO) //no mane and number for global settings
 		{
 			//the preset number
-			char nr[4] = {0,0,0,0};
-
-			sprintf(nr,"%3d",menu_currentPresetNr[menu_saveOptions.what]);
-			memcpy(&editDisplayBuffer[1][1],nr,3);
+			numtostrp(&editDisplayBuffer[1][1],menu_currentPresetNr[menu_saveOptions.what]);
 
 			if(menu_saveOptions.state == SAVE_STATE_EDIT_PRESET_NR)
 			{
@@ -717,9 +762,7 @@ void menu_repaintLoadSavePage()
 
 		if( menu_saveOptions.what != WHAT_GLO) //no mane and number for global settings
 		{
-			char nr[4] = {0,0,0,0};
-			sprintf(nr,"%3d",menu_currentPresetNr[menu_saveOptions.what]);
-			memcpy(&editDisplayBuffer[1][1],nr,3);
+			numtostrp(&editDisplayBuffer[1][1], menu_currentPresetNr[menu_saveOptions.what]);
 
 			if(menu_saveOptions.state == SAVE_STATE_EDIT_PRESET_NR)
 			{
@@ -776,85 +819,332 @@ uint8_t checkScrollSign(uint8_t activePage, uint8_t activeParameter)
 	}
 	else return 0;	
 }
+
 //-----------------------------------------------------------------
-void menu_repaint()
+// paint the screen when in normal parameter edit mode
+// (as opposed to repainting the load save screen)
+void menu_repaintGeneric()
 {
+	//first get the active page and parameter from the menuIndex
+	const uint8_t activeParameter	= menuIndex & MASK_PARAMETER;
+	const uint8_t activePage		= (menuIndex&MASK_PAGE)>>PAGE_SHIFT;
+	// this drops code size by 64 bytes, adds 2 bytes to stack
+	const Page *ap=&menuPages[menu_activePage][activePage];
 
-	//-----------------------------------------------------------------
-	if(menu_activePage >= LOAD_PAGE && menu_activePage<=SAVE_PAGE)
+	if(editModeActive) //show single parameter with full name
 	{
-		//this is a special case because the load/save page differs from all the other pages
-		menu_repaintLoadSavePage();
+		//get address from top1-4 from activeParameter (base adress top1 + offset)
+		uint8_t parName = pgm_read_byte(ap->top1 + activeParameter);
+		uint8_t parNr = pgm_read_byte(ap->bot1 + activeParameter);
 
-	} else {
-		//-------------------- Normal Parameters --------------------------
-
-		//first get the active page and parameter from the menuIndex
-		const uint8_t activeParameter	= menuIndex & MASK_PARAMETER;
-		const uint8_t activePage		= (menuIndex&MASK_PAGE)>>PAGE_SHIFT;
-
-		if(editModeActive) //show single parameter with full name
+		if(parameters[parNr].dtype == DTYPE_AUTOM_TARGET)
 		{
-			//get address from top1-4 from activeParameter (base adress top1 + offset)
-			uint8_t parName = pgm_read_byte(&menuPages[menu_activePage][activePage].top1 + activeParameter);
-			uint8_t parNr = pgm_read_byte(&menuPages[menu_activePage][activePage].bot1 + activeParameter);
+			// make sure we have a valid value (autom target must target one of the sound parameters)
+			if(parameters[parNr].value >= END_OF_SOUND_PARAMETERS)
+				parameters[parNr].value = END_OF_SOUND_PARAMETERS-1;
 
-			if(parameters[parNr].dtype == DTYPE_AUTOM_TARGET)
+			//Top row (which destination (0 or 1) and which voice it's targeting)
+			memcpy_P(&editDisplayBuffer[0][0],PSTR("Autom.Dest.    V"),16);
+			numtostrp(&editDisplayBuffer[0][11], parNr - PAR_P1_DEST);
+			numtostrs(&editDisplayBuffer[0][16], menu_cc2name[parameters[parNr].value].voiceNr+1);
+
+			memset(&editDisplayBuffer[1][0],' ',16);
+			// bottom row is the category and long name for the parameter being targeted
+			if( (menu_cc2name[parameters[parNr].value].nameIdx < NUM_NAMES) )
 			{
-				// make sure we have a valid value (autom target must target one of the sound parameters)
-				if(parameters[parNr].value >= END_OF_SOUND_PARAMETERS)
-					parameters[parNr].value = END_OF_SOUND_PARAMETERS-1;
-				
-				//Top row (which destination (0 or 1) and which voice it's targeting)
-				sprintf(&editDisplayBuffer[0][0],"Autom.Dest.%d V%d",
-						parNr - PAR_P1_DEST ,
-						menu_cc2name[parameters[parNr].value].voiceNr+1);
+				char tmp[17];
 
-				memset(&editDisplayBuffer[1][0],' ',16);
-				// bottom row is the category and long name for the parameter being targeted
-				if( (menu_cc2name[parameters[parNr].value].nameIdx < NUM_NAMES) )
-				{
-					char tmp[17];
+				strlcpy_P(tmp,
+					(const char PROGMEM *)(&catNames[pgm_read_byte(&valueNames[menu_cc2name[parameters[parNr].value].nameIdx].category)]),8);
+				strcat_P(tmp,
+					(const char PROGMEM *)(&longNames[pgm_read_byte(&valueNames[menu_cc2name[parameters[parNr].value].nameIdx].longName)]));
+				strlcpy(&editDisplayBuffer[1][0],tmp,16);
+			}
 
-					strlcpy_P(tmp,
-						(const prog_char*)(&catNames[pgm_read_byte(&valueNames[menu_cc2name[parameters[parNr].value].nameIdx].category)]),8);
-					strcat_P(tmp,
-						(const prog_char*)(&longNames[pgm_read_byte(&valueNames[menu_cc2name[parameters[parNr].value].nameIdx].longName)]));
-					strlcpy(&editDisplayBuffer[1][0],tmp,16);
-				}			
+		} // parameter type is automation target
 
-			} // parameter type is automation target
-			else // parameter type is not automation target
+		else // parameter type is not automation target
+		{
+			//Top row -> category
+			strcpy_P(&editDisplayBuffer[0][0],(const char PROGMEM *)(&catNames[pgm_read_byte(&valueNames[parName].category)]));
+			//Bottom row left -> long name
+			strcpy_P(&editDisplayBuffer[1][0],(const char PROGMEM *)(&longNames[pgm_read_byte(&valueNames[parName].longName)]));
+			//Bottom row right -> parameter value (set below)
+
+			switch(parameters[parNr].dtype&0x0F)
 			{
-				//Top row -> category
-				strcpy_P(&editDisplayBuffer[0][0],(const prog_char*)(&catNames[pgm_read_byte(&valueNames[parName].category)]));
-				//Bottom row left -> long name
-				strcpy_P(&editDisplayBuffer[1][0],(const prog_char*)(&longNames[pgm_read_byte(&valueNames[parName].longName)]));
-				//Bottom row right -> parameter value (set below)
+			case DTYPE_TARGET_SELECTION_VELO: //switch(parameters[parNr].dtype&0x0F)
+			{
+				const uint8_t voiceNr			= parNr - PAR_VEL_DEST_1;
+				const uint8_t page				= (parameters[parNr].value&MASK_PAGE)>>PAGE_SHIFT;
+				const uint8_t activeParameter	= parameters[parNr].value&MASK_PARAMETER;
 
-			//switch(parNr) {
-			//default: //switch(parNr)
-				switch(parameters[parNr].dtype&0x0F)
+				memcpy_P(&editDisplayBuffer[1][13],&shortNames[pgm_read_byte(&valueNames[pgm_read_byte(&menuPages[voiceNr][page].top1 + activeParameter)].shortName)],3);
+			}
+			break;
+			case DTYPE_TARGET_SELECTION_LFO: //switch(parameters[parNr].dtype&0x0F)
+			{
+				const uint8_t lfoNr				= parNr - PAR_TARGET_LFO1;
+				const uint8_t voiceNr			= parameters[PAR_VOICE_LFO1+lfoNr].value-1;
+				const uint8_t page				= (parameters[parNr].value&MASK_PAGE)>>PAGE_SHIFT;
+				const uint8_t activeParameter	= parameters[parNr].value&MASK_PARAMETER;
+
+				memcpy_P(&editDisplayBuffer[1][13],&shortNames[pgm_read_byte(&valueNames[pgm_read_byte(&menuPages[voiceNr][page].top1 + activeParameter)].shortName)],3);
+			}
+			break;
+
+			default: //switch(parameters[parNr].dtype&0x0F)
+			case DTYPE_0B127:
+			case DTYPE_0B255:
+			case DTYPE_1B16:
+			case DTYPE_VOICE_LFO:
+			case DTYPE_0b1:
+				numtostrp(&editDisplayBuffer[1][13],parameters[parNr].value);
+				break;
+
+			case DTYPE_MIX_FM: //switch(parameters[parNr].dtype&0x0F)
+				if(parameters[parNr].value == 1)
 				{
+					memcpy_P(&editDisplayBuffer[1][13],PSTR("Mix"), 3);
+				}
+				else
+				{
+					memcpy_P(&editDisplayBuffer[1][13],PSTR("FM"),2);
+				}
+				break;
+			case DTYPE_ON_OFF: //switch(parameters[parNr].dtype&0x0F)
+				if(parameters[parNr].value == 1)
+				{
+					memcpy_P(&editDisplayBuffer[1][13],PSTR("On"),2);
+				}
+				else
+				{
+					memcpy_P(&editDisplayBuffer[1][13],PSTR("Off"),3);
+				}
+				break;
+
+			case DTYPE_MENU: //switch(parameters[parNr].dtype&0x0F)
+			{
+				//get the used menu (upper 4 bit)
+				const uint8_t menuId = (parameters[parNr].dtype>>4);
+				switch(menuId)
+				{
+				case MENU_TRANS:
+					memcpy_P(&editDisplayBuffer[1][13],&transientNames[parameters[parNr].value+1],3);
+					break;
+
+				case MENU_AUDIO_OUT:
+					memcpy_P(&editDisplayBuffer[1][13],&outputNames[parameters[parNr].value+1],3);
+					break;
+
+				case MENU_FILTER:
+					memcpy_P(&editDisplayBuffer[1][13],&filterTypes[parameters[parNr].value+1],3);
+					break;
+
+				case MENU_WAVEFORM:
+					memcpy_P(&editDisplayBuffer[1][13],&waveformNames[parameters[parNr].value+1],3);
+					break;
+
+				case MENU_SYNC_RATES:
+					numtostrp(&editDisplayBuffer[1][13],parameters[parNr].value);
+					break;
+
+				case MENU_LFO_WAVES:
+					memcpy_P(&editDisplayBuffer[1][13],&lfoWaveNames[parameters[parNr].value+1],3);
+					break;
+
+				case MENU_RETRIGGER:
+					memcpy_P(&editDisplayBuffer[1][13],&retriggerNames[parameters[parNr].value+1],3);
+					break;
+
+				case MENU_SEQ_QUANT:
+					memcpy_P(&editDisplayBuffer[1][13],&quantisationNames[parameters[parNr].value+1],3);
+					break;
+
+				case MENU_MIDI:
+					memcpy_P(&editDisplayBuffer[1][13],&midiModes[parameters[parNr].value+1],3);
+					break;
+
+				case MENU_NEXT_PATTERN:
+					memcpy_P(&editDisplayBuffer[1][13],&nextPatternNames[parameters[parNr].value+1],3);
+					break;
+
+
+				case MENU_ROLL_RATES:
+					memcpy_P(&editDisplayBuffer[1][13],&rollRateNames[parameters[parNr].value+1],3);
+					break;
+
+				default:
+					memcpy_P(&editDisplayBuffer[1][13],PSTR("---"),3);
+					break;
+				}
+
+			} // switch(parameters[parNr].dtype&0x0F) case DTYPE_MENU
+			break;
+
+			case DTYPE_PM63: //switch(parameters[parNr].dtype&0x0F)
+				numtostrp(&editDisplayBuffer[1][13],parameters[parNr].value - 63);
+				break;
+				//--AS note names
+			case DTYPE_NOTE_NAME: //switch(parameters[parNr].dtype&0x0F)
+				setNoteName(parameters[parNr].value, &editDisplayBuffer[1][13]);
+				break;
+
+			} // switch(parameters[parNr].dtype&0x0F) end
+
+		} // parameter type is not automation target
+
+	} // if editmode active
+	else
+	{ // editmode not active - show regular menu parameters
+		//check if parameters 1-4 or 5-8 are shown
+		const uint8_t is2ndPage = (activeParameter>3) * 4;
+		//paint the page
+		// top texts
+		memcpy_P(&editDisplayBuffer[0][0],
+			&shortNames[pgm_read_byte(&valueNames[pgm_read_byte(ap->top1+is2ndPage)].shortName)],3);
+		memcpy_P(&editDisplayBuffer[0][4],
+			&shortNames[pgm_read_byte(&valueNames[pgm_read_byte(ap->top2+is2ndPage)].shortName)],3);
+		memcpy_P(&editDisplayBuffer[0][8],
+			&shortNames[pgm_read_byte(&valueNames[pgm_read_byte(ap->top3+is2ndPage)].shortName)],3);
+		memcpy_P(&editDisplayBuffer[0][12],
+			&shortNames[pgm_read_byte(&valueNames[pgm_read_byte(ap->top4+is2ndPage)].shortName)],3);
+
+		// capitalize selected item
+		upr_three(&editDisplayBuffer[0][(activeParameter%4)*4]);
+
+		//check if scroll sign needs to be shown
+		uint8_t showScrollSign = checkScrollSign(activePage, activeParameter);
+		editDisplayBuffer[0][15] = showScrollSign;
+
+
+		//------------------ bottom values ----------------------------------
+
+		// some place to store the parameter value as text
+		char valueAsText[3];
+
+		for(int i=0;i<4;i++)
+		{
+			const uint8_t parNr = pgm_read_byte(ap->bot1 + i +is2ndPage);
+			//convert the parameter uint8_t value to a 3 place char
+			if(parNr==PAR_NONE) {
+				memcpy_P(valueAsText,PSTR("   "),3);
+			} else { //not if(parNr==PAR_NONE) {
+
+				switch(parameters[parNr].dtype&0x0F) {
 				case DTYPE_TARGET_SELECTION_VELO: //switch(parameters[parNr].dtype&0x0F)
 				{
 					const uint8_t voiceNr			= parNr - PAR_VEL_DEST_1;
 					const uint8_t page				= (parameters[parNr].value&MASK_PAGE)>>PAGE_SHIFT;
 					const uint8_t activeParameter	= parameters[parNr].value&MASK_PARAMETER;
 
-					memcpy_P(&editDisplayBuffer[1][13],&shortNames[pgm_read_byte(&valueNames[pgm_read_byte(&menuPages[voiceNr][page].top1 + activeParameter)].shortName)],3);
+					memcpy_P(&valueAsText,&shortNames[pgm_read_byte(&valueNames[pgm_read_byte(&menuPages[voiceNr][page].top1 + activeParameter)].shortName)],3);
 				}
 				break;
+
 				case DTYPE_TARGET_SELECTION_LFO: //switch(parameters[parNr].dtype&0x0F)
 				{
 					const uint8_t lfoNr				= parNr - PAR_TARGET_LFO1;
 					const uint8_t voiceNr			= parameters[PAR_VOICE_LFO1+lfoNr].value-1;
-					const uint8_t page				= (parameters[parNr].value&MASK_PAGE)>>PAGE_SHIFT;
+					uint8_t page					= (parameters[parNr].value&MASK_PAGE)>>PAGE_SHIFT;
 					const uint8_t activeParameter	= parameters[parNr].value&MASK_PARAMETER;
 
-					memcpy_P(&editDisplayBuffer[1][13],&shortNames[pgm_read_byte(&valueNames[pgm_read_byte(&menuPages[voiceNr][page].top1 + activeParameter)].shortName)],3);
+					memcpy_P(&valueAsText,&shortNames[pgm_read_byte(&valueNames[pgm_read_byte(&menuPages[voiceNr][page].top1 + activeParameter)].shortName)],3);
 				}
 				break;
+
+				case DTYPE_PM63: //switch(parameters[parNr].dtype&0x0F)
+					numtostrp(valueAsText,parameters[parNr].value - 63);
+					break;
+					//--AS note names
+				case DTYPE_NOTE_NAME: //switch(parameters[parNr].dtype&0x0F)
+					setNoteName(parameters[parNr].value, valueAsText);
+					break;
+
+				case DTYPE_AUTOM_TARGET: { //switch(parameters[parNr].dtype&0x0F)
+					if(parameters[parNr].value == 0xff)
+					{
+						memcpy_P(valueAsText,PSTR("Off"),3);
+					} else {
+
+						//const uint8_t voice = menu_cc2name[parameters[parNr].value].voiceNr;
+						const uint8_t name = menu_cc2name[parameters[parNr].value].nameIdx;
+						memcpy_P(&valueAsText,shortNames[pgm_read_byte(&valueNames[name].shortName)],3);
+
+					}
+				}
+				break;
+
+				case DTYPE_MIX_FM: //switch(parameters[parNr].dtype&0x0F)
+					if(parameters[parNr].value == 1)
+						memcpy_P(valueAsText,PSTR("Mix"),3);
+					else
+						memcpy_P(valueAsText,PSTR("FM"),2);
+					break;
+				case DTYPE_ON_OFF: //switch(parameters[parNr].dtype&0x0F)
+					if(parameters[parNr].value == 1)
+						memcpy_P(valueAsText,PSTR("On"),2);
+					else
+						memcpy_P(valueAsText,PSTR("Off"),3);
+					break;
+				case DTYPE_MENU: //switch(parameters[parNr].dtype&0x0F)
+				{
+					//get the used menu (upper 4 bit)
+					const uint8_t menuId = (parameters[parNr].dtype>>4);
+					switch(menuId)
+					{
+
+					case MENU_TRANS:
+						memcpy_P(&valueAsText,transientNames[parameters[parNr].value+1],3);
+						break;
+
+					case MENU_AUDIO_OUT:
+						memcpy_P(&valueAsText,outputNames[parameters[parNr].value+1],3);
+						break;
+
+					case MENU_FILTER:
+						memcpy_P(&valueAsText,filterTypes[parameters[parNr].value+1],3);
+						break;
+
+					case MENU_WAVEFORM:
+
+						memcpy_P(&valueAsText,waveformNames[parameters[parNr].value+1],3);
+
+						break;
+
+					case MENU_SYNC_RATES:
+						memcpy_P(&valueAsText,syncRateNames[parameters[parNr].value+1],3);
+
+						break;
+
+					case MENU_LFO_WAVES:
+						memcpy_P(&valueAsText,lfoWaveNames[parameters[parNr].value+1],3);
+						break;
+					case MENU_RETRIGGER:
+						memcpy_P(&valueAsText,retriggerNames[parameters[parNr].value+1],3);
+						break;
+
+					case MENU_SEQ_QUANT:
+						memcpy_P(&valueAsText,quantisationNames[parameters[parNr].value+1],3);
+						break;
+
+					case MENU_MIDI:
+						memcpy_P(&valueAsText,midiModes[parameters[parNr].value+1],3);
+						break;
+
+					case MENU_NEXT_PATTERN:
+						memcpy_P(&valueAsText,nextPatternNames[parameters[parNr].value+1],3);
+						break;
+
+					case MENU_ROLL_RATES:
+						memcpy_P(&valueAsText,rollRateNames[parameters[parNr].value+1],3);
+						break;
+
+					default:
+						memcpy_P(valueAsText,PSTR("---"),3);
+						break;
+					}
+				} //case DTYPE_MENU: switch(parameters[parNr].dtype&0x0F)
 
 				default: //switch(parameters[parNr].dtype&0x0F)
 				case DTYPE_0B127:
@@ -862,392 +1152,31 @@ void menu_repaint()
 				case DTYPE_1B16:
 				case DTYPE_VOICE_LFO:
 				case DTYPE_0b1:
-					sprintf(&editDisplayBuffer[1][13],"%3d",parameters[parNr].value);
+					numtostrp(valueAsText,parameters[parNr].value);
 					break;
-
-				case DTYPE_MIX_FM: //switch(parameters[parNr].dtype&0x0F)
-					if(parameters[parNr].value == 1)
-					{
-						sprintf(&editDisplayBuffer[1][13],"Mix");
-					}
-					else
-					{
-						sprintf(&editDisplayBuffer[1][13],"FM");
-					}
-					break;
-				case DTYPE_ON_OFF: //switch(parameters[parNr].dtype&0x0F)
-					if(parameters[parNr].value == 1)
-					{
-						sprintf(&editDisplayBuffer[1][13],"On");
-					}
-					else
-					{
-						sprintf(&editDisplayBuffer[1][13],"Off");
-					}
-					break;
-
-				case DTYPE_MENU: //switch(parameters[parNr].dtype&0x0F)
-				{
-					//get the used menu (upper 4 bit)
-					const uint8_t menuId = (parameters[parNr].dtype>>4);
-					switch(menuId)
-					{
-					case MENU_TRANS:
-						memcpy_P(&editDisplayBuffer[1][13],&transientNames[parameters[parNr].value+1],3);
-						break;
-
-					case MENU_AUDIO_OUT:
-						memcpy_P(&editDisplayBuffer[1][13],&outputNames[parameters[parNr].value+1],3);
-						//sprintf(&editDisplayBuffer[1][13],"%s",outputNames[parameters[parNr].value]);
-						break;
-
-					case MENU_FILTER:
-						memcpy_P(&editDisplayBuffer[1][13],&filterTypes[parameters[parNr].value+1],3);
-						//sprintf(&editDisplayBuffer[1][13],"%s",filterTypes[parameters[parNr].value]);
-						break;
-
-					case MENU_WAVEFORM:
-						memcpy_P(&editDisplayBuffer[1][13],&waveformNames[parameters[parNr].value+1],3);
-						//sprintf(&editDisplayBuffer[1][13],"%s",waveformNames[parameters[parNr].value]);
-						break;
-
-					case MENU_SYNC_RATES:
-						sprintf(&editDisplayBuffer[1][13],"%3d",parameters[parNr].value);
-						//memcpy_P(&editDisplayBuffer[1][13],&syncRateNames[parameters[parNr].value+1],3);
-						//sprintf(&editDisplayBuffer[1][13],"%s",syncRateNames[parameters[parNr].value]);
-						break;
-
-					case MENU_LFO_WAVES:
-						memcpy_P(&editDisplayBuffer[1][13],&lfoWaveNames[parameters[parNr].value+1],3);
-						//sprintf(&editDisplayBuffer[1][13],"%s",lfoWaveNames[parameters[parNr].value]);
-						break;
-
-					case MENU_RETRIGGER:
-						memcpy_P(&editDisplayBuffer[1][13],&retriggerNames[parameters[parNr].value+1],3);
-						break;
-
-					case MENU_SEQ_QUANT:
-						memcpy_P(&editDisplayBuffer[1][13],&quantisationNames[parameters[parNr].value+1],3);
-						break;
-
-					case MENU_MIDI:
-						memcpy_P(&editDisplayBuffer[1][13],&midiModes[parameters[parNr].value+1],3);
-						break;
-
-					case MENU_NEXT_PATTERN:
-						memcpy_P(&editDisplayBuffer[1][13],&nextPatternNames[parameters[parNr].value+1],3);
-						break;
-
-
-					case MENU_ROLL_RATES:
-						memcpy_P(&editDisplayBuffer[1][13],&rollRateNames[parameters[parNr].value+1],3);
-						break;
-
-					default:
-						sprintf(&editDisplayBuffer[1][13],"---");
-						break;
-					}
-
-				} // case DTYPE_MENU
-				break;
-
-				case DTYPE_PM63: //switch(parameters[parNr].dtype&0x0F)
-					sprintf(&editDisplayBuffer[1][13],"%3d",parameters[parNr].value - 63);
-					break;
-					//--AS note names
-				case DTYPE_NOTE_NAME: //switch(parameters[parNr].dtype&0x0F)
-					setNoteName(parameters[parNr].value, &editDisplayBuffer[1][13]);
-					break;
-
-				} // switch(parameters[parNr].dtype&0x0F) end
-
-				//break; //switch(parNr) default:
-/*--AS commented this out because it interferes with the note names, and the "end" text that
- *  it displays doesn't seem to do much.
-
-			case PAR_STEP_NOTE: //switch(parNr)
-				if(parameters[parNr].value == PATTERN_END_MARKER)
-				{
-					//print 'end'
-					strcpy_P(&editDisplayBuffer[1][13],PSTR("end"));
-
-				}
-				else
-				{
-					//print value
-					sprintf(&editDisplayBuffer[1][13],"%3d",parameters[parNr].value-63);
-				}
-				break;
---AS end comment*/
-			//} //switch(parNr)
-			} // parameter type is not automation target
-
-		} // if editmode active
-		else //show whole page
-		{ // editmode not active
-			//check if parameters 1-4 or 5-8 are shown
-			const uint8_t is2ndPage = (activeParameter>3) * 4;
-			//paint the page
-			// top texts
-			memcpy_P(&editDisplayBuffer[0][0],&shortNames[pgm_read_byte(&valueNames[pgm_read_byte(&menuPages[menu_activePage][activePage].top1+is2ndPage)].shortName)],3);
-			memcpy_P(&editDisplayBuffer[0][4],&shortNames[pgm_read_byte(&valueNames[pgm_read_byte(&menuPages[menu_activePage][activePage].top2+is2ndPage)].shortName)],3);
-			memcpy_P(&editDisplayBuffer[0][8],&shortNames[pgm_read_byte(&valueNames[pgm_read_byte(&menuPages[menu_activePage][activePage].top3+is2ndPage)].shortName)],3);
-			memcpy_P(&editDisplayBuffer[0][12],&shortNames[pgm_read_byte(&valueNames[pgm_read_byte(&menuPages[menu_activePage][activePage].top4+is2ndPage)].shortName)],3);
-
-			//make first letter of selected parameter capital (sub dec 32 --> see ascii table)
-			//NOT on text_empty
-			if(editDisplayBuffer[0][(activeParameter%4)*4] != 0) {
-				editDisplayBuffer[0][(activeParameter%4)*4] -= 32;
-				editDisplayBuffer[0][((activeParameter%4)*4)+1] -= 32;
-				editDisplayBuffer[0][((activeParameter%4)*4)+2] -= 32;
-			}			
-
-
-			//check if scoll sign needs to be shown
-			uint8_t showScrollSign = checkScrollSign(activePage, activeParameter);
-			editDisplayBuffer[0][15] = showScrollSign;
-
-
-			//------------------ bottom values ----------------------------------
-
-			// some place to store the parameter value as text
-			char valueAsText[3]; 
-
-			for(int i=0;i<4;i++)
-			{
-				const uint8_t parNr = pgm_read_byte(&menuPages[menu_activePage][activePage].bot1 + i +is2ndPage);
-				//convert the parameter uint8_t value to a 3 place char
-				switch(parNr)
-				{
-				default:
-					switch(parameters[parNr].dtype&0x0F)
-					{
-					case DTYPE_TARGET_SELECTION_VELO:
-					{
-						const uint8_t voiceNr			= parNr - PAR_VEL_DEST_1;
-						const uint8_t page				= (parameters[parNr].value&MASK_PAGE)>>PAGE_SHIFT;
-						const uint8_t activeParameter	= parameters[parNr].value&MASK_PARAMETER;
-
-						memcpy_P(&valueAsText,&shortNames[pgm_read_byte(&valueNames[pgm_read_byte(&menuPages[voiceNr][page].top1 + activeParameter)].shortName)],3);
-					}
-					break;
-
-					case DTYPE_TARGET_SELECTION_LFO:
-					{
-						const uint8_t lfoNr				= parNr - PAR_TARGET_LFO1;
-						const uint8_t voiceNr			= parameters[PAR_VOICE_LFO1+lfoNr].value-1;
-						uint8_t page					= (parameters[parNr].value&MASK_PAGE)>>PAGE_SHIFT;
-						const uint8_t activeParameter	= parameters[parNr].value&MASK_PARAMETER;
-
-						memcpy_P(&valueAsText,&shortNames[pgm_read_byte(&valueNames[pgm_read_byte(&menuPages[voiceNr][page].top1 + activeParameter)].shortName)],3);
-					}
-					break;
-
-					default:
-					case DTYPE_0B127:
-					case DTYPE_0B255:
-					case DTYPE_1B16:
-					case DTYPE_VOICE_LFO:
-					case DTYPE_0b1:
-						sprintf(valueAsText,"%3d",parameters[parNr].value);
-						break;
-
-					case DTYPE_AUTOM_TARGET: {
-						if(parameters[parNr].value == 0xff)
-						{
-							sprintf(valueAsText,"Off");
-						} else {
-
-							//const uint8_t voice = menu_cc2name[parameters[parNr].value].voiceNr;
-							const uint8_t name = menu_cc2name[parameters[parNr].value].nameIdx;
-							memcpy_P(&valueAsText,shortNames[pgm_read_byte(&valueNames[name].shortName)],3);
-
-						}
-
-					}
-					break;
-
-					case DTYPE_MIX_FM:
-						if(parameters[parNr].value == 1)
-						{
-							sprintf(valueAsText,"Mix");
-						}
-						else
-						{
-							sprintf(valueAsText,"FM");
-						}
-						break;
-					case DTYPE_ON_OFF:
-						if(parameters[parNr].value == 1)
-						{
-							sprintf(valueAsText,"On");
-						}
-						else
-						{
-							sprintf(valueAsText,"Off");
-						}
-						break;
-					case DTYPE_MENU:
-					{
-						//get the used menu (upper 4 bit)
-						const uint8_t menuId = (parameters[parNr].dtype>>4);
-						switch(menuId)
-						{
-
-						case MENU_TRANS:
-							memcpy_P(&valueAsText,transientNames[parameters[parNr].value+1],3);
-							break;
-
-						case MENU_AUDIO_OUT:
-							memcpy_P(&valueAsText,outputNames[parameters[parNr].value+1],3);
-							break;
-
-						case MENU_FILTER:
-							memcpy_P(&valueAsText,filterTypes[parameters[parNr].value+1],3);
-							break;
-
-						case MENU_WAVEFORM:
-
-							memcpy_P(&valueAsText,waveformNames[parameters[parNr].value+1],3);
-
-							break;
-
-						case MENU_SYNC_RATES:
-							memcpy_P(&valueAsText,syncRateNames[parameters[parNr].value+1],3);
-
-							break;
-
-						case MENU_LFO_WAVES:
-							memcpy_P(&valueAsText,lfoWaveNames[parameters[parNr].value+1],3);
-							break;
-						case MENU_RETRIGGER:
-							memcpy_P(&valueAsText,retriggerNames[parameters[parNr].value+1],3);
-							break;
-
-						case MENU_SEQ_QUANT:
-							memcpy_P(&valueAsText,quantisationNames[parameters[parNr].value+1],3);
-							break;
-
-						case MENU_MIDI:
-							memcpy_P(&valueAsText,midiModes[parameters[parNr].value+1],3);
-							break;
-
-						case MENU_NEXT_PATTERN:
-							memcpy_P(&valueAsText,nextPatternNames[parameters[parNr].value+1],3);
-							break;
-
-						case MENU_ROLL_RATES:
-							memcpy_P(&valueAsText,rollRateNames[parameters[parNr].value+1],3);
-							break;
-
-						default:
-							sprintf(valueAsText,"---");
-							break;
-						}
-
-					}
-
-					break;
-					case DTYPE_PM63:
-						sprintf(valueAsText,"%3d",parameters[parNr].value - 63);
-						break;
-						//--AS note names
-					case DTYPE_NOTE_NAME:
-						setNoteName(parameters[parNr].value, valueAsText);
-						break;
-
-
-					}
-					//sprintf(valueAsText,"%3d",parameters[parNr].value);
-					break;
-
-					//OSCs without noise
-#if 0						
-					case PAR_OSC_WAVE_DRUM1:
-					case PAR_OSC_WAVE_DRUM2:
-					case PAR_OSC_WAVE_DRUM3:
-					case PAR_WAVE1_CYM:
-					case PAR_WAVE1_HH:
-					case PAR_MOD_WAVE_DRUM1:
-					case PAR_MOD_WAVE_DRUM2:
-					case PAR_MOD_WAVE_DRUM3:
-					case PAR_OSC_WAVE_SNARE:
-					case PAR_WAVE2_CYM:
-					case PAR_WAVE3_CYM:
-					case PAR_WAVE2_HH:
-					case PAR_WAVE3_HH:
-					{
-						const uint8_t idx = 127/5;
-						memcpy_P(&valueAsText,&waveformNames[parameters[parNr].value/idx+1],3);
-					}
-					break;
-#endif
-					/*
-					case PAR_VEL_DEST_1:
-					case PAR_VEL_DEST_2:
-					case PAR_VEL_DEST_3:
-					case PAR_VEL_DEST_4:
-					case PAR_VEL_DEST_5:
-					case PAR_VEL_DEST_6:
-					{
-						const uint8_t voiceNr = parNr - PAR_VEL_DEST_1;
-						//get the page for the menuPage array
-						const uint8_t page = (parameters[parNr].value&MASK_PAGE)>>PAGE_SHIFT;
-						//get the active parameter on the page
-						const uint8_t activeParameter	= parameters[parNr].value&MASK_PARAMETER;
-
-						//print the corresponding parameter short name
-						//&menuPages[voiceNr][page].top1 + activeParameter
-
-						memcpy_P(&valueAsText,&shortNames[pgm_read_byte(&valueNames[pgm_read_byte(&menuPages[voiceNr][page].top1 + activeParameter)].shortName)],3);
-						//sprintf(valueAsText,"%s",parameters[parNr].value);	
-					}		
-					break;
-
-					case PAR_TARGET_LFO1:
-					case PAR_TARGET_LFO2:
-					case PAR_TARGET_LFO3:
-					case PAR_TARGET_LFO4:
-					case PAR_TARGET_LFO5:
-					case PAR_TARGET_LFO6:
-					{
-						//get the active lfo number
-						const uint8_t lfoNr = parNr - PAR_TARGET_LFO1;
-						//get the selected voice from the LFO, we can use the menu page from the voice to get a parameter list
-						const uint8_t voiceNr = parameters[PAR_VOICE_LFO1+lfoNr].value;
-						//get the page for the menuPage array
-						uint8_t page = (parameters[parNr].value&MASK_PAGE)>>PAGE_SHIFT;
-						//limit range to 1 voice
-						if(page>=NUM_SUB_PAGES) {
-							page = NUM_SUB_PAGES-1;
-						}
-						//get the active parameter on the page
-						const uint8_t activeParameter	= parameters[parNr].value&MASK_PARAMETER;
-
-						//print the corresponding parameter short name
-						//&menuPages[voiceNr][page].top1 + activeParameter
-
-						memcpy_P(&valueAsText,&shortNames[pgm_read_byte(&valueNames[pgm_read_byte(&menuPages[voiceNr][page].top1 + activeParameter)].shortName)],3);
-
-						//sprintf(valueAsText,"%s",parameters[parNr].value);	
-					}					
-						break;
-					 */
-
-					case PAR_NONE:
-						sprintf(valueAsText,"   ");
-						break;
-
-
-				}
-
-				//write the text to the edit buffer
-				memcpy(&editDisplayBuffer[1][4*i],valueAsText,3);
-			}			
-		}		
-	}		
-
-
+				} //switch(parameters[parNr].dtype&0x0F) end
+
+			} // if(parNr==PAR_NONE)
+
+			//write the text to the edit buffer
+			memcpy(&editDisplayBuffer[1][4*i],valueAsText,3);
+
+		}	// for 1 to 4 .. each menu item
+	} // if editmode not active
+}
+//-----------------------------------------------------------------
+// repaint the screen
+void menu_repaint()
+{
+
+	if(menu_activePage >= LOAD_PAGE && menu_activePage<=SAVE_PAGE)
+	{
+		//this is a special case because the load/save page differs from all the other pages
+		menu_repaintLoadSavePage();
+
+	} else {
+		menu_repaintGeneric();
+	}
 
 	//now send the changes from the edit buffer to the display
 	sendDisplayBuffer();
