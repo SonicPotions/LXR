@@ -40,7 +40,7 @@ void frontParser_parseNrpn(uint8_t value)
 {
 	if(frontParser_nrpnNr+128 < NUM_PARAMS)
 	{
-		parameters[frontParser_nrpnNr+128].value = value;
+		parameter_values[frontParser_nrpnNr+128] = value;
 	}		
 	
 	if( (frontParser_nrpnNr+128 >= PAR_TARGET_LFO1) && (frontParser_nrpnNr+128 <= PAR_TARGET_LFO6) )
@@ -50,14 +50,15 @@ void frontParser_parseNrpn(uint8_t value)
 		//LFO
 		uint8_t lfoNr = (frontParser_nrpnNr+128)-PAR_TARGET_LFO1;
 		if(lfoNr>5)lfoNr=5;
-		value = getModTargetValue(parameters[frontParser_nrpnNr+128].value,  parameters[PAR_VOICE_LFO1+lfoNr].value-1);
+		value = getModTargetValue(parameter_values[frontParser_nrpnNr+128],
+				parameter_values[PAR_VOICE_LFO1+lfoNr]-1);
 		uint8_t upper = ((value&0x80)>>7) | (((lfoNr)&0x3f)<<1);
 		uint8_t lower = value&0x7f;
 		frontPanel_sendData(CC_LFO_TARGET,upper,lower);
 	}
 	else if ( (frontParser_nrpnNr+128 >= PAR_VEL_DEST_1) && (frontParser_nrpnNr+128 <= PAR_VEL_DEST_6) )
 	{
-		uint8_t param = parameters[frontParser_nrpnNr+128].value;
+		uint8_t param = parameter_values[frontParser_nrpnNr+128];
 		if(param > (NUM_SUB_PAGES * 8 -1))
 		param = (NUM_SUB_PAGES * 8 -1); 
 				
@@ -96,7 +97,7 @@ void frontPanel_ccHandler()
 		}
 	
 	//set the parameter value
-	parameters[parNr].value = frontParser_midiMsg.data2;
+	parameter_values[parNr] = frontParser_midiMsg.data2;
 	
 	//repaint the LCD
 	menu_repaint();
@@ -259,22 +260,22 @@ void frontPanel_parseData(uint8_t data)
 				} 
 				else if(frontParser_midiMsg.status == SET_P1_DEST)
 				{
-					parameters[PAR_P1_DEST].value = (frontParser_midiMsg.data1<<7) | frontParser_midiMsg.data2;
+					parameter_values[PAR_P1_DEST] = (frontParser_midiMsg.data1<<7) | frontParser_midiMsg.data2;
 					menu_repaintAll();
 				}
 				else if(frontParser_midiMsg.status == SET_P2_DEST)
 				{
-					parameters[PAR_P2_DEST].value = (frontParser_midiMsg.data1<<7) | frontParser_midiMsg.data2;
+					parameter_values[PAR_P2_DEST] = (frontParser_midiMsg.data1<<7) | frontParser_midiMsg.data2;
 					menu_repaintAll();
 				}
 				else if(frontParser_midiMsg.status == SET_P1_VAL)
 				{
-					parameters[PAR_P1_VAL].value = (frontParser_midiMsg.data1<<7) | frontParser_midiMsg.data2;
+					parameter_values[PAR_P1_VAL] = (frontParser_midiMsg.data1<<7) | frontParser_midiMsg.data2;
 					menu_repaintAll();
 				}
 				else if(frontParser_midiMsg.status == SET_P2_VAL)
 				{
-					parameters[PAR_P2_VAL].value = (frontParser_midiMsg.data1<<7) | frontParser_midiMsg.data2;
+					parameter_values[PAR_P2_VAL] = (frontParser_midiMsg.data1<<7) | frontParser_midiMsg.data2;
 					menu_repaintAll();
 				}
 				
@@ -284,41 +285,41 @@ void frontPanel_parseData(uint8_t data)
 					{
 						
 						case SEQ_SET_PAT_BEAT:
-						parameters[PAR_PATTERN_BEAT].value = frontParser_midiMsg.data2;
+						parameter_values[PAR_PATTERN_BEAT] = frontParser_midiMsg.data2;
 						menu_repaint();
 						break;	
 						case SEQ_SET_PAT_NEXT:
-						parameters[PAR_PATTERN_NEXT].value = frontParser_midiMsg.data2;
+						parameter_values[PAR_PATTERN_NEXT] = frontParser_midiMsg.data2;
 						menu_repaint();
 						break;
 						
 						case SEQ_TRACK_LENGTH:
-						parameters[PAR_TRACK_LENGTH].value = frontParser_midiMsg.data2;
+							parameter_values[PAR_TRACK_LENGTH] = frontParser_midiMsg.data2;
 						menu_repaint();
 						break;
 						
 						case SEQ_EUKLID_LENGTH:
-						parameters[PAR_EUKLID_LENGTH].value = frontParser_midiMsg.data2;
+							parameter_values[PAR_EUKLID_LENGTH] = frontParser_midiMsg.data2;
 						menu_repaint();
 						break;
 						
 						case SEQ_EUKLID_STEPS:
-						parameters[PAR_EUKLID_STEPS].value = frontParser_midiMsg.data2;
+							parameter_values[PAR_EUKLID_STEPS] = frontParser_midiMsg.data2;
 						menu_repaint();
 						break;
 						
 						case SEQ_VOLUME:
-						parameters[PAR_STEP_VOLUME].value = frontParser_midiMsg.data2;
+							parameter_values[PAR_STEP_VOLUME] = frontParser_midiMsg.data2;
 						menu_repaintAll();
 						break;
 						
 						case SEQ_PROB:
-						parameters[PAR_STEP_PROB].value = frontParser_midiMsg.data2;
+							parameter_values[PAR_STEP_PROB] = frontParser_midiMsg.data2;
 						menu_repaintAll();
 						break;
 						
 						case SEQ_NOTE:
-						parameters[PAR_STEP_NOTE].value = frontParser_midiMsg.data2;
+							parameter_values[PAR_STEP_NOTE] = frontParser_midiMsg.data2;
 						menu_repaintAll();
 						break;
 						
@@ -341,7 +342,7 @@ void frontPanel_parseData(uint8_t data)
 						led_setBlinkLed(LED_PART_SELECT1+frontParser_midiMsg.data2,0);
 						//clear last pattern led
 						
-						if( (parameters[PAR_FOLLOW].value) ) {
+						if( (parameter_values[PAR_FOLLOW]) ) {
 							
 							if( menu_activePage != PATTERN_SETTINGS_PAGE)
 							{

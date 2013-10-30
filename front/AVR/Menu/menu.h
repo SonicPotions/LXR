@@ -13,6 +13,7 @@
 #define __LCD_MENU_MANAGER__
 
 #include <avr/io.h>
+#include <avr/pgmspace.h>
 #include "../Parameters.h"
 //-----------------------------------------------------------------
 //#define NUM_PAGES 12		
@@ -413,13 +414,16 @@ enum Datatypes
 };
 
 //-----------------------------------------------------------------
+
 typedef struct ParameterStruct
 {
 	uint8_t value;
-	enum Datatypes dtype;	/**< The data type of the parameter -> 0x0F = 16 Data Types field; 0xF0 = 16 extra parameter fields*/
+	enum Datatypes dtype;	/*< The data type of the parameter -> 0x0F = 16 Data Types field; 0xF0 = 16 extra parameter fields*/
 }Parameter;
+
 //-----------------------------------------------------------------
-extern Parameter parameters[NUM_PARAMS];
+extern const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS];
+extern uint8_t parameter_values[NUM_PARAMS];
 //TODO parameters2 doesn't need a dtype field -> save memory
 extern Parameter parameters2[END_OF_SOUND_PARAMETERS];
 

@@ -131,7 +131,7 @@ void screensaver_process()
 void screensaver_check()
 {
 #if SCREENSAVER_ACTIVE
-	if(parameters[PAR_SCREENSAVER_ON_OFF].value)
+	if(parameter_values[PAR_SCREENSAVER_ON_OFF])
 	{
 		if( (!screensaver_Active) )
 		{

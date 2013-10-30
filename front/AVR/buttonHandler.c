@@ -95,7 +95,7 @@ void buttonHandler_disarmTimerActionStep()
 		//make changes temporary while an automation step is armed - revert to original value
 		if(buttonHandler_resetLock==1)
 		{
-			parameters[buttonHandler_originalParameter].value = buttonHandler_originalValue;
+			parameter_values[buttonHandler_originalParameter] = buttonHandler_originalValue;
 		}		
 		
 		buttonHandler_armedAutomationStep = NO_STEP_SELECTED;
@@ -115,7 +115,8 @@ void buttonHandler_disarmTimerActionStep()
 				}
 				else
 				{
-					menu_parseGlobalParam(buttonHandler_originalParameter,parameters[buttonHandler_originalParameter].value);
+					menu_parseGlobalParam(buttonHandler_originalParameter,
+							parameter_values[buttonHandler_originalParameter]);
 				}
 				menu_repaintAll();
 		}		
@@ -328,7 +329,7 @@ void buttonHandler_handleSelectButton(uint8_t buttonNr)
 				//request step parameters from sequencer
 				frontPanel_sendData(SEQ_CC,SEQ_REQUEST_STEP_PARAMS,stepNr);
 		
-				parameters[PAR_ACTIVE_STEP].value = stepNr;
+				parameter_values[PAR_ACTIVE_STEP] = stepNr;
 			}				
 				break;
 			case SELECT_MODE_PAT_GEN:
@@ -362,7 +363,7 @@ void buttonHandler_handleSelectButton(uint8_t buttonNr)
 				//request step parameters from sequencer
 				frontPanel_sendData(SEQ_CC,SEQ_REQUEST_STEP_PARAMS,stepNr);
 		
-				parameters[PAR_ACTIVE_STEP].value = stepNr;
+				parameter_values[PAR_ACTIVE_STEP] = stepNr;
 				
 				//buttonHandler_armTimerActionStep(stepNr);
 				led_clearAllBlinkLeds();
@@ -723,7 +724,7 @@ void buttonHandler_selectActiveStep(uint8_t ledNr, uint8_t seqButtonPressed)
 	buttonHandler_selectedStep = seqButtonPressed*8;
 	selectedStepLed = ledNr;
 								
-	parameters[PAR_ACTIVE_STEP].value = buttonHandler_selectedStep;
+	parameter_values[PAR_ACTIVE_STEP] = buttonHandler_selectedStep;
 				
 	//blink new step
 	led_setBlinkLed(ledNr,1);
@@ -747,7 +748,7 @@ void buttonHandler_setRemoveStep(uint8_t ledNr, uint8_t seqButtonPressed)
 						
 	//update active step (so that seq mode always shows the last set step)
 	buttonHandler_selectedStep = seqButtonPressed;
-	parameters[PAR_ACTIVE_STEP].value = buttonHandler_selectedStep;
+	parameter_values[PAR_ACTIVE_STEP] = buttonHandler_selectedStep;
 	selectedStepLed = ledNr;
 				
 	//request step parameters from sequencer
@@ -1181,7 +1182,7 @@ return;
 			
 			//the pattern change update for the follow mode is not made immediately when the pattern options are active
 			//so we have to do it here
-			if (parameters[PAR_FOLLOW].value)  {
+			if (parameter_values[PAR_FOLLOW])  {
 					menu_setShownPattern(menu_shownPattern);
 					led_clearSequencerLeds();
 					//query current sequencer step states and light up the corresponding leds 

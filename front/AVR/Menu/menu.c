@@ -32,8 +32,8 @@ static void numtostrps(char *buf, int8_t num);
 static void numtostru(char *buf, uint8_t num);
 // non space padded signed
 static void numtostrs(char *buf, int8_t num);
-
-
+// uppercase 3 letters in buf
+static void upr_three(char *buf);
 
 
 
@@ -237,34 +237,275 @@ const Name valueNames[NUM_NAMES] PROGMEM =
 		{SHORT_FLUX,CAT_GENERATOR,LONG_FLUX},	//TEXT_FLUX,
 		{SHORT_FREQ,CAT_GENERATOR,LONG_FREQ},	//TEXT_SOM_FREQ,
 		{SHORT_MIDI,CAT_MIDI,LONG_MODE},	//TEXT_MIDI_MODE
-
-
-
-
-
 };
 
 
 
+//---------------------------------------------------------------
+// Parameter types
+const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
+	    /*PAR_NONE*/ 			DTYPE_0B127,
+	    /*PAR_OSC_WAVE_DRUM1*/ 	DTYPE_MENU | (MENU_WAVEFORM<<4),
+	    /*PAR_OSC_WAVE_DRUM2*/ 	DTYPE_MENU | (MENU_WAVEFORM<<4),
+	    /*PAR_OSC_WAVE_DRUM3*/ 	DTYPE_MENU | (MENU_WAVEFORM<<4),
+	    /*PAR_OSC_WAVE_SNARE*/  DTYPE_MENU | (MENU_WAVEFORM<<4),
+	    /*NRPN_DATA_ENTRY_COARSE*/ DTYPE_0B127,
+	    /*PAR_WAVE1_CYM*/  		DTYPE_MENU | (MENU_WAVEFORM<<4),
+	    /*PAR_WAVE1_HH*/  		DTYPE_MENU | (MENU_WAVEFORM<<4),
+	    /*PAR_COARSE1*/ 		DTYPE_0B127,
+	    /*PAR_FINE1*/ 			DTYPE_PM63,
+	    /*PAR_COARSE2*/			DTYPE_0B127,
+	    /*PAR_FINE2*/ 			DTYPE_PM63,
+	    /*PAR_COARSE3*/ 		DTYPE_0B127,
+	    /*PAR_FINE3*/ 			DTYPE_PM63,
+	    /*PAR_COARSE4*/ 		DTYPE_0B127,
+	    /*PAR_FINE4*/ 			DTYPE_PM63,
+	    /*PAR_COARSE5*/			DTYPE_0B127,
+	    /*PAR_FINE5*/ 			DTYPE_PM63,
+	    /*PAR_COARSE6*/ 		DTYPE_0B127,
+	    /*PAR_FINE6*/ 			DTYPE_PM63,
+	    /*PAR_MOD_WAVE_DRUM1*/  DTYPE_MENU | (MENU_WAVEFORM<<4),
+	    /*PAR_MOD_WAVE_DRUM2*/  DTYPE_MENU | (MENU_WAVEFORM<<4),
+	    /*PAR_MOD_WAVE_DRUM3*/  DTYPE_MENU | (MENU_WAVEFORM<<4),
+	    /*PAR_WAVE2_CYM*/ 		DTYPE_MENU | (MENU_WAVEFORM<<4),
+	    /*PAR_WAVE3_CYM*/ 		DTYPE_MENU | (MENU_WAVEFORM<<4),
+	    /*PAR_WAVE2_HH*/ 		DTYPE_MENU | (MENU_WAVEFORM<<4),
+	    /*PAR_WAVE3_HH*/ 		DTYPE_MENU | (MENU_WAVEFORM<<4),
+	    /*PAR_NOISE_FREQ1*/ 	DTYPE_0B127,
+	    /*PAR_MIX1*/ 			DTYPE_0B127,
+	    /*PAR_MOD_OSC_F1_CYM*/ 	DTYPE_0B127,
+	    /*PAR_MOD_OSC_F2_CYM*/ 	DTYPE_0B127,
+	    /*PAR_MOD_OSC_GAIN1_CYM*/ DTYPE_0B127,
+	    /*PAR_MOD_OSC_GAIN2_CYM*/ DTYPE_0B127,
+	    /*PAR_MOD_OSC_F1*/ 		DTYPE_0B127,
+	    /*PAR_MOD_OSC_F2*/ 		DTYPE_0B127,
+	    /*PAR_MOD_OSC_GAIN1*/ 	DTYPE_0B127,
+	    /*PAR_MOD_OSC_GAIN2*/ 	DTYPE_0B127,
+	    /*PAR_FILTER_FREQ_1*/ 	DTYPE_0B127,
+	    /*PAR_FILTER_FREQ_2*/ 	DTYPE_0B127,
+	    /*PAR_FILTER_FREQ_3*/ 	DTYPE_0B127,
+	    /*PAR_FILTER_FREQ_4*/ 	DTYPE_0B127,
+	    /*PAR_FILTER_FREQ_5*/ 	DTYPE_0B127,
+	    /*PAR_FILTER_FREQ_6*/ 	DTYPE_0B127,
+	    /*PAR_RESO_1*/ 			DTYPE_0B127,
+	    /*PAR_RESO_2*/ 			DTYPE_0B127,
+	    /*PAR_RESO_3*/ 			DTYPE_0B127,
+	    /*PAR_RESO_4*/ 			DTYPE_0B127,
+	    /*PAR_RESO_5*/ 			DTYPE_0B127,
+	    /*PAR_RESO_6*/ 			DTYPE_0B127,
+	    /*PAR_VELOA1*/ 			DTYPE_0B127,
+	    /*PAR_VELOD1*/ 			DTYPE_0B127,
+	    /*PAR_VELOA2*/ 			DTYPE_0B127,
+	    /*PAR_VELOD2*/ 			DTYPE_0B127,
+	    /*PAR_VELOA3*/ 			DTYPE_0B127,
+	    /*PAR_VELOD3*/ 			DTYPE_0B127,
+	    /*PAR_VELOA4*/ 			DTYPE_0B127,
+	    /*PAR_VELOD4*/ 			DTYPE_0B127,
+	    /*PAR_VELOA5*/ 			DTYPE_0B127,
+	    /*PAR_VELOD5*/ 			DTYPE_0B127,
+	    /*PAR_VELOA6*/ 			DTYPE_0B127,
+	    /*PAR_VELOD6_CLOSED*/ 	DTYPE_0B127,
+	    /*PAR_VELOD6_OPEN*/ 	DTYPE_0B127,
+	    /*PAR_VOL_SLOPE1*/ 		DTYPE_0B127,
+	    /*PAR_VOL_SLOPE2*/ 		DTYPE_0B127,
+	    /*PAR_VOL_SLOPE3*/ 		DTYPE_0B127,
+	    /*PAR_VOL_SLOPE4*/ 		DTYPE_0B127,
+	    /*PAR_VOL_SLOPE5*/ 		DTYPE_0B127,
+	    /*PAR_VOL_SLOPE6*/ 		DTYPE_0B127,
+	    /*PAR_REPEAT4*/ 		DTYPE_0B127,
+	    /*PAR_REPEAT5*/ 		DTYPE_0B127,
+	    /*PAR_MOD_EG1*/ 		DTYPE_0B127,
+	    /*PAR_MOD_EG2*/ 		DTYPE_0B127,
+	    /*PAR_MOD_EG3*/ 		DTYPE_0B127,
+	    /*PAR_MOD_EG4*/ 		DTYPE_0B127,
+	    /*PAR_MODAMNT1*/ 		DTYPE_0B127,
+	    /*PAR_MODAMNT2*/ 		DTYPE_0B127,
+	    /*PAR_MODAMNT3*/ 		DTYPE_0B127,
+	    /*PAR_MODAMNT4*/ 		DTYPE_0B127,
+	    /*PAR_PITCH_SLOPE1*/ 	DTYPE_0B127,
+	    /*PAR_PITCH_SLOPE2*/ 	DTYPE_0B127,
+	    /*PAR_PITCH_SLOPE3*/ 	DTYPE_0B127,
+	    /*PAR_PITCH_SLOPE4*/ 	DTYPE_0B127,
+	    /*PAR_FMAMNT1*/ 		DTYPE_0B127,
+	    /*PAR_FM_FREQ1*/ 		DTYPE_0B127,
+	    /*PAR_FMAMNT2*/ 		DTYPE_0B127,
+	    /*PAR_FM_FREQ2*/ 		DTYPE_0B127,
+	    /*PAR_FMAMNT3*/ 		DTYPE_0B127,
+	    /*PAR_FM_FREQ3*/ 		DTYPE_0B127,
+	    /*PAR_VOL1*/ 			DTYPE_0B127,
+	    /*PAR_VOL2*/ 			DTYPE_0B127,
+	    /*PAR_VOL3*/ 			DTYPE_0B127,
+	    /*PAR_VOL4*/ 			DTYPE_0B127,
+	    /*PAR_VOL5*/ 			DTYPE_0B127,
+	    /*PAR_VOL6*/ 			DTYPE_0B127,
+	    /*PAR_PAN1*/ 			DTYPE_PM63,
+	    /*PAR_PAN2*/ 			DTYPE_PM63,
+	    /*PAR_PAN3*/ 			DTYPE_PM63,
+	    /*NRPN_FINE*/ 			DTYPE_0B127,
+	    /*NRPN_COARSE*/ 		DTYPE_0B127,
+	    /*PAR_PAN4*/ 			DTYPE_PM63,
+	    /*PAR_PAN5*/ 			DTYPE_PM63,
+	    /*PAR_PAN6*/ 			DTYPE_PM63,
+	    /*PAR_DRIVE1*/ 			DTYPE_0B127,
+	    /*PAR_DRIVE2*/ 			DTYPE_0B127,
+	    /*PAR_DRIVE3*/ 			DTYPE_0B127,
+	    /*PAR_SNARE_DISTORTION*/ DTYPE_0B127,
+	    /*PAR_CYMBAL_DISTORTION*/ DTYPE_0B127,
+	    /*PAR_HAT_DISTORTION*/ 	DTYPE_0B127,
+	    /*PAR_VOICE_DECIMATION1*/ DTYPE_0B127,
+	    /*PAR_VOICE_DECIMATION2*/ DTYPE_0B127,
+	    /*PAR_VOICE_DECIMATION3*/ DTYPE_0B127,
+	    /*PAR_VOICE_DECIMATION4*/ DTYPE_0B127,
+	    /*PAR_VOICE_DECIMATION5*/ DTYPE_0B127,
+	    /*PAR_VOICE_DECIMATION6*/ DTYPE_0B127,
+	    /*PAR_VOICE_DECIMATION_ALL */ DTYPE_0B127,
+	    /*PAR_FREQ_LFO1 */ 		DTYPE_0B127,
+	    /*PAR_FREQ_LFO2*/		DTYPE_0B127,
+	    /*PAR_FREQ_LFO3*/ 		DTYPE_0B127,
+	    /*PAR_FREQ_LFO4*/ 		DTYPE_0B127,
+	    /*PAR_FREQ_LFO5*/ 		DTYPE_0B127,
+	    /*PAR_FREQ_LFO6*/ 		DTYPE_0B127,
+	    /*PAR_AMOUNT_LFO1*/		DTYPE_0B127,
+	    /*PAR_AMOUNT_LFO2*/ 	DTYPE_0B127,
+	    /*PAR_AMOUNT_LFO3*/ 	DTYPE_0B127,
+	    /*PAR_AMOUNT_LFO4*/		DTYPE_0B127,
+	    /*PAR_AMOUNT_LFO5*/ 	DTYPE_0B127,
+	    /*PAR_AMOUNT_LFO6*/ 	DTYPE_0B127,
+	    /*PAR_RESERVED4*/ 		DTYPE_0B127,
+	    /*PAR_FILTER_DRIVE_1*/ 	DTYPE_0B127,
+	    /*PAR_FILTER_DRIVE_2*/ 	DTYPE_0B127,
+	    /*PAR_FILTER_DRIVE_3*/ 	DTYPE_0B127,
+	    /*PAR_FILTER_DRIVE_4*/ 	DTYPE_0B127,
+	    /*PAR_FILTER_DRIVE_5*/ 	DTYPE_0B127,
+	    /*PAR_FILTER_DRIVE_6*/	DTYPE_0B127,
+	    /*PAR_MIX_MOD_1*/ 		DTYPE_MIX_FM,
+	    /*PAR_MIX_MOD_2*/ 		DTYPE_MIX_FM,
+	    /*PAR_MIX_MOD_3*/ 		DTYPE_MIX_FM,
+	    /*PAR_VOLUME_MOD_ON_OFF1*/ DTYPE_ON_OFF,
+	    /*PAR_VOLUME_MOD_ON_OFF2*/ DTYPE_ON_OFF,
+	    /*PAR_VOLUME_MOD_ON_OFF3*/ DTYPE_ON_OFF,
+	    /*PAR_VOLUME_MOD_ON_OFF4*/ DTYPE_ON_OFF,
+	    /*PAR_VOLUME_MOD_ON_OFF5*/ DTYPE_ON_OFF,
+	    /*PAR_VOLUME_MOD_ON_OFF6*/ DTYPE_ON_OFF,
+	    /*PAR_VELO_MOD_AMT_1*/ 	DTYPE_0B127,
+	    /*PAR_VELO_MOD_AMT_2*/ 	DTYPE_0B127,
+	    /*PAR_VELO_MOD_AMT_3*/ 	DTYPE_0B127,
+	    /*PAR_VELO_MOD_AMT_4*/ 	DTYPE_0B127,
+	    /*PAR_VELO_MOD_AMT_5*/ 	DTYPE_0B127,
+	    /*PAR_VELO_MOD_AMT_6*/ 	DTYPE_0B127,
+	    /*PAR_VEL_DEST_1*/ 		DTYPE_TARGET_SELECTION_VELO,
+	    /*PAR_VEL_DEST_2*/ 		DTYPE_TARGET_SELECTION_VELO,
+	    /*PAR_VEL_DEST_3*/ 		DTYPE_TARGET_SELECTION_VELO,
+	    /*PAR_VEL_DEST_4*/ 		DTYPE_TARGET_SELECTION_VELO,
+	    /*PAR_VEL_DEST_5*/ 		DTYPE_TARGET_SELECTION_VELO,
+	    /*PAR_VEL_DEST_6*/ 		DTYPE_TARGET_SELECTION_VELO,
+	    /*PAR_WAVE_LFO1*/ 		DTYPE_MENU | (MENU_LFO_WAVES<<4),
+	    /*PAR_WAVE_LFO2*/ 		DTYPE_MENU | (MENU_LFO_WAVES<<4),
+	    /*PAR_WAVE_LFO3*/ 		DTYPE_MENU | (MENU_LFO_WAVES<<4),
+	    /*PAR_WAVE_LFO4 */ 		DTYPE_MENU | (MENU_LFO_WAVES<<4),
+	    /*PAR_WAVE_LFO5*/ 		DTYPE_MENU | (MENU_LFO_WAVES<<4),
+	    /*PAR_WAVE_LFO6*/ 		DTYPE_MENU | (MENU_LFO_WAVES<<4),
+	    /*PAR_VOICE_LFO1*/ 		DTYPE_VOICE_LFO,
+	    /*PAR_VOICE_LFO2*/ 		DTYPE_VOICE_LFO,
+	    /*PAR_VOICE_LFO3*/ 		DTYPE_VOICE_LFO,
+	    /*PAR_VOICE_LFO4*/ 		DTYPE_VOICE_LFO,
+	    /*PAR_VOICE_LFO5*/ 		DTYPE_VOICE_LFO,
+	    /*PAR_VOICE_LFO6*/ 		DTYPE_VOICE_LFO,
+	    /*PAR_TARGET_LFO1*/ 	DTYPE_TARGET_SELECTION_LFO,
+	    /*PAR_TARGET_LFO2*/ 	DTYPE_TARGET_SELECTION_LFO,
+	    /*PAR_TARGET_LFO3*/ 	DTYPE_TARGET_SELECTION_LFO,
+	    /*PAR_TARGET_LFO4*/ 	DTYPE_TARGET_SELECTION_LFO,
+	    /*PAR_TARGET_LFO5*/ 	DTYPE_TARGET_SELECTION_LFO,
+	    /*PAR_TARGET_LFO6*/ 	DTYPE_TARGET_SELECTION_LFO,
+	    /*PAR_RETRIGGER_LFO1*/ 	DTYPE_MENU | (MENU_RETRIGGER<<4),
+	    /*PAR_RETRIGGER_LFO2*/ 	DTYPE_MENU | (MENU_RETRIGGER<<4),
+	    /*PAR_RETRIGGER_LFO3*/ 	DTYPE_MENU | (MENU_RETRIGGER<<4),
+	    /*PAR_RETRIGGER_LFO4*/ 	DTYPE_MENU | (MENU_RETRIGGER<<4),
+	    /*PAR_RETRIGGER_LFO5*/ 	DTYPE_MENU | (MENU_RETRIGGER<<4),
+	    /*PAR_RETRIGGER_LFO6*/ 	DTYPE_MENU | (MENU_RETRIGGER<<4),
+	    /*PAR_SYNC_LFO1*/ 		DTYPE_MENU | (MENU_SYNC_RATES<<4),
+	    /*PAR_SYNC_LFO2*/ 		DTYPE_MENU | (MENU_SYNC_RATES<<4),
+	    /*PAR_SYNC_LFO3*/ 		DTYPE_MENU | (MENU_SYNC_RATES<<4),
+	    /*PAR_SYNC_LFO4*/ 		DTYPE_MENU | (MENU_SYNC_RATES<<4),
+	    /*PAR_SYNC_LFO5*/ 		DTYPE_MENU | (MENU_SYNC_RATES<<4),
+	    /*PAR_SYNC_LFO6*/ 		DTYPE_MENU | (MENU_SYNC_RATES<<4),
+	    /*PAR_OFFSET_LFO1*/ 	DTYPE_0B127,
+	    /*PAR_OFFSET_LFO2*/ 	DTYPE_0B127,
+	    /*PAR_OFFSET_LFO3*/ 	DTYPE_0B127,
+	    /*PAR_OFFSET_LFO4*/ 	DTYPE_0B127,
+	    /*PAR_OFFSET_LFO5*/ 	DTYPE_0B127,
+	    /*PAR_OFFSET_LFO6*/ 	DTYPE_0B127,
+	    /*PAR_FILTER_TYPE_1*/ 	DTYPE_MENU | (MENU_FILTER<<4),
+	    /*PAR_FILTER_TYPE_2*/ 	DTYPE_MENU | (MENU_FILTER<<4),
+	    /*PAR_FILTER_TYPE_3*/ 	DTYPE_MENU | (MENU_FILTER<<4),
+	    /*PAR_FILTER_TYPE_4*/ 	DTYPE_MENU | (MENU_FILTER<<4),
+	    /*PAR_FILTER_TYPE_5*/ 	DTYPE_MENU | (MENU_FILTER<<4),
+	    /*PAR_FILTER_TYPE_6*/ 	DTYPE_MENU | (MENU_FILTER<<4),
+	    /*PAR_TRANS1_VOL*/ 		DTYPE_0B127,
+	    /*PAR_TRANS2_VOL*/ 		DTYPE_0B127,
+	    /*PAR_TRANS3_VOL*/ 		DTYPE_0B127,
+	    /*PAR_TRANS4_VOL*/ 		DTYPE_0B127,
+	    /*PAR_TRANS5_VOL*/ 		DTYPE_0B127,
+	    /*PAR_TRANS6_VOL*/ 		DTYPE_0B127,
+	    /*PAR_TRANS1_WAVE*/ 	DTYPE_MENU | (MENU_TRANS<<4),
+	    /*PAR_TRANS2_WAVE*/ 	DTYPE_MENU | (MENU_TRANS<<4),
+	    /*PAR_TRANS3_WAVE*/ 	DTYPE_MENU | (MENU_TRANS<<4),
+	    /*PAR_TRANS4_WAVE*/ 	DTYPE_MENU | (MENU_TRANS<<4),
+	    /*PAR_TRANS5_WAVE*/ 	DTYPE_MENU | (MENU_TRANS<<4),
+	    /*PAR_TRANS6_WAVE*/ 	DTYPE_MENU | (MENU_TRANS<<4),
+	    /*PAR_TRANS1_FREQ*/ 	DTYPE_0B127,
+	    /*PAR_TRANS2_FREQ*/ 	DTYPE_0B127,
+	    /*PAR_TRANS3_FREQ*/ 	DTYPE_0B127,
+	    /*PAR_TRANS4_FREQ*/ 	DTYPE_0B127,
+	    /*PAR_TRANS5_FREQ*/ 	DTYPE_0B127,
+	    /*PAR_TRANS6_FREQ*/ 	DTYPE_0B127,
+	    /*PAR_AUDIO_OUT1*/ 		DTYPE_MENU | (MENU_AUDIO_OUT<<4),
+	    /*PAR_AUDIO_OUT2*/ 		DTYPE_MENU | (MENU_AUDIO_OUT<<4),
+	    /*PAR_AUDIO_OUT3*/ 		DTYPE_MENU | (MENU_AUDIO_OUT<<4),
+	    /*PAR_AUDIO_OUT4*/ 		DTYPE_MENU | (MENU_AUDIO_OUT<<4),
+	    /*PAR_AUDIO_OUT5*/ 		DTYPE_MENU | (MENU_AUDIO_OUT<<4),
+	    /*PAR_AUDIO_OUT6*/ 		DTYPE_MENU | (MENU_AUDIO_OUT<<4),
+	    /*PAR_ROLL*/ 			DTYPE_MENU | (MENU_ROLL_RATES<<4),
+	    /*PAR_MORPH*/ 			DTYPE_0B255,
+	    /*PAR_ACTIVE_STEP */ 	DTYPE_0B127,
+	    /*PAR_STEP_VOLUME*/ 	DTYPE_0B127,
+	    /*PAR_STEP_PROB*/ 		DTYPE_0B127,
+	    /*PAR_STEP_NOTE*/ 		DTYPE_NOTE_NAME,
+	    /*PAR_EUKLID_LENGTH*/ 	DTYPE_1B16,
+	    /*PAR_EUKLID_STEPS*/ 	DTYPE_1B16,
+	    /*PAR_AUTOM_TRACK*/ 	DTYPE_0b1,
+	    /*PAR_P1_DEST*/ 		DTYPE_AUTOM_TARGET,
+	    /*PAR_P2_DEST*/ 		DTYPE_AUTOM_TARGET,
+	    /*PAR_P1_VAL*/ 			DTYPE_0B127,
+	    /*PAR_P2_VAL*/ 			DTYPE_0B127,
+	    /*PAR_SHUFFLE*/ 		DTYPE_0B127,
+	    /*PAR_PATTERN_BEAT*/ 	DTYPE_0B127,
+	    /*PAR_PATTERN_NEXT*/ 	DTYPE_MENU | (MENU_NEXT_PATTERN<<4),
+	    /*PAR_TRACK_LENGTH*/ 	DTYPE_1B16,
+	    /*PAR_POS_X*/ 			DTYPE_0B127,
+	    /*PAR_POS_Y*/ 			DTYPE_0B127,
+	    /*PAR_FLUX*/ 			DTYPE_0B127,
+	    /*PAR_SOM_FREQ*/ 		DTYPE_0B127,
+	    /*PAR_BPM*/ 			DTYPE_0B255,
+	    /*PAR_MIDI_CHAN_1*/ 	DTYPE_1B16,
+	    /*PAR_MIDI_CHAN_2*/ 	DTYPE_1B16,
+	    /*PAR_MIDI_CHAN_3*/ 	DTYPE_1B16,
+	    /*PAR_MIDI_CHAN_4*/ 	DTYPE_1B16,
+	    /*PAR_MIDI_CHAN_5*/ 	DTYPE_1B16,
+	    /*PAR_MIDI_CHAN_6*/ 	DTYPE_1B16,
+	    /*PAR_FETCH*/ 			DTYPE_ON_OFF,
+	    /*PAR_FOLLOW*/ 			DTYPE_ON_OFF,
+	    /*PAR_QUANTISATION*/ 	DTYPE_MENU | (MENU_SEQ_QUANT<<4),
+	    /*PAR_SCREENSAVER_ON_OFF*/ DTYPE_ON_OFF,
+	    /*PAR_MIDI_MODE*/ 		DTYPE_MENU | (MENU_MIDI<<4),
+	    /*PAR_MIDI_CHAN_7*/ 	DTYPE_1B16,
+};
 
-// make 1st 3 letters of buffer uppercase
-static void upr_three(char *buf)
-{
-	if(*buf >='a' && *buf <= 'z')
-		(*buf) -=32;
-	buf++;
-	if(*buf >='a' && *buf <= 'z')
-		(*buf) -=32;
-	buf++;
-	if(*buf >='a' && *buf <= 'z')
-		(*buf) -=32;
-	buf++;
-}
 
 
 //-----------------------------------------------------------------
 /** array holding all the available parameter values*/
-Parameter parameters[NUM_PARAMS]; /**< the main sound parameters*/
+uint8_t parameter_values[NUM_PARAMS];
 Parameter parameters2[END_OF_SOUND_PARAMETERS];/**< a second array for sound x-fade to another preset*/
 //-----------------------------------------------------------------
 //lock all 4 potentiometer values
@@ -295,193 +536,16 @@ void menu_init()
 
 	memset(menu_currentPresetNr,0,sizeof(uint8_t) *NUM_PRESET_LOCATIONS );
 
+	memset(parameter_values, 0, sizeof(uint8_t) * NUM_PARAMS);
 
-
-
-	//init the parameter array dtype fields to  DTYPE_0B127;
-	for(int i=0;i<NUM_PARAMS;i++)
-	{
-		parameters[i].dtype = DTYPE_0B127;
-		/*
-		if(i<PAR_BEGINNING_OF_GLOBALS)
-		{
-			parameters2[i].dtype = DTYPE_0B127;
-		}
-		 */
-	}
-
-	//Now set up the non 0B127 types
-	parameters[PAR_MIDI_CHAN_1].dtype		= DTYPE_1B16;
-	parameters[PAR_MIDI_CHAN_2].dtype		= DTYPE_1B16;
-	parameters[PAR_MIDI_CHAN_3].dtype		= DTYPE_1B16;
-	parameters[PAR_MIDI_CHAN_4].dtype		= DTYPE_1B16;
-	parameters[PAR_MIDI_CHAN_5].dtype		= DTYPE_1B16;
-	parameters[PAR_MIDI_CHAN_6].dtype		= DTYPE_1B16;
-	parameters[PAR_MIDI_CHAN_7].dtype		= DTYPE_1B16;
-
-	parameters[PAR_MIDI_MODE].dtype			= DTYPE_MENU | (MENU_MIDI<<4);
-
-
-	parameters[PAR_AUDIO_OUT1].dtype		= DTYPE_MENU | (MENU_AUDIO_OUT<<4);
-	parameters[PAR_AUDIO_OUT2].dtype		= DTYPE_MENU | (MENU_AUDIO_OUT<<4);
-	parameters[PAR_AUDIO_OUT3].dtype		= DTYPE_MENU | (MENU_AUDIO_OUT<<4);
-	parameters[PAR_AUDIO_OUT4].dtype		= DTYPE_MENU | (MENU_AUDIO_OUT<<4);
-	parameters[PAR_AUDIO_OUT5].dtype		= DTYPE_MENU | (MENU_AUDIO_OUT<<4);
-	parameters[PAR_AUDIO_OUT6].dtype		= DTYPE_MENU | (MENU_AUDIO_OUT<<4);
-
-	parameters[PAR_OSC_WAVE_DRUM1].dtype	= DTYPE_MENU | (MENU_WAVEFORM<<4);
-	parameters[PAR_OSC_WAVE_DRUM2].dtype	= DTYPE_MENU | (MENU_WAVEFORM<<4);
-	parameters[PAR_OSC_WAVE_DRUM3].dtype	= DTYPE_MENU | (MENU_WAVEFORM<<4);
-	parameters[PAR_WAVE1_CYM].dtype			= DTYPE_MENU | (MENU_WAVEFORM<<4);
-	parameters[PAR_WAVE1_HH].dtype			= DTYPE_MENU | (MENU_WAVEFORM<<4);
-	parameters[PAR_OSC_WAVE_SNARE].dtype	= DTYPE_MENU | (MENU_WAVEFORM<<4);
-
-	parameters[PAR_MOD_WAVE_DRUM1].dtype	= DTYPE_MENU | (MENU_WAVEFORM<<4);
-	parameters[PAR_MOD_WAVE_DRUM2].dtype	= DTYPE_MENU | (MENU_WAVEFORM<<4);
-	parameters[PAR_MOD_WAVE_DRUM3].dtype	= DTYPE_MENU | (MENU_WAVEFORM<<4);
-
-	parameters[PAR_WAVE2_CYM].dtype			= DTYPE_MENU | (MENU_WAVEFORM<<4);
-	parameters[PAR_WAVE3_CYM].dtype			= DTYPE_MENU | (MENU_WAVEFORM<<4);
-	parameters[PAR_WAVE2_HH].dtype			= DTYPE_MENU | (MENU_WAVEFORM<<4);
-	parameters[PAR_WAVE3_HH].dtype			= DTYPE_MENU | (MENU_WAVEFORM<<4);
-
-	parameters[PAR_FILTER_TYPE_4].dtype		= DTYPE_MENU | (MENU_FILTER<<4);
-	parameters[PAR_FILTER_TYPE_5].dtype		= DTYPE_MENU | (MENU_FILTER<<4);
-	parameters[PAR_FILTER_TYPE_6].dtype		= DTYPE_MENU | (MENU_FILTER<<4);
-	parameters[PAR_FILTER_TYPE_1].dtype		= DTYPE_MENU | (MENU_FILTER<<4);
-	parameters[PAR_FILTER_TYPE_2].dtype		= DTYPE_MENU | (MENU_FILTER<<4);
-	parameters[PAR_FILTER_TYPE_3].dtype		= DTYPE_MENU | (MENU_FILTER<<4);
-
-	parameters[PAR_SYNC_LFO1].dtype			= DTYPE_MENU | (MENU_SYNC_RATES<<4);
-	parameters[PAR_SYNC_LFO2].dtype			= DTYPE_MENU | (MENU_SYNC_RATES<<4);
-	parameters[PAR_SYNC_LFO3].dtype			= DTYPE_MENU | (MENU_SYNC_RATES<<4);
-	parameters[PAR_SYNC_LFO4].dtype			= DTYPE_MENU | (MENU_SYNC_RATES<<4);
-	parameters[PAR_SYNC_LFO5].dtype			= DTYPE_MENU | (MENU_SYNC_RATES<<4);
-	parameters[PAR_SYNC_LFO6].dtype			= DTYPE_MENU | (MENU_SYNC_RATES<<4);
-
-	parameters[PAR_WAVE_LFO1].dtype			= DTYPE_MENU | (MENU_LFO_WAVES<<4);
-	parameters[PAR_WAVE_LFO2].dtype			= DTYPE_MENU | (MENU_LFO_WAVES<<4);
-	parameters[PAR_WAVE_LFO3].dtype			= DTYPE_MENU | (MENU_LFO_WAVES<<4);
-	parameters[PAR_WAVE_LFO4].dtype			= DTYPE_MENU | (MENU_LFO_WAVES<<4);
-	parameters[PAR_WAVE_LFO5].dtype			= DTYPE_MENU | (MENU_LFO_WAVES<<4);
-	parameters[PAR_WAVE_LFO6].dtype			= DTYPE_MENU | (MENU_LFO_WAVES<<4);
-
-	parameters[PAR_ROLL].dtype			= DTYPE_MENU | (MENU_ROLL_RATES<<4);
-
-
-	parameters[PAR_STEP_NOTE].dtype			= DTYPE_NOTE_NAME;
-
-	parameters[PAR_FINE1].dtype = DTYPE_PM63;
-	parameters[PAR_FINE2].dtype = DTYPE_PM63;
-	parameters[PAR_FINE3].dtype = DTYPE_PM63;
-	parameters[PAR_FINE4].dtype = DTYPE_PM63;
-	parameters[PAR_FINE5].dtype = DTYPE_PM63;
-	parameters[PAR_FINE6].dtype = DTYPE_PM63;
-
-	parameters[PAR_PAN1].dtype = DTYPE_PM63;
-	parameters[PAR_PAN2].dtype = DTYPE_PM63;
-	parameters[PAR_PAN3].dtype = DTYPE_PM63;
-	parameters[PAR_PAN4].dtype = DTYPE_PM63;
-	parameters[PAR_PAN5].dtype = DTYPE_PM63;
-	parameters[PAR_PAN6].dtype = DTYPE_PM63;
-
-	parameters[PAR_TRANS1_WAVE].dtype = DTYPE_MENU | (MENU_TRANS<<4);
-	parameters[PAR_TRANS2_WAVE].dtype = DTYPE_MENU | (MENU_TRANS<<4);
-	parameters[PAR_TRANS3_WAVE].dtype = DTYPE_MENU | (MENU_TRANS<<4);
-	parameters[PAR_TRANS4_WAVE].dtype = DTYPE_MENU | (MENU_TRANS<<4);
-	parameters[PAR_TRANS5_WAVE].dtype = DTYPE_MENU | (MENU_TRANS<<4);
-	parameters[PAR_TRANS6_WAVE].dtype = DTYPE_MENU | (MENU_TRANS<<4);
-
-
-
-	parameters[PAR_P1_DEST].dtype = DTYPE_AUTOM_TARGET;
-	parameters[PAR_P2_DEST].dtype = DTYPE_AUTOM_TARGET;
-	parameters[PAR_AUTOM_TRACK].dtype = DTYPE_0b1;
-
-
-
-	parameters[PAR_BPM].dtype				= DTYPE_0B255;
-
-	parameters[PAR_MIX_MOD_1].dtype			= DTYPE_MIX_FM;
-	parameters[PAR_MIX_MOD_2].dtype			= DTYPE_MIX_FM;
-	parameters[PAR_MIX_MOD_3].dtype			= DTYPE_MIX_FM;
-
-	parameters[PAR_VOLUME_MOD_ON_OFF1].dtype= DTYPE_ON_OFF;
-	parameters[PAR_VOLUME_MOD_ON_OFF2].dtype= DTYPE_ON_OFF;
-	parameters[PAR_VOLUME_MOD_ON_OFF3].dtype= DTYPE_ON_OFF;
-	parameters[PAR_VOLUME_MOD_ON_OFF4].dtype= DTYPE_ON_OFF;
-	parameters[PAR_VOLUME_MOD_ON_OFF5].dtype= DTYPE_ON_OFF;
-	parameters[PAR_VOLUME_MOD_ON_OFF6].dtype= DTYPE_ON_OFF;
-
-	parameters[PAR_VEL_DEST_1].dtype = 	DTYPE_TARGET_SELECTION_VELO;
-	parameters[PAR_VEL_DEST_2].dtype = 	DTYPE_TARGET_SELECTION_VELO;
-	parameters[PAR_VEL_DEST_3].dtype = 	DTYPE_TARGET_SELECTION_VELO;
-	parameters[PAR_VEL_DEST_4].dtype = 	DTYPE_TARGET_SELECTION_VELO;
-	parameters[PAR_VEL_DEST_5].dtype = 	DTYPE_TARGET_SELECTION_VELO;
-	parameters[PAR_VEL_DEST_6].dtype = 	DTYPE_TARGET_SELECTION_VELO;
-
-	parameters[PAR_EUKLID_LENGTH].dtype = DTYPE_1B16;
-	parameters[PAR_EUKLID_STEPS].dtype = DTYPE_1B16;
-
-	parameters[PAR_TARGET_LFO1].dtype = DTYPE_TARGET_SELECTION_LFO;
-	parameters[PAR_TARGET_LFO2].dtype = DTYPE_TARGET_SELECTION_LFO;
-	parameters[PAR_TARGET_LFO3].dtype = DTYPE_TARGET_SELECTION_LFO;
-	parameters[PAR_TARGET_LFO4].dtype = DTYPE_TARGET_SELECTION_LFO;
-	parameters[PAR_TARGET_LFO5].dtype = DTYPE_TARGET_SELECTION_LFO;
-	parameters[PAR_TARGET_LFO6].dtype = DTYPE_TARGET_SELECTION_LFO;
-
-	parameters[PAR_RETRIGGER_LFO1].dtype = DTYPE_MENU | (MENU_RETRIGGER<<4);
-	parameters[PAR_RETRIGGER_LFO2].dtype = DTYPE_MENU | (MENU_RETRIGGER<<4);
-	parameters[PAR_RETRIGGER_LFO3].dtype = DTYPE_MENU | (MENU_RETRIGGER<<4);
-	parameters[PAR_RETRIGGER_LFO4].dtype = DTYPE_MENU | (MENU_RETRIGGER<<4);
-	parameters[PAR_RETRIGGER_LFO5].dtype = DTYPE_MENU | (MENU_RETRIGGER<<4);
-	parameters[PAR_RETRIGGER_LFO6].dtype = DTYPE_MENU | (MENU_RETRIGGER<<4);
-
-	parameters[PAR_PATTERN_NEXT].dtype = DTYPE_MENU | (MENU_NEXT_PATTERN<<4);
-
-	parameters[PAR_QUANTISATION].dtype = DTYPE_MENU | (MENU_SEQ_QUANT<<4);
-
-	parameters[PAR_VOICE_LFO1].dtype	= DTYPE_VOICE_LFO;
-	parameters[PAR_VOICE_LFO2].dtype	= DTYPE_VOICE_LFO;
-	parameters[PAR_VOICE_LFO3].dtype	= DTYPE_VOICE_LFO;
-	parameters[PAR_VOICE_LFO4].dtype	= DTYPE_VOICE_LFO;
-	parameters[PAR_VOICE_LFO5].dtype	= DTYPE_VOICE_LFO;
-	parameters[PAR_VOICE_LFO6].dtype	= DTYPE_VOICE_LFO;
-
-	parameters[PAR_TRACK_LENGTH].dtype	= DTYPE_1B16;
-
-	parameters[PAR_SCREENSAVER_ON_OFF].dtype	= DTYPE_ON_OFF;
-
-
-
-
-
-	parameters[PAR_MORPH].dtype			= DTYPE_0B255;
-
-	parameters[PAR_FETCH].dtype			= DTYPE_ON_OFF;
-	parameters[PAR_FOLLOW].dtype			= DTYPE_ON_OFF;
-
-
-
-
-
-
-
-	for(int i=0;i<NUM_PARAMS;i++)
-	{
-		parameters[i].value = 0;
-
-		//parameters[i].max = 127; //TODO max werte für filter type mod matrizen etc
-	}		
-
-	parameters[PAR_EUKLID_LENGTH].value = 16;
-	parameters[PAR_EUKLID_STEPS].value = 16;
+	parameter_values[PAR_EUKLID_LENGTH] = 16;
+	parameter_values[PAR_EUKLID_STEPS] = 16;
 
 	//initialize the roll value
-	parameters[PAR_ROLL].value = 8;
+	parameter_values[PAR_ROLL] = 8;
 	//frontPanel_sendData(SEQ_CC,SEQ_ROLL_RATE,8); //value is initialized in cortex firmware
 
-	parameters[PAR_BPM].value = 120;
+	parameter_values[PAR_BPM] = 120;
 
 	//set voice 1 active
 	menu_switchPage(0);
@@ -812,6 +876,7 @@ void menu_repaintGeneric()
 	//first get the active page and parameter from the menuIndex
 	const uint8_t activeParameter	= menuIndex & MASK_PARAMETER;
 	const uint8_t activePage		= (menuIndex&MASK_PAGE)>>PAGE_SHIFT;
+	uint8_t curParmVal;
 
 	const Page *ap=&menuPages[menu_activePage][activePage];
 
@@ -820,28 +885,29 @@ void menu_repaintGeneric()
 		//get address from top1-4 from activeParameter (base adress top1 + offset)
 		uint8_t parName = pgm_read_byte(&ap->top1 + activeParameter);
 		uint8_t parNr = pgm_read_byte(&ap->bot1 + activeParameter);
+		curParmVal = parameter_values[parNr];
 
-		if(parameters[parNr].dtype == DTYPE_AUTOM_TARGET)
+		if(pgm_read_byte(parameter_dtypes[parNr]) == DTYPE_AUTOM_TARGET)
 		{
 			// make sure we have a valid value (autom target must target one of the sound parameters)
-			if(parameters[parNr].value >= END_OF_SOUND_PARAMETERS)
-				parameters[parNr].value = END_OF_SOUND_PARAMETERS-1;
+			if(curParmVal >= END_OF_SOUND_PARAMETERS)
+				parameter_values[parNr] = curParmVal = END_OF_SOUND_PARAMETERS-1;
 
 			//Top row (which destination (0 or 1) and which voice it's targeting)
 			memcpy_P(&editDisplayBuffer[0][0],PSTR("Autom.Dest.    V"),16);
 			numtostrpu(&editDisplayBuffer[0][11], parNr - PAR_P1_DEST);
-			numtostru(&editDisplayBuffer[0][16], menu_cc2name[parameters[parNr].value].voiceNr+1);
+			numtostru(&editDisplayBuffer[0][16], menu_cc2name[curParmVal].voiceNr+1);
 
 			memset(&editDisplayBuffer[1][0],' ',16);
 			// bottom row is the category and long name for the parameter being targeted
-			if( (menu_cc2name[parameters[parNr].value].nameIdx < NUM_NAMES) )
+			if( (menu_cc2name[curParmVal].nameIdx < NUM_NAMES) )
 			{
 				char tmp[17];
 
 				strlcpy_P(tmp,
-					(const char PROGMEM *)(&catNames[pgm_read_byte(&valueNames[menu_cc2name[parameters[parNr].value].nameIdx].category)]),8);
+					(const char PROGMEM *)(&catNames[pgm_read_byte(&valueNames[menu_cc2name[curParmVal].nameIdx].category)]),8);
 				strcat_P(tmp,
-					(const char PROGMEM *)(&longNames[pgm_read_byte(&valueNames[menu_cc2name[parameters[parNr].value].nameIdx].longName)]));
+					(const char PROGMEM *)(&longNames[pgm_read_byte(&valueNames[menu_cc2name[curParmVal].nameIdx].longName)]));
 				strlcpy(&editDisplayBuffer[1][0],tmp,16);
 			}
 
@@ -855,13 +921,13 @@ void menu_repaintGeneric()
 			strcpy_P(&editDisplayBuffer[1][0],(const char PROGMEM *)(&longNames[pgm_read_byte(&valueNames[parName].longName)]));
 			//Bottom row right -> parameter value (set below)
 
-			switch(parameters[parNr].dtype&0x0F)
+			switch(pgm_read_byte(&parameter_dtypes[parNr]) & 0x0F)
 			{
 			case DTYPE_TARGET_SELECTION_VELO: //switch(parameters[parNr].dtype&0x0F)
 			{
 				const uint8_t voiceNr			= parNr - PAR_VEL_DEST_1;
-				const uint8_t page				= (parameters[parNr].value&MASK_PAGE)>>PAGE_SHIFT;
-				const uint8_t activeParameter	= parameters[parNr].value&MASK_PARAMETER;
+				const uint8_t page				= (curParmVal & MASK_PAGE)>>PAGE_SHIFT;
+				const uint8_t activeParameter	= curParmVal & MASK_PARAMETER;
 
 				memcpy_P(&editDisplayBuffer[1][13],
 					&shortNames[
@@ -874,9 +940,9 @@ void menu_repaintGeneric()
 			case DTYPE_TARGET_SELECTION_LFO: //switch(parameters[parNr].dtype&0x0F)
 			{
 				const uint8_t lfoNr				= parNr - PAR_TARGET_LFO1;
-				const uint8_t voiceNr			= parameters[PAR_VOICE_LFO1+lfoNr].value-1;
-				const uint8_t page				= (parameters[parNr].value&MASK_PAGE)>>PAGE_SHIFT;
-				const uint8_t activeParameter	= parameters[parNr].value&MASK_PARAMETER;
+				const uint8_t voiceNr			= parameter_values[PAR_VOICE_LFO1+lfoNr]-1;
+				const uint8_t page				= (curParmVal & MASK_PAGE)>>PAGE_SHIFT;
+				const uint8_t activeParameter	= curParmVal & MASK_PARAMETER;
 
 				memcpy_P(&editDisplayBuffer[1][13],
 					&shortNames[
@@ -893,11 +959,11 @@ void menu_repaintGeneric()
 			case DTYPE_1B16:
 			case DTYPE_VOICE_LFO:
 			case DTYPE_0b1:
-				numtostrpu(&editDisplayBuffer[1][13],parameters[parNr].value);
+				numtostrpu(&editDisplayBuffer[1][13],curParmVal);
 				break;
 
 			case DTYPE_MIX_FM: //switch(parameters[parNr].dtype&0x0F)
-				if(parameters[parNr].value == 1)
+				if(curParmVal == 1)
 				{
 					memcpy_P(&editDisplayBuffer[1][13],PSTR("Mix"), 3);
 				}
@@ -907,7 +973,7 @@ void menu_repaintGeneric()
 				}
 				break;
 			case DTYPE_ON_OFF: //switch(parameters[parNr].dtype&0x0F)
-				if(parameters[parNr].value == 1)
+				if(curParmVal == 1)
 				{
 					memcpy_P(&editDisplayBuffer[1][13],PSTR("On"),2);
 				}
@@ -920,52 +986,52 @@ void menu_repaintGeneric()
 			case DTYPE_MENU: //switch(parameters[parNr].dtype&0x0F)
 			{
 				//get the used menu (upper 4 bit)
-				const uint8_t menuId = (parameters[parNr].dtype>>4);
+				const uint8_t menuId = (pgm_read_byte(&parameter_dtypes[parNr]) >> 4);
 				switch(menuId)
 				{
 				case MENU_TRANS:
-					memcpy_P(&editDisplayBuffer[1][13],&transientNames[parameters[parNr].value+1],3);
+					memcpy_P(&editDisplayBuffer[1][13],&transientNames[curParmVal + 1],3);
 					break;
 
 				case MENU_AUDIO_OUT:
-					memcpy_P(&editDisplayBuffer[1][13],&outputNames[parameters[parNr].value+1],3);
+					memcpy_P(&editDisplayBuffer[1][13],&outputNames[curParmVal + 1],3);
 					break;
 
 				case MENU_FILTER:
-					memcpy_P(&editDisplayBuffer[1][13],&filterTypes[parameters[parNr].value+1],3);
+					memcpy_P(&editDisplayBuffer[1][13],&filterTypes[curParmVal + 1],3);
 					break;
 
 				case MENU_WAVEFORM:
-					memcpy_P(&editDisplayBuffer[1][13],&waveformNames[parameters[parNr].value+1],3);
+					memcpy_P(&editDisplayBuffer[1][13],&waveformNames[curParmVal + 1],3);
 					break;
 
 				case MENU_SYNC_RATES:
-					numtostrpu(&editDisplayBuffer[1][13],parameters[parNr].value);
+					numtostrpu(&editDisplayBuffer[1][13],curParmVal);
 					break;
 
 				case MENU_LFO_WAVES:
-					memcpy_P(&editDisplayBuffer[1][13],&lfoWaveNames[parameters[parNr].value+1],3);
+					memcpy_P(&editDisplayBuffer[1][13],&lfoWaveNames[curParmVal+1],3);
 					break;
 
 				case MENU_RETRIGGER:
-					memcpy_P(&editDisplayBuffer[1][13],&retriggerNames[parameters[parNr].value+1],3);
+					memcpy_P(&editDisplayBuffer[1][13],&retriggerNames[curParmVal+1],3);
 					break;
 
 				case MENU_SEQ_QUANT:
-					memcpy_P(&editDisplayBuffer[1][13],&quantisationNames[parameters[parNr].value+1],3);
+					memcpy_P(&editDisplayBuffer[1][13],&quantisationNames[curParmVal+1],3);
 					break;
 
 				case MENU_MIDI:
-					memcpy_P(&editDisplayBuffer[1][13],&midiModes[parameters[parNr].value+1],3);
+					memcpy_P(&editDisplayBuffer[1][13],&midiModes[curParmVal+1],3);
 					break;
 
 				case MENU_NEXT_PATTERN:
-					memcpy_P(&editDisplayBuffer[1][13],&nextPatternNames[parameters[parNr].value+1],3);
+					memcpy_P(&editDisplayBuffer[1][13],&nextPatternNames[curParmVal+1],3);
 					break;
 
 
 				case MENU_ROLL_RATES:
-					memcpy_P(&editDisplayBuffer[1][13],&rollRateNames[parameters[parNr].value+1],3);
+					memcpy_P(&editDisplayBuffer[1][13],&rollRateNames[curParmVal+1],3);
 					break;
 
 				default:
@@ -978,11 +1044,11 @@ void menu_repaintGeneric()
 
 			case DTYPE_PM63: //switch(parameters[parNr].dtype&0x0F)
 				// -63 to +63
-				numtostrps(&editDisplayBuffer[1][13],parameters[parNr].value - 63);
+				numtostrps(&editDisplayBuffer[1][13],curParmVal - 63);
 				break;
 				//--AS note names
 			case DTYPE_NOTE_NAME: //switch(parameters[parNr].dtype&0x0F)
-				setNoteName(parameters[parNr].value, &editDisplayBuffer[1][13]);
+				setNoteName(curParmVal, &editDisplayBuffer[1][13]);
 				break;
 
 			} // switch(parameters[parNr].dtype&0x0F) end
@@ -1021,50 +1087,62 @@ void menu_repaintGeneric()
 		for(int i=0;i<4;i++)
 		{
 			const uint8_t parNr = pgm_read_byte(&ap->bot1 + i +is2ndPage);
+			curParmVal = parameter_values[parNr];
+
 			//convert the parameter uint8_t value to a 3 place char
 			if(parNr==PAR_NONE) {
 				memcpy_P(valueAsText,PSTR("   "),3);
 			} else { //not if(parNr==PAR_NONE) {
 
-				switch(parameters[parNr].dtype&0x0F) {
+				switch(pgm_read_byte(&parameter_dtypes[parNr]) & 0x0F) {
 				case DTYPE_TARGET_SELECTION_VELO: //switch(parameters[parNr].dtype&0x0F)
 				{
 					const uint8_t voiceNr			= parNr - PAR_VEL_DEST_1;
-					const uint8_t page				= (parameters[parNr].value&MASK_PAGE)>>PAGE_SHIFT;
-					const uint8_t activeParameter	= parameters[parNr].value&MASK_PARAMETER;
+					const uint8_t page				= (curParmVal & MASK_PAGE)>>PAGE_SHIFT;
+					const uint8_t activeParameter	= curParmVal & MASK_PARAMETER;
 
-					memcpy_P(&valueAsText,&shortNames[pgm_read_byte(&valueNames[pgm_read_byte(&menuPages[voiceNr][page].top1 + activeParameter)].shortName)],3);
+					memcpy_P(&valueAsText,
+						&shortNames[
+						    pgm_read_byte(&valueNames[
+						        pgm_read_byte(&menuPages[voiceNr][page].top1 + activeParameter)
+						                             ].shortName)
+						           ],3);
 				}
 				break;
 
 				case DTYPE_TARGET_SELECTION_LFO: //switch(parameters[parNr].dtype&0x0F)
 				{
 					const uint8_t lfoNr				= parNr - PAR_TARGET_LFO1;
-					const uint8_t voiceNr			= parameters[PAR_VOICE_LFO1+lfoNr].value-1;
-					uint8_t page					= (parameters[parNr].value&MASK_PAGE)>>PAGE_SHIFT;
-					const uint8_t activeParameter	= parameters[parNr].value&MASK_PARAMETER;
+					const uint8_t voiceNr			= parameter_values[PAR_VOICE_LFO1+lfoNr] - 1;
+					uint8_t page					= (curParmVal & MASK_PAGE)>>PAGE_SHIFT;
+					const uint8_t activeParameter	= curParmVal & MASK_PARAMETER;
 
-					memcpy_P(&valueAsText,&shortNames[pgm_read_byte(&valueNames[pgm_read_byte(&menuPages[voiceNr][page].top1 + activeParameter)].shortName)],3);
+					memcpy_P(&valueAsText,
+						&shortNames[
+						    pgm_read_byte(&valueNames[
+						        pgm_read_byte(&menuPages[voiceNr][page].top1 + activeParameter)
+						                             ].shortName)
+						           ],3);
 				}
 				break;
 
 				case DTYPE_PM63: //switch(parameters[parNr].dtype&0x0F)
 					// -63 to 64
-					numtostrps(valueAsText,parameters[parNr].value - 63);
+					numtostrps(valueAsText,curParmVal - 63);
 					break;
 					//--AS note names
 				case DTYPE_NOTE_NAME: //switch(parameters[parNr].dtype&0x0F)
-					setNoteName(parameters[parNr].value, valueAsText);
+					setNoteName(curParmVal, valueAsText);
 					break;
 
 				case DTYPE_AUTOM_TARGET: { //switch(parameters[parNr].dtype&0x0F)
-					if(parameters[parNr].value == 0xff)
+					if(curParmVal == 0xff)
 					{
 						memcpy_P(valueAsText,PSTR("Off"),3);
 					} else {
 
 						//const uint8_t voice = menu_cc2name[parameters[parNr].value].voiceNr;
-						const uint8_t name = menu_cc2name[parameters[parNr].value].nameIdx;
+						const uint8_t name = menu_cc2name[curParmVal].nameIdx;
 						memcpy_P(&valueAsText,shortNames[pgm_read_byte(&valueNames[name].shortName)],3);
 
 					}
@@ -1072,13 +1150,13 @@ void menu_repaintGeneric()
 				break;
 
 				case DTYPE_MIX_FM: //switch(parameters[parNr].dtype&0x0F)
-					if(parameters[parNr].value == 1)
+					if(curParmVal == 1)
 						memcpy_P(valueAsText,PSTR("Mix"),3);
 					else
 						memcpy_P(valueAsText,PSTR("FM "),3);
 					break;
 				case DTYPE_ON_OFF: //switch(parameters[parNr].dtype&0x0F)
-					if(parameters[parNr].value == 1)
+					if(curParmVal == 1)
 						memcpy_P(valueAsText,PSTR("On "),3);
 					else
 						memcpy_P(valueAsText,PSTR("Off"),3);
@@ -1086,54 +1164,54 @@ void menu_repaintGeneric()
 				case DTYPE_MENU: //switch(parameters[parNr].dtype&0x0F)
 				{
 					//get the used menu (upper 4 bit)
-					const uint8_t menuId = (parameters[parNr].dtype>>4);
+					const uint8_t menuId = (curParmVal >> 4);
 					switch(menuId)
 					{
 
 					case MENU_TRANS:
-						memcpy_P(&valueAsText,transientNames[parameters[parNr].value+1],3);
+						memcpy_P(&valueAsText,transientNames[curParmVal + 1],3);
 						break;
 
 					case MENU_AUDIO_OUT:
-						memcpy_P(&valueAsText,outputNames[parameters[parNr].value+1],3);
+						memcpy_P(&valueAsText,outputNames[curParmVal + 1],3);
 						break;
 
 					case MENU_FILTER:
-						memcpy_P(&valueAsText,filterTypes[parameters[parNr].value+1],3);
+						memcpy_P(&valueAsText,filterTypes[curParmVal + 1],3);
 						break;
 
 					case MENU_WAVEFORM:
 
-						memcpy_P(&valueAsText,waveformNames[parameters[parNr].value+1],3);
+						memcpy_P(&valueAsText,waveformNames[curParmVal + 1],3);
 
 						break;
 
 					case MENU_SYNC_RATES:
-						memcpy_P(&valueAsText,syncRateNames[parameters[parNr].value+1],3);
+						memcpy_P(&valueAsText,syncRateNames[curParmVal + 1],3);
 
 						break;
 
 					case MENU_LFO_WAVES:
-						memcpy_P(&valueAsText,lfoWaveNames[parameters[parNr].value+1],3);
+						memcpy_P(&valueAsText,lfoWaveNames[curParmVal + 1],3);
 						break;
 					case MENU_RETRIGGER:
-						memcpy_P(&valueAsText,retriggerNames[parameters[parNr].value+1],3);
+						memcpy_P(&valueAsText,retriggerNames[curParmVal + 1],3);
 						break;
 
 					case MENU_SEQ_QUANT:
-						memcpy_P(&valueAsText,quantisationNames[parameters[parNr].value+1],3);
+						memcpy_P(&valueAsText,quantisationNames[curParmVal + 1],3);
 						break;
 
 					case MENU_MIDI:
-						memcpy_P(&valueAsText,midiModes[parameters[parNr].value+1],3);
+						memcpy_P(&valueAsText,midiModes[curParmVal + 1],3);
 						break;
 
 					case MENU_NEXT_PATTERN:
-						memcpy_P(&valueAsText,nextPatternNames[parameters[parNr].value+1],3);
+						memcpy_P(&valueAsText,nextPatternNames[curParmVal + 1],3);
 						break;
 
 					case MENU_ROLL_RATES:
-						memcpy_P(&valueAsText,rollRateNames[parameters[parNr].value+1],3);
+						memcpy_P(&valueAsText,rollRateNames[curParmVal + 1],3);
 						break;
 
 					default:
@@ -1149,7 +1227,7 @@ void menu_repaintGeneric()
 				case DTYPE_1B16:
 				case DTYPE_VOICE_LFO:
 				case DTYPE_0b1:
-					numtostrpu(valueAsText,parameters[parNr].value);
+					numtostrpu(valueAsText,curParmVal);
 					break;
 				} //switch(parameters[parNr].dtype&0x0F) end
 
@@ -1532,7 +1610,7 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 
 				//get address from top1-8 from activeParameter (base adress top1 + offset)
 				uint8_t paramNr		= pgm_read_byte(&menuPages[menu_activePage][activePage].bot1 + activeParameter);
-				uint8_t *paramValue = &parameters[paramNr].value;
+				uint8_t *paramValue = &parameter_values[paramNr];
 
 				//increase parameter value		
 				if(inc>0) //positive increase
@@ -1550,7 +1628,7 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 					}
 				}										
 
-				switch(parameters[paramNr].dtype&0x0F)
+				switch(pgm_read_byte(&parameter_dtypes[paramNr]) & 0x0F)
 				{
 				case DTYPE_TARGET_SELECTION_VELO:
 				{
@@ -1574,7 +1652,9 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 					else if(*paramValue > 6)
 						*paramValue = 6;
 
-					uint8_t value = getModTargetValue(parameters[PAR_TARGET_LFO1+ paramNr - PAR_VOICE_LFO1].value, *paramValue -1);
+					uint8_t value = getModTargetValue(
+							parameter_values[PAR_TARGET_LFO1+ paramNr - PAR_VOICE_LFO1],
+							*paramValue -1);
 
 					uint8_t upper,lower;
 					upper = ((value&0x80)>>7) | (((paramNr - PAR_VOICE_LFO1)&0x3f)<<1);
@@ -1587,7 +1667,7 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 				{
 					if(*paramValue > (NUM_SUB_PAGES * 8 -1))
 						*paramValue = (NUM_SUB_PAGES * 8 -1);
-					uint8_t voiceNr =  parameters[PAR_VOICE_LFO1+ paramNr - PAR_TARGET_LFO1].value-1;
+					uint8_t voiceNr =  parameter_values[PAR_VOICE_LFO1+ paramNr - PAR_TARGET_LFO1]-1;
 					if (voiceNr == 0) voiceNr = 1;
 					uint8_t value = getModTargetValue(*paramValue,voiceNr-1);
 
@@ -1634,7 +1714,7 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 				case DTYPE_MENU:
 				{
 					//get the used menu (upper 4 bit)
-					const uint8_t menuId = (parameters[paramNr].dtype>>4);
+					const uint8_t menuId = pgm_read_byte(&parameter_dtypes[paramNr]) >> 4;
 					//get the number of entries
 					uint8_t numEntries;
 					switch(menuId)
@@ -1710,7 +1790,7 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 				}
 				else
 				{
-					menu_parseGlobalParam(paramNr,parameters[paramNr].value);
+					menu_parseGlobalParam(paramNr,parameter_values[paramNr]);
 				}
 
 				//frontPanel_sendData(0xb0,paramNr,*paramValue);
@@ -1979,7 +2059,7 @@ void menu_sendAllGlobals()
 	int i;
 	for(i=PAR_BEGINNING_OF_GLOBALS;(i<NUM_PARAMS);i++)
 	{
-		menu_parseGlobalParam(i,parameters[i].value);
+		menu_parseGlobalParam(i,parameter_values[i]);
 	}
 };
 //-----------------------------------------------------------------
@@ -1989,7 +2069,7 @@ void menu_parseGlobalParam(uint8_t paramNr, uint8_t value)
 	{
 
 	case PAR_MIDI_MODE:
-		frontPanel_sendData(SEQ_CC,SEQ_MIDI_MODE,parameters[PAR_MIDI_MODE].value);
+		frontPanel_sendData(SEQ_CC,SEQ_MIDI_MODE,parameter_values[PAR_MIDI_MODE]);
 		break;
 
 	case PAR_MIDI_CHAN_7:
@@ -2042,21 +2122,21 @@ void menu_parseGlobalParam(uint8_t paramNr, uint8_t value)
 		break;
 
 	case PAR_P1_DEST: { //step range 0-127 value range 0-255!
-		frontPanel_sendData(SEQ_CC, SEQ_SELECT_ACTIVE_STEP,parameters[PAR_ACTIVE_STEP].value);
+		frontPanel_sendData(SEQ_CC, SEQ_SELECT_ACTIVE_STEP,parameter_values[PAR_ACTIVE_STEP]);
 		frontPanel_sendData(SET_P1_DEST,value>>7,value&0x7f);
 	}
 	break;
 	case PAR_P2_DEST:
-		frontPanel_sendData(SEQ_CC, SEQ_SELECT_ACTIVE_STEP,parameters[PAR_ACTIVE_STEP].value);
+		frontPanel_sendData(SEQ_CC, SEQ_SELECT_ACTIVE_STEP,parameter_values[PAR_ACTIVE_STEP]);
 		frontPanel_sendData(SET_P2_DEST,value>>7,value&0x7f);
 		break;
 
 	case PAR_P1_VAL:
-		frontPanel_sendData(SET_P1_VAL,parameters[PAR_ACTIVE_STEP].value,value);
+		frontPanel_sendData(SET_P1_VAL,parameter_values[PAR_ACTIVE_STEP],value);
 		break;
 
 	case PAR_P2_VAL:
-		frontPanel_sendData(SET_P2_VAL,parameters[PAR_ACTIVE_STEP].value,value);
+		frontPanel_sendData(SET_P2_VAL,parameter_values[PAR_ACTIVE_STEP],value);
 		break;
 
 	case PAR_QUANTISATION:
@@ -2159,7 +2239,7 @@ void menu_parseGlobalParam(uint8_t paramNr, uint8_t value)
 		frontPanel_sendData(SEQ_CC,SEQ_EUKLID_LENGTH,msg);
 
 
-		uint8_t steps = parameters[PAR_EUKLID_STEPS].value-1; // max 16
+		uint8_t steps = parameter_values[PAR_EUKLID_STEPS] - 1; // max 16
 		//uint8_t pattern = menu_shownPattern; //max 7
 		msg = (pattern&0x7) | (steps<<3);
 		frontPanel_sendData(SEQ_CC,SEQ_EUKLID_STEPS,msg);
@@ -2234,7 +2314,7 @@ uint8_t getDtypeValue(uint8_t value, uint8_t paramNr)
 {
 	const float frac = (value/255.f);
 
-	switch(parameters[paramNr].dtype&0x0F)
+	switch(pgm_read_byte(&parameter_dtypes[paramNr]) & 0x0F)
 	{
 	case DTYPE_TARGET_SELECTION_VELO:
 	case DTYPE_TARGET_SELECTION_LFO:
@@ -2267,7 +2347,7 @@ uint8_t getDtypeValue(uint8_t value, uint8_t paramNr)
 	case DTYPE_MENU:
 	{
 		//get the used menu (upper 4 bit)
-		const uint8_t menuId = (parameters[paramNr].dtype>>4);
+		const uint8_t menuId = pgm_read_byte(&parameter_dtypes[paramNr]) >> 4;
 		//get the number of entries
 		uint8_t numEntries;
 		switch(menuId)
@@ -2347,7 +2427,7 @@ void menu_parseKnobValue(uint8_t potNr, uint8_t value)
 
 		//parameter fetch
 		const uint8_t dtypeValue = getDtypeValue(value,paramNr);
-		if(parameters[paramNr].value == dtypeValue)
+		if(parameter_values[paramNr] == dtypeValue)
 		{
 			//turn lock off for current pot
 			parameterFetch &= ~(1<<potNr);
@@ -2363,16 +2443,16 @@ void menu_parseKnobValue(uint8_t potNr, uint8_t value)
 			//make changes temporary while an automation step is armed - save original value
 			if((buttonHandler_resetLock==0) && buttonHandler_getArmedAutomationStep() != NO_STEP_SELECTED)
 			{
-				buttonHandler_originalValue = parameters[paramNr].value;
+				buttonHandler_originalValue = parameter_values[paramNr];
 				buttonHandler_originalParameter = paramNr;
 				buttonHandler_resetLock = 1;
 			}				
 
 
 			//update parameter value
-			parameters[paramNr].value = value = dtypeValue;
+			parameter_values[paramNr] = value = dtypeValue;
 
-			switch(parameters[paramNr].dtype&0x0F)
+			switch(pgm_read_byte(&parameter_dtypes[paramNr]) & 0x0F)
 			{
 			case DTYPE_TARGET_SELECTION_VELO:
 			{
@@ -2390,7 +2470,7 @@ void menu_parseKnobValue(uint8_t potNr, uint8_t value)
 			{
 
 
-				value = getModTargetValue(parameters[PAR_TARGET_LFO1+ paramNr - PAR_VOICE_LFO1].value, value -1);
+				value = getModTargetValue(parameter_values[PAR_TARGET_LFO1+ paramNr - PAR_VOICE_LFO1], value -1);
 
 				uint8_t upper,lower;
 				upper = ((value&0x80)>>7) | (((paramNr - PAR_VOICE_LFO1)&0x3f)<<1);
@@ -2401,7 +2481,7 @@ void menu_parseKnobValue(uint8_t potNr, uint8_t value)
 			break;
 			case DTYPE_TARGET_SELECTION_LFO:
 			{
-				uint8_t voiceNr =  parameters[PAR_VOICE_LFO1+ paramNr - PAR_TARGET_LFO1].value-1;
+				uint8_t voiceNr =  parameter_values[PAR_VOICE_LFO1+ paramNr - PAR_TARGET_LFO1] - 1;
 				if (voiceNr == 0) voiceNr = 1;
 				value = getModTargetValue(value,voiceNr-1); // --AS subtract 1 from voice nr ???
 
@@ -2429,7 +2509,7 @@ void menu_parseKnobValue(uint8_t potNr, uint8_t value)
 			}
 			else
 			{
-				menu_parseGlobalParam(paramNr,parameters[paramNr].value);
+				menu_parseGlobalParam(paramNr,parameter_values[paramNr]);
 			}
 
 		}
@@ -2448,9 +2528,9 @@ void menu_sendAllParameters()
 		//that the uart tx buffer doesn't overflow
 		//so we check the return value
 		if(i<128) {
-			frontPanel_sendData(MIDI_CC,i,parameters[i].value);
+			frontPanel_sendData(MIDI_CC,i,parameter_values[i]);
 		} else {
-			frontPanel_sendData(CC_2,i-128,parameters[i].value);
+			frontPanel_sendData(CC_2,i-128,parameter_values[i]);
 		}	
 		//frontPanel_sendData(MIDI_CC,i,parameters[i].value);
 
@@ -2577,4 +2657,18 @@ void numtostrs(char *buf, int8_t num)
         num %=10;
     }
     buf[b]='0'+num;
+}
+
+// make 1st 3 letters of buffer uppercase
+void upr_three(char *buf)
+{
+	if(*buf >='a' && *buf <= 'z')
+		(*buf) -=32;
+	buf++;
+	if(*buf >='a' && *buf <= 'z')
+		(*buf) -=32;
+	buf++;
+	if(*buf >='a' && *buf <= 'z')
+		(*buf) -=32;
+	buf++;
 }

@@ -71,24 +71,24 @@ void preset_saveDrumset(uint8_t presetNr, uint8_t isMorph)
 			//Mod targets are not morphed!!!
 			if( (i >= PAR_VEL_DEST_1) && (i <= PAR_VEL_DEST_6) )
 			{
-				value = parameters[i].value;
+				value = parameter_values[i];
 			} else if( (i >= PAR_TARGET_LFO1) && (i <= PAR_TARGET_LFO6) )
 			{
-				value = parameters[i].value;
+				value = parameter_values[i];
 			} else if( (i >= PAR_VOICE_LFO1) && (i <= PAR_VOICE_LFO6) )
 			{
-				value = parameters[i].value;
+				value = parameter_values[i];
 			} 
 			else 
 			{
-				value = preset_getMorphValue(i,parameters[PAR_MORPH].value);
+				value = preset_getMorphValue(i,parameter_values[PAR_MORPH]);
 			}					
 			f_write((FIL*)&preset_File,&value,1,&bytesWritten);	
 		}
 	} else {
 		for(i=0;i<END_OF_SOUND_PARAMETERS;i++)
 		{
-			f_write((FIL*)&preset_File,&parameters[i].value,1,&bytesWritten);	
+			f_write((FIL*)&preset_File,&parameter_values[i],1,&bytesWritten);
 		}
 	}		
 	/*
@@ -123,7 +123,7 @@ void preset_saveGlobals()
 		
 	for(i=PAR_BEGINNING_OF_GLOBALS;(i<NUM_PARAMS);i++)
 	{
-		f_write((FIL*)&preset_File,&parameters[i].value,1,&bytesWritten);	
+		f_write((FIL*)&preset_File,&parameter_values[i],1,&bytesWritten);
 	}
 	//close the file
 	f_close((FIL*)&preset_File);
@@ -148,7 +148,7 @@ void preset_loadGlobals()
 		
 		for(i=PAR_BEGINNING_OF_GLOBALS;(i<NUM_PARAMS) &&( bytesRead!=0);i++)
 		{
-			f_read((FIL*)&preset_File,&parameters[i].value,1,&bytesRead);		
+			f_read((FIL*)&preset_File,&parameter_values[i],1,&bytesRead);
 		}	
 			
 		menu_sendAllGlobals();		
@@ -197,7 +197,7 @@ uint8_t preset_loadDrumset(uint8_t presetNr, uint8_t isMorph)
 		{
 			for(i=0;(i<END_OF_SOUND_PARAMETERS) &&( bytesRead!=0);i++)
 			{
-				f_read((FIL*)&preset_File,&parameters[i].value,1,&bytesRead);	
+				f_read((FIL*)&preset_File,&parameter_values[i],1,&bytesRead);
 				
 				//checkRange(&parameters[i]);
 				
@@ -207,15 +207,15 @@ uint8_t preset_loadDrumset(uint8_t presetNr, uint8_t isMorph)
 			for(i=0;i<6;i++)
 			{
 				//velo
-				uint8_t value = getModTargetValue(parameters[PAR_VEL_DEST_1+i].value, i);
+				uint8_t value = getModTargetValue(parameter_values[PAR_VEL_DEST_1+i], i);
 				uint8_t upper,lower;
 				upper = ((value&0x80)>>7) | (((i)&0x3f)<<1);
 				lower = value&0x7f;
 				frontPanel_sendData(CC_VELO_TARGET,upper,lower);
 				
 				//LFO
-				if(parameters[PAR_VOICE_LFO1+i].value==0)parameters[PAR_VOICE_LFO1+i].value=1;
-				value = getModTargetValue(parameters[PAR_TARGET_LFO1+i].value,  parameters[PAR_VOICE_LFO1+i].value-1);
+				if(parameter_values[PAR_VOICE_LFO1+i]==0)parameter_values[PAR_VOICE_LFO1+i]=1;
+				value = getModTargetValue(parameter_values[PAR_TARGET_LFO1+i],  parameter_values[PAR_VOICE_LFO1+i]-1);
 				upper = ((value&0x80)>>7) | (((i)&0x3f)<<1);
 				lower = value&0x7f;
 				frontPanel_sendData(CC_LFO_TARGET,upper,lower);	
@@ -227,7 +227,7 @@ uint8_t preset_loadDrumset(uint8_t presetNr, uint8_t isMorph)
 	
 		//now we need to send the new param values to the cortex and repaint the menu
 		//menu_sendAllParameters();
-		preset_morph(parameters[PAR_MORPH].value);
+		preset_morph(parameter_values[PAR_MORPH]);
 		return 1;	
 	
 		//TODO send program change message
@@ -547,7 +547,7 @@ void preset_savePattern(uint8_t presetNr)
 	
 	
 	//now we need to save the shuffle setting
-	f_write((FIL*)&preset_File,(const void*)&parameters[PAR_SHUFFLE].value,sizeof(uint8_t),&bytesWritten);	
+	f_write((FIL*)&preset_File,(const void*)&parameter_values[PAR_SHUFFLE],sizeof(uint8_t),&bytesWritten);
 
 
 	
@@ -678,9 +678,9 @@ uint8_t preset_loadPattern(uint8_t presetNr)
 	
 	
 		//load the shuffle settings
-		f_read((FIL*)&preset_File,(void*)&parameters[PAR_SHUFFLE].value,sizeof(uint8_t),&bytesRead);
+		f_read((FIL*)&preset_File,(void*)&parameter_values[PAR_SHUFFLE],sizeof(uint8_t),&bytesRead);
 		//and update on cortex
-		frontPanel_sendData(SEQ_CC,SEQ_SHUFFLE,parameters[PAR_SHUFFLE].value);
+		frontPanel_sendData(SEQ_CC,SEQ_SHUFFLE,parameter_values[PAR_SHUFFLE]);
 		
 		//close the file handle
 		f_close((FIL*)&preset_File);
@@ -717,7 +717,7 @@ void preset_morph(uint8_t morph)
 	{
 		uint8_t val;
 		
-		val = interpolate(parameters[i].value,parameters2[i].value,morph);
+		val = interpolate(parameter_values[i],parameters2[i].value,morph);
 		
 		if(i<128) {
 			frontPanel_sendData(MIDI_CC,i,val);
@@ -738,6 +738,6 @@ void preset_morph(uint8_t morph)
 //----------------------------------------------------
 uint8_t preset_getMorphValue(uint8_t index, uint8_t morph)
 {
-	return interpolate(parameters[index].value,parameters2[index].value,morph);
+	return interpolate(parameter_values[index],parameters2[index].value,morph);
 };
 //----------------------------------------------------
