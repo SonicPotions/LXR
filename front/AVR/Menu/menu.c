@@ -506,7 +506,7 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 //-----------------------------------------------------------------
 /** array holding all the available parameter values*/
 uint8_t parameter_values[NUM_PARAMS];
-Parameter parameters2[END_OF_SOUND_PARAMETERS];/**< a second array for sound x-fade to another preset*/
+uint8_t parameters2[END_OF_SOUND_PARAMETERS];/**< a second array for sound x-fade to another preset*/
 //-----------------------------------------------------------------
 //lock all 4 potentiometer values
 void lockPotentiometerFetch()

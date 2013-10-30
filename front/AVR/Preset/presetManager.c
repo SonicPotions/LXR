@@ -190,7 +190,7 @@ uint8_t preset_loadDrumset(uint8_t presetNr, uint8_t isMorph)
 		{
 			for(i=0;(i<END_OF_SOUND_PARAMETERS) &&( bytesRead!=0);i++)
 			{
-				f_read((FIL*)&preset_File,&parameters2[i].value,1,&bytesRead);						
+				f_read((FIL*)&preset_File,&parameters2[i],1,&bytesRead);
 			}	
 		}
 		else
@@ -717,7 +717,7 @@ void preset_morph(uint8_t morph)
 	{
 		uint8_t val;
 		
-		val = interpolate(parameter_values[i],parameters2[i].value,morph);
+		val = interpolate(parameter_values[i],parameters2[i],morph);
 		
 		if(i<128) {
 			frontPanel_sendData(MIDI_CC,i,val);
@@ -738,6 +738,6 @@ void preset_morph(uint8_t morph)
 //----------------------------------------------------
 uint8_t preset_getMorphValue(uint8_t index, uint8_t morph)
 {
-	return interpolate(parameter_values[index],parameters2[index].value,morph);
+	return interpolate(parameter_values[index],parameters2[index],morph);
 };
 //----------------------------------------------------

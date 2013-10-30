@@ -424,8 +424,7 @@ typedef struct ParameterStruct
 //-----------------------------------------------------------------
 extern const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS];
 extern uint8_t parameter_values[NUM_PARAMS];
-//TODO parameters2 doesn't need a dtype field -> save memory
-extern Parameter parameters2[END_OF_SOUND_PARAMETERS];
+extern uint8_t parameters2[END_OF_SOUND_PARAMETERS];
 
 extern const Page menuPages[NUM_PAGES][NUM_SUB_PAGES];
 //-----------------------------------------------------------------
