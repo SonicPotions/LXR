@@ -1164,7 +1164,7 @@ void menu_repaintGeneric()
 				case DTYPE_MENU: //switch(parameters[parNr].dtype&0x0F)
 				{
 					//get the used menu (upper 4 bit)
-					const uint8_t menuId = (curParmVal >> 4);
+					const uint8_t menuId = pgm_read_byte(&parameter_dtypes[parNr]) >> 4;
 					switch(menuId)
 					{
 
