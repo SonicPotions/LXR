@@ -5,13 +5,13 @@
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf.release.1011744005" moduleId="org.eclipse.cdt.core.settings" name="Release">
 				<externalSettings/>
 				<extensions>
+					<extension id="org.eclipse.cdt.core.GNU_ELF" point="org.eclipse.cdt.core.BinaryParser"/>
 					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.MakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
-					<extension id="org.eclipse.cdt.core.GNU_ELF" point="org.eclipse.cdt.core.BinaryParser"/>
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
@@ -90,15 +90,16 @@
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
 		<project id="DrumSynth_FPU.org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf.1439938324" name="ARM Cross Target Application" projectType="org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf"/>
 	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
+	<storageModule moduleId="refreshScope"/>
+	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		<scannerConfigBuildInfo instanceId="org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf.release.1011744005;org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf.release.1011744005.;org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf.assembler.release.1644976554;org.eclipse.cdt.cross.arm.gnu.embedded.windows.assembler.base.input.1433651503">
-			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="|org.eclipse.cdt.cross.arm.gnu.ARM_GTFE_GCCWinStandardMakePerFileProfile"/>
+			<autodiscovery enabled="false" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf.release.1011744005;org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf.release.1011744005.;org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf.c.compiler.release.1260871635;org.eclipse.cdt.cross.arm.gnu.embedded.windows.c.compiler.base.input.1323818540">
-			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.cross.arm.gnu.ARM_GTFE_GCCWinManagedMakePerProjectProfileC"/>
+			<autodiscovery enabled="false" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.cross.arm.gnu.ARM_GTFE_GCCWinManagedMakePerProjectProfileC"/>
 		</scannerConfigBuildInfo>
 	</storageModule>
-	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
-	<storageModule moduleId="refreshScope"/>
 </cproject>

@@ -14,7 +14,7 @@ enum ParamEnums
 {
 	
 	PAR_NONE,	//TODO this is modwheel	- stupid offset +/- 1
-		PAR_MOD_WHEEL ,
+	PAR_MOD_WHEEL ,
 	
 	//waveform parameters need to be grouped 
 	//makes the special case to show their names instead of 0-127 values easier
@@ -281,6 +281,17 @@ enum ParamEnums
 	PAR_AUDIO_OUT5,
 	PAR_AUDIO_OUT6,
 	
+	//--AS midi note - This is a note value that is sent when the track triggers, if it's 0 it means that
+	// it will trigger the note that is specified on the step (PAR_STEP_NOTE). If it is non-zero then
+	// PAR_STEP_NOTE is ignored and this note is sent instead
+	PAR_MIDI_NOTE1,
+	PAR_MIDI_NOTE2,
+	PAR_MIDI_NOTE3,
+	PAR_MIDI_NOTE4,
+	PAR_MIDI_NOTE5,
+	PAR_MIDI_NOTE6,
+	PAR_MIDI_NOTE7,
+
 	//#########################################
 	//######## End of sound Parameters ########
 	//#########################################
@@ -348,12 +359,6 @@ enum ParamEnums
 	// --AS beware, adding more parameters makes this enum a short
 	NUM_PARAMS	
 };
-
-
-
-
-
-
 
 
 #endif /* PARAMETERS_H_ */

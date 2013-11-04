@@ -12,7 +12,7 @@
 #include <avr/io.h>
 
 extern uint8_t buttonHandler_selectedStep;
-extern uint8_t buttonHandler_originalParameter;	//saves parameter number for step automation reset (stgep assign)
+extern uint16_t buttonHandler_originalParameter;	//saves parameter number for step automation reset (stgep assign)
 extern uint8_t buttonHandler_originalValue; 
 extern uint8_t buttonHandler_resetLock;
 

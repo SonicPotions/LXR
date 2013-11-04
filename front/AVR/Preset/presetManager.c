@@ -61,7 +61,7 @@ void preset_saveDrumset(uint8_t presetNr, uint8_t isMorph)
 	//write the preset data
 	//caution. the parameter data is in a struct. every 1st value has to be saved (param value)
 	//every 2nd ommited (max value)
-	int i;
+	uint16_t i;
 	
 	if(isMorph)
 	{
@@ -183,7 +183,7 @@ uint8_t preset_loadDrumset(uint8_t presetNr, uint8_t isMorph)
 		//first the preset name
 		f_read((FIL*)&preset_File,(void*)preset_currentName,8,&bytesRead);
 		//then the data
-		int i;
+		int16_t i;
 		bytesRead = 1;
 		
 		if(isMorph)
@@ -207,16 +207,17 @@ uint8_t preset_loadDrumset(uint8_t presetNr, uint8_t isMorph)
 			for(i=0;i<6;i++)
 			{
 				//velo
-				uint8_t value = getModTargetValue(parameter_values[PAR_VEL_DEST_1+i], i);
+				uint8_t value = getModTargetValue((uint8_t)(parameter_values[PAR_VEL_DEST_1+i]), (uint8_t)i);
 				uint8_t upper,lower;
-				upper = ((value&0x80)>>7) | (((i)&0x3f)<<1);
+				upper = (uint8_t)(((value&0x80)>>7) | (((i)&0x3f)<<1));
 				lower = value&0x7f;
 				frontPanel_sendData(CC_VELO_TARGET,upper,lower);
 				
 				//LFO
 				if(parameter_values[PAR_VOICE_LFO1+i]==0)parameter_values[PAR_VOICE_LFO1+i]=1;
-				value = getModTargetValue(parameter_values[PAR_TARGET_LFO1+i],  parameter_values[PAR_VOICE_LFO1+i]-1);
-				upper = ((value&0x80)>>7) | (((i)&0x3f)<<1);
+				value = getModTargetValue((uint8_t)parameter_values[PAR_TARGET_LFO1+i],
+						(uint8_t)(parameter_values[PAR_VOICE_LFO1+i]-1));
+				upper = (uint8_t)(((value&0x80)>>7) | (((i)&0x3f)<<1));
 				lower = value&0x7f;
 				frontPanel_sendData(CC_LFO_TARGET,upper,lower);	
 			}	
@@ -350,7 +351,7 @@ void preset_sendMainStepDataToSeq(uint16_t stepNr, uint16_t mainStepData)
 {
 	frontPanel_sendByte(mainStepData	& 0x7f);
 	frontPanel_sendByte((mainStepData>>7)	& 0x7f);
-	frontPanel_sendByte((mainStepData>>14)	& 0x7f);
+	frontPanel_sendByte((uint8_t)((mainStepData>>14)	& 0x7f));
 }
 //----------------------------------------------------
 /** send step data from SD card to the sequencer*/
@@ -367,13 +368,13 @@ void preset_sendStepDataToSeq(uint16_t stepNr)
 	frontPanel_sendByte(frontParser_stepData.param2Val	& 0x7f);
 
 	//now the MSBs from all 7 values
-	frontPanel_sendByte( 	((frontParser_stepData.volume 	& 0x80)>>7) |
+	frontPanel_sendByte((uint8_t) 	(((frontParser_stepData.volume 	& 0x80)>>7) |
 							((frontParser_stepData.prob	 	& 0x80)>>6) |
 							((frontParser_stepData.note	 	& 0x80)>>5) |
 							((frontParser_stepData.param1Nr	& 0x80)>>4) |
 							((frontParser_stepData.param1Val	& 0x80)>>3) |
 							((frontParser_stepData.param2Nr	& 0x80)>>2) |
-							((frontParser_stepData.param2Val	& 0x80)>>1)
+							((frontParser_stepData.param2Val	& 0x80)>>1))
 							);
 }	
 //----------------------------------------------------
@@ -437,7 +438,7 @@ void preset_queryMainStepDataFromSeq(uint16_t stepNr, uint16_t *mainStepData)
 		}
 	}
 	
-	*mainStepData = (frontParser_stepData.volume<<8) | frontParser_stepData.prob;
+	*mainStepData =(uint16_t) ((frontParser_stepData.volume<<8) | frontParser_stepData.prob);
 };
 //----------------------------------------------------
 void preset_savePattern(uint8_t presetNr)
@@ -483,7 +484,7 @@ void preset_savePattern(uint8_t presetNr)
 			//set cursor to beginning of row 2
 			lcd_setcursor(0,2);
 			//print percent value
-			percent = i * (100.f/(STEPS_PER_PATTERN*NUM_PATTERN*NUM_TRACKS));
+			percent = (uint8_t)(i * (100.f/(STEPS_PER_PATTERN*NUM_PATTERN*NUM_TRACKS)));
 			itoa(percent,text,10);
 			lcd_string(text);
 		}			
@@ -536,7 +537,7 @@ void preset_savePattern(uint8_t presetNr)
 	for(i=0;i<(NUM_PATTERN);i++)
 	{
 		//get next data chunk and write it to file
-		preset_queryPatternInfoFromSeq(i, &next, &repeat);
+		preset_queryPatternInfoFromSeq((uint8_t)i, &next, &repeat);
 		f_write((FIL*)&preset_File,(const void*)&next,sizeof(uint8_t),&bytesWritten);	
 		f_write((FIL*)&preset_File,(const void*)&repeat,sizeof(uint8_t),&bytesWritten);
 	}
@@ -660,7 +661,7 @@ uint8_t preset_loadPattern(uint8_t presetNr)
 			f_read((FIL*)&preset_File,(void*)&repeat,sizeof(uint8_t),&bytesRead);	
 
 		
-			frontPanel_sendData(SEQ_CC,SEQ_SET_SHOWN_PATTERN,i);
+			frontPanel_sendData(SEQ_CC,SEQ_SET_SHOWN_PATTERN,(uint8_t)i);
 		
 			frontPanel_sendData(SEQ_CC,SEQ_SET_PAT_BEAT,repeat);
 			frontPanel_sendData(SEQ_CC,SEQ_SET_PAT_NEXT,next);
@@ -701,10 +702,10 @@ frontPanel_sendData(PRESET,PATTERN_LOAD,presetNr);
 //uses bankers rounding
 uint8_t interpolate(uint8_t a, uint8_t b, uint8_t x)
 {
-	uint16_t fixedPointValue = ((a*256) + (b-a)*x);
-	uint8_t result = fixedPointValue/256;
+	uint16_t fixedPointValue = (uint16_t)(((a*256) + (b-a)*x));
+	uint8_t result = (uint8_t)(fixedPointValue/256);
 	
-	return (fixedPointValue&0xff) < 0x7f ? result : result+1; 
+	return (uint8_t)((fixedPointValue&0xff) < 0x7f ? result : result+1);
 	//return ((a*255) + (b-a)*x)/255;
 }
 //----------------------------------------------------
@@ -718,11 +719,11 @@ void preset_morph(uint8_t morph)
 		uint8_t val;
 		
 		val = interpolate(parameter_values[i],parameters2[i],morph);
-		
+		// TODO --AS these will only be good as long as num sound parameters is < 256
 		if(i<128) {
-			frontPanel_sendData(MIDI_CC,i,val);
+			frontPanel_sendData(MIDI_CC,(uint8_t)i,val);
 		} else {
-			frontPanel_sendData(CC_2,i-128,val);
+			frontPanel_sendData(CC_2,(uint8_t)(i-128),val);
 		}		
 		
 			
@@ -736,7 +737,7 @@ void preset_morph(uint8_t morph)
 	}		
 };
 //----------------------------------------------------
-uint8_t preset_getMorphValue(uint8_t index, uint8_t morph)
+uint8_t preset_getMorphValue(uint16_t index, uint8_t morph)
 {
 	return interpolate(parameter_values[index],parameters2[index],morph);
 };

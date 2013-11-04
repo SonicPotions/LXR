@@ -16,7 +16,7 @@
 //stuff for activation logic
 volatile uint16_t screensaver_timer = 0;
 #define SCREENSAVER_TIMEOUT 2//[minutes]
-#define SCREENSAVER_SYSTICK ((SCREENSAVER_TIMEOUT*60) / (1.f / ((F_CPU/1024.f)/256.f)))
+#define SCREENSAVER_SYSTICK (uint16_t)(((SCREENSAVER_TIMEOUT*60) / (1.f / ((F_CPU/1024.f)/256.f))))
 volatile uint8_t screensaver_Active=0;
 volatile uint16_t screensaver_Timeout=SCREENSAVER_SYSTICK;
 
@@ -65,7 +65,7 @@ void screensaver_process()
 #if SCREENSAVER_ACTIVE
 	if(time_sysTick >= screensaver_processTime )
 	{
-		screensaver_processTime = time_sysTick + SCREENSAVER_PROCESS_SPEED;
+		screensaver_processTime = (uint16_t)( time_sysTick + SCREENSAVER_PROCESS_SPEED);
 		
 		if(screensaver_cellState == CELL_OFF)
 		{
@@ -85,7 +85,7 @@ void screensaver_process()
 				case CELL_1:
 				if(screensaver_activeCell>15)
 				{
-					lcd_setcursor(screensaver_activeCell-16,2);
+					lcd_setcursor((uint8_t)(screensaver_activeCell-16),2);
 				}
 				else
 				{
@@ -99,7 +99,7 @@ void screensaver_process()
 				case CELL_2:
 				if(screensaver_activeCell>15)
 				{
-					lcd_setcursor(screensaver_activeCell-16,2);
+					lcd_setcursor((uint8_t)(screensaver_activeCell-16),2);
 				}
 				else
 				{
@@ -113,7 +113,7 @@ void screensaver_process()
 				case CELL_3:
 				if(screensaver_activeCell>15)
 				{
-					lcd_setcursor(screensaver_activeCell-16,2);
+					lcd_setcursor((uint8_t)(screensaver_activeCell-16),2);
 				}
 				else
 				{
