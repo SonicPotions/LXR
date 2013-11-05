@@ -22,7 +22,7 @@ static uint8_t copyClear_clearTarget = CLEAR_TRACK;
 void copyClear_clearTrackAutom(uint8_t automTrack)
 {
 	uint8_t voice = menu_getActiveVoice();
-	frontPanel_sendData(SEQ_CC,SEQ_CLEAR_AUTOM,(voice<<4)|(automTrack&0x0f));
+	frontPanel_sendData(SEQ_CC,SEQ_CLEAR_AUTOM,(uint8_t)((voice<<4)|(automTrack&0x0f)));
 };
 //-----------------------------------------------------------------------------
 void copyClear_clearCurrentPattern()
@@ -97,7 +97,7 @@ void copyClear_copyTrack()
 	{
 		return;
 	}
-	uint8_t value = ((buttonHandler_copySrc&0xf)<<4) | (buttonHandler_copyDst&0xf) ;
+	uint8_t value = (uint8_t)(((buttonHandler_copySrc&0xf)<<4) | (buttonHandler_copyDst&0xf));
 	led_clearSequencerLeds();
 	frontPanel_sendData(SEQ_CC,SEQ_COPY_TRACK,value);
 	
@@ -110,7 +110,7 @@ void copyClear_copyPattern()
 	{
 		return;
 	}
-	uint8_t value = ((buttonHandler_copySrc&0xf)<<4) | (buttonHandler_copyDst&0xf) ;
+	uint8_t value = (uint8_t)(((buttonHandler_copySrc&0xf)<<4) | (buttonHandler_copyDst&0xf));
 	led_clearSequencerLeds();
 	frontPanel_sendData(SEQ_CC,SEQ_COPY_PATTERN,value);
 	

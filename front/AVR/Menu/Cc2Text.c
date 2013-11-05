@@ -23,7 +23,7 @@ uint8_t page2voice(uint8_t page)
 }
 void cc2Name_init()
 {
-	int pages;
+	uint8_t pages;
 	for(pages=0;pages<VOICE7_PAGE;pages++)
 	{
 		uint8_t subPages;

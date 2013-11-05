@@ -11,7 +11,7 @@
 #include "ledHandler.h"
 #include "IO\uart.h"
 #include "buttonHandler.h"
-
+#include "front.h"
 //debug
 #include <stdlib.h>
 #include "Hardware/lcd.h"
@@ -48,11 +48,11 @@ void frontParser_parseNrpn(uint8_t value)
 		//since the LFO target calculation from the index number needs to know about the menu structure (menuPages)
 		//we need to send back the right target param number to the cortex
 		//LFO
-		uint8_t lfoNr = (frontParser_nrpnNr+128)-PAR_TARGET_LFO1;
+		uint8_t lfoNr = (uint8_t)((frontParser_nrpnNr+128)-PAR_TARGET_LFO1);
 		if(lfoNr>5)lfoNr=5;
 		value = getModTargetValue(parameter_values[frontParser_nrpnNr+128],
-				parameter_values[PAR_VOICE_LFO1+lfoNr]-1);
-		uint8_t upper = ((value&0x80)>>7) | (((lfoNr)&0x3f)<<1);
+				(uint8_t)(parameter_values[PAR_VOICE_LFO1+lfoNr]-1));
+		uint8_t upper = (uint8_t)(((value&0x80)>>7) | (((lfoNr)&0x3f)<<1));
 		uint8_t lower = value&0x7f;
 		frontPanel_sendData(CC_LFO_TARGET,upper,lower);
 	}
@@ -62,15 +62,15 @@ void frontParser_parseNrpn(uint8_t value)
 		if(param > (NUM_SUB_PAGES * 8 -1))
 		param = (NUM_SUB_PAGES * 8 -1); 
 				
-		uint8_t value = getModTargetValue(param, frontParser_nrpnNr+128 - PAR_VEL_DEST_1);
+		uint8_t value = getModTargetValue(param, (uint8_t)(frontParser_nrpnNr+128 - PAR_VEL_DEST_1));
 				
 		uint8_t upper,lower;
-		upper = ((value&0x80)>>7) | (((frontParser_nrpnNr+128 - PAR_VEL_DEST_1)&0x3f)<<1);
+		upper = (uint8_t)((uint16_t)((value&0x80)>>7) | (((frontParser_nrpnNr+128-PAR_VEL_DEST_1)&0x3f)<<1));
 		lower = value&0x7f;
 		frontPanel_sendData(CC_VELO_TARGET,upper,lower);
 	} else if ( (frontParser_nrpnNr >= NRPN_MUTE_1) && (frontParser_nrpnNr <= NRPN_MUTE_7) )
 	{
-		const uint8_t voice = frontParser_nrpnNr - NRPN_MUTE_1;
+		const uint8_t voice = (uint8_t)(frontParser_nrpnNr - NRPN_MUTE_1);
 		const uint8_t onOff = value;
 		buttonHandler_muteVoice(voice,onOff);
 		
@@ -80,12 +80,12 @@ void frontParser_parseNrpn(uint8_t value)
 void frontPanel_ccHandler()
 {
 	//get the real parameter number from the cc number
-	const uint8_t parNr = frontParser_midiMsg.data1 - 1;
+	const uint8_t parNr =(uint8_t)( frontParser_midiMsg.data1 - 1);
 	
 	if(parNr == NRPN_DATA_ENTRY_COARSE) {
 			frontParser_parseNrpn(frontParser_midiMsg.data2);
 		}
-		
+	DISABLE_SIGN_WARNING
 	if(parNr == NRPN_FINE) {
 			frontParser_nrpnNr &= ~0x7f;
 			frontParser_nrpnNr |= frontParser_midiMsg.data2;
@@ -95,6 +95,7 @@ void frontPanel_ccHandler()
 			frontParser_nrpnNr &= 0x7f;
 			frontParser_nrpnNr |= frontParser_midiMsg.data2<<7;
 		}
+	END_DISABLE_WARNING
 	
 	//set the parameter value
 	parameter_values[parNr] = frontParser_midiMsg.data2;
@@ -157,7 +158,9 @@ void frontPanel_parseData(uint8_t data)
 					//now we have to distribute the MSBs to the sysex data
 					for(int i=0;i<7;i++)
 					{
+						DISABLE_CONV_WARNING
 						frontParser_sysexBuffer[i] |= ((data&(1<<i))<<(7-i));
+						END_DISABLE_WARNING
 						
 					}
 					frontParser_stepData.volume = frontParser_sysexBuffer[0];
@@ -211,10 +214,12 @@ void frontPanel_parseData(uint8_t data)
 					//last 2 bit
 					frontParser_sysexBuffer[frontParser_rxCnt++] = data;
 					
-					uint16_t mainStepData = frontParser_sysexBuffer[0] | (frontParser_sysexBuffer[1]<<7) | (frontParser_sysexBuffer[2]<<14);
+					uint16_t mainStepData = frontParser_sysexBuffer[0] |
+							(uint16_t)(frontParser_sysexBuffer[1]<<7) |
+							(uint16_t)(frontParser_sysexBuffer[2]<<14);
 					//we abuse the stepData struct to store the main step data
-					frontParser_stepData.volume = mainStepData>>8;
-					frontParser_stepData.prob = mainStepData&0xff;
+					frontParser_stepData.volume = (uint8_t)(mainStepData>>8);
+					frontParser_stepData.prob = (uint8_t)(mainStepData&0xff);
 					
 					//signal that a new data chunk is available
 					frontParser_newSeqDataAvailable = 1;
@@ -249,7 +254,9 @@ void frontPanel_parseData(uint8_t data)
 						frontParser_nameIndex = 0;
 					}
 					
-					preset_currentName[frontParser_nameIndex] = (frontParser_midiMsg.data1&0x7f) | ((frontParser_midiMsg.data2&0x7f)<<7);
+					preset_currentName[frontParser_nameIndex] =(char)(
+							(frontParser_midiMsg.data1&0x7f) |
+							((frontParser_midiMsg.data2&0x7f)<<7));
 					frontParser_nameIndex++;
 					frontParser_nameIndex &= 0x7; //wrap at 8
 					if(frontParser_nameIndex==0)
@@ -260,22 +267,22 @@ void frontPanel_parseData(uint8_t data)
 				} 
 				else if(frontParser_midiMsg.status == SET_P1_DEST)
 				{
-					parameter_values[PAR_P1_DEST] = (frontParser_midiMsg.data1<<7) | frontParser_midiMsg.data2;
+					parameter_values[PAR_P1_DEST] = (uint8_t)((frontParser_midiMsg.data1<<7) | frontParser_midiMsg.data2);
 					menu_repaintAll();
 				}
 				else if(frontParser_midiMsg.status == SET_P2_DEST)
 				{
-					parameter_values[PAR_P2_DEST] = (frontParser_midiMsg.data1<<7) | frontParser_midiMsg.data2;
+					parameter_values[PAR_P2_DEST] = (uint8_t)((frontParser_midiMsg.data1<<7) | frontParser_midiMsg.data2);
 					menu_repaintAll();
 				}
 				else if(frontParser_midiMsg.status == SET_P1_VAL)
 				{
-					parameter_values[PAR_P1_VAL] = (frontParser_midiMsg.data1<<7) | frontParser_midiMsg.data2;
+					parameter_values[PAR_P1_VAL] = (uint8_t)((frontParser_midiMsg.data1<<7) | frontParser_midiMsg.data2);
 					menu_repaintAll();
 				}
 				else if(frontParser_midiMsg.status == SET_P2_VAL)
 				{
-					parameter_values[PAR_P2_VAL] = (frontParser_midiMsg.data1<<7) | frontParser_midiMsg.data2;
+					parameter_values[PAR_P2_VAL] = (uint8_t)((frontParser_midiMsg.data1<<7) | frontParser_midiMsg.data2);
 					menu_repaintAll();
 				}
 				
@@ -339,7 +346,7 @@ void frontPanel_parseData(uint8_t data)
 						//ack message that the sequencer changed to the requested pattern
 						
 						//stop blinking pattern led
-						led_setBlinkLed(LED_PART_SELECT1+frontParser_midiMsg.data2,0);
+						led_setBlinkLed((uint8_t)(LED_PART_SELECT1+frontParser_midiMsg.data2),0);
 						//clear last pattern led
 						
 						if( (parameter_values[PAR_FOLLOW]) ) {
@@ -351,7 +358,7 @@ void frontPanel_parseData(uint8_t data)
 								//query current sequencer step states and light up the corresponding leds 
 								uint8_t trackNr = menu_getActiveVoice(); //max 6 => 0x6 = 0b110
 								uint8_t patternNr = menu_getViewedPattern(); //max 7 => 0x07 = 0b111
-								uint8_t value = (trackNr<<4) | (patternNr&0x7);
+								uint8_t value = (uint8_t)((trackNr<<4) | (patternNr&0x7));
 								frontPanel_sendData(LED_CC,LED_QUERY_SEQ_TRACK,value);
 								frontPanel_sendData(SEQ_CC,SEQ_REQUEST_PATTERN_PARAMS,frontParser_midiMsg.data2);
 							} else {
@@ -434,8 +441,8 @@ void frontPanel_parseData(uint8_t data)
 								//check if received step is a valid sub step
 								if( (stepNr >= subStepRange) && (stepNr<(subStepRange+8)) )
 								{
-									stepNr = stepNr - subStepRange;
-									led_setValue(1,LED_PART_SELECT1+stepNr);
+									stepNr = (uint8_t)(stepNr - subStepRange);
+									led_setValue(1,(uint8_t)(LED_PART_SELECT1+stepNr));
 								}
 								
 								
@@ -446,9 +453,9 @@ void frontPanel_parseData(uint8_t data)
 							if(menu_activePage != PERFORMANCE_PAGE) //do not show active steps on perf. page
 							{
 								//limit to 16 steps
-								uint8_t stepNr = ((frontParser_midiMsg.data2&0x7f)/8); //limit to 127
+								uint8_t stepNr = (uint8_t)((frontParser_midiMsg.data2&0x7f)/8); //limit to 127
 								
-								led_setValue(1,LED_STEP1+stepNr);
+								led_setValue(1,(uint8_t)(LED_STEP1+stepNr));
 							}
 						}		
 						
@@ -459,7 +466,7 @@ void frontPanel_parseData(uint8_t data)
 				{
 					if(frontParser_midiMsg.data1 > 6) return;
 					//only SELECT_MODE_VOICE and SELECT_MODE_MUTE
-					led_pulseLed(LED_VOICE1+frontParser_midiMsg.data1);
+					led_pulseLed((uint8_t)(LED_VOICE1+frontParser_midiMsg.data1));
 				}
 
 			}				

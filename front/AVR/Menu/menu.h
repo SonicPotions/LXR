@@ -376,15 +376,15 @@ typedef struct PageStruct
 	uint8_t top7;
 	uint8_t top8;
 	
-	uint8_t bot1;
-	uint8_t bot2;
-	uint8_t bot3;
-	uint8_t bot4;
+	uint16_t bot1;
+	uint16_t bot2;
+	uint16_t bot3;
+	uint16_t bot4;
 		
-	uint8_t bot5;
-	uint8_t bot6;
-	uint8_t bot7;
-	uint8_t bot8;
+	uint16_t bot5;
+	uint16_t bot6;
+	uint16_t bot7;
+	uint16_t bot8;
 }Page;
 //-----------------------------------------------------------------
 typedef struct NameStruct
@@ -410,6 +410,8 @@ enum Datatypes
 	DTYPE_AUTOM_TARGET,
 	DTYPE_0b1,
 	DTYPE_NOTE_NAME, // --AS eg C#0, D 1 for note name
+	/*15*/
+	/*16*/
 	// --AS warning, we can only have 16 on this list the way things are laid out
 };
 
@@ -452,7 +454,7 @@ uint8_t menu_getSubPage();
 //-----------------------------------------------------------------
 void menu_parseKnobValue(uint8_t potNr, uint8_t value);
 //-----------------------------------------------------------------
-void menu_parseGlobalParam(uint8_t paramNr, uint8_t value);
+void menu_parseGlobalParam(uint16_t paramNr, uint8_t value);
 //-----------------------------------------------------------------
 /** all parameters are send to the cortex soundchip. called after loading a preset into the avr ram*/
 void menu_sendAllParameters();
