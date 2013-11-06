@@ -333,16 +333,24 @@ void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note)
 	uart_sendFrontpanelByte(voiceNr);
 	uart_sendFrontpanelByte(0);
 
+	/* --AS getting ride of the midi mode TODO get rid of this mode in front and main
 	if(midi_mode == MIDI_MODE_TRIGGER)
 	{
 		 midiChan = midi_MidiChannels[0];
 		 midiNote=NOTE_VOICE1+voiceNr;
 	}
 	else
-	{
-		midiChan = midi_MidiChannels[voiceNr];
+	{*/
+
+	midiChan = midi_MidiChannels[voiceNr];
+
+	//--AS the note that is played will be whatever is received unless we have a note override set
+	// A note override is any non-zero value for this parameter
+	if(midi_NoteOverride[voiceNr] == 0)
 		midiNote = note;
-	}
+	else
+		midiNote = midi_NoteOverride[voiceNr];
+	//}
 
 	//--AS if a note is on for that channel send note-off first
 	// The proper way to do a note off is with 0x80. 0x90 with velocity 0 is also used, however I think there is still

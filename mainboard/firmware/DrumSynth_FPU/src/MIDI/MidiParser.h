@@ -54,6 +54,7 @@ void midiParser_handleSystemByte(unsigned char data);
 extern uint8_t midiParser_originalCcValues[0xff];
 
 extern uint8_t midi_MidiChannels[7];
+extern uint8_t midi_NoteOverride[7];
 extern uint8_t midi_mode;
 
 enum MIDI_modeEnum

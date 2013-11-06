@@ -78,7 +78,8 @@ typedef struct MidiStruct {
 
 //------------------------------------------------------------
 
-#define NO_AUTOMATION 0xff	//used as a dummy message number for the automation tracks. paramNr 0xff means no automation
+#define NO_AUTOMATION 0xff	//used as a dummy message number for the automation tracks.
+							// paramNr 0xff means no automation
 // Custom CCs
 
 enum
@@ -348,6 +349,15 @@ enum
 	CC2_AUDIO_OUT4,
 	CC2_AUDIO_OUT5,
 	CC2_AUDIO_OUT6,
+
+	// --AS
+	CC2_MIDI_NOTE1,
+	CC2_MIDI_NOTE2,
+	CC2_MIDI_NOTE3,
+	CC2_MIDI_NOTE4,
+	CC2_MIDI_NOTE5,
+	CC2_MIDI_NOTE6,
+	CC2_MIDI_NOTE7, // s/b 111 i think
 
 	//Mute Button NRPN messages
 	CC2_MUTE_1 = 200,
