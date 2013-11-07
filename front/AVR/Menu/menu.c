@@ -465,6 +465,7 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 	    /*PAR_AUDIO_OUT4*/ 		DTYPE_MENU | (MENU_AUDIO_OUT<<4),
 	    /*PAR_AUDIO_OUT5*/ 		DTYPE_MENU | (MENU_AUDIO_OUT<<4),
 	    /*PAR_AUDIO_OUT6*/ 		DTYPE_MENU | (MENU_AUDIO_OUT<<4),
+	    //--AS these 7
 	    /*PAR_MIDI_NOTE1*/		DTYPE_NOTE_NAME,
 	    /*PAR_MIDI_NOTE2*/		DTYPE_NOTE_NAME,
 	    /*PAR_MIDI_NOTE3*/		DTYPE_NOTE_NAME,

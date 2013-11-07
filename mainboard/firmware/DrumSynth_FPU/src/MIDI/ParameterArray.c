@@ -38,6 +38,7 @@
 #include "ParameterArray.h"
 #include "DrumVoice.h"
 #include "CymbalVoice.h"
+#include "MidiParser.h"
 #include "HiHat.h"
 #include "Snare.h"
 #include "mixer.h"
@@ -631,6 +632,23 @@ void parameterArray_init()
 	parameterArray[PAR_AUDIO_OUT5].type 	= TYPE_UINT8;
 	parameterArray[PAR_AUDIO_OUT6].ptr 		= &mixer_audioRouting[5];
 	parameterArray[PAR_AUDIO_OUT6].type 	= TYPE_UINT8;
+
+	//--AS - I don't think we really need to set these, because I think these are only used for
+	// values that can be modulated
+	parameterArray[PAR_MIDI_NOTE1].ptr 		= &midi_NoteOverride[0];
+	parameterArray[PAR_MIDI_NOTE1].type 	= TYPE_UINT8;
+	parameterArray[PAR_MIDI_NOTE2].ptr 		= &midi_NoteOverride[1];
+	parameterArray[PAR_MIDI_NOTE2].type		= TYPE_UINT8;
+	parameterArray[PAR_MIDI_NOTE3].ptr 		= &midi_NoteOverride[2];
+	parameterArray[PAR_MIDI_NOTE3].type 	= TYPE_UINT8;
+	parameterArray[PAR_MIDI_NOTE4].ptr 		= &midi_NoteOverride[3];
+	parameterArray[PAR_MIDI_NOTE4].type 	= TYPE_UINT8;
+	parameterArray[PAR_MIDI_NOTE5].ptr 		= &midi_NoteOverride[4];
+	parameterArray[PAR_MIDI_NOTE5].type 	= TYPE_UINT8;
+	parameterArray[PAR_MIDI_NOTE6].ptr 		= &midi_NoteOverride[5];
+	parameterArray[PAR_MIDI_NOTE6].type 	= TYPE_UINT8;
+	parameterArray[PAR_MIDI_NOTE7].ptr 		= &midi_NoteOverride[6];
+	parameterArray[PAR_MIDI_NOTE7].type 	= TYPE_UINT8;
 	//#########################################
 	//######## End of sound Parameters ########
 	//#########################################

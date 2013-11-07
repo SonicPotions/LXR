@@ -316,6 +316,15 @@ enum ParamEnums
 	PAR_AUDIO_OUT5,
 	PAR_AUDIO_OUT6,
 
+	//--AS
+	PAR_MIDI_NOTE1,
+	PAR_MIDI_NOTE2,
+	PAR_MIDI_NOTE3,
+	PAR_MIDI_NOTE4,
+	PAR_MIDI_NOTE5,
+	PAR_MIDI_NOTE6,
+	PAR_MIDI_NOTE7, //110 - beware going over 127
+
 	//#########################################
 	//######## End of sound Parameters ########
 	//#########################################

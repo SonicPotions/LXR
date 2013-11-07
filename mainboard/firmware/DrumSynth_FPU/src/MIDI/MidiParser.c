@@ -86,7 +86,10 @@ inline float calcPitchModAmount(uint8_t data2)
 // vars
 //-----------------------------------------------------------
 uint8_t midi_MidiChannels[7];	// the currently selected midi channel
-uint8_t midi_mode;
+
+//--AS note overrides for each voice
+uint8_t midi_NoteOverride[7];
+uint8_t midi_mode; //--AS get rid of
 MidiMsg midiMsg_tmp;				// buffer message where the incoming data is stored
 uint8_t msgLength;					// number of following data bytes for current status
 uint8_t parserState = MIDI_STATUS;	// state of the parser state machine
@@ -731,7 +734,7 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 					break;
 		}
 		modNode_originalValueChanged(paramNr);
-	}
+	} //msg.status == MIDI_CC
 
 	else //MIDI_CC2
 	{
@@ -978,6 +981,19 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 			case CC2_AUDIO_OUT5:
 			case CC2_AUDIO_OUT6:
 				mixer_audioRouting[msg.data1-CC2_AUDIO_OUT1] = msg.data2;
+				break;
+
+			//--AS
+			case CC2_MIDI_NOTE1:
+			case CC2_MIDI_NOTE2:
+			case CC2_MIDI_NOTE3:
+			case CC2_MIDI_NOTE4:
+			case CC2_MIDI_NOTE5:
+			case CC2_MIDI_NOTE6:
+			case CC2_MIDI_NOTE7:
+				//--AS set the note override for the voice. 0 means use the note value, anything else means
+				// that the note will always play with that note
+				midi_NoteOverride[msg.data1-CC2_MIDI_NOTE1] = msg.data2;
 				break;
 
 			case CC2_MUTE_1:
