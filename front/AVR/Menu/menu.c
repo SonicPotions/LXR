@@ -1661,9 +1661,15 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 					if(*paramValue > (NUM_SUB_PAGES * 8 -1))
 						*paramValue = (NUM_SUB_PAGES * 8 -1); 
 
+					// determine the parameter id to send across
 					uint8_t value = getModTargetValue(*paramValue, (uint8_t)(paramNr - PAR_VEL_DEST_1));
 
 					uint8_t upper,lower;
+					/*
+					 *  upper: rightmost bit is 1 if the parameter we are targeting is in the "above 127" range
+					 *         next 6 bits are the voice number (0 to 5) of which voice is being dealt with here
+					 *  lower: the (0-127) value representing which parameter is being modulated
+					 */
 					upper = (uint8_t)( (uint8_t)((value&0x80)>>7) |
 							(((paramNr - PAR_VEL_DEST_1)&0x3f)<<1) );
 					lower = value&0x7f;
@@ -1794,8 +1800,9 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 					if(*paramValue >= numEntries)
 						*paramValue = (uint8_t)(numEntries-1);
 
-				}
+				} // parameter_dtypes[paramNr] & 0x0F case DTYPE_MENU
 				break;
+
 				default://parameter_dtypes[paramNr] & 0x0F
 				case DTYPE_0B127:
 					if(*paramValue > 127)
@@ -1803,12 +1810,14 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 					break;
 				} //parameter_dtypes[paramNr] & 0x0F
 
+
+
 				//send parameter change to uart tx
 				if(paramNr < 128) // => Sound Parameter
 				{
 					frontPanel_sendData(MIDI_CC,(uint8_t)paramNr,*paramValue);
 				}
-				// TODO how is this affected by my changes in the param enum?
+				// TODO --AS how is this affected by my changes in the param enum?
 				else if(paramNr>=128 && (paramNr < END_OF_SOUND_PARAMETERS)) // => Sound Parameter above 127
 				{
 					frontPanel_sendData(CC_2,(uint8_t)(paramNr-128),*paramValue);

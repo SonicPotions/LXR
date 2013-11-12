@@ -9,13 +9,30 @@ pattern and voice
 ____interesting functions_____
 menu.c:menu_repaint - this is the guts of the code that updates the display.
 
+___menu structure___
+For most of the menus, the hierarchy is stored in menuPages array. This is an array of Page arrays. Each Page has 8
+text indicators, and 8 parameters. The text indicators (the top* elements) point to the text that should be displayed
+for that item. And the parameters (bot* elements) refer to the parameter that is being edited in that slot. 
 
 ___modulation stuff___
 There are 3 types of modulation
+
 LFO - LFO's can target a parameter to modulate as well as a voice number (PAR_TARGET_LFO1)
-Automation - sequencer modulation - per sequencer step, you can modulate two parameters 
-(on that voice) actually looks like you could modulate on another voice too (PAR_P1_DEST, PAR_P2_DEST)
-Velocity - You can modulate a parameter based on the velocity value (PAR_VEL_DEST_1-6)
+
+Automation__
+params: PAR_P1_DEST, PAR_P2_DEST
+data type: DTYPE_AUTOM_TARGET
+sequencer modulation - per sequencer step, you can modulate two parameters. The value here represents a parameter number,
+so you can select any of the voice parameter values (effectively letting you modulate a param on any voice) 
+
+Velocity__
+params: PAR_VEL_DEST_1-6
+data type: DTYPE_TARGET_SELECTION_VELO 
+You can modulate a parameter based on the velocity value on each step for a voice. You select one parameter to modulate.
+The parameter is one of the parameters on the SAME voice. The left 5 bits of the param value select the page
+within the voice and the right 3 bits select one of the 8 params on that page. This resolves ultimately to a parameter
+which is applicable to that voice. It can be empty though because some menu items are empty. The data that gets sent to
+the back is a parameter number and the voice number. 
 
 These all use getModTargetValue which given a voice number and value (from the knob) will return a parameter number
 that can be sent to the sequencer 
