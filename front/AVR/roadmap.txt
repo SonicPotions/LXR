@@ -17,14 +17,6 @@ for that item. And the parameters (bot* elements) refer to the parameter that is
 ___modulation stuff___
 There are 3 types of modulation
 
-LFO - LFO's can target a parameter to modulate as well as a voice number (PAR_TARGET_LFO1)
-
-Automation__
-params: PAR_P1_DEST, PAR_P2_DEST
-data type: DTYPE_AUTOM_TARGET
-sequencer modulation - per sequencer step, you can modulate two parameters. The value here represents a parameter number,
-so you can select any of the voice parameter values (effectively letting you modulate a param on any voice) 
-
 Velocity__
 params: PAR_VEL_DEST_1-6
 data type: DTYPE_TARGET_SELECTION_VELO 
@@ -34,10 +26,25 @@ within the voice and the right 3 bits select one of the 8 params on that page. T
 which is applicable to that voice. It can be empty though because some menu items are empty. The data that gets sent to
 the back is a parameter number and the voice number. 
 
-These all use getModTargetValue which given a voice number and value (from the knob) will return a parameter number
-that can be sent to the sequencer 
+LFO__
+params: PAR_TARGET_LFO*
+data type: DTYPE_TARGET_SELECTION_LFO
+LFO's can target a parameter to modulate. A separate parameter controls which voice the parameter is on. So therefore
+the param value represents a parameter on that voice. Left 5 bits of the param value select the page, and right 3 bits
+selects one of the 8 params on that page. works similar to velocity above.
 
-dtypes:
-DTYPE_AUTOM_TARGET (PAR_P*_DEST) - uses menu_cc2name to get descr
-DTYPE_TARGET_SELECTION_LFO (PAR_TARGET_LFO*) - uses menu pages directly to get desc
-DTYPE_TARGET_SELECTION_VELO (PAR_VEL_DEST_*) - uses menu pages directly to get desc
+Automation__
+params: PAR_P1_DEST, PAR_P2_DEST
+data type: DTYPE_AUTOM_TARGET
+sequencer modulation - per sequencer step, you can modulate two parameters. The value here represents a parameter number,
+so you can select any of the voice parameter values (effectively letting you modulate a param on any voice).
+menu_cc2name is used here to lookup descriptive name for a parameter. This is different from lfo and velocity in that the value
+represents a parameter directly
+
+
+Code points for modulation:
+menu_repaintGeneric - render the values on the screen
+menu_parseKnobValue and menu_parseEncoder - translate knob movements into a value
+
+menu_cc2name is just a way to get a name index and a voice number given a parameter number. This name index is into valueNames array
+which itself is a reference to long names, short names and category names for everything
