@@ -244,7 +244,7 @@ const Name valueNames[NUM_NAMES] PROGMEM =
 //---------------------------------------------------------------
 // Parameter types. These correspond with ParamEnums and entries in parameter_values
 const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
-	    /*PAR_NONE*/ 			DTYPE_0B127,
+	    /*PAR_NONE*/ 			DTYPE_0B127,							// 0
 	    /*PAR_OSC_WAVE_DRUM1*/ 	DTYPE_MENU | (MENU_WAVEFORM<<4),
 	    /*PAR_OSC_WAVE_DRUM2*/ 	DTYPE_MENU | (MENU_WAVEFORM<<4),
 	    /*PAR_OSC_WAVE_DRUM3*/ 	DTYPE_MENU | (MENU_WAVEFORM<<4),
@@ -254,7 +254,7 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 	    /*PAR_WAVE1_HH*/  		DTYPE_MENU | (MENU_WAVEFORM<<4),
 	    /*PAR_COARSE1*/ 		DTYPE_0B127,
 	    /*PAR_FINE1*/ 			DTYPE_PM63,
-	    /*PAR_COARSE2*/			DTYPE_0B127,
+	    /*PAR_COARSE2*/			DTYPE_0B127,							// 10
 	    /*PAR_FINE2*/ 			DTYPE_PM63,
 	    /*PAR_COARSE3*/ 		DTYPE_0B127,
 	    /*PAR_FINE3*/ 			DTYPE_PM63,
@@ -264,7 +264,7 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 	    /*PAR_FINE5*/ 			DTYPE_PM63,
 	    /*PAR_COARSE6*/ 		DTYPE_0B127,
 	    /*PAR_FINE6*/ 			DTYPE_PM63,
-	    /*PAR_MOD_WAVE_DRUM1*/  DTYPE_MENU | (MENU_WAVEFORM<<4),
+	    /*PAR_MOD_WAVE_DRUM1*/  DTYPE_MENU | (MENU_WAVEFORM<<4),		//20
 	    /*PAR_MOD_WAVE_DRUM2*/  DTYPE_MENU | (MENU_WAVEFORM<<4),
 	    /*PAR_MOD_WAVE_DRUM3*/  DTYPE_MENU | (MENU_WAVEFORM<<4),
 	    /*PAR_WAVE2_CYM*/ 		DTYPE_MENU | (MENU_WAVEFORM<<4),
@@ -274,7 +274,7 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 	    /*PAR_NOISE_FREQ1*/ 	DTYPE_0B127,
 	    /*PAR_MIX1*/ 			DTYPE_0B127,
 	    /*PAR_MOD_OSC_F1_CYM*/ 	DTYPE_0B127,
-	    /*PAR_MOD_OSC_F2_CYM*/ 	DTYPE_0B127,
+	    /*PAR_MOD_OSC_F2_CYM*/ 	DTYPE_0B127,							//30
 	    /*PAR_MOD_OSC_GAIN1_CYM*/ DTYPE_0B127,
 	    /*PAR_MOD_OSC_GAIN2_CYM*/ DTYPE_0B127,
 	    /*PAR_MOD_OSC_F1*/ 		DTYPE_0B127,
@@ -284,7 +284,7 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 	    /*PAR_FILTER_FREQ_1*/ 	DTYPE_0B127,
 	    /*PAR_FILTER_FREQ_2*/ 	DTYPE_0B127,
 	    /*PAR_FILTER_FREQ_3*/ 	DTYPE_0B127,
-	    /*PAR_FILTER_FREQ_4*/ 	DTYPE_0B127,
+	    /*PAR_FILTER_FREQ_4*/ 	DTYPE_0B127,							//40
 	    /*PAR_FILTER_FREQ_5*/ 	DTYPE_0B127,
 	    /*PAR_FILTER_FREQ_6*/ 	DTYPE_0B127,
 	    /*PAR_RESO_1*/ 			DTYPE_0B127,
@@ -294,7 +294,7 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 	    /*PAR_RESO_5*/ 			DTYPE_0B127,
 	    /*PAR_RESO_6*/ 			DTYPE_0B127,
 	    /*PAR_VELOA1*/ 			DTYPE_0B127,
-	    /*PAR_VELOD1*/ 			DTYPE_0B127,
+	    /*PAR_VELOD1*/ 			DTYPE_0B127,							//50
 	    /*PAR_VELOA2*/ 			DTYPE_0B127,
 	    /*PAR_VELOD2*/ 			DTYPE_0B127,
 	    /*PAR_VELOA3*/ 			DTYPE_0B127,
@@ -304,7 +304,7 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 	    /*PAR_VELOA5*/ 			DTYPE_0B127,
 	    /*PAR_VELOD5*/ 			DTYPE_0B127,
 	    /*PAR_VELOA6*/ 			DTYPE_0B127,
-	    /*PAR_VELOD6_CLOSED*/ 	DTYPE_0B127,
+	    /*PAR_VELOD6_CLOSED*/ 	DTYPE_0B127,							//60
 	    /*PAR_VELOD6_OPEN*/ 	DTYPE_0B127,
 	    /*PAR_VOL_SLOPE1*/ 		DTYPE_0B127,
 	    /*PAR_VOL_SLOPE2*/ 		DTYPE_0B127,
@@ -314,7 +314,7 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 	    /*PAR_VOL_SLOPE6*/ 		DTYPE_0B127,
 	    /*PAR_REPEAT4*/ 		DTYPE_0B127,
 	    /*PAR_REPEAT5*/ 		DTYPE_0B127,
-	    /*PAR_MOD_EG1*/ 		DTYPE_0B127,
+	    /*PAR_MOD_EG1*/ 		DTYPE_0B127,							//70
 	    /*PAR_MOD_EG2*/ 		DTYPE_0B127,
 	    /*PAR_MOD_EG3*/ 		DTYPE_0B127,
 	    /*PAR_MOD_EG4*/ 		DTYPE_0B127,
@@ -324,7 +324,7 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 	    /*PAR_MODAMNT4*/ 		DTYPE_0B127,
 	    /*PAR_PITCH_SLOPE1*/ 	DTYPE_0B127,
 	    /*PAR_PITCH_SLOPE2*/ 	DTYPE_0B127,
-	    /*PAR_PITCH_SLOPE3*/ 	DTYPE_0B127,
+	    /*PAR_PITCH_SLOPE3*/ 	DTYPE_0B127,							//80
 	    /*PAR_PITCH_SLOPE4*/ 	DTYPE_0B127,
 	    /*PAR_FMAMNT1*/ 		DTYPE_0B127,
 	    /*PAR_FM_FREQ1*/ 		DTYPE_0B127,
@@ -334,7 +334,7 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 	    /*PAR_FM_FREQ3*/ 		DTYPE_0B127,
 	    /*PAR_VOL1*/ 			DTYPE_0B127,
 	    /*PAR_VOL2*/ 			DTYPE_0B127,
-	    /*PAR_VOL3*/ 			DTYPE_0B127,
+	    /*PAR_VOL3*/ 			DTYPE_0B127,							//90
 	    /*PAR_VOL4*/ 			DTYPE_0B127,
 	    /*PAR_VOL5*/ 			DTYPE_0B127,
 	    /*PAR_VOL6*/ 			DTYPE_0B127,
@@ -344,7 +344,7 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 	    /*NRPN_FINE*/ 			DTYPE_0B127,
 	    /*NRPN_COARSE*/ 		DTYPE_0B127,
 	    /*PAR_PAN4*/ 			DTYPE_PM63,
-	    /*PAR_PAN5*/ 			DTYPE_PM63,
+	    /*PAR_PAN5*/ 			DTYPE_PM63,								//100
 	    /*PAR_PAN6*/ 			DTYPE_PM63,
 	    /*PAR_DRIVE1*/ 			DTYPE_0B127,
 	    /*PAR_DRIVE2*/ 			DTYPE_0B127,
@@ -354,7 +354,7 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 	    /*PAR_HAT_DISTORTION*/ 	DTYPE_0B127,
 	    /*PAR_VOICE_DECIMATION1*/ DTYPE_0B127,
 	    /*PAR_VOICE_DECIMATION2*/ DTYPE_0B127,
-	    /*PAR_VOICE_DECIMATION3*/ DTYPE_0B127,
+	    /*PAR_VOICE_DECIMATION3*/ DTYPE_0B127,							//110
 	    /*PAR_VOICE_DECIMATION4*/ DTYPE_0B127,
 	    /*PAR_VOICE_DECIMATION5*/ DTYPE_0B127,
 	    /*PAR_VOICE_DECIMATION6*/ DTYPE_0B127,
@@ -364,7 +364,7 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 	    /*PAR_FREQ_LFO3*/ 		DTYPE_0B127,
 	    /*PAR_FREQ_LFO4*/ 		DTYPE_0B127,
 	    /*PAR_FREQ_LFO5*/ 		DTYPE_0B127,
-	    /*PAR_FREQ_LFO6*/ 		DTYPE_0B127,
+	    /*PAR_FREQ_LFO6*/ 		DTYPE_0B127,							//120
 	    /*PAR_AMOUNT_LFO1*/		DTYPE_0B127,
 	    /*PAR_AMOUNT_LFO2*/ 	DTYPE_0B127,
 	    /*PAR_AMOUNT_LFO3*/ 	DTYPE_0B127,
@@ -374,7 +374,7 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 	    /*PAR_RESERVED4*/ 		DTYPE_0B127,
 	    /*PAR_FILTER_DRIVE_1*/ 	DTYPE_0B127,
 	    /*PAR_FILTER_DRIVE_2*/ 	DTYPE_0B127,
-	    /*PAR_FILTER_DRIVE_3*/ 	DTYPE_0B127,
+	    /*PAR_FILTER_DRIVE_3*/ 	DTYPE_0B127,							//130
 	    /*PAR_FILTER_DRIVE_4*/ 	DTYPE_0B127,
 	    /*PAR_FILTER_DRIVE_5*/ 	DTYPE_0B127,
 	    /*PAR_FILTER_DRIVE_6*/	DTYPE_0B127,
@@ -384,7 +384,7 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 	    /*PAR_VOLUME_MOD_ON_OFF1*/ DTYPE_ON_OFF,
 	    /*PAR_VOLUME_MOD_ON_OFF2*/ DTYPE_ON_OFF,
 	    /*PAR_VOLUME_MOD_ON_OFF3*/ DTYPE_ON_OFF,
-	    /*PAR_VOLUME_MOD_ON_OFF4*/ DTYPE_ON_OFF,
+	    /*PAR_VOLUME_MOD_ON_OFF4*/ DTYPE_ON_OFF,						//140
 	    /*PAR_VOLUME_MOD_ON_OFF5*/ DTYPE_ON_OFF,
 	    /*PAR_VOLUME_MOD_ON_OFF6*/ DTYPE_ON_OFF,
 	    /*PAR_VELO_MOD_AMT_1*/ 	DTYPE_0B127,
@@ -394,7 +394,7 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 	    /*PAR_VELO_MOD_AMT_5*/ 	DTYPE_0B127,
 	    /*PAR_VELO_MOD_AMT_6*/ 	DTYPE_0B127,
 	    /*PAR_VEL_DEST_1*/ 		DTYPE_TARGET_SELECTION_VELO,
-	    /*PAR_VEL_DEST_2*/ 		DTYPE_TARGET_SELECTION_VELO,
+	    /*PAR_VEL_DEST_2*/ 		DTYPE_TARGET_SELECTION_VELO,			//150
 	    /*PAR_VEL_DEST_3*/ 		DTYPE_TARGET_SELECTION_VELO,
 	    /*PAR_VEL_DEST_4*/ 		DTYPE_TARGET_SELECTION_VELO,
 	    /*PAR_VEL_DEST_5*/ 		DTYPE_TARGET_SELECTION_VELO,
@@ -404,7 +404,7 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 	    /*PAR_WAVE_LFO3*/ 		DTYPE_MENU | (MENU_LFO_WAVES<<4),
 	    /*PAR_WAVE_LFO4 */ 		DTYPE_MENU | (MENU_LFO_WAVES<<4),
 	    /*PAR_WAVE_LFO5*/ 		DTYPE_MENU | (MENU_LFO_WAVES<<4),
-	    /*PAR_WAVE_LFO6*/ 		DTYPE_MENU | (MENU_LFO_WAVES<<4),
+	    /*PAR_WAVE_LFO6*/ 		DTYPE_MENU | (MENU_LFO_WAVES<<4),		//160
 	    /*PAR_VOICE_LFO1*/ 		DTYPE_VOICE_LFO,
 	    /*PAR_VOICE_LFO2*/ 		DTYPE_VOICE_LFO,
 	    /*PAR_VOICE_LFO3*/ 		DTYPE_VOICE_LFO,
@@ -414,7 +414,7 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 	    /*PAR_TARGET_LFO1*/ 	DTYPE_TARGET_SELECTION_LFO,
 	    /*PAR_TARGET_LFO2*/ 	DTYPE_TARGET_SELECTION_LFO,
 	    /*PAR_TARGET_LFO3*/ 	DTYPE_TARGET_SELECTION_LFO,
-	    /*PAR_TARGET_LFO4*/ 	DTYPE_TARGET_SELECTION_LFO,
+	    /*PAR_TARGET_LFO4*/ 	DTYPE_TARGET_SELECTION_LFO,				//170
 	    /*PAR_TARGET_LFO5*/ 	DTYPE_TARGET_SELECTION_LFO,
 	    /*PAR_TARGET_LFO6*/ 	DTYPE_TARGET_SELECTION_LFO,
 	    /*PAR_RETRIGGER_LFO1*/ 	DTYPE_MENU | (MENU_RETRIGGER<<4),
@@ -424,7 +424,7 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 	    /*PAR_RETRIGGER_LFO5*/ 	DTYPE_MENU | (MENU_RETRIGGER<<4),
 	    /*PAR_RETRIGGER_LFO6*/ 	DTYPE_MENU | (MENU_RETRIGGER<<4),
 	    /*PAR_SYNC_LFO1*/ 		DTYPE_MENU | (MENU_SYNC_RATES<<4),
-	    /*PAR_SYNC_LFO2*/ 		DTYPE_MENU | (MENU_SYNC_RATES<<4),
+	    /*PAR_SYNC_LFO2*/ 		DTYPE_MENU | (MENU_SYNC_RATES<<4),		//180
 	    /*PAR_SYNC_LFO3*/ 		DTYPE_MENU | (MENU_SYNC_RATES<<4),
 	    /*PAR_SYNC_LFO4*/ 		DTYPE_MENU | (MENU_SYNC_RATES<<4),
 	    /*PAR_SYNC_LFO5*/ 		DTYPE_MENU | (MENU_SYNC_RATES<<4),
@@ -434,7 +434,7 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 	    /*PAR_OFFSET_LFO3*/ 	DTYPE_0B127,
 	    /*PAR_OFFSET_LFO4*/ 	DTYPE_0B127,
 	    /*PAR_OFFSET_LFO5*/ 	DTYPE_0B127,
-	    /*PAR_OFFSET_LFO6*/ 	DTYPE_0B127,
+	    /*PAR_OFFSET_LFO6*/ 	DTYPE_0B127,							//190
 	    /*PAR_FILTER_TYPE_1*/ 	DTYPE_MENU | (MENU_FILTER<<4),
 	    /*PAR_FILTER_TYPE_2*/ 	DTYPE_MENU | (MENU_FILTER<<4),
 	    /*PAR_FILTER_TYPE_3*/ 	DTYPE_MENU | (MENU_FILTER<<4),
@@ -444,7 +444,7 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 	    /*PAR_TRANS1_VOL*/ 		DTYPE_0B127,
 	    /*PAR_TRANS2_VOL*/ 		DTYPE_0B127,
 	    /*PAR_TRANS3_VOL*/ 		DTYPE_0B127,
-	    /*PAR_TRANS4_VOL*/ 		DTYPE_0B127,
+	    /*PAR_TRANS4_VOL*/ 		DTYPE_0B127,							//200
 	    /*PAR_TRANS5_VOL*/ 		DTYPE_0B127,
 	    /*PAR_TRANS6_VOL*/ 		DTYPE_0B127,
 	    /*PAR_TRANS1_WAVE*/ 	DTYPE_MENU | (MENU_TRANS<<4),
@@ -454,7 +454,7 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 	    /*PAR_TRANS5_WAVE*/ 	DTYPE_MENU | (MENU_TRANS<<4),
 	    /*PAR_TRANS6_WAVE*/ 	DTYPE_MENU | (MENU_TRANS<<4),
 	    /*PAR_TRANS1_FREQ*/ 	DTYPE_0B127,
-	    /*PAR_TRANS2_FREQ*/ 	DTYPE_0B127,
+	    /*PAR_TRANS2_FREQ*/ 	DTYPE_0B127,							//210
 	    /*PAR_TRANS3_FREQ*/ 	DTYPE_0B127,
 	    /*PAR_TRANS4_FREQ*/ 	DTYPE_0B127,
 	    /*PAR_TRANS5_FREQ*/ 	DTYPE_0B127,
@@ -464,7 +464,7 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 	    /*PAR_AUDIO_OUT3*/ 		DTYPE_MENU | (MENU_AUDIO_OUT<<4),
 	    /*PAR_AUDIO_OUT4*/ 		DTYPE_MENU | (MENU_AUDIO_OUT<<4),
 	    /*PAR_AUDIO_OUT5*/ 		DTYPE_MENU | (MENU_AUDIO_OUT<<4),
-	    /*PAR_AUDIO_OUT6*/ 		DTYPE_MENU | (MENU_AUDIO_OUT<<4),
+	    /*PAR_AUDIO_OUT6*/ 		DTYPE_MENU | (MENU_AUDIO_OUT<<4),		//220
 	    //--AS these 7
 	    /*PAR_MIDI_NOTE1*/		DTYPE_NOTE_NAME,
 	    /*PAR_MIDI_NOTE2*/		DTYPE_NOTE_NAME,
@@ -475,7 +475,7 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 	    /*PAR_MIDI_NOTE7*/		DTYPE_NOTE_NAME,
 	    /*PAR_ROLL*/ 			DTYPE_MENU | (MENU_ROLL_RATES<<4),
 	    /*PAR_MORPH*/ 			DTYPE_0B255,
-	    /*PAR_ACTIVE_STEP */ 	DTYPE_0B127,
+	    /*PAR_ACTIVE_STEP */ 	DTYPE_0B127,							//230
 	    /*PAR_STEP_VOLUME*/ 	DTYPE_0B127,
 	    /*PAR_STEP_PROB*/ 		DTYPE_0B127,
 	    /*PAR_STEP_NOTE*/ 		DTYPE_NOTE_NAME,
@@ -485,7 +485,7 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 	    /*PAR_P1_DEST*/ 		DTYPE_AUTOM_TARGET,
 	    /*PAR_P2_DEST*/ 		DTYPE_AUTOM_TARGET,
 	    /*PAR_P1_VAL*/ 			DTYPE_0B127,
-	    /*PAR_P2_VAL*/ 			DTYPE_0B127,
+	    /*PAR_P2_VAL*/ 			DTYPE_0B127,							//240
 	    /*PAR_SHUFFLE*/ 		DTYPE_0B127,
 	    /*PAR_PATTERN_BEAT*/ 	DTYPE_0B127,
 	    /*PAR_PATTERN_NEXT*/ 	DTYPE_MENU | (MENU_NEXT_PATTERN<<4),
@@ -495,7 +495,7 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 	    /*PAR_FLUX*/ 			DTYPE_0B127,
 	    /*PAR_SOM_FREQ*/ 		DTYPE_0B127,
 	    /*PAR_BPM*/ 			DTYPE_0B255,
-	    /*PAR_MIDI_CHAN_1*/ 	DTYPE_1B16,
+	    /*PAR_MIDI_CHAN_1*/ 	DTYPE_1B16,								//250
 	    /*PAR_MIDI_CHAN_2*/ 	DTYPE_1B16,
 	    /*PAR_MIDI_CHAN_3*/ 	DTYPE_1B16,
 	    /*PAR_MIDI_CHAN_4*/ 	DTYPE_1B16,
@@ -505,7 +505,7 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 	    /*PAR_FOLLOW*/ 			DTYPE_ON_OFF,
 	    /*PAR_QUANTISATION*/ 	DTYPE_MENU | (MENU_SEQ_QUANT<<4),
 	    /*PAR_SCREENSAVER_ON_OFF*/ DTYPE_ON_OFF,
-	    /*PAR_MIDI_MODE*/ 		DTYPE_MENU | (MENU_MIDI<<4),
+	    /*PAR_MIDI_MODE*/ 		DTYPE_MENU | (MENU_MIDI<<4),			//260
 	    /*PAR_MIDI_CHAN_7*/ 	DTYPE_1B16,
 };
 
@@ -900,16 +900,16 @@ void menu_repaintGeneric()
 		uint16_t parNr = pgm_read_word(&ap->bot1 + activeParameter);
 		curParmVal = parameter_values[parNr];
 
-		if(pgm_read_byte(parameter_dtypes[parNr]) == DTYPE_AUTOM_TARGET)
+		if((pgm_read_byte(&parameter_dtypes[parNr]) & 0x0f) == DTYPE_AUTOM_TARGET)
 		{
 			// make sure we have a valid value (autom target must target one of the sound parameters)
 			if(curParmVal >= END_OF_SOUND_PARAMETERS)
 				parameter_values[parNr] = curParmVal = END_OF_SOUND_PARAMETERS-1;
 
 			//Top row (which destination (0 or 1) and which voice it's targeting)
-			memcpy_P(&editDisplayBuffer[0][0],PSTR("Autom.Dest.    V"),16);
+			memcpy_P(&editDisplayBuffer[0][0],PSTR("Autom.Dest.   V"),15);
 			numtostrpu(&editDisplayBuffer[0][11],(uint8_t)( parNr - PAR_P1_DEST));
-			numtostru(&editDisplayBuffer[0][16], (uint8_t)(menu_cc2name[curParmVal].voiceNr+1));
+			numtostru(&editDisplayBuffer[0][15], (uint8_t)(menu_cc2name[curParmVal].voiceNr+1));
 
 			memset(&editDisplayBuffer[1][0],' ',16);
 			// bottom row is the category and long name for the parameter being targeted
@@ -1661,9 +1661,15 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 					if(*paramValue > (NUM_SUB_PAGES * 8 -1))
 						*paramValue = (NUM_SUB_PAGES * 8 -1); 
 
+					// determine the parameter id to send across
 					uint8_t value = getModTargetValue(*paramValue, (uint8_t)(paramNr - PAR_VEL_DEST_1));
 
 					uint8_t upper,lower;
+					/*
+					 *  upper: rightmost bit is 1 if the parameter we are targeting is in the "above 127" range
+					 *         next 6 bits are the voice number (0 to 5) of which voice is being dealt with here
+					 *  lower: the (0-127) value representing which parameter is being modulated
+					 */
 					upper = (uint8_t)( (uint8_t)((value&0x80)>>7) |
 							(((paramNr - PAR_VEL_DEST_1)&0x3f)<<1) );
 					lower = value&0x7f;
@@ -1794,8 +1800,9 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 					if(*paramValue >= numEntries)
 						*paramValue = (uint8_t)(numEntries-1);
 
-				}
+				} // parameter_dtypes[paramNr] & 0x0F case DTYPE_MENU
 				break;
+
 				default://parameter_dtypes[paramNr] & 0x0F
 				case DTYPE_0B127:
 					if(*paramValue > 127)
@@ -1803,12 +1810,14 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 					break;
 				} //parameter_dtypes[paramNr] & 0x0F
 
+
+
 				//send parameter change to uart tx
 				if(paramNr < 128) // => Sound Parameter
 				{
 					frontPanel_sendData(MIDI_CC,(uint8_t)paramNr,*paramValue);
 				}
-				// TODO how is this affected by my changes in the param enum?
+				// TODO --AS how is this affected by my changes in the param enum?
 				else if(paramNr>=128 && (paramNr < END_OF_SOUND_PARAMETERS)) // => Sound Parameter above 127
 				{
 					frontPanel_sendData(CC_2,(uint8_t)(paramNr-128),*paramValue);
@@ -2507,8 +2516,6 @@ void menu_parseKnobValue(uint8_t potNr, uint8_t value)
 
 			case DTYPE_VOICE_LFO:
 			{
-
-
 				value = getModTargetValue(parameter_values[PAR_TARGET_LFO1+
 				                                           ((uint8_t)(paramNr - PAR_VOICE_LFO1))], (uint8_t)(value -1));
 
@@ -2521,9 +2528,10 @@ void menu_parseKnobValue(uint8_t potNr, uint8_t value)
 			break;
 			case DTYPE_TARGET_SELECTION_LFO:
 			{
-				uint8_t voiceNr = (uint8_t)( parameter_values[PAR_VOICE_LFO1+((uint8_t)( paramNr - PAR_TARGET_LFO1))] - 1);
+				uint8_t voiceNr =
+					(uint8_t)( parameter_values[PAR_VOICE_LFO1+((uint8_t)( paramNr - PAR_TARGET_LFO1))] - 1);
 				if (voiceNr == 0) voiceNr = 1;
-				value = getModTargetValue(value,(uint8_t)(voiceNr-1)); // --AS subtract 1 from voice nr ???
+				value = getModTargetValue(value,(uint8_t)(voiceNr-1)); // --AS fix - subtract 1 from voice nr
 
 				uint8_t upper,lower;
 				upper = (uint8_t)(((value&0x80)>>7) | ((((uint8_t)(paramNr - PAR_TARGET_LFO1))&0x3f)<<1));

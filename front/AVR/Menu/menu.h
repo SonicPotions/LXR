@@ -192,7 +192,7 @@ enum WaveformNamesEnum
 };	
 //-----------------------------------------------------------------
 enum shortNamesEnum
-{
+{ // these must correspond with shortNames
 	SHORT_EMPTY,
 	SHORT_COARSE,
 	SHORT_FINE,
