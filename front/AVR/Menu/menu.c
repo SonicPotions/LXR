@@ -907,8 +907,8 @@ void menu_repaintGeneric()
 				parameter_values[parNr] = curParmVal = END_OF_SOUND_PARAMETERS-1;
 
 			//Top row (which destination (0 or 1) and which voice it's targeting)
-			memcpy_P(&editDisplayBuffer[0][0],PSTR("Autom.Dest.   V"),15);
-			numtostrpu(&editDisplayBuffer[0][11],(uint8_t)( parNr - PAR_P1_DEST));
+			memcpy_P(&editDisplayBuffer[0][0],PSTR("Autom.Dest.  V"),14);
+			numtostru(&editDisplayBuffer[0][11],(uint8_t)( parNr - PAR_P1_DEST + 1));
 			numtostru(&editDisplayBuffer[0][15], (uint8_t)(menu_cc2name[curParmVal].voiceNr+1));
 
 			memset(&editDisplayBuffer[1][0],' ',16);
@@ -975,13 +975,13 @@ void menu_repaintGeneric()
 				}
 				else
 				{
-					memcpy_P(&editDisplayBuffer[1][13],PSTR("FM"),2);
+					memcpy_P(&editDisplayBuffer[1][13],PSTR("FM "),3);
 				}
 				break;
 			case DTYPE_ON_OFF: //switch(parameters_dtypes[parNr] & 0x0F)
 				if(curParmVal == 1)
 				{
-					memcpy_P(&editDisplayBuffer[1][13],PSTR("On"),2);
+					memcpy_P(&editDisplayBuffer[1][13],PSTR("On "),3);
 				}
 				else
 				{
@@ -1012,7 +1012,7 @@ void menu_repaintGeneric()
 					break;
 
 				case MENU_SYNC_RATES:
-					numtostrpu(&editDisplayBuffer[1][13],curParmVal);
+					memcpy_P(&editDisplayBuffer[1][13],syncRateNames[curParmVal + 1],3);
 					break;
 
 				case MENU_LFO_WAVES:
@@ -1674,7 +1674,7 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 							(((paramNr - PAR_VEL_DEST_1)&0x3f)<<1) );
 					lower = value&0x7f;
 					frontPanel_sendData(CC_VELO_TARGET,upper,lower);
-					return;
+					//return;
 				}
 				break;
 
