@@ -527,7 +527,7 @@ void lockPotentiometerFetch()
 //takes the target  number and converts it to a parameter number
 // TODO the parameter numbers are now 16 bit. We need to create a set of sensible mod targets
 // (that fits in 8 bits), and have a mapping
-uint8_t getModTargetValue(uint8_t value, uint8_t voiceNr)
+uint8_t getModTargetValue_REMOVEME(uint8_t value, uint8_t voiceNr)
 {
 	if(voiceNr >= 6) voiceNr = 5;
 	// right 3 bits is active parameter, left 5 bits is page number
@@ -878,6 +878,44 @@ uint8_t checkScrollSign(uint8_t activePage, uint8_t activeParameter)
 	else return 0;	
 }
 
+static void menu_displayModTargetFull(uint8_t curParmVal)
+{
+	//**AUTOM **VELO - determine the full name to display for edit mode
+	// a letters for the category and 8 letters for the name
+	strlcpy_P(&editDisplayBuffer[1][0],
+		(const char PROGMEM *)(&catNames[
+					 pgm_read_byte(&valueNames[
+						 pgm_read_byte(&modTargets[curParmVal].nameIdx)
+											  ].category)
+										]),8);
+	strlcpy_P(&editDisplayBuffer[1][8],
+		(const char PROGMEM *)(&longNames[
+					pgm_read_byte(&valueNames[
+						pgm_read_byte(&modTargets[curParmVal].nameIdx)
+											 ].longName)
+										 ]),8);
+}
+
+static void menu_displayModTargetShort(uint8_t curParmVal, char *valueAsText, char inclVoice)
+{
+	//**AUTOM **VELO - render a short name for non edit mode (encoder mode)
+
+	if( pgm_read_byte(&modTargets[curParmVal].param)==PAR_NONE ) {
+		memcpy_P(valueAsText,PSTR("Off"),3);
+	} else {
+		uint8_t off=0;
+		if(inclVoice){
+			// first digit is voice #, subsequent two letters are part of short name
+			// remember that curParmVal is our index into modTargets, not an actual parameter number
+			valueAsText[off++]=voiceFromModTargValue(curParmVal);
+		}
+
+		const uint8_t name = pgm_read_byte(&modTargets[curParmVal].nameIdx);
+		memcpy_P(&valueAsText[off],shortNames[pgm_read_byte(&valueNames[name].shortName)],3-off);
+
+	}
+}
+
 //-----------------------------------------------------------------
 // paint the screen when in normal parameter edit mode
 // (as opposed to repainting the load save screen)
@@ -898,20 +936,21 @@ void menu_repaintGeneric()
 		uint16_t parNr = pgm_read_word(&ap->bot1 + activeParameter);
 		curParmVal = parameter_values[parNr];
 
+		// just clear the whole thing
+		memset(&editDisplayBuffer[0][0],' ',16);
+		memset(&editDisplayBuffer[1][0],' ',16);
+
 		if((pgm_read_byte(&parameter_dtypes[parNr]) & 0x0f) == DTYPE_AUTOM_TARGET)
 		{
 			// make sure we have a valid value (autom target must target one of the sound parameters)
 			if(curParmVal >= END_OF_SOUND_PARAMETERS)
 				parameter_values[parNr] = curParmVal = END_OF_SOUND_PARAMETERS-1;
 
-			memset(&editDisplayBuffer[0][0],' ',16);
-			memset(&editDisplayBuffer[1][0],' ',16);
 			//Top row (which destination (1 or 2) and which voice it's targeting)
 			memcpy_P(&editDisplayBuffer[0][0],PSTR("AutDst"),6);
 			numtostru(&editDisplayBuffer[0][7],(uint8_t)( parNr - PAR_P1_DEST + 1));
 
 			// bottom row is the category and long name for the parameter being targeted
-
 			if( pgm_read_byte(&modTargets[curParmVal].param)==PAR_NONE ) {
 				// 0xff represents it being OFF
 				strcpy_P(&editDisplayBuffer[1][0], PSTR("Off"));
@@ -920,49 +959,29 @@ void menu_repaintGeneric()
 				//**AUTOM - determine voice number to display for edit mode
 				// remember that curParmVal is our index into modTargets, not an actual parameter number
 				numtostru(&editDisplayBuffer[0][15], voiceFromModTargValue(curParmVal));
-				//**AUTOM - determine the full name to display for edit mode
-				// a letters for the category and 8 letters for the name
-				strlcpy_P(&editDisplayBuffer[1][0],
-					(const char PROGMEM *)(&catNames[
-					             pgm_read_byte(&valueNames[
-					                 pgm_read_byte(&modTargets[curParmVal].nameIdx)
-					                                      ].category)
-					                                ]),8);
-				strlcpy_P(&editDisplayBuffer[1][8],
-					(const char PROGMEM *)(&longNames[
-					            pgm_read_byte(&valueNames[
-					                pgm_read_byte(&modTargets[curParmVal].nameIdx)
-					                                     ].longName)
-					                                 ]),8);
+				// display the full mod target
+				menu_displayModTargetFull(curParmVal);
+
 			}
 
 		} // parameter type is automation target
 
 		else // parameter type is not automation target
 		{
-			//Top row -> category
+			//Top row left -> category
 			strcpy_P(&editDisplayBuffer[0][0],
 				(const char PROGMEM *)(&catNames[pgm_read_byte(&valueNames[parName].category)]));
-			//Bottom row left -> long name
-			strcpy_P(&editDisplayBuffer[1][0],
+			//Top row right -> long name
+			strcpy_P(&editDisplayBuffer[0][8],
 				(const char PROGMEM *)(&longNames[pgm_read_byte(&valueNames[parName].longName)]));
-			//Bottom row right -> parameter value (set below)
 
+			//Bottom row -> parameter value (set below)
 			switch(pgm_read_byte(&parameter_dtypes[parNr]) & 0x0F)
 			{
 			case DTYPE_TARGET_SELECTION_VELO: //switch(parameters_dtypes[parNr] & 0x0F)
-			{
-				const uint8_t voiceNr			= (uint8_t)(parNr - PAR_VEL_DEST_1);
-				const uint8_t page				= (curParmVal & MASK_PAGE)>>PAGE_SHIFT;
-				const uint8_t activeParameter	= curParmVal & MASK_PARAMETER;
-
-				memcpy_P(&editDisplayBuffer[1][13],
-					&shortNames[
-					    pgm_read_byte(&valueNames[
-					        pgm_read_byte(&menuPages[voiceNr][page].top1 + activeParameter)
-					                             ].shortName)
-					           ],3);
-			}
+				//**VELO edit mode - display the full target (Cat and long name)
+				// curParmVal is an index into modTargets
+				menu_displayModTargetFull(curParmVal);
 			break;
 			case DTYPE_TARGET_SELECTION_LFO: //switch(parameters_dtypes[parNr] & 0x0F)
 			{
@@ -1123,19 +1142,9 @@ void menu_repaintGeneric()
 
 				switch(pgm_read_byte(&parameter_dtypes[parNr]) & 0x0F) {
 				case DTYPE_TARGET_SELECTION_VELO: //switch(parameters[parNr].dtype&0x0F)
-				{
-					const uint8_t voiceNr			= (uint8_t)(parNr - PAR_VEL_DEST_1);
-					const uint8_t page				= (curParmVal & MASK_PAGE)>>PAGE_SHIFT;
-					const uint8_t activeParameter	= curParmVal & MASK_PARAMETER;
-
-					memcpy_P(&valueAsText,
-						&shortNames[
-						    pgm_read_byte(&valueNames[
-						        pgm_read_byte(&menuPages[voiceNr][page].top1 + activeParameter)
-						                             ].shortName)
-						           ],3);
-				}
-				break;
+					//**VELO non-edit mode display short name with no numeric prefix
+					menu_displayModTargetShort(curParmVal,valueAsText,0);
+					break;
 
 				case DTYPE_TARGET_SELECTION_LFO: //switch(parameters[parNr].dtype&0x0F)
 				{
@@ -1162,22 +1171,10 @@ void menu_repaintGeneric()
 					setNoteName(curParmVal, valueAsText);
 					break;
 
-				case DTYPE_AUTOM_TARGET: { //switch(parameters[parNr].dtype&0x0F)
+				case DTYPE_AUTOM_TARGET: //switch(parameters[parNr].dtype&0x0F)
 					//**AUTOM - determine the name to display for non-edit mode
-					if( pgm_read_byte(&modTargets[curParmVal].param)==PAR_NONE )
-					{
-						memcpy_P(valueAsText,PSTR("Off"),3);
-					} else {
-						// first digit is voice #, subsequent two letters are part of short name
-						// remember that curParmVal is our index into modTargets, not an actual parameter number
-						valueAsText[0]=voiceFromModTargValue(curParmVal);
-
-						const uint8_t name = pgm_read_byte(&modTargets[curParmVal].nameIdx);
-						memcpy_P(&valueAsText[1],shortNames[pgm_read_byte(&valueNames[name].shortName)],2);
-
-					}
-				}
-				break;
+					menu_displayModTargetShort(curParmVal,valueAsText,1);
+					break;
 
 				case DTYPE_MIX_FM: //switch(parameters[parNr].dtype&0x0F)
 					if(curParmVal == 1)
@@ -1673,20 +1670,24 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 				{
 				case DTYPE_TARGET_SELECTION_VELO: //parameter_dtypes[paramNr] & 0x0F
 				{
-					if(*paramValue > (NUM_SUB_PAGES * 8 -1))
-						*paramValue = (NUM_SUB_PAGES * 8 -1); 
+					//**VELO encoder value limit to start and end of range for this voice
+					// get voice, and figure valid range, translate to param number before sending
+					uint8_t voiceNr=(uint8_t)(paramNr - PAR_VEL_DEST_1);
+					if(*paramValue < pgm_read_byte(&modTargetVoiceOffsets[voiceNr].start)) {
+						*paramValue = pgm_read_byte(&modTargetVoiceOffsets[voiceNr].start);
+					} else if (*paramValue > pgm_read_byte(&modTargetVoiceOffsets[voiceNr].end)) {
+						*paramValue = pgm_read_byte(&modTargetVoiceOffsets[voiceNr].end);
+					}
 
 					// determine the parameter id to send across
-					uint8_t value = getModTargetValue(*paramValue, (uint8_t)(paramNr - PAR_VEL_DEST_1));
-
+					uint8_t value = pgm_read_byte(&modTargets[*paramValue].param);
 					uint8_t upper,lower;
 					/*
 					 *  upper: rightmost bit is 1 if the parameter we are targeting is in the "above 127" range
 					 *         next 6 bits are the voice number (0 to 5) of which voice is being dealt with here
 					 *  lower: the (0-127) value representing which parameter is being modulated
 					 */
-					upper = (uint8_t)( (uint8_t)((value&0x80)>>7) |
-							(((paramNr - PAR_VEL_DEST_1)&0x3f)<<1) );
+					upper = (uint8_t)( (uint8_t)((value&0x80)>>7) | ((voiceNr&0x3f)<<1) );
 					lower = value&0x7f;
 					frontPanel_sendData(CC_VELO_TARGET,upper,lower);
 					//return;
@@ -2382,6 +2383,7 @@ uint8_t getDtypeValue(uint8_t value, uint16_t paramNr)
 	{
 	case DTYPE_TARGET_SELECTION_VELO:
 	case DTYPE_TARGET_SELECTION_LFO:
+		//**VELO limit range to start and end for the applicable voice
 		return (uint8_t)(frac*(NUM_SUB_PAGES * 8 -1));
 		break;
 
@@ -2525,6 +2527,7 @@ void menu_parseKnobValue(uint8_t potNr, uint8_t value)
 			{
 			case DTYPE_TARGET_SELECTION_VELO:
 			{
+				//**VELO knob value range TODO determine valid range and translate. convert to param before sending
 				value = getModTargetValue(value,((uint8_t)(paramNr - PAR_VEL_DEST_1)));
 
 				uint8_t upper,lower;

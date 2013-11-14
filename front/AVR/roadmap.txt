@@ -24,7 +24,11 @@ You can modulate a parameter based on the velocity value on each step for a voic
 The parameter is one of the parameters on the SAME voice. The left 5 bits of the param value select the page
 within the voice and the right 3 bits select one of the 8 params on that page. This resolves ultimately to a parameter
 which is applicable to that voice. It can be empty though because some menu items are empty. The data that gets sent to
-the back is a parameter number and the voice number. 
+the back is a parameter number and the voice number.
+
+Strategy for fix: the param value will change to represent a value in modTargets rather than an encoded reference into
+to menu pages. (search **VELO in the code). This means the value range will not be 0..n but rather n..m where n is the
+start for that voice and m is the end.
 
 LFO__
 params: PAR_TARGET_LFO*
@@ -46,7 +50,7 @@ which itself is a reference to long names, short names and category names for ev
 frontParser_stepData is a struct in front that stores among other things, these two values. It seems that it's only used to 
 store values it requests from cortex so that it can save these to sd card and vice versa.
 
-Strategy for automation target fix:
+Strategy for automation target fix: (search for **AUTOM in the code)
 - Do not modify the cortex side. so all changes are done in front
 - store an index into a valid list which is sane and sorted by voice then page then value (store in PAR_P*_DEST)
 - any time we receive a value from cortex, we translate it to this value

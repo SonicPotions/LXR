@@ -58,6 +58,7 @@ void frontParser_parseNrpn(uint8_t value)
 	}
 	else if ( (frontParser_nrpnNr+128 >= PAR_VEL_DEST_1) && (frontParser_nrpnNr+128 <= PAR_VEL_DEST_6) )
 	{
+		//**VELO receive nrpn TODO translate to parameter
 		uint8_t param = parameter_values[frontParser_nrpnNr+128];
 		if(param > (NUM_SUB_PAGES * 8 -1))
 		param = (NUM_SUB_PAGES * 8 -1); 

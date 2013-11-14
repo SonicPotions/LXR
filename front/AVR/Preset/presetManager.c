@@ -206,7 +206,7 @@ uint8_t preset_loadDrumset(uint8_t presetNr, uint8_t isMorph)
 			//special case mod targets
 			for(i=0;i<6;i++)
 			{
-				//velo
+				//**VELO load drumkit TODO translate to param value before sending
 				uint8_t value = getModTargetValue((uint8_t)(parameter_values[PAR_VEL_DEST_1+i]), (uint8_t)i);
 				uint8_t upper,lower;
 				upper = (uint8_t)(((value&0x80)>>7) | (((i)&0x3f)<<1));
