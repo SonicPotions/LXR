@@ -1,4 +1,4 @@
-#include "menu.h"
+
 /*
  * menuPages.h
  *
@@ -6,11 +6,10 @@
  *  Author: Julian
  */ 
 
-
 #ifndef MENUPAGES_H_
 #define MENUPAGES_H_
 
-
+#include "menu.h"
 
 
 /** This array hold the whole menu structure.
@@ -268,7 +267,7 @@ const Page menuPages[NUM_PAGES][NUM_SUB_PAGES] PROGMEM =
 
 	},
 	
-	//page 6 - Voice 6 - HH/Cymbal (FM)
+	//page 6 - Voice 6 - HH (FM)
 	{
 		//sub page 1 - osc
 		{
@@ -480,7 +479,5 @@ const Page menuPages[NUM_PAGES][NUM_SUB_PAGES] PROGMEM =
 	},
 		
 };
-//-----------------------------------------------------------------
-
 
 #endif /* MENUPAGES_H_ */

@@ -118,7 +118,7 @@ static uint8_t parameterFetch = 0b00011111;	/**< the lower 4 bits define a lock 
 //-----------------------------------------------------------------
 /** array holding all the names for the parameters
  *  short name, category, long name
- * These correspond with NamesEnum
+ * These correspond with NamesEnum in menu.h
  * */
 const Name valueNames[NUM_NAMES] PROGMEM =
 {
@@ -238,8 +238,6 @@ const Name valueNames[NUM_NAMES] PROGMEM =
 		{SHORT_FREQ,CAT_GENERATOR,LONG_FREQ},	//TEXT_SOM_FREQ,
 		{SHORT_MIDI,CAT_MIDI,LONG_MODE},	//TEXT_MIDI_MODE
 };
-
-
 
 //---------------------------------------------------------------
 // Parameter types. These correspond with ParamEnums and entries in parameter_values
@@ -543,7 +541,7 @@ void menu_init()
 {
 	lcd_clear();
 
-	cc2Name_init();
+	paramToModTargetInit();
 
 	memset(menu_currentPresetNr,0,sizeof(uint8_t) *NUM_PRESET_LOCATIONS );
 
@@ -906,22 +904,36 @@ void menu_repaintGeneric()
 			if(curParmVal >= END_OF_SOUND_PARAMETERS)
 				parameter_values[parNr] = curParmVal = END_OF_SOUND_PARAMETERS-1;
 
-			//Top row (which destination (0 or 1) and which voice it's targeting)
-			memcpy_P(&editDisplayBuffer[0][0],PSTR("Autom.Dest.  V"),14);
-			numtostru(&editDisplayBuffer[0][11],(uint8_t)( parNr - PAR_P1_DEST + 1));
-			numtostru(&editDisplayBuffer[0][15], (uint8_t)(menu_cc2name[curParmVal].voiceNr+1));
-
+			memset(&editDisplayBuffer[0][0],' ',16);
 			memset(&editDisplayBuffer[1][0],' ',16);
-			// bottom row is the category and long name for the parameter being targeted
-			if( (menu_cc2name[curParmVal].nameIdx < NUM_NAMES) )
-			{
-				char tmp[17];
+			//Top row (which destination (1 or 2) and which voice it's targeting)
+			memcpy_P(&editDisplayBuffer[0][0],PSTR("AutDst"),6);
+			numtostru(&editDisplayBuffer[0][7],(uint8_t)( parNr - PAR_P1_DEST + 1));
 
-				strlcpy_P(tmp,
-					(const char PROGMEM *)(&catNames[pgm_read_byte(&valueNames[menu_cc2name[curParmVal].nameIdx].category)]),8);
-				strcat_P(tmp,
-					(const char PROGMEM *)(&longNames[pgm_read_byte(&valueNames[menu_cc2name[curParmVal].nameIdx].longName)]));
-				strlcpy(&editDisplayBuffer[1][0],tmp,16);
+			// bottom row is the category and long name for the parameter being targeted
+
+			if( pgm_read_byte(&modTargets[curParmVal].param)==PAR_NONE ) {
+				// 0xff represents it being OFF
+				strcpy_P(&editDisplayBuffer[1][0], PSTR("Off"));
+			} else {
+				memcpy_P(&editDisplayBuffer[0][9],PSTR("Voice"),5);
+				//**AUTOM - determine voice number to display for edit mode
+				// remember that curParmVal is our index into modTargets, not an actual parameter number
+				numtostru(&editDisplayBuffer[0][15], voiceFromModTargValue(curParmVal));
+				//**AUTOM - determine the full name to display for edit mode
+				// a letters for the category and 8 letters for the name
+				strlcpy_P(&editDisplayBuffer[1][0],
+					(const char PROGMEM *)(&catNames[
+					             pgm_read_byte(&valueNames[
+					                 pgm_read_byte(&modTargets[curParmVal].nameIdx)
+					                                      ].category)
+					                                ]),8);
+				strlcpy_P(&editDisplayBuffer[1][8],
+					(const char PROGMEM *)(&longNames[
+					            pgm_read_byte(&valueNames[
+					                pgm_read_byte(&modTargets[curParmVal].nameIdx)
+					                                     ].longName)
+					                                 ]),8);
 			}
 
 		} // parameter type is automation target
@@ -1151,14 +1163,17 @@ void menu_repaintGeneric()
 					break;
 
 				case DTYPE_AUTOM_TARGET: { //switch(parameters[parNr].dtype&0x0F)
-					if(curParmVal == 0xff)
+					//**AUTOM - determine the name to display for non-edit mode
+					if( pgm_read_byte(&modTargets[curParmVal].param)==PAR_NONE )
 					{
 						memcpy_P(valueAsText,PSTR("Off"),3);
 					} else {
+						// first digit is voice #, subsequent two letters are part of short name
+						// remember that curParmVal is our index into modTargets, not an actual parameter number
+						valueAsText[0]=voiceFromModTargValue(curParmVal);
 
-						//const uint8_t voice = menu_cc2name[parameters[parNr].value].voiceNr;
-						const uint8_t name = menu_cc2name[curParmVal].nameIdx;
-						memcpy_P(&valueAsText,shortNames[pgm_read_byte(&valueNames[name].shortName)],3);
+						const uint8_t name = pgm_read_byte(&modTargets[curParmVal].nameIdx);
+						memcpy_P(&valueAsText[1],shortNames[pgm_read_byte(&valueNames[name].shortName)],2);
 
 					}
 				}
@@ -1712,10 +1727,13 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 				}
 				break;
 
-				case DTYPE_AUTOM_TARGET://parameter_dtypes[paramNr] & 0x0F
-					if(*paramValue >= END_OF_SOUND_PARAMETERS)
-						*paramValue = END_OF_SOUND_PARAMETERS-1;
+				case DTYPE_AUTOM_TARGET: {//parameter_dtypes[paramNr] & 0x0F
+					const uint8_t nmt=getNumModTargets();
+					//**AUTOM - limit to valid range for encoder
+					if(*paramValue >= nmt)
+						*paramValue = (uint8_t)(nmt-1);
 					break;
+				}
 
 				case DTYPE_0B255:
 					//if(*paramValue > 255)
@@ -2107,6 +2125,8 @@ void menu_sendAllGlobals()
 	}
 };
 //-----------------------------------------------------------------
+// This is used to send a global (non voice specific) parameter to the back.
+// This includes values for the currently active step in the sequencer
 void menu_parseGlobalParam(uint16_t paramNr, uint8_t value)
 {
 	switch(paramNr)
@@ -2165,15 +2185,14 @@ void menu_parseGlobalParam(uint16_t paramNr, uint8_t value)
 		frontPanel_sendData(SEQ_CC,SEQ_SET_AUTOM_TRACK,value);
 		break;
 
-	case PAR_P1_DEST: { //step range 0-127 value range 0-255!
-		frontPanel_sendData(SEQ_CC, SEQ_SELECT_ACTIVE_STEP,parameter_values[PAR_ACTIVE_STEP]);
-		frontPanel_sendData(SET_P1_DEST,value>>7,value&0x7f);
-	}
-	break;
+	case PAR_P1_DEST:
 	case PAR_P2_DEST:
+	{ //step range 0-127 value range 0-255!
+		//**AUTOM - translate back into a parameter when receiving value from cortex
+		uint8_t tmp=(uint8_t)pgm_read_byte(&modTargets[value].param);
 		frontPanel_sendData(SEQ_CC, SEQ_SELECT_ACTIVE_STEP,parameter_values[PAR_ACTIVE_STEP]);
-		frontPanel_sendData(SET_P2_DEST,value>>7,value&0x7f);
-		break;
+		frontPanel_sendData((uint8_t)paramNr,tmp>>7,tmp&0x7f);
+	}
 
 	case PAR_P1_VAL:
 		frontPanel_sendData(SET_P1_VAL,parameter_values[PAR_ACTIVE_STEP],value);
@@ -2357,7 +2376,7 @@ void menu_processSpecialCaseValues(uint16_t paramNr, const uint8_t *value)
 //-----------------------------------------------------------------
 uint8_t getDtypeValue(uint8_t value, uint16_t paramNr)
 {
-	const float frac = (value/255.f);
+	const float frac = (value/255.f); // yield a fraction from 0 to 1
 
 	switch(pgm_read_byte(&parameter_dtypes[paramNr]) & 0x0F)
 	{
@@ -2374,6 +2393,8 @@ uint8_t getDtypeValue(uint8_t value, uint16_t paramNr)
 
 
 	case DTYPE_AUTOM_TARGET:
+		//**AUTOM - scale to our range for pot value
+		return (uint8_t)(getNumModTargets() * frac);
 	case DTYPE_0B255:
 		return value;
 		break;

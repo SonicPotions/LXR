@@ -267,12 +267,18 @@ void frontPanel_parseData(uint8_t data)
 				} 
 				else if(frontParser_midiMsg.status == SET_P1_DEST)
 				{
-					parameter_values[PAR_P1_DEST] = (uint8_t)((frontParser_midiMsg.data1<<7) | frontParser_midiMsg.data2);
+					//**AUTOM - translate cortext value to mod target index
+					//parameter_values[PAR_P1_DEST] = (uint8_t)((frontParser_midiMsg.data1<<7) | frontParser_midiMsg.data2);
+					parameter_values[PAR_P1_DEST] =
+						paramToModTarget[(uint8_t)((frontParser_midiMsg.data1<<7) | frontParser_midiMsg.data2)];
 					menu_repaintAll();
 				}
 				else if(frontParser_midiMsg.status == SET_P2_DEST)
 				{
-					parameter_values[PAR_P2_DEST] = (uint8_t)((frontParser_midiMsg.data1<<7) | frontParser_midiMsg.data2);
+					//**AUTOM - translate cortext value to mod target index
+					//parameter_values[PAR_P2_DEST] = (uint8_t)((frontParser_midiMsg.data1<<7) | frontParser_midiMsg.data2);
+					parameter_values[PAR_P2_DEST] =
+						paramToModTarget[(uint8_t)((frontParser_midiMsg.data1<<7) | frontParser_midiMsg.data2)];
 					menu_repaintAll();
 				}
 				else if(frontParser_midiMsg.status == SET_P1_VAL)

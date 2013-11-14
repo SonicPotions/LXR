@@ -40,11 +40,17 @@ sequencer modulation - per sequencer step, you can modulate two parameters. The 
 so you can select any of the voice parameter values (effectively letting you modulate a param on any voice).
 menu_cc2name is used here to lookup descriptive name for a parameter. This is different from lfo and velocity in that the value
 represents a parameter directly
-
-
-Code points for modulation:
-menu_repaintGeneric - render the values on the screen
-menu_parseKnobValue and menu_parseEncoder - translate knob movements into a value
-
+Problem: some of the values are invalid mod targets.
 menu_cc2name is just a way to get a name index and a voice number given a parameter number. This name index is into valueNames array
-which itself is a reference to long names, short names and category names for everything
+which itself is a reference to long names, short names and category names for everything. menu_cc2name is only used by automation target.
+frontParser_stepData is a struct in front that stores among other things, these two values. It seems that it's only used to 
+store values it requests from cortex so that it can save these to sd card and vice versa.
+
+Strategy for automation target fix:
+- Do not modify the cortex side. so all changes are done in front
+- store an index into a valid list which is sane and sorted by voice then page then value (store in PAR_P*_DEST)
+- any time we receive a value from cortex, we translate it to this value
+- any time we send the value to cortex we translate it to a param number
+- frontParser_stepData doesn't need to change because it's only used for transferring data between file and sequencer and vice versa
+- 
+

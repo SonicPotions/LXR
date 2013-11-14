@@ -32,7 +32,7 @@ const char midiModes[][4] PROGMEM  =
 const char quantisationNames[][4] PROGMEM  = 
 {
 	{5},		//number of entries
-	{"off"},
+	{"Off"},
 	{"8"},
 	{"16"},
 	{"32"},
@@ -43,7 +43,7 @@ const char transientNames[][4] PROGMEM  =
 {
 	{14},		//number of entries
 	{"Snp"},
-	{"Off"},
+	{"Ofs"},
 	{"Clk"},
 	{"Ck2"},
 	{"Tik"},
@@ -52,8 +52,8 @@ const char transientNames[][4] PROGMEM  =
 	{"Drp"},
 	{"Hat"},
 	{"Clp"},
-	{"Ki2"},
-	{"Sna"},
+	{"Kk2"},
+	{"Snr"},
 	{"Tom"},
 	{"Sp2"},
 	
@@ -169,7 +169,7 @@ const char filterTypes[][8] PROGMEM  =
 	{"HP"}	,	//2 - 010
 	{"BP"}	,	//3 - 011
 	{"UBP"}	,	//4 - 100
-	{"Not"}	,	//5 - 101
+	{"Nch"}	,	//5 - 101
 	{"Pek"}	,	//6 - 110
 	{"Off"}	,	//7 - 111
 	//{"All"}	,	//7 - 111
@@ -178,9 +178,9 @@ const char filterTypes[][8] PROGMEM  =
 const char shortNames[][4] PROGMEM  = 
 {
 	{""},
-	{"coa"},
+	{"crs"},
 	{"fin"},
-	{"att"},
+	{"atk"},
 	{"dec"},
 	{"eg2"},
 	{"mod"},
@@ -202,7 +202,7 @@ const char shortNames[][4] PROGMEM  =
 	{"dst"},
 	{"snc"},
 	{"rtg"},
-	{"off"},
+	{"ofs"},
 	{"voi"},
 	{"slp"},
 	{"d1"},		
@@ -217,25 +217,25 @@ const char shortNames[][4] PROGMEM  =
 	{"min"},
 #endif
 	{"rol"},
-	{"mrp"},	
+	{"mph"},
 	{"nte"},
 	{"prb"},
 	{"stp"},
 	{"len"},
 	{"bpm"},
-	{"ch "},
+	{"ch"},
 	{"out"},
-	{"sr"},
+	{"srt"},
 	{"nxt"},
 	{"mod"},
 	{"vel"},
-	{"fet"},
+	{"fch"},
 	{"flw"},
 	{"qnt"},
 	{"trk"},
 	{"val"},
-	{"shu"},
-	{"ss"},
+	{"shf"},
+	{"ssv"},
 	{"x"},
 	{"y"},
 	{"flx"},
@@ -244,13 +244,15 @@ const char shortNames[][4] PROGMEM  =
 	
 };
 //-----------------------------------------------------------------
+// These correspond with the catNamesEnum in menu.h
 const char catNames[][16] PROGMEM = 
 {
 	{""},
-	{"Oscillator"},
-	{"Velocity EG"},
+	//012345678
+	{"Oscillatr"},
+	{"Veloc EG"},
 	{"Mod EG"},
-	{"Pitch Mod."},
+	{"Pitch Mod"},
 	{"FM"},
 	{"Voice"},
 	{"Noise"},
@@ -278,6 +280,7 @@ const char catNames[][16] PROGMEM =
 const char longNames[][16] PROGMEM = 
 {
 	{""},
+	//012345678
 	{"Coarse"},
 	{"Fine"},
 	{"Attack"},
@@ -288,19 +291,19 @@ const char longNames[][16] PROGMEM =
 	{"Volume"},
 	{"Panning"},
 	{"Mix"},
-	{"Repeat Count"},
+	{"Repeat Ct"},
 	{"Resonance"},
 	{"Type"},
 	{"Gain"},
 	{"Waveform"},
-	{"Dest. Param."},
-	{"Clock Sync"},
+	{"Dst Param"},
+	{"Clock Snc"},
 	{"Retrigger"},
 	{"Offset"},		
-	{"Dest. Voice"},
+	{"Dst Voice"},
 	{"Slope"},
-	{"Decay Closed"},
-	{"Decay Open"},
+	{"Dcy Closd"},
+	{"Dcy Open"},
 #if USE_CODEC_EQ		
 	{"Enable"},
 	{"Release"},
@@ -310,28 +313,28 @@ const char longNames[][16] PROGMEM =
 	{"Roll Rate"},
 	{"Morph"},
 	{"Note"},
-	{"Probability"},
+	{"Prbabilty"},
 	{"Number"},
 	{"Length"},
 	{"Steps"},
 	{"Tempo"},
 	{"Audio Out"},
-	{"MIDI Channel"},
-	{"Sample Rate"},
-	{"Next Pattern"},
+	{"MIDI Chan"},
+	{"Sample Rt"},
+	{"Next Patt"},
 	{"Phase"},
 	{"Mode"},
-	{"Volume mod."},		
+	{"Vol mod"},
 	{"Fetch"},	
 	{"Follow"},	
-	{"Quantisation"},
-	{"Autom. Track"},
-	{"Autom. Dest."},
-	{"Autom. Value"},
+	{"Quantize"},
+	{"Aut Track"},
+	{"Aut Dest"},
+	{"Aut Value"},
 	{"Shuffle"},
-	{"Screensaver"},
-	{"X Position"},
-	{"Y Position"},
+	{"Screensvr"},
+	{"X Positn"},
+	{"Y Positn"},
 	{"Flux"},
 	{"Velocity"},	
 };

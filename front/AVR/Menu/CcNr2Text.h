@@ -11,16 +11,19 @@
 
 #include "menu.h"
 
-typedef struct Cc2NameStruct
-{
-	uint8_t voiceNr; // 1-6 => 0x6 = 0b110
-	uint8_t nameIdx;// 
-} Cc2Name;
+//typedef struct Cc2NameStruct
+//{
+//	uint8_t voiceNr; // 1-6 => 0x6 = 0b110
+//	uint8_t nameIdx;//
+//} Cc2Name;
 
-//todo: move to progmem once the list is fixed
-extern Cc2Name menu_cc2name[END_OF_SOUND_PARAMETERS];
+// initialize the above array
+void paramToModTargetInit();
 
-void cc2Name_init();
+// return the total number of mod targets that exist (all voices)
+uint8_t getNumModTargets();
 
+// returns 1 based index or 0 for invalid
+uint8_t voiceFromModTargValue(uint8_t val);
 
 #endif /* CCNR2TEXT_H_ */
