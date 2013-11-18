@@ -206,17 +206,24 @@ uint8_t preset_loadDrumset(uint8_t presetNr, uint8_t isMorph)
 			//special case mod targets
 			for(i=0;i<6;i++)
 			{
-				//**VELO load drumkit TODO translate to param value before sending
-				uint8_t value = getModTargetValue((uint8_t)(parameter_values[PAR_VEL_DEST_1+i]), (uint8_t)i);
+				//**VELO load drumkit. translate to param value before sending
+				// parameter_values[PAR_VEL_DEST_1+i] is an index into modTargets, we need to send
+				// a parameter number
+				uint8_t value = (uint8_t)pgm_read_word(&modTargets[parameter_values[PAR_VEL_DEST_1+i]].param);
 				uint8_t upper,lower;
 				upper = (uint8_t)(((value&0x80)>>7) | (((i)&0x3f)<<1));
 				lower = value&0x7f;
 				frontPanel_sendData(CC_VELO_TARGET,upper,lower);
 				
-				//LFO
-				if(parameter_values[PAR_VOICE_LFO1+i]==0)parameter_values[PAR_VOICE_LFO1+i]=1;
+				//**LFO - we need to translate parameter which is an index into modTargets
+				/* todo what is this mysterious addition operation?
+				if(parameter_values[PAR_VOICE_LFO1+i]==0)
+					parameter_values[PAR_VOICE_LFO1+i]=1;
 				value = getModTargetValue((uint8_t)parameter_values[PAR_TARGET_LFO1+i],
 						(uint8_t)(parameter_values[PAR_VOICE_LFO1+i]-1));
+						*/
+				value = (uint8_t)pgm_read_word(&modTargets[parameter_values[PAR_TARGET_LFO1+i]].param);
+
 				upper = (uint8_t)(((value&0x80)>>7) | (((i)&0x3f)<<1));
 				lower = value&0x7f;
 				frontPanel_sendData(CC_LFO_TARGET,upper,lower);	

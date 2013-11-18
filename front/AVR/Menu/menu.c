@@ -140,10 +140,10 @@ const Name valueNames[NUM_NAMES] PROGMEM =
 		{SHORT_FREQ,CAT_FILTER,LONG_FREQ},					//filter freq
 		{SHORT_FIL_RESO,CAT_FILTER,LONG_RESONANCE},			//filter reso
 		{SHORT_FIL_TYPE,CAT_FILTER,LONG_TYPE},				//filter type
-		{SHORT_MOD_OSC1_FREQ,CAT_MOD_OSC,LONG_FREQ},		//mod osc 1 freq
-		{SHORT_MOD_OSC2_FREQ,CAT_MOD_OSC,LONG_FREQ},		//mod osc 2 freq
-		{SHORT_MOD_OSC1_GAIN,CAT_MOD_OSC,LONG_GAIN},		//mod osc 1 gain			//20
-		{SHORT_MOD_OSC2_GAIN,CAT_MOD_OSC,LONG_GAIN},		//mod osc 2 gain
+		{SHORT_MOD_OSC1_FREQ,CAT_MOD_OSC,LONG_FREQ1},		//mod osc 1 freq
+		{SHORT_MOD_OSC2_FREQ,CAT_MOD_OSC,LONG_FREQ2},		//mod osc 2 freq
+		{SHORT_MOD_OSC1_GAIN,CAT_MOD_OSC,LONG_GAIN1},		//mod osc 1 gain			//20
+		{SHORT_MOD_OSC2_GAIN,CAT_MOD_OSC,LONG_GAIN2},		//mod osc 2 gain
 
 		{SHORT_FREQ,CAT_LFO,LONG_FREQ},						//freq lfo
 		{SHORT_MOD,CAT_LFO,LONG_AMOUNT},					//mod lfo
@@ -527,7 +527,7 @@ void lockPotentiometerFetch()
 //takes the target  number and converts it to a parameter number
 // TODO the parameter numbers are now 16 bit. We need to create a set of sensible mod targets
 // (that fits in 8 bits), and have a mapping
-uint8_t getModTargetValue_REMOVEME(uint8_t value, uint8_t voiceNr)
+uint8_t getModTargetValue(uint8_t value, uint8_t voiceNr)
 {
 	if(voiceNr >= 6) voiceNr = 5;
 	// right 3 bits is active parameter, left 5 bits is page number
@@ -882,36 +882,36 @@ static void menu_displayModTargetFull(uint8_t curParmVal)
 {
 	//**AUTOM **VELO - determine the full name to display for edit mode
 	// a letters for the category and 8 letters for the name
-	strlcpy_P(&editDisplayBuffer[1][0],
+	strcpy_P(&editDisplayBuffer[1][0],
 		(const char PROGMEM *)(&catNames[
 					 pgm_read_byte(&valueNames[
 						 pgm_read_byte(&modTargets[curParmVal].nameIdx)
 											  ].category)
-										]),8);
-	strlcpy_P(&editDisplayBuffer[1][8],
+										]));
+	strcpy_P(&editDisplayBuffer[1][8],
 		(const char PROGMEM *)(&longNames[
 					pgm_read_byte(&valueNames[
 						pgm_read_byte(&modTargets[curParmVal].nameIdx)
 											 ].longName)
-										 ]),8);
+										 ]));
 }
 
 static void menu_displayModTargetShort(uint8_t curParmVal, char *valueAsText, char inclVoice)
 {
 	//**AUTOM **VELO - render a short name for non edit mode (encoder mode)
 
-	if( pgm_read_byte(&modTargets[curParmVal].param)==PAR_NONE ) {
+	if( pgm_read_word(&modTargets[curParmVal].param)==PAR_NONE ) {
 		memcpy_P(valueAsText,PSTR("Off"),3);
 	} else {
 		uint8_t off=0;
 		if(inclVoice){
 			// first digit is voice #, subsequent two letters are part of short name
 			// remember that curParmVal is our index into modTargets, not an actual parameter number
-			valueAsText[off++]=voiceFromModTargValue(curParmVal);
+			valueAsText[off++]=(char)(voiceFromModTargValue(curParmVal) + '0');
 		}
 
 		const uint8_t name = pgm_read_byte(&modTargets[curParmVal].nameIdx);
-		memcpy_P(&valueAsText[off],shortNames[pgm_read_byte(&valueNames[name].shortName)],3-off);
+		memcpy_P(&valueAsText[off],shortNames[pgm_read_byte(&valueNames[name].shortName)],(size_t)(3-off));
 
 	}
 }
@@ -943,16 +943,16 @@ void menu_repaintGeneric()
 		if((pgm_read_byte(&parameter_dtypes[parNr]) & 0x0f) == DTYPE_AUTOM_TARGET)
 		{
 			// make sure we have a valid value (autom target must target one of the sound parameters)
-			if(curParmVal >= END_OF_SOUND_PARAMETERS)
-				parameter_values[parNr] = curParmVal = END_OF_SOUND_PARAMETERS-1;
+			//--AS not anymore, its an index into modTargets now
+			//--AS TODO there was code to fix the value. do the fixing when loading a preset rather.
 
 			//Top row (which destination (1 or 2) and which voice it's targeting)
 			memcpy_P(&editDisplayBuffer[0][0],PSTR("AutDst"),6);
 			numtostru(&editDisplayBuffer[0][7],(uint8_t)( parNr - PAR_P1_DEST + 1));
 
 			// bottom row is the category and long name for the parameter being targeted
-			if( pgm_read_byte(&modTargets[curParmVal].param)==PAR_NONE ) {
-				// 0xff represents it being OFF
+			if( pgm_read_word(&modTargets[curParmVal].param)==PAR_NONE ) {
+				//  OFF
 				strcpy_P(&editDisplayBuffer[1][0], PSTR("Off"));
 			} else {
 				memcpy_P(&editDisplayBuffer[0][9],PSTR("Voice"),5);
@@ -985,6 +985,9 @@ void menu_repaintGeneric()
 			break;
 			case DTYPE_TARGET_SELECTION_LFO: //switch(parameters_dtypes[parNr] & 0x0F)
 			{
+				//**LFO edit mode - display full target
+				menu_displayModTargetFull(curParmVal);
+				/*
 				const uint8_t lfoNr				= (uint8_t)(parNr - PAR_TARGET_LFO1);
 				const uint8_t voiceNr			= (uint8_t)(parameter_values[PAR_VOICE_LFO1+lfoNr]-1);
 				const uint8_t page				= (curParmVal & MASK_PAGE)>>PAGE_SHIFT;
@@ -996,6 +999,7 @@ void menu_repaintGeneric()
 					        pgm_read_byte(&menuPages[voiceNr][page].top1 + activeParameter)
 					                             ].shortName)
 					           ],3);
+					           */
 			}
 			break;
 
@@ -1148,6 +1152,10 @@ void menu_repaintGeneric()
 
 				case DTYPE_TARGET_SELECTION_LFO: //switch(parameters[parNr].dtype&0x0F)
 				{
+					//**LFO display short name with no voice number prefix
+					menu_displayModTargetShort(curParmVal,valueAsText,0);
+					/*
+
 					const uint8_t lfoNr				= (uint8_t)(parNr - PAR_TARGET_LFO1);
 					const uint8_t voiceNr			= (uint8_t)(parameter_values[PAR_VOICE_LFO1+lfoNr] - 1);
 					uint8_t page					= (curParmVal & MASK_PAGE)>>PAGE_SHIFT;
@@ -1158,7 +1166,7 @@ void menu_repaintGeneric()
 						    pgm_read_byte(&valueNames[
 						        pgm_read_byte(&menuPages[voiceNr][page].top1 + activeParameter)
 						                             ].shortName)
-						           ],3);
+						           ],3);*/
 				}
 				break;
 
@@ -1680,7 +1688,7 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 					}
 
 					// determine the parameter id to send across
-					uint8_t value = pgm_read_byte(&modTargets[*paramValue].param);
+					uint8_t value = (uint8_t)pgm_read_word(&modTargets[*paramValue].param);
 					uint8_t upper,lower;
 					/*
 					 *  upper: rightmost bit is 1 if the parameter we are targeting is in the "above 127" range
@@ -1714,12 +1722,22 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 				break;
 				case DTYPE_TARGET_SELECTION_LFO://parameter_dtypes[paramNr] & 0x0F
 				{
+					//**LFO - limit encoder start and end to range for the voice
+					uint8_t voiceNr =  (uint8_t)(parameter_values[PAR_VOICE_LFO1+(paramNr - PAR_TARGET_LFO1)]-1);
+					if(*paramValue < pgm_read_byte(&modTargetVoiceOffsets[voiceNr].start)) {
+						*paramValue = pgm_read_byte(&modTargetVoiceOffsets[voiceNr].start);
+					} else if (*paramValue > pgm_read_byte(&modTargetVoiceOffsets[voiceNr].end)) {
+						*paramValue = pgm_read_byte(&modTargetVoiceOffsets[voiceNr].end);
+					}
+
+					/*
 					if(*paramValue > (NUM_SUB_PAGES * 8 -1))
 						*paramValue = (NUM_SUB_PAGES * 8 -1);
-					uint8_t voiceNr =  (uint8_t)(parameter_values[PAR_VOICE_LFO1+(paramNr - PAR_TARGET_LFO1)]-1);
+
 					if (voiceNr == 0) voiceNr = 1; // TODO --AS what is this strangeness
 					uint8_t value = getModTargetValue(*paramValue,(uint8_t)(voiceNr - 1));
-
+					*/
+					uint8_t value =  (uint8_t)pgm_read_word(&modTargets[*paramValue].param);
 					uint8_t upper,lower;
 					upper = (uint8_t)((uint8_t)((value&0x80)>>7) | (((paramNr - PAR_TARGET_LFO1)&0x3f)<<1));
 					lower = value&0x7f;
@@ -2190,9 +2208,11 @@ void menu_parseGlobalParam(uint16_t paramNr, uint8_t value)
 	case PAR_P2_DEST:
 	{ //step range 0-127 value range 0-255!
 		//**AUTOM - translate back into a parameter when receiving value from cortex
-		uint8_t tmp=(uint8_t)pgm_read_byte(&modTargets[value].param);
+		uint8_t tmp=(uint8_t)pgm_read_word(&modTargets[value].param);
 		frontPanel_sendData(SEQ_CC, SEQ_SELECT_ACTIVE_STEP,parameter_values[PAR_ACTIVE_STEP]);
-		frontPanel_sendData((uint8_t)paramNr,tmp>>7,tmp&0x7f);
+		frontPanel_sendData((uint8_t)
+				(paramNr==PAR_P1_DEST ? SET_P1_DEST : SET_P2_DEST),tmp>>7,tmp&0x7f);
+		break;
 	}
 
 	case PAR_P1_VAL:
@@ -2382,9 +2402,19 @@ uint8_t getDtypeValue(uint8_t value, uint16_t paramNr)
 	switch(pgm_read_byte(&parameter_dtypes[paramNr]) & 0x0F)
 	{
 	case DTYPE_TARGET_SELECTION_VELO:
-	case DTYPE_TARGET_SELECTION_LFO:
-		//**VELO limit range to start and end for the applicable voice
-		return (uint8_t)(frac*(NUM_SUB_PAGES * 8 -1));
+	case DTYPE_TARGET_SELECTION_LFO: {
+		//**VELO **LFO limit range to start and end for the applicable voice
+		uint8_t voiceNr=0;
+		uint8_t s, e;
+		//TODO --AS can this be done in a simpler way
+		if(paramNr >= PAR_VEL_DEST_1 && paramNr <= PAR_VEL_DEST_6 )
+			voiceNr=(uint8_t)(paramNr-PAR_VEL_DEST_1);
+		else if(paramNr >= PAR_TARGET_LFO1 && paramNr <= PAR_TARGET_LFO6)
+			voiceNr=(uint8_t)(paramNr-PAR_TARGET_LFO1);
+		s=pgm_read_byte(&modTargetVoiceOffsets[voiceNr].start);
+		e=pgm_read_byte(&modTargetVoiceOffsets[voiceNr].end);
+		return (uint8_t)(s + ((e-s)*frac));
+		}
 		break;
 
 	default:
@@ -2396,11 +2426,12 @@ uint8_t getDtypeValue(uint8_t value, uint16_t paramNr)
 
 	case DTYPE_AUTOM_TARGET:
 		//**AUTOM - scale to our range for pot value
-		return (uint8_t)(getNumModTargets() * frac);
+		return (uint8_t)((getNumModTargets()-1) * frac);
 	case DTYPE_0B255:
 		return value;
 		break;
 	case DTYPE_VOICE_LFO:
+		// TODO --AS why is this 1 based?
 		return (uint8_t)(1 + 5*frac);
 		break;
 	case DTYPE_1B16:
@@ -2527,8 +2558,9 @@ void menu_parseKnobValue(uint8_t potNr, uint8_t value)
 			{
 			case DTYPE_TARGET_SELECTION_VELO:
 			{
-				//**VELO knob value range TODO determine valid range and translate. convert to param before sending
-				value = getModTargetValue(value,((uint8_t)(paramNr - PAR_VEL_DEST_1)));
+				//**VELO knob value range. convert to param before sending
+				// the value we have is an index into modTargets, we need a parameter
+				value = (uint8_t)pgm_read_word(&modTargets[dtypeValue].param);
 
 				uint8_t upper,lower;
 				upper = (uint8_t)(((value&0x80)>>7) | ((((uint8_t)(paramNr - PAR_VEL_DEST_1))&0x3f)<<1));
@@ -2540,9 +2572,11 @@ void menu_parseKnobValue(uint8_t potNr, uint8_t value)
 
 			case DTYPE_VOICE_LFO:
 			{
-				value = getModTargetValue(parameter_values[PAR_TARGET_LFO1+
-				                                           ((uint8_t)(paramNr - PAR_VOICE_LFO1))], (uint8_t)(value -1));
+				// --AS TODO combine these two case
+				//value = getModTargetValue(parameter_values[PAR_TARGET_LFO1+
+				//                                           ((uint8_t)(paramNr - PAR_VOICE_LFO1))], (uint8_t)(value -1));
 
+				value = (uint8_t)pgm_read_word(&modTargets[dtypeValue].param);
 				uint8_t upper,lower;
 				upper = (uint8_t)(((value&0x80)>>7) | ((((uint8_t)(paramNr - PAR_VOICE_LFO1))&0x3f)<<1));
 				lower = value&0x7f;
@@ -2552,10 +2586,14 @@ void menu_parseKnobValue(uint8_t potNr, uint8_t value)
 			break;
 			case DTYPE_TARGET_SELECTION_LFO:
 			{
+				/*
 				uint8_t voiceNr =
 					(uint8_t)( parameter_values[PAR_VOICE_LFO1+((uint8_t)( paramNr - PAR_TARGET_LFO1))] - 1);
 				if (voiceNr == 0) voiceNr = 1;
-				value = getModTargetValue(value,(uint8_t)(voiceNr-1)); // --AS fix - subtract 1 from voice nr
+				*/
+				value = (uint8_t)pgm_read_word(&modTargets[dtypeValue].param);
+
+				//getModTargetValue(value,(uint8_t)(voiceNr-1)); // --AS fix - subtract 1 from voice nr
 
 				uint8_t upper,lower;
 				upper = (uint8_t)(((value&0x80)>>7) | ((((uint8_t)(paramNr - PAR_TARGET_LFO1))&0x3f)<<1));

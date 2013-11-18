@@ -356,7 +356,10 @@ enum longNamesEnum
 	LONG_Y,
 	LONG_FLUX,
 	LONG_VELOCITY,
-	
+	LONG_FREQ1,
+	LONG_FREQ2,
+	LONG_GAIN1,
+	LONG_GAIN2
 	
 };
 //-----------------------------------------------------------------

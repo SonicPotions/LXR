@@ -37,6 +37,8 @@ LFO's can target a parameter to modulate. A separate parameter controls which vo
 the param value represents a parameter on that voice. Left 5 bits of the param value select the page, and right 3 bits
 selects one of the 8 params on that page. works similar to velocity above.
 
+Strategy: same as velocity search **LFO
+
 Automation__
 params: PAR_P1_DEST, PAR_P2_DEST
 data type: DTYPE_AUTOM_TARGET

@@ -38,6 +38,9 @@ uint8_t frontParser_nameIndex = 0;
 #define NRPN_MUTE_7 1006
 void frontParser_parseNrpn(uint8_t value)
 {
+	// this is called when a value is received from the cortex
+	// ??? wouldnt this value be a good paramNr in the case of VELO and LFO? (ie not a page/param encoded value)
+	// this code may be unused???
 	if(frontParser_nrpnNr+128 < NUM_PARAMS)
 	{
 		parameter_values[frontParser_nrpnNr+128] = value;
@@ -45,25 +48,27 @@ void frontParser_parseNrpn(uint8_t value)
 	
 	if( (frontParser_nrpnNr+128 >= PAR_TARGET_LFO1) && (frontParser_nrpnNr+128 <= PAR_TARGET_LFO6) )
 	{
+		//**LFO this needs to be checked. might be unused here
 		//since the LFO target calculation from the index number needs to know about the menu structure (menuPages)
 		//we need to send back the right target param number to the cortex
 		//LFO
 		uint8_t lfoNr = (uint8_t)((frontParser_nrpnNr+128)-PAR_TARGET_LFO1);
 		if(lfoNr>5)lfoNr=5;
-		value = getModTargetValue(parameter_values[frontParser_nrpnNr+128],
-				(uint8_t)(parameter_values[PAR_VOICE_LFO1+lfoNr]-1));
+		//value = getModTargetValue(parameter_values[frontParser_nrpnNr+128],
+		//		(uint8_t)(parameter_values[PAR_VOICE_LFO1+lfoNr]-1));
 		uint8_t upper = (uint8_t)(((value&0x80)>>7) | (((lfoNr)&0x3f)<<1));
 		uint8_t lower = value&0x7f;
 		frontPanel_sendData(CC_LFO_TARGET,upper,lower);
 	}
 	else if ( (frontParser_nrpnNr+128 >= PAR_VEL_DEST_1) && (frontParser_nrpnNr+128 <= PAR_VEL_DEST_6) )
 	{
-		//**VELO receive nrpn TODO translate to parameter
-		uint8_t param = parameter_values[frontParser_nrpnNr+128];
-		if(param > (NUM_SUB_PAGES * 8 -1))
-		param = (NUM_SUB_PAGES * 8 -1); 
+		//**VELO receive nrpn translate to parameter. this needs to be checked.
+		//uint8_t param = parameter_values[frontParser_nrpnNr+128];
+
+		//if(param > (NUM_SUB_PAGES * 8 -1))
+		//param = (NUM_SUB_PAGES * 8 -1);
 				
-		uint8_t value = getModTargetValue(param, (uint8_t)(frontParser_nrpnNr+128 - PAR_VEL_DEST_1));
+		//uint8_t value = getModTargetValue(param, (uint8_t)(frontParser_nrpnNr+128 - PAR_VEL_DEST_1));
 				
 		uint8_t upper,lower;
 		upper = (uint8_t)((uint16_t)((value&0x80)>>7) | (((frontParser_nrpnNr+128-PAR_VEL_DEST_1)&0x3f)<<1));
