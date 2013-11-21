@@ -31,11 +31,14 @@ to menu pages. (search **VELO in the code). This means the value range will not 
 start for that voice and m is the end.
 
 LFO__
-params: PAR_TARGET_LFO*
+params: PAR_TARGET_LFO*, PAR_VOICE_LFO*
 data type: DTYPE_TARGET_SELECTION_LFO
 LFO's can target a parameter to modulate. A separate parameter controls which voice the parameter is on. So therefore
 the param value represents a parameter on that voice. Left 5 bits of the param value select the page, and right 3 bits
-selects one of the 8 params on that page. works similar to velocity above.
+selects one of the 8 params on that page. works similar to velocity above. 
+We are in effect storing duplicate info here. The voice number is purely for ui whereas the target effectively stores both
+the voice and the param on that voice since it's just an offset into modTargets which includes parameters on all voices.
+the voice number is 1 based.
 
 Strategy: same as velocity search **LFO
 

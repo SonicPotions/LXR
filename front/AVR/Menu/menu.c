@@ -527,6 +527,7 @@ void lockPotentiometerFetch()
 //takes the target  number and converts it to a parameter number
 // TODO the parameter numbers are now 16 bit. We need to create a set of sensible mod targets
 // (that fits in 8 bits), and have a mapping
+#if 0
 uint8_t getModTargetValue(uint8_t value, uint8_t voiceNr)
 {
 	if(voiceNr >= 6) voiceNr = 5;
@@ -536,6 +537,7 @@ uint8_t getModTargetValue(uint8_t value, uint8_t voiceNr)
 
 	return (uint8_t)pgm_read_word(&menuPages[voiceNr][page].bot1 + activeParameter);
 }
+#endif
 //-----------------------------------------------------------------
 void menu_init()
 {
@@ -1606,6 +1608,38 @@ void menu_handleLoadSaveMenu(int8_t inc, uint8_t button)
 	//force complete repaint
 	menu_repaintAll();
 }
+
+/* given a value for PAR_VOICE_LFO* will fix PAR_TARGET_LFO* parameter to point to a proper index in modTargets
+ * that relates to that target voice, and also return the new value.
+ * voiceNr - 0 based voice we are trying to fix
+ * targetVoice - 1 based voice that represents PAR_VOICE_LFO* value
+ * returns index into modTargets that represents the new value for PAR_TARGET_LFO
+ */
+static uint8_t fixLfoTargetForVoice(uint8_t voiceNr, uint8_t targetVoice)
+{
+	// the voiceNr will dictate the range within modTargets that we are interested in. this means
+	// that changing targetVoice will change PAR_TARGET_LFO* since that parameter
+	// is an offset into modTargets which includes parameters for all voices
+
+	// where the desired target voice starts in modTargets
+	const uint8_t newStartPos=modTargetVoiceOffsets[targetVoice-1].start;
+
+	// associated target parameter (ie the lfo target on the drum we are editing)
+	uint8_t * const targValue = &parameter_values[PAR_TARGET_LFO1 + voiceNr];
+
+	// the value of that parameter
+	const uint8_t modtargval = *targValue;
+
+	// as that parameter is right now it's associated with a voice. which voice
+	const uint8_t oldVoice = voiceFromModTargValue(modtargval);
+	const uint8_t oldStartPos=modTargetVoiceOffsets[oldVoice].start;
+
+	// ensure that the parameter is associated with our selected voice target
+	// this is potentially modifying a PAR_TARGET_LFO* parameter
+	*targValue = (uint8_t)(newStartPos + (modtargval-oldStartPos));
+
+	return *targValue;
+}
 //-----------------------------------------------------------------
 void menu_parseEncoder(int8_t inc, uint8_t button)
 {
@@ -1704,15 +1738,25 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 
 				case DTYPE_VOICE_LFO://parameter_dtypes[paramNr] & 0x0F
 				{
+					//**LFO - limit voice number to 1-6 range. determine target selection so we can send it with voice #
 					if(*paramValue < 1)
 						*paramValue = 1;
 					else if(*paramValue > 6)
 						*paramValue = 6;
 
-					uint8_t value = getModTargetValue(
-							parameter_values[PAR_TARGET_LFO1+ ((uint8_t)paramNr - PAR_VOICE_LFO1)],
-							(uint8_t)(*paramValue - 1));
+					// rectify PAR_TARGET_LFO parameter and get new value
+					const uint8_t newTargVal=fixLfoTargetForVoice((uint8_t)(paramNr - PAR_VOICE_LFO1), *paramValue);
 
+					// determine the real param value given the index into modTargets
+					uint8_t value =  (uint8_t)pgm_read_word(&modTargets[newTargVal].param);
+
+
+					/* --AS TODO target_selection_velo, voice_lfo, and target_selection_lfo are all very similar here can we combine
+					 *
+					 *  upper: rightmost bit is 1 if the parameter we are targeting is in the "above 127" range
+					 *         next 6 bits are the voice number (0 to 5) of which voice is being dealt with here
+					 *  lower: the (0-127) value representing which parameter is being modulated
+					 */
 					uint8_t upper,lower;
 					upper = (uint8_t)(((value&0x80)>>7) | ((((uint8_t)(paramNr - PAR_VOICE_LFO1))&0x3f)<<1));
 					lower = value&0x7f;
@@ -2431,7 +2475,7 @@ uint8_t getDtypeValue(uint8_t value, uint16_t paramNr)
 		return value;
 		break;
 	case DTYPE_VOICE_LFO:
-		// TODO --AS why is this 1 based?
+		// the LFO target voice number is stored and displayed as 1 based
 		return (uint8_t)(1 + 5*frac);
 		break;
 	case DTYPE_1B16:
@@ -2527,6 +2571,8 @@ void menu_parseKnobValue(uint8_t potNr, uint8_t value)
 
 		//parameter fetch
 		const uint8_t dtypeValue = getDtypeValue(value,paramNr);
+
+
 		if(parameter_values[paramNr] == dtypeValue)
 		{
 			//turn lock off for current pot
@@ -2572,11 +2618,15 @@ void menu_parseKnobValue(uint8_t potNr, uint8_t value)
 
 			case DTYPE_VOICE_LFO:
 			{
-				// --AS TODO combine these two case
-				//value = getModTargetValue(parameter_values[PAR_TARGET_LFO1+
-				//                                           ((uint8_t)(paramNr - PAR_VOICE_LFO1))], (uint8_t)(value -1));
+				// --AS TODO combine some of this code
 
-				value = (uint8_t)pgm_read_word(&modTargets[dtypeValue].param);
+				// since the lfo voice is maybe changing, we need to possibly update the lfo target to point
+				// to a different location in modTargets
+				const uint8_t newTargVal=fixLfoTargetForVoice((uint8_t)(paramNr - PAR_VOICE_LFO1), dtypeValue);
+
+				// determine the real param value given the index into modTargets
+				uint8_t value =  (uint8_t)pgm_read_word(&modTargets[newTargVal].param);
+
 				uint8_t upper,lower;
 				upper = (uint8_t)(((value&0x80)>>7) | ((((uint8_t)(paramNr - PAR_VOICE_LFO1))&0x3f)<<1));
 				lower = value&0x7f;

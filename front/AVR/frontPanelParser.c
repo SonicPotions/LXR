@@ -48,7 +48,7 @@ void frontParser_parseNrpn(uint8_t value)
 	
 	if( (frontParser_nrpnNr+128 >= PAR_TARGET_LFO1) && (frontParser_nrpnNr+128 <= PAR_TARGET_LFO6) )
 	{
-		//**LFO this needs to be checked. might be unused here
+		//**LFO this needs to be checked. might be unused here TODO
 		//since the LFO target calculation from the index number needs to know about the menu structure (menuPages)
 		//we need to send back the right target param number to the cortex
 		//LFO
@@ -62,7 +62,7 @@ void frontParser_parseNrpn(uint8_t value)
 	}
 	else if ( (frontParser_nrpnNr+128 >= PAR_VEL_DEST_1) && (frontParser_nrpnNr+128 <= PAR_VEL_DEST_6) )
 	{
-		//**VELO receive nrpn translate to parameter. this needs to be checked.
+		//**VELO receive nrpn translate to parameter. this needs to be checked. TODO
 		//uint8_t param = parameter_values[frontParser_nrpnNr+128];
 
 		//if(param > (NUM_SUB_PAGES * 8 -1))

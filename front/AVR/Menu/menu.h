@@ -508,5 +508,5 @@ void menu_setActiveVoice(uint8_t voiceNr);
 /** used to upodate all global parameters that need processing after a preset is loaded*/
 void menu_sendAllGlobals();
 //-----------------------------------------------------------------
-uint8_t getModTargetValue(uint8_t value, uint8_t voiceNr);
+//uint8_t getModTargetValue(uint8_t value, uint8_t voiceNr);
 #endif
