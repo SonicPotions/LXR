@@ -333,7 +333,7 @@ void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note)
 	uart_sendFrontpanelByte(voiceNr);
 	uart_sendFrontpanelByte(0);
 
-	/* --AS getting ride of the midi mode TODO get rid of this mode in front and main
+	/* --AS getting ride of the midi mode
 	if(midi_mode == MIDI_MODE_TRIGGER)
 	{
 		 midiChan = midi_MidiChannels[0];
@@ -991,7 +991,8 @@ void seq_recordAutomation(uint8_t voice, uint8_t dest, uint8_t value)
 		uint8_t quantizedStep = seq_quantize(seq_stepIndex[voice]);
 
 		//only record to active steps
-		if( seq_isMainStepActive(voice,quantizedStep/8,seq_activePattern) &&  seq_isStepActive(voice,quantizedStep,seq_activePattern))
+		if( seq_isMainStepActive(voice,quantizedStep/8,seq_activePattern) &&
+				seq_isStepActive(voice,quantizedStep,seq_activePattern))
 		{
 			if(seq_activeAutomTrack == 0) {
 				seq_patternSet.seq_subStepPattern[seq_activePattern][voice][quantizedStep].param1Nr = dest;
@@ -1008,11 +1009,19 @@ void seq_recordAutomation(uint8_t voice, uint8_t dest, uint8_t value)
 		//step button is held down
 		//-> set step automation parameters
 		if(seq_activeAutomTrack == 0) {
-			seq_patternSet.seq_subStepPattern[seq_activePattern][seq_armedArmedAutomationTrack][seq_armedArmedAutomationStep].param1Nr = dest;
-			seq_patternSet.seq_subStepPattern[seq_activePattern][seq_armedArmedAutomationTrack][seq_armedArmedAutomationStep].param1Val = value;
+			seq_patternSet.seq_subStepPattern[seq_activePattern]
+			                                  [seq_armedArmedAutomationTrack]
+			                                   [seq_armedArmedAutomationStep].param1Nr = dest;
+			seq_patternSet.seq_subStepPattern[seq_activePattern]
+			                                  [seq_armedArmedAutomationTrack]
+			                                   [seq_armedArmedAutomationStep].param1Val = value;
 		} else {
-			seq_patternSet.seq_subStepPattern[seq_activePattern][seq_armedArmedAutomationTrack][seq_armedArmedAutomationStep].param2Nr = dest;
-			seq_patternSet.seq_subStepPattern[seq_activePattern][seq_armedArmedAutomationTrack][seq_armedArmedAutomationStep].param2Val = value;
+			seq_patternSet.seq_subStepPattern[seq_activePattern]
+			                                  [seq_armedArmedAutomationTrack]
+			                                   [seq_armedArmedAutomationStep].param2Nr = dest;
+			seq_patternSet.seq_subStepPattern[seq_activePattern]
+			                                  [seq_armedArmedAutomationTrack]
+			                                   [seq_armedArmedAutomationStep].param2Val = value;
 		}
 	}
 }

@@ -177,7 +177,7 @@ enum NamesEnum
 	TEXT_POS_Y,
 	TEXT_FLUX,						//70
 	TEXT_SOM_FREQ,
-	TEXT_MIDI_MODE,
+	TEXT_MIDI_MODE,	//--AS This is now unused
 	
 	NUM_NAMES
 };
@@ -507,6 +507,4 @@ void menu_setActiveVoice(uint8_t voiceNr);
 //-----------------------------------------------------------------
 /** used to upodate all global parameters that need processing after a preset is loaded*/
 void menu_sendAllGlobals();
-//-----------------------------------------------------------------
-//uint8_t getModTargetValue(uint8_t value, uint8_t voiceNr);
 #endif

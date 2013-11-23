@@ -330,12 +330,11 @@ void frontParser_parseUartData(unsigned char data)
 
 //MIDI SYNTH MESSAGES
 			case MIDI_CC: //frontParser_midiMsg.status
-
-				//correct parameter number offset
-				frontParser_midiMsg.data1 += 1;
-
-				//fix offset between front an cortex
+				// this is for parameters below 128
+				// fix offset between front an cortex
 				// front params start at 1, cortex at 2 (because of midi in mod wheel==0x1
+				// correct parameter number offset
+				frontParser_midiMsg.data1 += 1;
 
 				//because hh slope on front is 127 and on cortex is 0 wrap data1 at 127
 				frontParser_midiMsg.data1 &= 0x7f;
@@ -344,6 +343,16 @@ void frontParser_parseUartData(unsigned char data)
 
 				//record automation if record is turned on
 				seq_recordAutomation(frontParser_activeTrack, frontParser_midiMsg.data1, frontParser_midiMsg.data2);
+				break;
+
+			//CC2 above 127
+			case FRONT_CC_2: // frontParser_midiMsg.status
+				{
+					midiParser_ccHandler(frontParser_midiMsg,1);
+
+					//record automation if record is turned on
+					seq_recordAutomation(frontParser_activeTrack, frontParser_midiMsg.data1+128, frontParser_midiMsg.data2);
+				}
 				break;
 
 
@@ -383,15 +392,27 @@ void frontParser_parseUartData(unsigned char data)
 			break; // case FRONT_CC_LFO_TARGET
 
 			case FRONT_SET_P1_DEST: { // frontParser_midiMsg.status
+				// --AS **AUTOM add 1 to the value as our cortex parameters are off by 1 for the lower 127 params
 					uint8_t hi = frontParser_midiMsg.data1;
 					uint8_t lo = frontParser_midiMsg.data2;
-					seq_patternSet.seq_subStepPattern[frontParser_shownPattern][frontParser_activeTrack][seq_selectedStep].param1Nr = ((hi<<7)|lo);
+					uint8_t val = (hi<<7)|lo;
+					if(val && val < 128 )
+						val++;
+					seq_patternSet.seq_subStepPattern[frontParser_shownPattern]
+					                                 [frontParser_activeTrack]
+					                                 [seq_selectedStep].param1Nr = val;
 				}
 				break;
 			case FRONT_SET_P2_DEST: { // frontParser_midiMsg.status
+				//--AS **AUTOM same here
 					uint8_t hi = frontParser_midiMsg.data1;
 					uint8_t lo = frontParser_midiMsg.data2;
-					seq_patternSet.seq_subStepPattern[frontParser_shownPattern][frontParser_activeTrack][seq_selectedStep].param2Nr = (hi<<7)|lo;
+					uint8_t val = (hi<<7)|lo;
+					if(val && val < 128 )
+						val++;
+					seq_patternSet.seq_subStepPattern[frontParser_shownPattern]
+					                                 [frontParser_activeTrack]
+					                                 [seq_selectedStep].param2Nr = val;
 				}
 				break;
 			case FRONT_SET_P1_VAL: { // frontParser_midiMsg.status
@@ -462,16 +483,6 @@ void frontParser_parseUartData(unsigned char data)
 					uint8_t value = ((upper&0x01)<<7) | lower;
 					uint8_t velModNr = (upper&0xfe)>>1;
 					modNode_setDestination(&velocityModulators[velModNr], value);
-				}
-				break;
-//CC2 above 127
-
-			case FRONT_CC_2: // frontParser_midiMsg.status
-				{
-					midiParser_ccHandler(frontParser_midiMsg,1);
-
-					//record automation if record is turned on
-					seq_recordAutomation(frontParser_activeTrack, frontParser_midiMsg.data1+128, frontParser_midiMsg.data2);
 				}
 				break;
 
@@ -612,9 +623,10 @@ void frontParser_parseUartData(unsigned char data)
 				}
 					break;
 
-				case FRONT_SEQ_MIDI_MODE:
-					midi_mode = frontParser_midiMsg.data2;
-					break;
+				// --AS not used anymore
+				//case FRONT_SEQ_MIDI_MODE:
+				//	midi_mode = frontParser_midiMsg.data2;
+				//	break;
 
 
 				//voice nr (0xf0) + autom track nr (0x0f)
@@ -698,29 +710,42 @@ void frontParser_parseUartData(unsigned char data)
 					uart_sendFrontpanelByte(seq_patternSet.seq_subStepPattern[frontParser_shownPattern][frontParser_activeTrack][frontParser_midiMsg.data2].prob);
 
 					//send back automation params
+					// --AS **AUTOM subtract one for differing offsets when parameter is < 128
 					uint8_t hi,lo;
-					uint8_t dest = seq_patternSet.seq_subStepPattern[frontParser_shownPattern][frontParser_activeTrack][frontParser_midiMsg.data2].param1Nr;
+					uint8_t dest = seq_patternSet.seq_subStepPattern[frontParser_shownPattern]
+					                                                [frontParser_activeTrack]
+					                                                [frontParser_midiMsg.data2].param1Nr;
+					if(dest < 128 && dest)
+						dest--;
 					hi = dest>>7;
 					lo = dest&0x7f;
 					uart_sendFrontpanelByte(FRONT_SET_P1_DEST);
 					uart_sendFrontpanelByte(hi);
 					uart_sendFrontpanelByte(lo);
 
-					uint8_t val = seq_patternSet.seq_subStepPattern[frontParser_shownPattern][frontParser_activeTrack][frontParser_midiMsg.data2].param1Val;
+					uint8_t val = seq_patternSet.seq_subStepPattern[frontParser_shownPattern]
+					                                               [frontParser_activeTrack]
+					                                               [frontParser_midiMsg.data2].param1Val;
 					hi = val>>7;
 					lo = val&0x7f;
 					uart_sendFrontpanelByte(FRONT_SET_P1_VAL);
 					uart_sendFrontpanelByte(hi);
 					uart_sendFrontpanelByte(lo);
-
-					dest = seq_patternSet.seq_subStepPattern[frontParser_shownPattern][frontParser_activeTrack][frontParser_midiMsg.data2].param2Nr;
+					// --AS **AUTOM subtract one for differing offsets
+					dest = seq_patternSet.seq_subStepPattern[frontParser_shownPattern]
+					                                        [frontParser_activeTrack]
+					                                        [frontParser_midiMsg.data2].param2Nr;
+					if(dest < 128 && dest)
+						dest--;
 					hi = dest>>7;
 					lo = dest&0x7f;
 					uart_sendFrontpanelByte(FRONT_SET_P2_DEST);
 					uart_sendFrontpanelByte(hi);
 					uart_sendFrontpanelByte(lo);
 
-					val = seq_patternSet.seq_subStepPattern[frontParser_shownPattern][frontParser_activeTrack][frontParser_midiMsg.data2].param2Val;
+					val = seq_patternSet.seq_subStepPattern[frontParser_shownPattern]
+					                                       [frontParser_activeTrack]
+					                                       [frontParser_midiMsg.data2].param2Val;
 					hi = val>>7;
 					lo = val&0x7f;
 					uart_sendFrontpanelByte(FRONT_SET_P2_VAL);

@@ -503,7 +503,7 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 	    /*PAR_FOLLOW*/ 			DTYPE_ON_OFF,
 	    /*PAR_QUANTISATION*/ 	DTYPE_MENU | (MENU_SEQ_QUANT<<4),
 	    /*PAR_SCREENSAVER_ON_OFF*/ DTYPE_ON_OFF,
-	    /*PAR_MIDI_MODE*/ 		DTYPE_MENU | (MENU_MIDI<<4),			//260
+	    /*PAR_MIDI_MODE*/ 		DTYPE_MENU | (MENU_MIDI<<4),			//260  //--AS This is now unused.
 	    /*PAR_MIDI_CHAN_7*/ 	DTYPE_1B16,
 };
 
@@ -523,21 +523,7 @@ void lockPotentiometerFetch()
 		parameterFetch |= 0x0F;
 	}	
 }
-//-----------------------------------------------------------------
-//takes the target  number and converts it to a parameter number
-// TODO the parameter numbers are now 16 bit. We need to create a set of sensible mod targets
-// (that fits in 8 bits), and have a mapping
-#if 0
-uint8_t getModTargetValue(uint8_t value, uint8_t voiceNr)
-{
-	if(voiceNr >= 6) voiceNr = 5;
-	// right 3 bits is active parameter, left 5 bits is page number
-	const uint8_t page				= (value&MASK_PAGE)>>PAGE_SHIFT;
-	const uint8_t activeParameter	= value&MASK_PARAMETER;
 
-	return (uint8_t)pgm_read_word(&menuPages[voiceNr][page].bot1 + activeParameter);
-}
-#endif
 //-----------------------------------------------------------------
 void menu_init()
 {
@@ -944,9 +930,7 @@ void menu_repaintGeneric()
 
 		if((pgm_read_byte(&parameter_dtypes[parNr]) & 0x0f) == DTYPE_AUTOM_TARGET)
 		{
-			// make sure we have a valid value (autom target must target one of the sound parameters)
-			//--AS not anymore, its an index into modTargets now
-			//--AS TODO there was code to fix the value. do the fixing when loading a preset rather.
+			//--AS this is an index into modTargets now
 
 			//Top row (which destination (1 or 2) and which voice it's targeting)
 			memcpy_P(&editDisplayBuffer[0][0],PSTR("AutDst"),6);
@@ -1774,19 +1758,12 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 						*paramValue = pgm_read_byte(&modTargetVoiceOffsets[voiceNr].end);
 					}
 
-					/*
-					if(*paramValue > (NUM_SUB_PAGES * 8 -1))
-						*paramValue = (NUM_SUB_PAGES * 8 -1);
-
-					if (voiceNr == 0) voiceNr = 1; // TODO --AS what is this strangeness
-					uint8_t value = getModTargetValue(*paramValue,(uint8_t)(voiceNr - 1));
-					*/
 					uint8_t value =  (uint8_t)pgm_read_word(&modTargets[*paramValue].param);
 					uint8_t upper,lower;
 					upper = (uint8_t)((uint8_t)((value&0x80)>>7) | (((paramNr - PAR_TARGET_LFO1)&0x3f)<<1));
 					lower = value&0x7f;
 					frontPanel_sendData(CC_LFO_TARGET,upper,lower);
-					//return; // --AS this was causing a failure to update
+					//--AS fall thru to update display
 				}
 				break;
 
@@ -1895,18 +1872,11 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 
 				//send parameter change to uart tx
 				if(paramNr < 128) // => Sound Parameter
-				{
 					frontPanel_sendData(MIDI_CC,(uint8_t)paramNr,*paramValue);
-				}
-				// TODO --AS how is this affected by my changes in the param enum?
-				else if(paramNr>=128 && (paramNr < END_OF_SOUND_PARAMETERS)) // => Sound Parameter above 127
-				{
+				else if(paramNr > 127 && (paramNr < END_OF_SOUND_PARAMETERS)) // => Sound Parameter above 127
 					frontPanel_sendData(CC_2,(uint8_t)(paramNr-128),*paramValue);
-				}
-				else
-				{
+				else // non sound parameters (ie current step data, etc)
 					menu_parseGlobalParam(paramNr,parameter_values[paramNr]);
-				}
 
 				//frontPanel_sendData(0xb0,paramNr,*paramValue);
 			} //editModeActive
@@ -2195,9 +2165,10 @@ void menu_parseGlobalParam(uint16_t paramNr, uint8_t value)
 	switch(paramNr)
 	{
 
-	case PAR_MIDI_MODE:
-		frontPanel_sendData(SEQ_CC,SEQ_MIDI_MODE,parameter_values[PAR_MIDI_MODE]);
-		break;
+	// --AS midi mode is not used anymore
+	//case PAR_MIDI_MODE:
+	//	frontPanel_sendData(SEQ_CC,SEQ_MIDI_MODE,parameter_values[PAR_MIDI_MODE]);
+	//	break;
 
 	case PAR_MIDI_CHAN_7:
 		paramNr -= 5; //because they are not after one another in the param list
@@ -2251,7 +2222,7 @@ void menu_parseGlobalParam(uint16_t paramNr, uint8_t value)
 	case PAR_P1_DEST:
 	case PAR_P2_DEST:
 	{ //step range 0-127 value range 0-255!
-		//**AUTOM - translate back into a parameter when receiving value from cortex
+		//**AUTOM - translate back into a parameter when sending value to cortex
 		uint8_t tmp=(uint8_t)pgm_read_word(&modTargets[value].param);
 		frontPanel_sendData(SEQ_CC, SEQ_SELECT_ACTIVE_STEP,parameter_values[PAR_ACTIVE_STEP]);
 		frontPanel_sendData((uint8_t)
@@ -2413,9 +2384,6 @@ void menu_parseGlobalParam(uint16_t paramNr, uint8_t value)
 	case PAR_STEP_VOLUME:
 		frontPanel_sendData(SEQ_CC,SEQ_VOLUME,value);
 		break;
-
-	//--AS TODO add send for the new midi note mode (also add code in ARM)
-
 	}
 }
 //-----------------------------------------------------------------

@@ -55,13 +55,13 @@ extern uint8_t midiParser_originalCcValues[0xff];
 
 extern uint8_t midi_MidiChannels[7];
 extern uint8_t midi_NoteOverride[7];
-extern uint8_t midi_mode;
+//extern uint8_t midi_mode; --AS not used anymore
 
-enum MIDI_modeEnum
-{
-	MIDI_MODE_TRIGGER,
-	MIDI_MODE_NOTE,
-} MidiModes;
+//enum MIDI_modeEnum
+//{
+//	MIDI_MODE_TRIGGER,
+//	MIDI_MODE_NOTE,
+//} MidiModes;
 
 
 #endif /* MIDIPARSER_H_ */

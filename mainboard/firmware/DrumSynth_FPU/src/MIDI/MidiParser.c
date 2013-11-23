@@ -89,7 +89,7 @@ uint8_t midi_MidiChannels[7];	// the currently selected midi channel
 
 //--AS note overrides for each voice
 uint8_t midi_NoteOverride[7];
-uint8_t midi_mode; //--AS get rid of
+//uint8_t midi_mode; //--AS not used anymore
 MidiMsg midiMsg_tmp;				// buffer message where the incoming data is stored
 uint8_t msgLength;					// number of following data bytes for current status
 uint8_t parserState = MIDI_STATUS;	// state of the parser state machine

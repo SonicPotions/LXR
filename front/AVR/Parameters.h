@@ -14,16 +14,16 @@ enum ParamEnums
 {
 	
 	PAR_NONE,	//TODO this is modwheel	- stupid offset +/- 1   /*0*/
-	PAR_MOD_WHEEL ,
+	PAR_MOD_WHEEL ,												/*1*/
 	
 	//waveform parameters need to be grouped 
 	//makes the special case to show their names instead of 0-127 values easier
 	
-	PAR_OSC_WAVE_DRUM1 = PAR_MOD_WHEEL,
+	PAR_OSC_WAVE_DRUM1 = PAR_MOD_WHEEL,							/*1*/
 	PAR_OSC_WAVE_DRUM2,
 	PAR_OSC_WAVE_DRUM3,
 	PAR_OSC_WAVE_SNARE,
-		NRPN_DATA_ENTRY_COARSE,
+	NRPN_DATA_ENTRY_COARSE,
 	PAR_WAVE1_CYM,
 	PAR_WAVE1_HH,
 	
@@ -165,13 +165,13 @@ enum ParamEnums
 	PAR_AMOUNT_LFO5,		
 	PAR_AMOUNT_LFO6,	
 	
-			PAR_RESERVED4, //todo stupid offset -> param 0
+			PAR_RESERVED4, //todo stupid offset -> param 0 /*127*/
 	//######################################
 	//######## END OF MIDI DATASIZE ########
 	//######## PARAM NR 127 REACHED ########
 	//######################################
 
-	PAR_FILTER_DRIVE_1,
+	PAR_FILTER_DRIVE_1,					/*128*/
 	PAR_FILTER_DRIVE_2,
 	PAR_FILTER_DRIVE_3,					/*130*/
 	PAR_FILTER_DRIVE_4,
@@ -197,6 +197,7 @@ enum ParamEnums
 	PAR_VELO_MOD_AMT_6,	
 	
 	// modulation destination for the velocity value in the sequencer
+	// --AS these are now indices into modTargets
 	PAR_VEL_DEST_1,
 	PAR_VEL_DEST_2,						/*150*/
 	PAR_VEL_DEST_3,
@@ -221,6 +222,7 @@ enum ParamEnums
 	PAR_VOICE_LFO6,
 	
 	// these represent the parameter being targeted
+	// --AS these are now indices into modTargets
 	PAR_TARGET_LFO1,	
 	PAR_TARGET_LFO2,
 	PAR_TARGET_LFO3,
@@ -315,6 +317,7 @@ enum ParamEnums
 	
 	PAR_AUTOM_TRACK,
 	
+	// --AS these are now indices into modTargets
 	PAR_P1_DEST,
 	PAR_P2_DEST,
 	
@@ -357,9 +360,9 @@ enum ParamEnums
 	PAR_QUANTISATION,
 	
 	PAR_SCREENSAVER_ON_OFF,
-	PAR_MIDI_MODE,						/*260*/
+	PAR_MIDI_MODE,						/*260*/ //--AS unused now
 	PAR_MIDI_CHAN_7,
-	// --AS beware, adding more parameters makes this enum a short
+
 	NUM_PARAMS	
 };
 
