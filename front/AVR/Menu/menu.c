@@ -1087,14 +1087,16 @@ void menu_repaintGeneric()
 					setNoteName(curParmVal, &editDisplayBuffer[1][13]);
 				break;
 
+			case DTYPE_0b1: //--AS the only 0/1 is automation track, make it look 1 based
+				numtostrpu(&editDisplayBuffer[1][13],(uint8_t)(curParmVal+1));
+				break;
 			default: //switch(parameters_dtypes[parNr] & 0x0F)
 				// unsigned numeric value: just print the value
 			case DTYPE_0B127:
 			case DTYPE_0B255:
 			case DTYPE_1B16:
 			case DTYPE_VOICE_LFO:
-			case DTYPE_0b1: //--AS the only 0/1 is automation track, make it look 1 based
-				numtostrpu(&editDisplayBuffer[1][13],(uint8_t)(curParmVal+1));
+				numtostrpu(&editDisplayBuffer[1][13],(uint8_t)(curParmVal));
 				break;
 			} //switch(parameters_dtypes[parNr] & 0x0F) end
 
@@ -1254,9 +1256,9 @@ void menu_repaintGeneric()
 				} //case DTYPE_MENU: switch(parameters[parNr].dtype&0x0F)
 				break;
 
-				case DTYPE_0b1:
-					// automation track, make 1 based
+				case DTYPE_0b1: // automation track 0/1 value, make it look 1 based
 					numtostrpu(valueAsText,(uint8_t)(curParmVal+1));
+					break;
 				default: //switch(parameters[parNr].dtype&0x0F)
 				case DTYPE_0B127:
 				case DTYPE_0B255:
