@@ -32,7 +32,7 @@ const char midiModes[][4] PROGMEM  =
 const char quantisationNames[][4] PROGMEM  = 
 {
 	{5},		//number of entries
-	{"Off"},
+	{"off"},
 	{"8"},
 	{"16"},
 	{"32"},
@@ -171,7 +171,7 @@ const char filterTypes[][8] PROGMEM  =
 	{"UBP"}	,	//4 - 100
 	{"Nch"}	,	//5 - 101
 	{"Pek"}	,	//6 - 110
-	{"Off"}	,	//7 - 111
+	{"off"}	,	//7 - 111
 	//{"All"}	,	//7 - 111
 };
 //-----------------------------------------------------------------

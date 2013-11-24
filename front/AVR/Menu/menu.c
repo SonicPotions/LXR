@@ -868,19 +868,24 @@ uint8_t checkScrollSign(uint8_t activePage, uint8_t activeParameter)
 
 static void menu_displayModTargetFull(uint8_t curParmVal)
 {
+
 	//**AUTOM **VELO - determine the full name to display for edit mode
 	// a letters for the category and 8 letters for the name
+
+	if( pgm_read_word(&modTargets[curParmVal].param)==PAR_NONE ) {
+		strcpy_P(&editDisplayBuffer[1][0],PSTR("off"));
+		return;
+	}
+
+	uint8_t nameidx = pgm_read_byte(&modTargets[curParmVal].nameIdx);
+
 	strcpy_P(&editDisplayBuffer[1][0],
 		(const char PROGMEM *)(&catNames[
-					 pgm_read_byte(&valueNames[
-						 pgm_read_byte(&modTargets[curParmVal].nameIdx)
-											  ].category)
+					 pgm_read_byte(&valueNames[nameidx].category)
 										]));
 	strcpy_P(&editDisplayBuffer[1][8],
 		(const char PROGMEM *)(&longNames[
-					pgm_read_byte(&valueNames[
-						pgm_read_byte(&modTargets[curParmVal].nameIdx)
-											 ].longName)
+					pgm_read_byte(&valueNames[nameidx].longName)
 										 ]));
 }
 
@@ -889,7 +894,7 @@ static void menu_displayModTargetShort(uint8_t curParmVal, char *valueAsText, ch
 	//**AUTOM **VELO - render a short name for non edit mode (encoder mode)
 
 	if( pgm_read_word(&modTargets[curParmVal].param)==PAR_NONE ) {
-		memcpy_P(valueAsText,PSTR("Off"),3);
+		memcpy_P(valueAsText,PSTR("off"),3);
 	} else {
 		uint8_t off=0;
 		if(inclVoice){
@@ -939,7 +944,7 @@ void menu_repaintGeneric()
 			// bottom row is the category and long name for the parameter being targeted
 			if( pgm_read_word(&modTargets[curParmVal].param)==PAR_NONE ) {
 				//  OFF
-				strcpy_P(&editDisplayBuffer[1][0], PSTR("Off"));
+				strcpy_P(&editDisplayBuffer[1][0], PSTR("off"));
 			} else {
 				memcpy_P(&editDisplayBuffer[0][9],PSTR("Voice"),5);
 				//**AUTOM - determine voice number to display for edit mode
@@ -1073,9 +1078,13 @@ void menu_repaintGeneric()
 				// -63 to +63
 				numtostrps(&editDisplayBuffer[1][13],(int8_t)(curParmVal - 63));
 				break;
-				//--AS note names
+
 			case DTYPE_NOTE_NAME: //switch(parameters_dtypes[parNr] & 0x0F)
-				setNoteName(curParmVal, &editDisplayBuffer[1][13]);
+				//--AS note names TODO we could create another dtype but we don't want to waste them
+				if(parNr >= PAR_MIDI_NOTE1 && parNr <= PAR_MIDI_NOTE7 && curParmVal==0)
+					memcpy_P(&editDisplayBuffer[1][13],PSTR("Any"),3);
+				else
+					setNoteName(curParmVal, &editDisplayBuffer[1][13]);
 				break;
 
 			default: //switch(parameters_dtypes[parNr] & 0x0F)
@@ -1084,8 +1093,8 @@ void menu_repaintGeneric()
 			case DTYPE_0B255:
 			case DTYPE_1B16:
 			case DTYPE_VOICE_LFO:
-			case DTYPE_0b1:
-				numtostrpu(&editDisplayBuffer[1][13],curParmVal);
+			case DTYPE_0b1: //--AS the only 0/1 is automation track, make it look 1 based
+				numtostrpu(&editDisplayBuffer[1][13],(uint8_t)(curParmVal+1));
 				break;
 			} //switch(parameters_dtypes[parNr] & 0x0F) end
 
@@ -1162,7 +1171,10 @@ void menu_repaintGeneric()
 					break;
 					//--AS note names
 				case DTYPE_NOTE_NAME: //switch(parameters[parNr].dtype&0x0F)
-					setNoteName(curParmVal, valueAsText);
+					if(parNr >= PAR_MIDI_NOTE1 && parNr <= PAR_MIDI_NOTE7 && curParmVal==0)
+						memcpy_P(valueAsText,PSTR("Any"),3);
+					else
+						setNoteName(curParmVal, valueAsText);
 					break;
 
 				case DTYPE_AUTOM_TARGET: //switch(parameters[parNr].dtype&0x0F)
@@ -1242,12 +1254,14 @@ void menu_repaintGeneric()
 				} //case DTYPE_MENU: switch(parameters[parNr].dtype&0x0F)
 				break;
 
+				case DTYPE_0b1:
+					// automation track, make 1 based
+					numtostrpu(valueAsText,(uint8_t)(curParmVal+1));
 				default: //switch(parameters[parNr].dtype&0x0F)
 				case DTYPE_0B127:
 				case DTYPE_0B255:
 				case DTYPE_1B16:
 				case DTYPE_VOICE_LFO:
-				case DTYPE_0b1:
 					// fallthrough for the rest of the unsigned values
 					numtostrpu(valueAsText,curParmVal);
 					break;
@@ -1700,7 +1714,10 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 					// get voice, and figure valid range, translate to param number before sending
 					uint8_t voiceNr=(uint8_t)(paramNr - PAR_VEL_DEST_1);
 					if(*paramValue < pgm_read_byte(&modTargetVoiceOffsets[voiceNr].start)) {
-						*paramValue = pgm_read_byte(&modTargetVoiceOffsets[voiceNr].start);
+						if(inc < 0) // going down, allow 0
+							*paramValue=0;
+						else // going up fix to start
+							*paramValue = pgm_read_byte(&modTargetVoiceOffsets[voiceNr].start);
 					} else if (*paramValue > pgm_read_byte(&modTargetVoiceOffsets[voiceNr].end)) {
 						*paramValue = pgm_read_byte(&modTargetVoiceOffsets[voiceNr].end);
 					}
@@ -1753,7 +1770,10 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 					//**LFO - limit encoder start and end to range for the voice
 					uint8_t voiceNr =  (uint8_t)(parameter_values[PAR_VOICE_LFO1+(paramNr - PAR_TARGET_LFO1)]-1);
 					if(*paramValue < pgm_read_byte(&modTargetVoiceOffsets[voiceNr].start)) {
-						*paramValue = pgm_read_byte(&modTargetVoiceOffsets[voiceNr].start);
+						if(inc < 0) // going down, allow 0
+							*paramValue=0;
+						else // going up fix to start
+							*paramValue = pgm_read_byte(&modTargetVoiceOffsets[voiceNr].start);
 					} else if (*paramValue > pgm_read_byte(&modTargetVoiceOffsets[voiceNr].end)) {
 						*paramValue = pgm_read_byte(&modTargetVoiceOffsets[voiceNr].end);
 					}
@@ -2417,7 +2437,7 @@ uint8_t getDtypeValue(uint8_t value, uint16_t paramNr)
 	case DTYPE_TARGET_SELECTION_LFO: {
 		//**VELO **LFO limit range to start and end for the applicable voice
 		uint8_t voiceNr=0;
-		uint8_t s, e;
+		uint8_t s, e, rng;
 		//TODO --AS can this be done in a simpler way
 		if(paramNr >= PAR_VEL_DEST_1 && paramNr <= PAR_VEL_DEST_6 )
 			voiceNr=(uint8_t)(paramNr-PAR_VEL_DEST_1);
@@ -2425,7 +2445,13 @@ uint8_t getDtypeValue(uint8_t value, uint16_t paramNr)
 			voiceNr=(uint8_t)(paramNr-PAR_TARGET_LFO1);
 		s=pgm_read_byte(&modTargetVoiceOffsets[voiceNr].start);
 		e=pgm_read_byte(&modTargetVoiceOffsets[voiceNr].end);
-		return (uint8_t)(s + ((e-s)*frac));
+		// start will be a non-zero value. We need to allow setting a value of 0 (off) or
+		// something within the start to end range.
+		rng=(uint8_t)(frac * ((e-s)+1));
+		if(!rng)
+			return 0; // set to off
+		else
+			return (uint8_t)((s-1)+rng); // set to an offset beginning at start // (uint8_t)(s + ((e-s)*frac));
 		}
 		break;
 
