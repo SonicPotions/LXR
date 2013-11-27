@@ -734,7 +734,6 @@ void preset_morph(uint8_t morph)
 		uint8_t val;
 		
 		val = interpolate(parameter_values[i],parameters2[i],morph);
-		// TODO --AS these will only be good as long as num sound parameters is < 256
 		if(i<128) {
 			frontPanel_sendData(MIDI_CC,(uint8_t)i,val);
 		} else {

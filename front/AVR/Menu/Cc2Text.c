@@ -9,7 +9,7 @@
 #include <avr/pgmspace.h>
 
 //-----------------------------------------------------------------
-//**AUTOM modTargets definition
+//**AUTOM **LFO **VELO modTargets definition
 // elements are nameIdx and param
 // see declaration in menu.h for more info about this
 // this is arranged in voice order and lists valid mod targets.
@@ -308,12 +308,12 @@ const ModTarg modTargets[] PROGMEM ={
 // this is the starting and ending offset for voice. index into above array.
 // see declaration in menu.h for more info
 const ModTargetVoiceOffset modTargetVoiceOffsets[6] PROGMEM = {
-	/*voice 1*/ {   2,  37 },
-	/*voice 2*/ {  38,  73 },
-	/*voice 3*/ {  74, 109 },
-	/*voice 4*/ { 110, 144 },
-	/*voice 5*/ { 145, 180 },
-	/*voice 6*/ { 181, 216 },
+	/*voice 1*/ {   2,  37 }, //35
+	/*voice 2*/ {  38,  73 }, //35
+	/*voice 3*/ {  74, 109 }, //35
+	/*voice 4*/ { 110, 144 }, //34
+	/*voice 5*/ { 145, 180 }, //35
+	/*voice 6*/ { 181, 216 }, //35
 };
 
 //**AUTOM paramToModTarget definition
