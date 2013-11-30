@@ -1098,6 +1098,7 @@ void midiParser_handleSystemByte(unsigned char data)
 		break;
 
 	case MIDI_START:
+	case MIDI_CONTINUE:
 		if(seq_getExtSync())
 		{
 			sync_midiStartStop(1);
