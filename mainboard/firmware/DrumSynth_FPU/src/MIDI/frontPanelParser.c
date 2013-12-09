@@ -327,6 +327,29 @@ void frontParser_parseUartData(unsigned char data)
 			switch(frontParser_midiMsg.status)
 			{
 
+			case SAMPLE_CC:
+				switch(frontParser_midiMsg.data1)
+				{
+
+				case FRONT_SAMPLE_START_UPLOAD:
+					seq_setRunning(0);
+					sampleMemory_init();
+					sampleMemory_loadSamples();
+					FLASH_Lock();
+
+					uart_sendFrontpanelByte(ACK);
+				break;
+
+				case FRONT_SAMPLE_COUNT:
+					uart_sendFrontpanelByte(SAMPLE_CC);
+					uart_sendFrontpanelByte(FRONT_SAMPLE_COUNT);
+					uart_sendFrontpanelByte(sampleMemory_getNumSamples());
+					break;
+
+				default:
+					break;
+				}
+			break;
 
 //MIDI SYNTH MESSAGES
 			case MIDI_CC: //frontParser_midiMsg.status
@@ -485,27 +508,6 @@ void frontParser_parseUartData(unsigned char data)
 					modNode_setDestination(&velocityModulators[velModNr], value);
 				}
 				break;
-
-//preset messages
-#if USE_SD_CARD
-			case FRONT_PRESET:
-				switch(frontParser_midiMsg.data1)
-				{
-				case FRONT_PRESET_LOAD:
-					sdManager_loadDrumset(frontParser_midiMsg.data2,0);
-					break;
-
-				case FRONT_PRESET_SAVE:
-
-					break;
-
-				case FRONT_PATTERN_LOAD:
-					sdManager_loadPattern(frontParser_midiMsg.data2);
-					break;
-
-				}
-				break;
-#endif
 
 			//VOICE option Messages
 			case VOICE_CC: // frontParser_midiMsg.status

@@ -163,6 +163,7 @@ const char waveformNames[][4] PROGMEM  =
 	{"Rec"}	,
 	{"Noi"}	,
 	{"Cym"}	,
+
 };
 //-----------------------------------------------------------------
 const char outputNames[][7] PROGMEM  = 

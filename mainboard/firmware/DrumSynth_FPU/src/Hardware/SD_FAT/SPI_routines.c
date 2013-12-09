@@ -108,6 +108,39 @@ void spi_init(void)
 	spi_initInterface();
 }
 
+void spi_deInit()
+{
+	SPI_Cmd(SPI1,DISABLE);
+
+	GPIO_InitTypeDef GPIO_InitStructure;
+
+
+	// init the pins
+	//MISO and MOSI
+	GPIO_InitStructure.GPIO_Pin = SPI_MISO_PIN | SPI_MOSI_PIN;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+	GPIO_Init(SPI_MISO_MOSI_PORT, &GPIO_InitStructure);
+	//SCK pins
+	GPIO_InitStructure.GPIO_Pin = SPI_SCK_PIN;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+	GPIO_Init(SPI_CS_SCK_PORT, &GPIO_InitStructure);
+	//CS
+	GPIO_InitStructure.GPIO_Pin = SPI_CS_PIN;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+	GPIO_Init(SPI_CS_SCK_PORT, &GPIO_InitStructure);
+
+
+}
+
 unsigned char SPI_transmit(unsigned char data)
 {
 

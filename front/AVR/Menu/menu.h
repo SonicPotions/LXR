@@ -472,6 +472,9 @@ void menu_repaintAll();
 //repaint the screen. show all changes*/
 void menu_repaint();
 //-----------------------------------------------------------------
+//number of user samples in flash
+void menu_setNumSamples(uint8_t num);
+//-----------------------------------------------------------------
 /**set all save state parameters to 0*/
 void menu_resetSaveParameters();
 //-----------------------------------------------------------------

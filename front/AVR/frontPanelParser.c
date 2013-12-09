@@ -411,6 +411,18 @@ void frontPanel_parseData(uint8_t data)
 						break;
 					};						
 				}
+				else if(frontParser_midiMsg.status == SAMPLE_CC)
+				{
+					switch(frontParser_midiMsg.data1)
+					{
+						case SAMPLE_COUNT:
+							menu_setNumSamples(frontParser_midiMsg.data2);
+							break;
+
+						default:
+							break;
+					}
+				}
 				else if(frontParser_midiMsg.status == LED_CC)
 				{
 					switch(frontParser_midiMsg.data1)
