@@ -22,6 +22,18 @@
 #define MENU_TRANS			10
 #define MENU_MIDI			11
 //-----------------------------------------------------------------
+// Shared texts. Reduce mem usage by pooling common text
+// all of these need to be 3 chars
+const char menuText_ok[] PROGMEM = 	"ok ";
+const char menuText_off[] PROGMEM = "off";
+const char menuText_on[] PROGMEM = 	"on ";
+const char menuText_mix[] PROGMEM = "mix";
+const char menuText_fm[] PROGMEM = 	"fm ";
+const char menuText_dash[] PROGMEM ="---";
+const char menuText_blank[] PROGMEM="   ";
+const char menuText_any[] PROGMEM = "any";
+
+//-----------------------------------------------------------------
 const char midiModes[][4] PROGMEM  =
 {
 	{2},		//number of entries
@@ -58,6 +70,8 @@ const char transientNames[][4] PROGMEM  =
 	{"Sp2"},
 	
 };
+
+
 //-----------------------------------------------------------------
 const char nextPatternNames[][4] PROGMEM  = 
 {

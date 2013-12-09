@@ -488,7 +488,7 @@ void menu_resetActiveParameter();
 //-----------------------------------------------------------------
 uint8_t menu_getSubPage();
 //-----------------------------------------------------------------
-void menu_parseKnobValue(uint8_t potNr, uint8_t value);
+void menu_parseKnobValue(uint8_t potNr, uint8_t potValue);
 //-----------------------------------------------------------------
 void menu_parseGlobalParam(uint16_t paramNr, uint8_t value);
 //-----------------------------------------------------------------

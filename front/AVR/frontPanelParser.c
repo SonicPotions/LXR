@@ -46,9 +46,8 @@ void frontParser_parseNrpn(uint8_t value)
 	if( (paramNr >= PAR_TARGET_LFO1) && (paramNr <= PAR_TARGET_LFO6) )
 	{
 		//**LFO receive nrpn translate --AS TODO this needs to be checked. I'm not sure what needs to happen here.
-		// It seems like the
-		// assumption is that in this case, value represents an encoded menupage value (this code used to call the now
-		// defunct getModTargetValue)
+		// It seems like the assumption is that in this case, value represents an encoded menupage value (this code
+		// used to call the now defunct getModTargetValue)
 
 		//LFO
 		uint8_t lfoNr = (uint8_t)(paramNr-PAR_TARGET_LFO1);
