@@ -7,6 +7,7 @@
 
 
 #include "SampleMemory.h"
+#include "../Hardware/SD_FAT/SPI_routines.h"
 #include "string.h"
 
 

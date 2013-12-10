@@ -63,7 +63,9 @@
 
 volatile unsigned long startBlock, totalBlocks; 
 volatile unsigned char SDHC_flag, cardType;
+#if 0
 volatile unsigned char buffer[512];
+#endif
 
 unsigned char SD_init(void);
 unsigned char SD_sendCommand(unsigned char cmd, unsigned long arg);

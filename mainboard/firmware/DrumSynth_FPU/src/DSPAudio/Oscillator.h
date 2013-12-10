@@ -53,7 +53,6 @@
 #define CRASH				0x05
 #define OSC_SAMPLE_START 	0x06
 
-
 #define phaseShift 1000
 
 //-----------------------------------------------------------
@@ -126,6 +125,8 @@ void calcNextOscSampleFmBlock(OscInfo* osc, int16_t* modBuffer, int16_t* buf, ui
 int16_t calcNextOscSampleFm(OscInfo* osc, OscInfo* modOsc);
 //-----------------------------------------------------------
 void calcSampleOscBlock(OscInfo* osc, int16_t* buf, const uint8_t size ,const float gain);
+//-----------------------------------------------------------
+void calcUserSampleOscFmBlock(OscInfo* osc,int16_t* modBuffer, int16_t* buf, uint8_t size ,const float gain);
 //-----------------------------------------------------------
 void calcUserSampleOscBlock(OscInfo* osc, int16_t* buf, const uint8_t size ,const float gain);
 //-----------------------------------------------------------

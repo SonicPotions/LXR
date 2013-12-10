@@ -21,6 +21,10 @@
 #define ACK 1
 #define NACK -1
 //-------------------------------------------
+#define ACK 1
+#define NACK -1
+//-------------------------------------------
+
 
 void uart_init();
 uint8_t uart_putc(unsigned char c);

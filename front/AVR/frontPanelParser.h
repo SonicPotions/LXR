@@ -122,7 +122,7 @@ extern uint8_t frontPanel_sysexMode;
 #define SEQ_FLUX			0x2b
 #define SEQ_SOM_FREQ		0x2c
 #define SEQ_MIDI_CHAN		0x2d	//voiceNr (0xf0) + channel (0x0f)
-#define SEQ_MIDI_MODE		0x2e
+#define SEQ_MIDI_MODE		0x2e //--AS unused now
 
 //SysEx
 #define SYSEX_REQUEST_STEP_DATA			0x01

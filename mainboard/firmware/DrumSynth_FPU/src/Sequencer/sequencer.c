@@ -103,6 +103,10 @@ uint8_t seq_barCounter;						/**< counts the absolute position in bars since the
 
 static uint8_t seq_loadPendigFlag = 0;
 
+// --AS keep track of which midi notes are playing
+static uint8_t midi_chan_notes[16];		    /**< what note is playing on each channel */
+static uint16_t midi_notes_on=0;		    /**< which channels have a note currently playing */
+
 const float seq_shuffleTable[16] =
 {
 		0.f,
@@ -298,6 +302,9 @@ void seq_parseAutomationNodes(uint8_t track, Step* stepData)
 //------------------------------------------------------------------------------
 void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note)
 {
+	uint8_t midiChan; // which midi channel to send a note on
+	uint8_t midiNote; // which midi note to send
+
 	if(voiceNr > 6) return;
 
 	seq_parseAutomationNodes(voiceNr, &seq_patternSet.seq_subStepPattern[seq_activePattern][voiceNr][seq_stepIndex[voiceNr]]);
@@ -326,18 +333,39 @@ void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note)
 	uart_sendFrontpanelByte(voiceNr);
 	uart_sendFrontpanelByte(0);
 
+	/* --AS getting ride of the midi mode
 	if(midi_mode == MIDI_MODE_TRIGGER)
 	{
-		uint8_t midiChan = midi_MidiChannels[0];
-		//send to midi out
-		seq_sendMidi(0x90 | midiChan,NOTE_VOICE1+voiceNr,seq_patternSet.seq_subStepPattern[seq_activePattern][voiceNr][seq_stepIndex[voiceNr]].volume&STEP_VOLUME_MASK);
+		 midiChan = midi_MidiChannels[0];
+		 midiNote=NOTE_VOICE1+voiceNr;
 	}
 	else
-	{
-		uint8_t midiChan = midi_MidiChannels[voiceNr];
-		//send to midi out
-		seq_sendMidi(0x90 | midiChan,note,seq_patternSet.seq_subStepPattern[seq_activePattern][voiceNr][seq_stepIndex[voiceNr]].volume&STEP_VOLUME_MASK);
-	}
+	{*/
+
+	midiChan = midi_MidiChannels[voiceNr];
+
+	//--AS the note that is played will be whatever is received unless we have a note override set
+	// A note override is any non-zero value for this parameter
+	if(midi_NoteOverride[voiceNr] == 0)
+		midiNote = note;
+	else
+		midiNote = midi_NoteOverride[voiceNr];
+	//}
+
+	//--AS if a note is on for that channel send note-off first
+	// The proper way to do a note off is with 0x80. 0x90 with velocity 0 is also used, however I think there is still
+	// synth gear out there that doesn't recognize that properly.
+	if((1<<midiChan) & midi_notes_on)
+		seq_sendMidi(0x80 | midiChan,midi_chan_notes[midiChan],0);
+	//send the new note to midi out
+	seq_sendMidi(0x90 | midiChan,midiNote,
+			seq_patternSet.seq_subStepPattern[seq_activePattern][voiceNr][seq_stepIndex[voiceNr]].volume&STEP_VOLUME_MASK);
+	// finally, keep track of which notes are on so we can turn them off later
+	midi_chan_notes[midiChan]=midiNote;
+	midi_notes_on |= (1 << midiChan);
+
+
+
 }
 //------------------------------------------------------------------------------
 void seq_nextStep()
@@ -686,7 +714,7 @@ void seq_setRunning(uint8_t isRunning)
 	//jump to 1st step if sequencer is stopped
 	if(!seq_running)
 	{
-		int i;
+		uint8_t i;
 		for(i=0;i<NUM_TRACKS;i++) {
 			seq_stepIndex[i] = -1;
 		}
@@ -698,6 +726,13 @@ void seq_setRunning(uint8_t isRunning)
 		//so the next seq_tick call will trigger the next step immediately
 		seq_deltaT = 0;
 		uart_sendMidiByte(MIDI_STOP);
+
+		//--AS send notes off on all channels that have notes playing and reset our bitmap to reflect that
+		for(i=0;i<16;i++)
+			if((1<<i) & midi_notes_on)
+				seq_sendMidi(0x80 | i, midi_chan_notes[i],0);
+		midi_notes_on=0;
+
 		trigger_reset(1);
 	} else {
 		seq_prescaleCounter = 0;
@@ -956,7 +991,8 @@ void seq_recordAutomation(uint8_t voice, uint8_t dest, uint8_t value)
 		uint8_t quantizedStep = seq_quantize(seq_stepIndex[voice]);
 
 		//only record to active steps
-		if( seq_isMainStepActive(voice,quantizedStep/8,seq_activePattern) &&  seq_isStepActive(voice,quantizedStep,seq_activePattern))
+		if( seq_isMainStepActive(voice,quantizedStep/8,seq_activePattern) &&
+				seq_isStepActive(voice,quantizedStep,seq_activePattern))
 		{
 			if(seq_activeAutomTrack == 0) {
 				seq_patternSet.seq_subStepPattern[seq_activePattern][voice][quantizedStep].param1Nr = dest;
@@ -973,11 +1009,19 @@ void seq_recordAutomation(uint8_t voice, uint8_t dest, uint8_t value)
 		//step button is held down
 		//-> set step automation parameters
 		if(seq_activeAutomTrack == 0) {
-			seq_patternSet.seq_subStepPattern[seq_activePattern][seq_armedArmedAutomationTrack][seq_armedArmedAutomationStep].param1Nr = dest;
-			seq_patternSet.seq_subStepPattern[seq_activePattern][seq_armedArmedAutomationTrack][seq_armedArmedAutomationStep].param1Val = value;
+			seq_patternSet.seq_subStepPattern[seq_activePattern]
+			                                  [seq_armedArmedAutomationTrack]
+			                                   [seq_armedArmedAutomationStep].param1Nr = dest;
+			seq_patternSet.seq_subStepPattern[seq_activePattern]
+			                                  [seq_armedArmedAutomationTrack]
+			                                   [seq_armedArmedAutomationStep].param1Val = value;
 		} else {
-			seq_patternSet.seq_subStepPattern[seq_activePattern][seq_armedArmedAutomationTrack][seq_armedArmedAutomationStep].param2Nr = dest;
-			seq_patternSet.seq_subStepPattern[seq_activePattern][seq_armedArmedAutomationTrack][seq_armedArmedAutomationStep].param2Val = value;
+			seq_patternSet.seq_subStepPattern[seq_activePattern]
+			                                  [seq_armedArmedAutomationTrack]
+			                                   [seq_armedArmedAutomationStep].param2Nr = dest;
+			seq_patternSet.seq_subStepPattern[seq_activePattern]
+			                                  [seq_armedArmedAutomationTrack]
+			                                   [seq_armedArmedAutomationStep].param2Val = value;
 		}
 	}
 }

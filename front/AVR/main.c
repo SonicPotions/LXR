@@ -27,7 +27,7 @@
 //-----------------------------------------------
 //defines
 //-----------------------------------------------
-#define FIRMWARE_VERSION "0.24a"
+#define FIRMWARE_VERSION "0.25"
 #define CORTEX_RESET_PIN	PB0
 //-----------------------------------------------
 //code
@@ -74,7 +74,7 @@ int main(void)
 	lcd_string_F(PSTR("Sonic Potions"));
 	//goto 2nd line
 	lcd_setcursor(0,2);
-	lcd_string_F(PSTR("LXR Drums V"));
+	lcd_string_F(PSTR("LXR*Drums V"));
 	lcd_string(FIRMWARE_VERSION);
 #endif
 
@@ -150,6 +150,9 @@ sei();
 	//initialize empty pattern
 	copyClear_clearCurrentPattern();
 	
+	//request number of samples
+	frontPanel_sendData(SAMPLE_CC,SAMPLE_COUNT,0x00);
+
 	//request number of samples
 	frontPanel_sendData(SAMPLE_CC,SAMPLE_COUNT,0x00);
 

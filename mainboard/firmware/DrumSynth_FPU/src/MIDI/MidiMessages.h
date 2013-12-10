@@ -78,12 +78,13 @@ typedef struct MidiStruct {
 
 //------------------------------------------------------------
 
-#define NO_AUTOMATION 0xff	//used as a dummy message number for the automation tracks. paramNr 0xff means no automation
+#define NO_AUTOMATION 0xff	//used as a dummy message number for the automation tracks.
+							// paramNr 0xff means no automation
 // Custom CCs
 
 enum
 {
-	I_DUNNO = 0, //was hiermit???
+	I_DUNNO = 0, //was hiermit???	/*0*/
 	CC_MODWHEEL,
 	OSC_WAVE_DRUM1 = 2,
 	OSC_WAVE_DRUM2,
@@ -94,7 +95,7 @@ enum
 	WAVE1_HH,
 
 	F_OSC1_COARSE,
-	F_OSC1_FINE,
+	F_OSC1_FINE,					/*10*/
 	F_OSC2_COARSE,
 	F_OSC2_FINE,
 	F_OSC3_COARSE,
@@ -104,7 +105,7 @@ enum
 	F_OSC5_COARSE,
 	F_OSC5_FINE,
 	F_OSC6_COARSE,
-	F_OSC6_FINE,
+	F_OSC6_FINE,					/*20*/
 
 	MOD_WAVE_DRUM1,
 	MOD_WAVE_DRUM2,
@@ -117,7 +118,7 @@ enum
 	SNARE_NOISE_F,
 	SNARE_MIX,
 
-	CYM_MOD_OSC_F1,
+	CYM_MOD_OSC_F1,					/*30*/
 	CYM_MOD_OSC_F2,
 	CYM_MOD_OSC_GAIN1,
 	CYM_MOD_OSC_GAIN2,
@@ -128,7 +129,7 @@ enum
 
 	FILTER_FREQ_DRUM1,
 	FILTER_FREQ_DRUM2,
-	FILTER_FREQ_DRUM3,
+	FILTER_FREQ_DRUM3,				/*40*/
 	SNARE_FILTER_F,
 	CYM_FIL_FREQ,
 	HAT_FILTER_F,
@@ -140,7 +141,7 @@ enum
 	CYM_RESO,
 	HAT_RESO,
 
-	VELOA1,
+	VELOA1,							/*50*/
 	VELOD1,
 	VELOA2,
 	VELOD2,
@@ -150,7 +151,7 @@ enum
 	VELOD4,
 	VELOA5,
 	VELOD5,
-	VELOA6,
+	VELOA6,							/*60*/
 	VELOD6,
 	VELOD6_OPEN,
 
@@ -162,7 +163,7 @@ enum
 	VOL_SLOPE6,
 
 	REPEAT1,
-	CYM_REPEAT,
+	CYM_REPEAT,						/*70*/
 
 	PITCHD1, //mod eg decay
 	PITCHD2,
@@ -175,7 +176,7 @@ enum
 	MODAMNT4,
 
 	PITCH_SLOPE1,
-	PITCH_SLOPE2,
+	PITCH_SLOPE2,					/*80*/
 	PITCH_SLOPE3,
 	PITCH_SLOPE4,
 
@@ -187,7 +188,7 @@ enum
 	FMDTN3,
 
 	VOL1,
-	VOL2,
+	VOL2,							/*90*/
 	VOL3,
 	VOL4,
 	VOL5,
@@ -198,7 +199,7 @@ enum
 	PAN3,
 	NRPN_FINE,
 	NRPN_COARSE,
-	PAN4,
+	PAN4,							/*100*/
 	PAN5,
 	PAN6,
 
@@ -210,7 +211,7 @@ enum
 	HAT_DISTORTION,
 
 	VOICE_DECIMATION1,
-	VOICE_DECIMATION2,
+	VOICE_DECIMATION2,				/*110*/
 	VOICE_DECIMATION3,
 	VOICE_DECIMATION4,
 	VOICE_DECIMATION5,
@@ -221,7 +222,7 @@ enum
 	FREQ_LFO2,
 	FREQ_LFO3,
 	FREQ_LFO4,
-	FREQ_LFO5,
+	FREQ_LFO5,						/*120*/
 	FREQ_LFO6,
 
 	AMOUNT_LFO1,
@@ -231,7 +232,7 @@ enum
 	AMOUNT_LFO5,
 	AMOUNT_LFO6,
 
-	RESERVED4,
+	RESERVED4,						/*128*/
 
 }ParamEnums;
 
@@ -349,6 +350,15 @@ enum
 	CC2_AUDIO_OUT5,
 	CC2_AUDIO_OUT6,
 
+	// --AS
+	CC2_MIDI_NOTE1,
+	CC2_MIDI_NOTE2,
+	CC2_MIDI_NOTE3,
+	CC2_MIDI_NOTE4,
+	CC2_MIDI_NOTE5,
+	CC2_MIDI_NOTE6,
+	CC2_MIDI_NOTE7, // s/b 111 i think
+
 	//Mute Button NRPN messages
 	CC2_MUTE_1 = 200,
 	CC2_MUTE_2,
@@ -394,8 +404,6 @@ enum
 
 #define VOICE_MIDI_CHAN					0x02
 
-
-
 //Sequencer commands
 #define FRONT_SEQ_RUN_STOP				0x01
 
@@ -437,7 +445,7 @@ enum
 #define FRONT_SEQ_FLUX					0x2b
 #define FRONT_SEQ_SOM_FREQ				0x2c
 #define FRONT_SEQ_MIDI_CHAN				0x2d	//voiceNr (0xf0) + channel (0x0f)
-#define FRONT_SEQ_MIDI_MODE				0x2e
+#define FRONT_SEQ_MIDI_MODE				0x2e //--AS not used anymore
 
 //codec control messages
 #define EQ_ON_OFF						0x01

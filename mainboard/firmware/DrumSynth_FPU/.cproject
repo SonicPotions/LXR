@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?fileVersion 4.0.0?><cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage">
+	<storageModule moduleId="org.eclipse.cdt.core.settings">
+		<cconfiguration id="org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf.release.1011744005">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf.release.1011744005" moduleId="org.eclipse.cdt.core.settings" name="Release">
+				<externalSettings/>
+				<extensions>
+					<extension id="org.eclipse.cdt.core.GNU_ELF" point="org.eclipse.cdt.core.BinaryParser"/>
+					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.MakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+				</extensions>
+			</storageModule>
+			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.cross.arm.gnu.buildArtefactType.application" buildProperties="org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release,org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.cross.arm.gnu.buildArtefactType.application" description="" id="org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf.release.1011744005" name="Release" parent="org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf.release">
+					<folderInfo id="org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf.release.1011744005." name="/" resourcePath="">
+						<toolChain id="org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf.toolchain.release.1027465160" name="ARM Windows GCC (Tools For Embedded)" superClass="org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf.toolchain.release">
+							<option id="org.eclipse.cdt.cross.arm.gnu.embedded.windows.option.debugging.level.933531173" name="Debug level" superClass="org.eclipse.cdt.cross.arm.gnu.embedded.windows.option.debugging.level" value="org.eclipse.cdt.cross.arm.gnu.base.option.debugging.level.none" valueType="enumerated"/>
+							<option id="org.eclipse.cdt.cross.arm.gnu.embedded.windows.option.target.processor.2117992398" name="Processor" superClass="org.eclipse.cdt.cross.arm.gnu.embedded.windows.option.target.processor" value="org.eclipse.cdt.cross.arm.gnu.base.option.mcpu.cortex-m4" valueType="enumerated"/>
+							<option id="org.eclipse.cdt.cross.arm.gnu.embedded.windows.option.target.fpu.abi.469431093" name="Float ABI" superClass="org.eclipse.cdt.cross.arm.gnu.embedded.windows.option.target.fpu.abi" value="org.eclipse.cdt.cross.arm.gnu.base.option.target.fpu.abi.hard" valueType="enumerated"/>
+							<option id="org.eclipse.cdt.cross.arm.gnu.embedded.windows.option.target.fpu.unit.270994114" name="FPU Type" superClass="org.eclipse.cdt.cross.arm.gnu.embedded.windows.option.target.fpu.unit" value="org.eclipse.cdt.cross.arm.gnu.base.option.target.fpu.unit.fpv4spd16" valueType="enumerated"/>
+							<targetPlatform id="org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf.platform.release.689655150" isAbstract="false" name="Windows Platform" superClass="org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf.platform.release"/>
+							<builder buildPath="${workspace_loc:/DrumSynth_FPU}/Release" id="org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf.builder.release.1535656668" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="ARM Windows GNU Make builder (Tools For Embedded)" superClass="org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf.builder.release"/>
+							<tool id="org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf.assembler.release.1644976554" name="ARM Windows GCC Assembler (Tools For Embedded)" superClass="org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf.assembler.release">
+								<option id="org.eclipse.cdt.cross.arm.gnu.assembler.option.warnings.extrawarn.581017908" name="Extra warnings (-Wextra)" superClass="org.eclipse.cdt.cross.arm.gnu.assembler.option.warnings.extrawarn" value="true" valueType="boolean"/>
+								<option id="org.eclipse.cdt.cross.arm.gnu.assembler.option.preprocessor.def.1892880327" name="Defined symbols (-D)" superClass="org.eclipse.cdt.cross.arm.gnu.assembler.option.preprocessor.def"/>
+								<inputType id="org.eclipse.cdt.cross.arm.gnu.embedded.windows.assembler.base.input.1433651503" superClass="org.eclipse.cdt.cross.arm.gnu.embedded.windows.assembler.base.input"/>
+							</tool>
+							<tool id="org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf.c.compiler.release.1260871635" name="ARM Windows GCC C Compiler (Tools For Embedded)" superClass="org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf.c.compiler.release">
+								<option id="org.eclipse.cdt.cross.arm.gnu.c.compiler.option.optimization.level.1734269150" name="Optimization level" superClass="org.eclipse.cdt.cross.arm.gnu.c.compiler.option.optimization.level" value="org.eclipse.cdt.cross.arm.gnu.base.option.optimization.level.most" valueType="enumerated"/>
+								<option id="org.eclipse.cdt.cross.arm.gnu.c.compiler.option.optimization.flags.1640630163" name="Other optimization flags" superClass="org.eclipse.cdt.cross.arm.gnu.c.compiler.option.optimization.flags" value="-ffast-math -freciprocal-math  -fsingle-precision-constant" valueType="string"/>
+								<option id="org.eclipse.cdt.cross.arm.gnu.c.compiler.option.preprocessor.def.823434668" name="Defined symbols (-D)" superClass="org.eclipse.cdt.cross.arm.gnu.c.compiler.option.preprocessor.def" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="HSE_VALUE=8000000"/>
+									<listOptionValue builtIn="false" value="STM32F4XX"/>
+									<listOptionValue builtIn="false" value="USE_DEVICE_MODE"/>
+									<listOptionValue builtIn="false" value="USE_USB_OTG_FS"/>
+									<listOptionValue builtIn="false" value="USE_STDPERIPH_DRIVER"/>
+									<listOptionValue builtIn="false" value="USE_STM32F4_DISCOVERY"/>
+									<listOptionValue builtIn="false" value="NDEBUG"/>
+								</option>
+								<option id="org.eclipse.cdt.cross.arm.gnu.c.compiler.option.include.paths.1465870232" name="Include paths (-I)" superClass="org.eclipse.cdt.cross.arm.gnu.c.compiler.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/DrumSynth_FPU/Libraries/CMSIS/Include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/DrumSynth_FPU/Libraries/Device/STM32F4xx/Include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/DrumSynth_FPU/Libraries/STM32F4xx_StdPeriph_Driver/inc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/DrumSynth_FPU/Libraries/STM32_USB_Device_Library/Core/inc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/DrumSynth_FPU/Libraries/STM32_USB_OTG_Driver/inc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/DrumSynth_FPU/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/DrumSynth_FPU/src/AudioCodecManager}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/DrumSynth_FPU/src/DSPAudio}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/DrumSynth_FPU/src/Hardware}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/DrumSynth_FPU/src/Hardware/SD_FAT}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/DrumSynth_FPU/src/Hardware/USB}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/DrumSynth_FPU/src/MIDI}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/DrumSynth_FPU/src/Sequencer}&quot;"/>
+								</option>
+								<option id="org.eclipse.cdt.cross.arm.gnu.c.compiler.option.warnings.extrawarn.604692386" name="Extra warnings (-Wextra)" superClass="org.eclipse.cdt.cross.arm.gnu.c.compiler.option.warnings.extrawarn" value="true" valueType="boolean"/>
+								<inputType id="org.eclipse.cdt.cross.arm.gnu.embedded.windows.c.compiler.base.input.1323818540" superClass="org.eclipse.cdt.cross.arm.gnu.embedded.windows.c.compiler.base.input"/>
+							</tool>
+							<tool id="org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf.cpp.compiler.release.1776276123" name="ARM Windows GCC C++ Compiler (Tools For Embedded)" superClass="org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf.cpp.compiler.release">
+								<option id="org.eclipse.cdt.cross.arm.gnu.cpp.compiler.option.optimization.level.1150482701" name="Optimization level" superClass="org.eclipse.cdt.cross.arm.gnu.cpp.compiler.option.optimization.level" value="org.eclipse.cdt.cross.arm.gnu.base.option.optimization.level.size" valueType="enumerated"/>
+							</tool>
+							<tool id="org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf.c.linker.release.182140461" name="ARM Windows GCC C Linker (Tools For Embedded)" superClass="org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf.c.linker.release">
+								<option id="org.eclipse.cdt.cross.arm.gnu.c.link.option.scriptfile.1579811204" name="Script file (-T)" superClass="org.eclipse.cdt.cross.arm.gnu.c.link.option.scriptfile" value="${ProjDirPath}\stm32_flash.ld" valueType="string"/>
+								<inputType id="org.eclipse.cdt.cross.arm.gnu.c.linker.input.177731372" superClass="org.eclipse.cdt.cross.arm.gnu.c.linker.input">
+									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
+									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
+								</inputType>
+							</tool>
+							<tool id="org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf.cpp.linker.release.650015453" name="ARM Windows GCC C++ Linker (Tools For Embedded)" superClass="org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf.cpp.linker.release"/>
+							<tool id="org.eclipse.cdt.cross.arm.gnu.embedded.windows.archiver.base.167571066" name="ARM Windows GCC Archiver (Tools For Embedded)" superClass="org.eclipse.cdt.cross.arm.gnu.embedded.windows.archiver.base"/>
+							<tool id="org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf.createflash.release.490296450" name="ARM Windows GNU Create Flash Image (Tools For Embedded)" superClass="org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf.createflash.release">
+								<option id="org.eclipse.cdt.cross.arm.gnu.createflash.out.choice.1714649891" name="Output file format (-O)" superClass="org.eclipse.cdt.cross.arm.gnu.createflash.out.choice" value="org.eclipse.cdt.cross.arm.gnu.createflash.out.choice.binary" valueType="enumerated"/>
+							</tool>
+							<tool id="org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf.createlisting.release.886895262" name="ARM Windows GNU Create Listing (Tools For Embedded)" superClass="org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf.createlisting.release"/>
+							<tool id="org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf.printsize.release.191939811" name="ARM Windows GNU Print Size (Tools For Embedded)" superClass="org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf.printsize.release"/>
+						</toolChain>
+					</folderInfo>
+					<sourceEntries>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="Libraries"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
+					</sourceEntries>
+				</configuration>
+			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+		</cconfiguration>
+	</storageModule>
+	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+		<project id="DrumSynth_FPU.org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf.1439938324" name="ARM Cross Target Application" projectType="org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf"/>
+	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
+	<storageModule moduleId="refreshScope"/>
+	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
+	<storageModule moduleId="scannerConfiguration">
+		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		<scannerConfigBuildInfo instanceId="org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf.release.1011744005;org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf.release.1011744005.;org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf.assembler.release.1644976554;org.eclipse.cdt.cross.arm.gnu.embedded.windows.assembler.base.input.1433651503">
+			<autodiscovery enabled="false" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf.release.1011744005;org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf.release.1011744005.;org.eclipse.cdt.cross.arm.gnu.embedded.windows.elf.c.compiler.release.1260871635;org.eclipse.cdt.cross.arm.gnu.embedded.windows.c.compiler.base.input.1323818540">
+			<autodiscovery enabled="false" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.cross.arm.gnu.ARM_GTFE_GCCWinManagedMakePerProjectProfileC"/>
+		</scannerConfigBuildInfo>
+	</storageModule>
+</cproject>

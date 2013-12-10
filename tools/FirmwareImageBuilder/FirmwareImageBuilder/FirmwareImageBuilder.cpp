@@ -1,13 +1,9 @@
 // FirmwareImageBuilder.cpp : Defines the entry point for the console application.
 //
 
-#include "stdafx.h"
-
-
 #include <iostream>
 #include <fstream>
 #include <math.h>
-#include <conio.h>
 
 using namespace std;
 #pragma pack(1)
@@ -19,23 +15,36 @@ struct InfoHeader
 	char			dummy[512-10];
 };
 
-int _tmain(int argc, _TCHAR* argv[])
+int main(int argc, char* argv[])
 {
 	ifstream input;
 	ofstream output;
+	const char *avrname, *armname, *outname;
 
 	unsigned int bytesWritten=0;
+	if(argc < 3) {
+		cerr << "Compile LXR firmware\nUsage: "<< argv[0] <<" <ARM binary> <AVR binary> <output file>" << endl;
+		return 1;
+	}
 
+	outname=argv[3];
+	avrname=argv[2];
+	armname=argv[1];
+	
+	cout << "Input AVR: " << avrname << endl <<
+		"Input ARM: " << armname << endl <<
+		"Output: " << outname << endl;
+	
 	//open output file
-	output.open("FIRMWARE.BIN",ios::binary | ios::out);
+	output.open(outname,ios::binary | ios::out);
 
 
 	//get cortex code size
-	input.open("DrumSynthCortex.bin",ios::binary | ios::in);
+	input.open(armname,ios::binary | ios::in);
 	
 	if(!input.is_open())
 	{
-		printf("Input File DrumSynthCortex.bin not found\n");
+		fprintf(stderr, "Input File not found\n");
 		return -1;
 	}
 	
@@ -53,11 +62,11 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	//open avr code and get size
 
-	input.open("DrumSynthAvr.bin",ios::binary | ios::in);
+	input.open(avrname,ios::binary | ios::in);
 	
 	if(!input.is_open())
 	{
-		printf("Input File DrumSynthAvr.bin not found\n");
+		fprintf(stderr, "Input AVR File not found\n");
 		return -1;
 	}
 
@@ -79,7 +88,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	memset(infoHdr.dummy,0,512-10);
 
-	infoHdr.avrCodeSize = avrSizeInBytes;
+	infoHdr.avrCodeSize = (unsigned short)avrSizeInBytes;
 
 	infoHdr.cortexCodeSize = cortexSizeInBytes;
 	cout << "-----------------------------------" << endl;
@@ -106,7 +115,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	//zero padding to get full code page
 	float usedPages = avrSizeInBytes/256.f;
 	//float usedPages = avrSizeInBytes/512.f;
-	int restForFullPage = (1-(usedPages-floor(usedPages)))*256;
+	int restForFullPage = (int)(1-(usedPages-floor(usedPages)))*256;
 
 	cout << "current 512 byte block count: " << bytesWritten/512.f << endl;
 	cout << "used AVR pages: " << usedPages << endl;
@@ -128,19 +137,19 @@ int _tmain(int argc, _TCHAR* argv[])
 	cout << "-----------------------------------" << endl;
 	cout << "padding to full sd card page 512 byte boundary" << endl;
 
-	input.open("DrumSynthCortex.bin",ios::binary | ios::in);
+	input.open(armname,ios::binary | ios::in);
 	
 	
 	if(!input.is_open())
 	{
-		printf("Input File DrumSynthCortex.bin not found\n");
+		printf("Input ARM File not found\n");
 		return -1;
 	}
 
 	//cortex code has to start on 512byte boundary
 	// because of sd card sector size... makes parsing easier
 	float boundary = bytesWritten/512.f;
-	int itg = ceilf(boundary);
+	int itg = (int)ceilf(boundary);
 	itg *= 512;
 	//unsigned int neededDummyBytes = 0;//itg - bytesWritten;
 	unsigned int neededDummyBytes = itg - bytesWritten;
@@ -148,7 +157,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	cout << "current boundary: " << boundary << " 512byte blocks"<<endl;
 	cout << "needed dummy bytes: " << neededDummyBytes << endl;
 	//append dummies
-	for(int i=0;i<neededDummyBytes;i++)
+	for(int i=0;i<(int)neededDummyBytes;i++)
 	{
 		char data = 0;
 		output << data;
@@ -185,8 +194,6 @@ int _tmain(int argc, _TCHAR* argv[])
 	input.close();
 	output.close();
 
-	getch();
-	
 	return 0;
 }
 

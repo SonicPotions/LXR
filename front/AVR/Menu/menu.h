@@ -13,6 +13,7 @@
 #define __LCD_MENU_MANAGER__
 
 #include <avr/io.h>
+#include <avr/pgmspace.h>
 #include "../Parameters.h"
 //-----------------------------------------------------------------
 //#define NUM_PAGES 12		
@@ -76,9 +77,10 @@ enum PageNames
 	NUM_PAGES
 };
 //-----------------------------------------------------------------
+// These are indices into the valueNames array in menu.c
 enum NamesEnum
 {
-	TEXT_EMPTY = 0,
+	TEXT_EMPTY = 0,					//0
 	TEXT_COARSE,
 	TEXT_FINE,
 	TEXT_ATTACK,
@@ -88,7 +90,7 @@ enum NamesEnum
 	TEXT_FM_AMOUNT,
 	TEXT_FM_FREQ,
 	TEXT_DRIVE,
-	TEXT_VOLUME,
+	TEXT_VOLUME,					//10
 	TEXT_PAN,
 	TEXT_NOISE,
 	TEXT_MIX,
@@ -98,7 +100,7 @@ enum NamesEnum
 	TEXT_FILTER_TYPE,
 	TEXT_MOD_OSC1_FREQ,
 	TEXT_MOD_OSC2_FREQ,
-	TEXT_MOD_OSC1_GAIN,
+	TEXT_MOD_OSC1_GAIN,				//20
 	TEXT_MOD_OSC2_GAIN,
 	
 	TEXT_FREQ_LFO,
@@ -109,7 +111,7 @@ enum NamesEnum
 	TEXT_RETRIGGER_LFO,
 	TEXT_OFFSET_LFO,
 	TEXT_TARGET_VOICE_LFO,
-	TEXT_EG_SLOPE,
+	TEXT_EG_SLOPE,					//30
 	TEXT_DECAY_CLOSED,
 	TEXT_DECAY_OPEN,
 	TEXT_WAVEFORM,
@@ -120,7 +122,7 @@ enum NamesEnum
 	
 	TEXT_EQ_GAIN,
 	TEXT_EQ_FREQ,
-#if USE_CODEC_EQ	
+#if USE_CODEC_EQ
 	TEXT_CODEC_EQ_ENABLE,
 	TEXT_CODEC_EQ_FB,
 	TEXT_CODEC_EQ_FT,
@@ -134,7 +136,7 @@ enum NamesEnum
 	TEXT_CODEC_LIMIT_MIN,
 #endif
 	TEXT_ROLL_SPEED,
-	TEXT_X_FADE,
+	TEXT_X_FADE,					//40
 	
 	TEXT_STEP_VELOCITY,
 	TEXT_NOTE,
@@ -147,7 +149,7 @@ enum NamesEnum
 	TEXT_BPM,
 	TEXT_MIDI_CHANNEL,
 	TEXT_AUDIO_OUT,
-	TEXT_SAMPLE_RATE,
+	TEXT_SAMPLE_RATE,				//50
 	TEXT_PATTERN_BEAT,
 	TEXT_PATTERN_NEXT,
 	
@@ -161,7 +163,7 @@ enum NamesEnum
 	TEXT_VEL_AMT,
 	TEXT_VEL_MOD_VOL,
 	TEXT_FETCH,
-	TEXT_FOLLOW,
+	TEXT_FOLLOW,					//60
 	TEXT_QUANTISATION,
 	TEXT_AUTOMATION_TRACK,
 	TEXT_PARAM_DEST,	
@@ -173,9 +175,9 @@ enum NamesEnum
 	
 	TEXT_POS_X,
 	TEXT_POS_Y,
-	TEXT_FLUX,
+	TEXT_FLUX,						//70
 	TEXT_SOM_FREQ,
-	TEXT_MIDI_MODE,
+	TEXT_MIDI_MODE,	//--AS This is now unused
 	
 	NUM_NAMES
 };
@@ -191,7 +193,7 @@ enum WaveformNamesEnum
 };	
 //-----------------------------------------------------------------
 enum shortNamesEnum
-{
+{ // these must correspond with shortNames
 	SHORT_EMPTY,
 	SHORT_COARSE,
 	SHORT_FINE,
@@ -263,6 +265,7 @@ enum shortNamesEnum
 	
 };
 //-----------------------------------------------------------------
+// These correspond with catNames in MenuText.h
 enum catNamesEnum
 {
 	CAT_EMPTY,
@@ -291,8 +294,7 @@ enum catNamesEnum
 	CAT_PARAMETER,
 	CAT_SEQUENCER,
 	CAT_GENERATOR,
-	CAT_MIDI,
-	
+	CAT_MIDI
 };
 //-----------------------------------------------------------------
 enum longNamesEnum
@@ -354,7 +356,10 @@ enum longNamesEnum
 	LONG_Y,
 	LONG_FLUX,
 	LONG_VELOCITY,
-	
+	LONG_FREQ1,
+	LONG_FREQ2,
+	LONG_GAIN1,
+	LONG_GAIN2
 	
 };
 //-----------------------------------------------------------------
@@ -375,23 +380,45 @@ typedef struct PageStruct
 	uint8_t top7;
 	uint8_t top8;
 	
-	uint8_t bot1;
-	uint8_t bot2;
-	uint8_t bot3;
-	uint8_t bot4;
+	uint16_t bot1;
+	uint16_t bot2;
+	uint16_t bot3;
+	uint16_t bot4;
 		
-	uint8_t bot5;
-	uint8_t bot6;
-	uint8_t bot7;
-	uint8_t bot8;
+	uint16_t bot5;
+	uint16_t bot6;
+	uint16_t bot7;
+	uint16_t bot8;
 }Page;
+
 //-----------------------------------------------------------------
+// for storing valueNames which is defined in menu.c
 typedef struct NameStruct
 {
 	const uint8_t shortName; /**< 3 letter short name id*/
 	const uint8_t category; /**< category name id e.g. Filter, Noise, Velocity etc...*/
 	const uint8_t longName; /**< full name id of the parameter*/
 }Name;
+
+//-----------------------------------------------------------------
+// **AUTOM declare ModTarg struct
+typedef struct ModTargStruct {
+	const uint8_t nameIdx; 	// index into NameStruct (valueNames)
+	const uint16_t param;	// equivalent param number
+} ModTarg;
+
+//**AUTOM declare ModTargetVoiceOffset struct
+// see cc2text.c for the array of these
+typedef struct ModTargetVoiceOffsetStruct {
+	uint8_t start;
+	uint8_t end;
+}  ModTargetVoiceOffset;
+
+
+
+// need array corresponding to parameters with indices into above array
+// later will need an array of 6 or 7 for indices into above to target indiv voices
+
 //-----------------------------------------------------------------
 enum Datatypes
 {
@@ -408,21 +435,36 @@ enum Datatypes
 	DTYPE_VOICE_LFO,
 	DTYPE_AUTOM_TARGET,
 	DTYPE_0b1,
-
+	DTYPE_NOTE_NAME, // --AS eg C#0, D 1 for note name
+	/*15*/
+	/*16*/
+	// --AS warning, we can only have 16 on this list the way things are laid out
 };
 
 //-----------------------------------------------------------------
-typedef struct ParameterStruct
-{
-	uint8_t value;
-	enum Datatypes dtype;	/**< The data type of the parameter -> 0x0F = 16 Data Types field; 0xF0 = 16 extra parameter fields*/
-}Parameter;
-//-----------------------------------------------------------------
-extern Parameter parameters[NUM_PARAMS];
-//TODO parameters2 doesn't need a dtype field -> save memory
-extern Parameter parameters2[END_OF_SOUND_PARAMETERS];
+extern const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS];
+extern uint8_t parameter_values[NUM_PARAMS];
+extern uint8_t parameters2[END_OF_SOUND_PARAMETERS];
 
-extern const Page menuPages[NUM_PAGES][NUM_SUB_PAGES];
+extern const Page PROGMEM menuPages[NUM_PAGES][NUM_SUB_PAGES];
+
+
+// **AUTOM declare modTargets array
+// this is used for better organizing modulation targets. An index into this
+// array is stored in PAR_P*_DEST in front. this table is used to display values
+// as well as translate the value to a parameter. Param value in "Front" represents an index
+// into this array, but is translated to a real param number when going back to "cortex"
+// also, translated the other way when coming back
+// we have a separate array of indices into this array called modTargetVoiceOffsets that determines
+// where a voice starts and ends in modTargets array.
+extern const ModTarg PROGMEM modTargets[];
+extern const ModTargetVoiceOffset PROGMEM modTargetVoiceOffsets[6];
+
+// **AUTOM declare paramToModTarget array
+// this is an array of indices into modTargets which is defined in cc2text.c
+// It is calculated at runtime TODO move this to progmem sometime
+extern uint8_t paramToModTarget[END_OF_SOUND_PARAMETERS];
+
 //-----------------------------------------------------------------
 /** forces a complete repaint of the display*/
 void menu_repaintAll();
@@ -449,9 +491,9 @@ void menu_resetActiveParameter();
 //-----------------------------------------------------------------
 uint8_t menu_getSubPage();
 //-----------------------------------------------------------------
-void menu_parseKnobValue(uint8_t potNr, uint8_t value);
+void menu_parseKnobValue(uint8_t potNr, uint8_t potValue);
 //-----------------------------------------------------------------
-void menu_parseGlobalParam(uint8_t paramNr, uint8_t value);
+void menu_parseGlobalParam(uint16_t paramNr, uint8_t value);
 //-----------------------------------------------------------------
 /** all parameters are send to the cortex soundchip. called after loading a preset into the avr ram*/
 void menu_sendAllParameters();
@@ -468,6 +510,4 @@ void menu_setActiveVoice(uint8_t voiceNr);
 //-----------------------------------------------------------------
 /** used to upodate all global parameters that need processing after a preset is loaded*/
 void menu_sendAllGlobals();
-//-----------------------------------------------------------------
-uint8_t getModTargetValue(uint8_t value, uint8_t voiceNr);
 #endif

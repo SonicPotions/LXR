@@ -36,7 +36,7 @@ uint8_t preset_loadPattern(uint8_t presetNr);
 char* preset_getPatternName(uint8_t presetNr);
 /** morph pattern linear to üpattern buffer 2*/
 void preset_morph(uint8_t morph);
-uint8_t preset_getMorphValue(uint8_t index, uint8_t morph);
+uint8_t preset_getMorphValue(uint16_t index, uint8_t morph);
 
 
 #endif /* PRESETMANAGER_H_ */

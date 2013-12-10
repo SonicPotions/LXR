@@ -38,7 +38,7 @@ void spi_deInit()
 	//all SPI ports as input
 	DDRB &= ~((1<<PB5) | (1<<PB4) |(1<<PB7) );
 	PORTB &= ~((1<<PB5) | (1<<PB4) |(1<<PB7) );
-	
+
 }
 
 unsigned char SPI_transmit(unsigned char data)

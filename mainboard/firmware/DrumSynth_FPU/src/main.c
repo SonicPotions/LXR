@@ -59,8 +59,6 @@
 #include "modulationNode.h"
 #include "SomGenerator.h"
 
-
-
 #include "usb_manager.h"
 #include "MidiParser.h"
 
@@ -192,16 +190,11 @@ int main(void)
 {
 	initSpiPins();
 
-
-
 	/* get system clock info*/
 	RCC_GetClocksFreq(&RCC_Clocks);
 	/* set timebase systick to 1ms*/
 	//SysTick_Config(RCC_Clocks.HCLK_Frequency / 1000);
 	SysTick_Config(RCC_Clocks.HCLK_Frequency / 4000);
-
-
-
 
 	initAudioJackDiscoverPins();
 
@@ -238,14 +231,12 @@ int main(void)
 	seq_setBpm(120);
 
 	memset(midi_MidiChannels,0,7);
+	memset(midi_NoteOverride,0,7);
 
 	initDrumVoice();
 	Snare_init();
 	HiHat_init();
 	Cymbal_init();
-
-
-
 
 	usb_init();
 
@@ -265,7 +256,6 @@ int main(void)
     {
 
     	usb_tick();
-
     	//generate next sample if no valid sample is present
     	if(bCurrentSampleValid!= SAMPLE_VALID)
     	{

@@ -13,7 +13,7 @@
 #include <avr/io.h>
 #include "../Menu/screensaver.h"
 
-volatile extern uint16_t time_sysTick; /**< system time in 16,384 ms steps*/
+extern volatile uint16_t time_sysTick; /**< system time in 16,384 ms steps*/
 
 /** this timer is the main timebase for the program.
 it measures ticks since program start*/

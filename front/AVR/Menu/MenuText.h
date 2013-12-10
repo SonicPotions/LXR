@@ -22,7 +22,19 @@
 #define MENU_TRANS			10
 #define MENU_MIDI			11
 //-----------------------------------------------------------------
-const char midiModes[][4] PROGMEM  = 
+// Shared texts. Reduce mem usage by pooling common text
+// all of these need to be 3 chars
+const char menuText_ok[] PROGMEM = 	"ok ";
+const char menuText_off[] PROGMEM = "off";
+const char menuText_on[] PROGMEM = 	"on ";
+const char menuText_mix[] PROGMEM = "mix";
+const char menuText_fm[] PROGMEM = 	"fm ";
+const char menuText_dash[] PROGMEM ="---";
+const char menuText_blank[] PROGMEM="   ";
+const char menuText_any[] PROGMEM = "any";
+
+//-----------------------------------------------------------------
+const char midiModes[][4] PROGMEM  =
 {
 	{2},		//number of entries
 	{"trg"},
@@ -43,7 +55,7 @@ const char transientNames[][4] PROGMEM  =
 {
 	{14},		//number of entries
 	{"Snp"},
-	{"Off"},
+	{"Ofs"},
 	{"Clk"},
 	{"Ck2"},
 	{"Tik"},
@@ -52,12 +64,14 @@ const char transientNames[][4] PROGMEM  =
 	{"Drp"},
 	{"Hat"},
 	{"Clp"},
-	{"Ki2"},
-	{"Sna"},
+	{"Kk2"},
+	{"Snr"},
 	{"Tom"},
 	{"Sp2"},
 	
 };
+
+
 //-----------------------------------------------------------------
 const char nextPatternNames[][4] PROGMEM  = 
 {
@@ -170,18 +184,18 @@ const char filterTypes[][8] PROGMEM  =
 	{"HP"}	,	//2 - 010
 	{"BP"}	,	//3 - 011
 	{"UBP"}	,	//4 - 100
-	{"Not"}	,	//5 - 101
+	{"Nch"}	,	//5 - 101
 	{"Pek"}	,	//6 - 110
-	{"Off"}	,	//7 - 111
+	{"off"}	,	//7 - 111
 	//{"All"}	,	//7 - 111
 };
 //-----------------------------------------------------------------
 const char shortNames[][4] PROGMEM  = 
 {
 	{""},
-	{"coa"},
+	{"crs"},
 	{"fin"},
-	{"att"},
+	{"atk"},
 	{"dec"},
 	{"eg2"},
 	{"mod"},
@@ -203,7 +217,7 @@ const char shortNames[][4] PROGMEM  =
 	{"dst"},
 	{"snc"},
 	{"rtg"},
-	{"off"},
+	{"ofs"},
 	{"voi"},
 	{"slp"},
 	{"d1"},		
@@ -218,25 +232,25 @@ const char shortNames[][4] PROGMEM  =
 	{"min"},
 #endif
 	{"rol"},
-	{"mrp"},	
+	{"mph"},
 	{"nte"},
 	{"prb"},
 	{"stp"},
 	{"len"},
 	{"bpm"},
-	{"ch "},
+	{"ch"},
 	{"out"},
-	{"sr"},
+	{"srt"},
 	{"nxt"},
 	{"mod"},
 	{"vel"},
-	{"fet"},
+	{"fch"},
 	{"flw"},
 	{"qnt"},
 	{"trk"},
 	{"val"},
-	{"shu"},
-	{"ss"},
+	{"shf"},
+	{"ssv"},
 	{"x"},
 	{"y"},
 	{"flx"},
@@ -245,21 +259,23 @@ const char shortNames[][4] PROGMEM  =
 	
 };
 //-----------------------------------------------------------------
+// These correspond with the catNamesEnum in menu.h
 const char catNames[][16] PROGMEM = 
 {
 	{""},
-	{"Oscillator"},
-	{"Velocity EG"},
+	//01234567
+	{"Oscilltr"},
+	{"Veloc EG"},
 	{"Mod EG"},
-	{"Pitch Mod."},
+	{"PitchMod"},
 	{"FM"},
 	{"Voice"},
 	{"Noise"},
-	{"Noise/Osc"},
+	{"Nois/Osc"},
 	{"Filter"},
-	{"Mod. Osc"},
+	{"Mod Osc"},
 	{"LFO"},
-	{"Transient"},
+	{"Transnt"},
 	{"EQ"},
 #if USE_CODEC_EQ		
 	{"Limiter"},
@@ -270,71 +286,76 @@ const char catNames[][16] PROGMEM =
 	{"Euklid"},		
 	{"Global"},	
 	{"Velocity"},
-	{"Parameter"},
-	{"Sequencer"},
-	{"Generator"},
+	{"Parametr"},
+	{"Sequencr"},
+	{"Generatr"},
 	{"MIDI"},
 };
 //-----------------------------------------------------------------
 const char longNames[][16] PROGMEM = 
 {
 	{""},
+	//01234567
 	{"Coarse"},
 	{"Fine"},
 	{"Attack"},
 	{"Decay"},
 	{"Amount"},
-	{"Frequency"},
-	{"Overdrive"},
+	{"Frequncy"},
+	{"Overdriv"},
 	{"Volume"},
 	{"Panning"},
 	{"Mix"},
-	{"Repeat Count"},
-	{"Resonance"},
+	{"RepeatCt"},
+	{"Resnance"},
 	{"Type"},
 	{"Gain"},
 	{"Waveform"},
-	{"Dest. Param."},
-	{"Clock Sync"},
-	{"Retrigger"},
+	{"DstParam"},
+	{"ClockSnc"},
+	{"Retriggr"},
 	{"Offset"},		
-	{"Dest. Voice"},
+	{"DstVoice"},
 	{"Slope"},
-	{"Decay Closed"},
-	{"Decay Open"},
+	{"Dcy Clsd"},
+	{"Dcy Open"},
 #if USE_CODEC_EQ		
 	{"Enable"},
 	{"Release"},
 	{"Threshold max"},
 	{"Threshold min"},
 #endif		
-	{"Roll Rate"},
+	{"RollRate"},
 	{"Morph"},
 	{"Note"},
-	{"Probability"},
+	{"Prbablty"},
 	{"Number"},
 	{"Length"},
 	{"Steps"},
 	{"Tempo"},
-	{"Audio Out"},
-	{"MIDI Channel"},
-	{"Sample Rate"},
-	{"Next Pattern"},
+	{"AudioOut"},
+	{"MIDIChan"},
+	{"SampleRt"},
+	{"NextPatt"},
 	{"Phase"},
 	{"Mode"},
-	{"Volume mod."},		
+	{"Vol mod"},
 	{"Fetch"},	
 	{"Follow"},	
-	{"Quantisation"},
-	{"Autom. Track"},
-	{"Autom. Dest."},
-	{"Autom. Value"},
+	{"Quantize"},
+	{"AutTrack"},
+	{"Aut Dest"},
+	{"AutValue"},
 	{"Shuffle"},
-	{"Screensaver"},
-	{"X Position"},
-	{"Y Position"},
+	{"Screensv"},
+	{"X Positn"},
+	{"Y Positn"},
 	{"Flux"},
-	{"Velocity"},	
+	{"Velocity"},
+	{"Freqcy 1"},
+	{"Freqcy 2"},
+	{"Gain 1"},
+	{"Gain 2"},
 };
 
 

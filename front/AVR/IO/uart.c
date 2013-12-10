@@ -164,8 +164,8 @@ uint8_t uart_getc(uint8_t *data)
 int8_t uart_waitAck()
 {
 	//TODO: timeout
-	//UCSR0B &= ~(1<<RXCIE0);  // disable RX Interrupt 
-	
+	//UCSR0B &= ~(1<<RXCIE0);  // disable RX Interrupt
+
 	while(1)
 	{
 		uint8_t data;
@@ -174,15 +174,15 @@ int8_t uart_waitAck()
 		{
 			//if(data == ACK || data == NACK)
 			{
-				//UCSR0B |= (1<<RXCIE0);  // enable RX Interrupt 
+				//UCSR0B |= (1<<RXCIE0);  // enable RX Interrupt
 				return data;
-			}				
+			}
 		}
 	}
-	
-	
-	
-	
+
+
+
+
 }
 //----------------------------------------------------
 void uart_checkAndParse()
