@@ -152,6 +152,8 @@ void Snare_calcSyncBlock(int16_t* buf, const uint8_t size)
 
 	//calc next osc sample
 	calcNextOscSampleBlock(&snareVoice.osc,transBuf,size,(1.f-snareVoice.mix));
+	//--AS apply filter to synthesized sound as well here if desired, or combine code for more efficiency
+	//SVF_calcBlockZDF(&snareVoice.filter,snareVoice.filterType,transBuf,size);
 
 	uint8_t j;
 	if(snareVoice.volumeMod)

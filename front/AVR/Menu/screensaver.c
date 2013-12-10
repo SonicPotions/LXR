@@ -52,7 +52,7 @@ void screensaver_touch()
 
 	if(screensaver_Active)
 	{
-		//lcd_turnOn(1);
+		//lcd_turnOn(1,0);
 		screensaver_Active = 0;
 		menu_repaintAll();
 	}	
@@ -137,7 +137,7 @@ void screensaver_check()
 		{
 			if(screensaver_timer >= screensaver_Timeout)
 			{
-				//lcd_turnOn(0);
+				//lcd_turnOn(0,0);
 				screensaver_Active = 1;	
 			}
 		}

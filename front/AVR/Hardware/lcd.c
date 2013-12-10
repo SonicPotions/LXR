@@ -110,15 +110,16 @@ void lcd_command( uint8_t data )
     _delay_us( LCD_COMMAND_US );
 }
 //////////////////////////////////////////////////////////////////////////////// 
-void lcd_turnOn(uint8_t isOn)
+void lcd_turnOn(uint8_t isOn, uint8_t cursorOn)
 {
 	
 	    // Display ein / Cursor aus / Blinken aus
     lcd_command( LCD_SET_DISPLAY |
-                 (LCD_DISPLAY_ON*isOn) |
-                 LCD_CURSOR_OFF |
+                 (LCD_DISPLAY_ON * isOn) |
+                 LCD_CURSOR_ON * cursorOn |
                  LCD_BLINKING_OFF); 
-};
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Sendet den Befehl zur Löschung des Displays
 void lcd_clear( void )

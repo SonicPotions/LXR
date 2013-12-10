@@ -35,8 +35,8 @@ static void numtostru(char *buf, uint8_t num);
 static void numtostrs(char *buf, int8_t num);
 // uppercase 3 letters in buf
 static void upr_three(char *buf);
-// given a menuid and a param value return the short menu item value from progmem
-static const void *getMenuItemNameForValue(const uint8_t menuId, const uint8_t curParmVal);
+// given a menuid and a param value fill buf with the short menu item value. will not exceed 3 chars
+static void getMenuItemNameForValue(const uint8_t menuId, const uint8_t curParmVal, char *buf);
 // given a menu id returns the number of entries
 static uint8_t getMaxEntriesForMenu(uint8_t menuId);
 // given a number, convert it to a note name
@@ -496,6 +496,9 @@ uint8_t menu_muteModeActive = 0;
 It holds a representation of the display content so only the changed cells have to be updated*/
 char currentDisplayBuffer[2][16];	/**< what is currently shown on the LCD*/
 char editDisplayBuffer[2][17];		/**< what should be shown on the LCD after the next update. length 17 to allow zero termination without overflow.*/
+uint8_t visibleCursor=0;	/* cursor position and whether it's visible rightmost=visible, then row (0,1) then col: ccccrv */
+/* calc cursor to location (row, col both zero based) and make visible/invisible */
+#define VIS_CURS(r,c,v) (((c) << 2) | ((r) << 1) | (v))
 uint8_t menu_activePage = 0;				/**< indicates which menu page is currently shown*/
 uint8_t menu_activeVoice = 0;
 uint8_t menu_playedPattern = 0;
@@ -565,6 +568,8 @@ void menu_init()
 /** compare the currentDisplayBuffer with the editDisplayBuffer and send all differences to the display*/
 void sendDisplayBuffer()
 {
+	// turn off the cursor
+	lcd_turnOn(1,0);
 	for(uint8_t i=0;i<2;i++)
 	{
 		for(uint8_t j=0;j<16;j++)
@@ -590,6 +595,10 @@ void sendDisplayBuffer()
 		}
 
 	}
+
+	// set cursor position and make visible or not
+	lcd_setcursor((uint8_t)(visibleCursor >> 2), (uint8_t)(((visibleCursor & 2) >> 1)+1));
+	lcd_turnOn(1,(visibleCursor & 1));
 
 }
 //-----------------------------------------------------------------
@@ -625,6 +634,7 @@ static void menu_repaintLoadSavePage()
 				} else {
 					//arrow before parameter
 					editDisplayBuffer[0][5]= ARROW_SIGN;
+					//visibleCursor = VIS_CURS(0,6,1);
 				}
 			}	
 			break;
@@ -639,6 +649,7 @@ static void menu_repaintLoadSavePage()
 				} else {
 					//arrow before parameter
 					editDisplayBuffer[0][5]= ARROW_SIGN;
+					//visibleCursor = VIS_CURS(0,6,1);
 				}
 			}
 		}
@@ -655,6 +666,7 @@ static void menu_repaintLoadSavePage()
 				} else {
 					//arrow before parameter
 					editDisplayBuffer[0][5]= ARROW_SIGN;
+					//visibleCursor = VIS_CURS(0,6,1);
 				}
 			}
 		}
@@ -671,6 +683,7 @@ static void menu_repaintLoadSavePage()
 				} else {
 					//arrow before parameter
 					editDisplayBuffer[0][5]= ARROW_SIGN;
+					//visibleCursor = VIS_CURS(0,6,1);
 				}
 			}
 		}
@@ -692,6 +705,7 @@ static void menu_repaintLoadSavePage()
 				} else {
 					//arrow before parameter
 					editDisplayBuffer[1][0]= ARROW_SIGN;
+					//visibleCursor = VIS_CURS(1,1,1);
 				}
 			}
 
@@ -704,7 +718,8 @@ static void menu_repaintLoadSavePage()
 					editDisplayBuffer[1][6+menu_saveOptions.state-SAVE_STATE_EDIT_NAME1]=']';	
 				} else {
 					//arrow before parameter
-					editDisplayBuffer[1][4+menu_saveOptions.state-SAVE_STATE_EDIT_NAME1]= ARROW_SIGN;
+					//editDisplayBuffer[1][4+menu_saveOptions.state-SAVE_STATE_EDIT_NAME1]= ARROW_SIGN;
+					visibleCursor =(uint8_t)( VIS_CURS(1,5+menu_saveOptions.state-SAVE_STATE_EDIT_NAME1,1));
 				}
 			}
 			else
@@ -721,6 +736,7 @@ static void menu_repaintLoadSavePage()
 			{
 				//arrow before parameter
 				editDisplayBuffer[1][13]= ARROW_SIGN;
+				//visibleCursor = VIS_CURS(1,14,1);
 			}
 		}	
 
@@ -747,6 +763,7 @@ static void menu_repaintLoadSavePage()
 				{
 					//arrow before parameter
 					editDisplayBuffer[0][5]= ARROW_SIGN;
+					//visibleCursor = VIS_CURS(0,6,1);
 				}
 
 			}
@@ -767,6 +784,7 @@ static void menu_repaintLoadSavePage()
 				{
 					//arrow before parameter
 					editDisplayBuffer[0][5]= ARROW_SIGN;
+					//visibleCursor = VIS_CURS(0,6,1);
 				}
 			}
 		}
@@ -786,6 +804,7 @@ static void menu_repaintLoadSavePage()
 				{
 					//arrow before parameter
 					editDisplayBuffer[0][5]= ARROW_SIGN;
+					//visibleCursor = VIS_CURS(0,6,1);
 				}
 
 			}
@@ -803,6 +822,7 @@ static void menu_repaintLoadSavePage()
 				} else {
 					//arrow before parameter
 					editDisplayBuffer[0][5]= ARROW_SIGN;
+					//visibleCursor = VIS_CURS(0,6,1);
 				}
 			}
 		}
@@ -818,6 +838,7 @@ static void menu_repaintLoadSavePage()
 				} else {
 					//arrow before parameter
 					editDisplayBuffer[0][5]= ARROW_SIGN;
+					//visibleCursor = VIS_CURS(0,6,1);
 				}
 			}
 		}
@@ -842,6 +863,7 @@ static void menu_repaintLoadSavePage()
 				{
 					//arrow before parameter
 					editDisplayBuffer[1][0]= ARROW_SIGN;
+					//visibleCursor = VIS_CURS(1,1,1);
 				}
 			}
 
@@ -858,6 +880,7 @@ static void menu_repaintLoadSavePage()
 					(menu_saveOptions.what >= SAVE_TYPE_GLO && menu_saveOptions.state > SAVE_STATE_EDIT_TYPE)) {
 				//arrow before parameter
 				editDisplayBuffer[1][13]= ARROW_SIGN;
+				//visibleCursor = VIS_CURS(1,14,1);
 			}	
 		} else { //clear ok text
 			editDisplayBuffer[1][14] = 0;
@@ -1020,7 +1043,7 @@ void menu_repaintGeneric()
 				//get the used menu (upper 4 bit)
 				const uint8_t menuId = (pgm_read_byte(&parameter_dtypes[parNr]) >> 4);
 				// get the value name
-				memcpy_P(&editDisplayBuffer[1][13],getMenuItemNameForValue(menuId, curParmVal),3);
+				getMenuItemNameForValue(menuId, curParmVal, &editDisplayBuffer[1][13]);
 			}
 				break; // switch(parameters[parNr].dtype&0x0F) case DTYPE_MENU
 
@@ -1132,7 +1155,7 @@ void menu_repaintGeneric()
 				{
 					//get the used menu (upper 4 bit)
 					const uint8_t menuId = pgm_read_byte(&parameter_dtypes[parNr]) >> 4;
-					memcpy_P(valueAsText, getMenuItemNameForValue(menuId, curParmVal), 3);
+					getMenuItemNameForValue(menuId, curParmVal, valueAsText);
 				}
 					break;
 
@@ -1163,6 +1186,7 @@ void menu_repaintGeneric()
 void menu_repaint()
 {
 
+	visibleCursor = 0;
 	if(menu_activePage >= LOAD_PAGE && menu_activePage<=SAVE_PAGE)
 	{
 		//this is a special case because the load/save page differs from all the other pages
@@ -1574,44 +1598,59 @@ static uint8_t getMaxEntriesForMenu(uint8_t menuId)
 }
 
 // given a menu id, and a value returns the name from PROGMEM
-static const void *getMenuItemNameForValue(const uint8_t menuId, const uint8_t curParmVal)
+static void getMenuItemNameForValue(const uint8_t menuId, const uint8_t curParmVal, char *buf)
 {
+	const void *p=0;
 	switch(menuId)
 	{
 	case MENU_TRANS:
-		return transientNames[curParmVal + 1];
+		p = transientNames[curParmVal + 1];
+		break;
 	case MENU_AUDIO_OUT:
-		return outputNames[curParmVal + 1];
+		p = outputNames[curParmVal + 1];
+		break;
 	case MENU_FILTER:
-		return filterTypes[curParmVal + 1];
+		p = filterTypes[curParmVal + 1];
+		break;
 	case MENU_WAVEFORM:
 		if(curParmVal < waveformNames[0][0])
-			return waveformNames[curParmVal + 1];
+			p=waveformNames[curParmVal + 1];
 		else
 		{
-			static char buf[3];
-			int sampleIndex = curParmVal - waveformNames[0][0];
-			sprintf(buf,"s%i",sampleIndex);
-			return buf; // TODO-MERGE problem, caller is expecting progmem buffer
+			buf[0]='s';
+			buf[2]=' ';
+			numtostru(&buf[1],(uint8_t)(curParmVal - waveformNames[0][0]));
+			return;
 		}
+		break;
 
 	case MENU_SYNC_RATES:
-		return syncRateNames[curParmVal + 1];
+		p=syncRateNames[curParmVal + 1];
+		break;
 	case MENU_LFO_WAVES:
-		return lfoWaveNames[curParmVal+1];
+		p=lfoWaveNames[curParmVal+1];
+		break;
 	case MENU_RETRIGGER:
-		return retriggerNames[curParmVal+1];
+		p=retriggerNames[curParmVal+1];
+		break;
 	case MENU_SEQ_QUANT:
-		return quantisationNames[curParmVal+1];
+		p=quantisationNames[curParmVal+1];
+		break;
 	case MENU_MIDI:
-		return midiModes[curParmVal+1];
+		p=midiModes[curParmVal+1];
+		break;
 	case MENU_NEXT_PATTERN:
-		return nextPatternNames[curParmVal+1];
+		p=nextPatternNames[curParmVal+1];
+		break;
 	case MENU_ROLL_RATES:
-		return rollRateNames[curParmVal+1];
+		p=rollRateNames[curParmVal+1];
+		break;
 	default:
-		return menuText_dash;
+		p=menuText_dash;
+		break;
 	}
+	memcpy_P(buf,p,3);
+
 }
 //-----------------------------------------------------------------
 void menu_parseEncoder(int8_t inc, uint8_t button)

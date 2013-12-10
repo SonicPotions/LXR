@@ -97,8 +97,8 @@ void lcd_generatechar( uint8_t code, const uint8_t *data );
 // Ausgabe eines Kommandos an das LCD.
 void lcd_command( uint8_t data );
 ////////////////////////////////////////////////////////////////////////////////
-void lcd_turnOn(uint8_t isOn);
- 
+void lcd_turnOn(uint8_t isOn, uint8_t cursorOn);
+void lcd_cursorVisible(uint8_t visible);
  
 ////////////////////////////////////////////////////////////////////////////////
 // LCD Befehle und Argumente.
