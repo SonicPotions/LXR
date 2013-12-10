@@ -193,7 +193,7 @@ const char filterTypes[][8] PROGMEM  =
 const char shortNames[][4] PROGMEM  = 
 {
 	{""},
-	{"crs"},
+	{"coa"},
 	{"fin"},
 	{"atk"},
 	{"dec"},
@@ -232,7 +232,7 @@ const char shortNames[][4] PROGMEM  =
 	{"min"},
 #endif
 	{"rol"},
-	{"mph"},
+	{"mrp"},
 	{"nte"},
 	{"prb"},
 	{"stp"},
@@ -249,7 +249,7 @@ const char shortNames[][4] PROGMEM  =
 	{"qnt"},
 	{"trk"},
 	{"val"},
-	{"shf"},
+	{"shu"},
 	{"ssv"},
 	{"x"},
 	{"y"},
