@@ -6,6 +6,7 @@ that are important to me. I will be freely offering any changes back to the Soni
 
 Here are a list of current changes (differences from main repos):
 -----------------------------------------------------------------
+- Pattern/Kit save will use a proper cursor when editing names
 - Midi Off - Will now send midi note off messages before the next midi note on message and also when
   the sequencer is stopped. This allows better interaction with external synths.
 - Note names - instead of showing -63 to 64 it will show real note names like C, C# D, etc. This is useful when using the LXR as a sequencer
