@@ -1,3 +1,17 @@
+Firmware v0.26
+---------------------------
+merged with rudeogs changes:
+- Pattern/Kit save will use a proper cursor when editing names
+- Midi Off - Will now send midi note off messages before the next midi note on message and also when the sequencer is stopped. This allows better interaction with external synths.
+- Note names - instead of showing -63 to 64 it will show real note names like C, C# D, etc. This is useful when using the LXR as a sequencer
+- Midi Note. Each voice has an assigned midi note. If this is set to C0 then it will play the note assigned to the sequencer step, otherwise it will play this note. This replaces the standard behavior and allows one to set the note that is played for the drum sound (old behavior was to have the note fixed when in trigger mode).
+- Midi mode has been removed (the above feature allows more flexibility)
+- LFO target fixes - Setting LFO targets is now much easier. The list of targets is straightforward and more descriptive. There are no missing entries or dupes.
+- Velocity target - Same type of fix as LFO target
+- Automation target - Same type of fix as LFO target. Also menu is more descriptive.
+- Separate open and closed hi-hat EG decay onto separate drum buttons to make it clearer which one is being edited.
+- Fix firmware image builder to accept command line parameters, and create new batch file
+
 Firmware v0.25
 ---------------------------
 - added user sample (.wav) import from SD card
