@@ -1964,6 +1964,9 @@ void menu_switchSubPage(uint8_t subPageNr)
 	//lock all parameters
 	lockPotentiometerFetch();
 
+	//leave edit mode if active
+	editModeActive = 0;
+
 	//get current position
 	uint8_t activeParameter	= menuIndex & MASK_PARAMETER;
 	uint8_t activePage		= (menuIndex&MASK_PAGE)>>PAGE_SHIFT;
@@ -2441,6 +2444,9 @@ static uint8_t getDtypeValue(uint8_t value, uint16_t paramNr)
 void menu_parseKnobValue(uint8_t potNr, uint8_t potValue)
 {
 	screensaver_touch();
+
+	//leave edit mode if active
+	editModeActive = 0;
 
 	if( (menu_activePage == SAVE_PAGE) || (menu_activePage == LOAD_PAGE)) {
 		menu_handleSaveScreenKnobValue(potNr, potValue);

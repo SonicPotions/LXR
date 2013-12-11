@@ -455,6 +455,7 @@ int16_t calcWavetableOsc(OscInfo* osc,  const int16_t table[][1024])
 	return oscOut;
 
 };
+
 //------------------------------------------------------------------
 void calcSampleOscFmBlock(OscInfo* osc,int16_t* modBuffer, int16_t* buf, uint8_t size ,const float gain)
 {
@@ -679,6 +680,7 @@ void osc_calcUserSampleFreq(OscInfo* osc)
 		case NOISE:
 			osc_calcNoiseFreq(osc);
 			break;
+
 
 		case CRASH:
 			osc_calcSampleFreq(osc);
