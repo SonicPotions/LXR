@@ -4,8 +4,12 @@ Sonic Potions LXR Drumsynth Firmware
 This is a fork of the LXR DrumSynth firmware. My intention for this fork is to add features and fix issues
 that are important to me. I will be freely offering any changes back to the SonicPotions repository.
 
-Here are a list of current changes (differences from main repos):
------------------------------------------------------------------
+Here are a list of current changes (differences from Sonic Potions repos):
+--------------------------------------------------------------------------
+- No differences now. We are in sync
+
+Here are a list of changes that are now merged back into the Sonic Potions repos:
+---------------------------------------------------------------------------------
 - Pattern/Kit save will use a proper cursor when editing names
 - Midi Off - Will now send midi note off messages before the next midi note on message and also when
   the sequencer is stopped. This allows better interaction with external synths.
