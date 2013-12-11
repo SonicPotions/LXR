@@ -4,6 +4,7 @@ Firmware v0.27
 - trigger IOs init value fixed. (are now zero after power up)
 - detail view exit on sub page change
 - detail view exit when knob is moved
+- added step position reset to zero on pattern change
 
 
 Firmware v0.26
