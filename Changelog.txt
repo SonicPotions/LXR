@@ -2,6 +2,8 @@
 Firmware v0.27
 ---------------------------
 - trigger IOs init value fixed. (are now zero after power up)
+- detail view exit on sub page change
+
 
 Firmware v0.26
 ---------------------------
@@ -16,6 +18,8 @@ merged with rudeogs changes:
 - Automation target - Same type of fix as LFO target. Also menu is more descriptive.
 - Separate open and closed hi-hat EG decay onto separate drum buttons to make it clearer which one is being edited.
 - Fix firmware image builder to accept command line parameters, and create new batch file
+- screensaver bug on load/save page fixed
+- encoder works for changing mod destinations in detaled view
 
 Firmware v0.25
 ---------------------------

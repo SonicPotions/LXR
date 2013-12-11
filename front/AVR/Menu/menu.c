@@ -1964,6 +1964,9 @@ void menu_switchSubPage(uint8_t subPageNr)
 	//lock all parameters
 	lockPotentiometerFetch();
 
+	//leave edit mode if active
+	editModeActive = 0;
+
 	//get current position
 	uint8_t activeParameter	= menuIndex & MASK_PARAMETER;
 	uint8_t activePage		= (menuIndex&MASK_PAGE)>>PAGE_SHIFT;
