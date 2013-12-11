@@ -427,7 +427,7 @@ void seq_nextStep()
 				seq_activePattern = seq_pendingPattern;
 
 				//reset pattern position to zero
-				memset(seq_stepIndex,0,NUM_TRACKS);
+				memset(seq_stepIndex,-1,NUM_TRACKS);
 
 				//send the ack message to tell the front that a new pattern starts playing
 				uart_sendFrontpanelByte(FRONT_SEQ_CC);
