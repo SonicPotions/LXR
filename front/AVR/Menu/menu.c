@@ -2445,6 +2445,9 @@ void menu_parseKnobValue(uint8_t potNr, uint8_t potValue)
 {
 	screensaver_touch();
 
+	//leave edit mode if active
+	editModeActive = 0;
+
 	if( (menu_activePage == SAVE_PAGE) || (menu_activePage == LOAD_PAGE)) {
 		menu_handleSaveScreenKnobValue(potNr, potValue);
 		return;
