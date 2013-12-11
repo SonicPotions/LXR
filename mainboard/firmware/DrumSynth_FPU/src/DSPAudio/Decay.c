@@ -65,11 +65,18 @@ void DecayEg_trigger(DecayEg* eg)
 float DecayEg_calc(DecayEg* eg)
 {
 	float val = eg->value;
+
+	if(val>0)
 	{
-		val -= (val>0)*eg->decay;
-		eg->value = val;
-		return DecayEg_calcSlopeValue(val,eg->slope);
+		val -= eg->decay;
+
+	} else
+	{
+		val = 0;
 	}
+	eg->value = val;
+	return DecayEg_calcSlopeValue(val,eg->slope);
+
 };
 //-------------------------------------------------
 void DecayEg_setDecay(DecayEg* eg, uint8_t data2)
