@@ -230,6 +230,16 @@ void trigger_init()
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
 
+
+	//set trigger outs to low
+	trigger_setPin(0,0);
+	trigger_setPin(1,0);
+	trigger_setPin(2,0);
+	trigger_setPin(3,0);
+	trigger_setPin(4,0);
+	trigger_setPin(5,0);
+	trigger_setPin(6,0);
+
 }
 //--------------------------------------------------
 void trigger_triggerVoice(uint8_t voice)

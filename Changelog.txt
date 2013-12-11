@@ -1,3 +1,8 @@
+
+Firmware v0.27
+---------------------------
+- trigger IOs init value fixed. (are now zero after power up)
+
 Firmware v0.26
 ---------------------------
 merged with rudeogs changes:
