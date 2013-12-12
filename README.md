@@ -6,7 +6,7 @@ that are important to me. I will be freely offering any changes back to the Soni
 
 Here are a list of current changes (differences from Sonic Potions repos):
 --------------------------------------------------------------------------
-- No differences now. We are in sync
+- Midi note off fixes. Will send midi off when changing pattern, channel or muting voice
 
 Here are a list of changes that are now merged back into the Sonic Potions repos:
 ---------------------------------------------------------------------------------
