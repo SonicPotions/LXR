@@ -286,9 +286,8 @@ void frontPanel_parseData(uint8_t data)
 					// a value of FF means no automation (on the back end)
 					uint8_t dst=(uint8_t)((frontParser_midiMsg.data1<<7) | frontParser_midiMsg.data2);
 					if(dst==0xFF)
-						parameter_values[PAR_P1_DEST] = 0;
-					else
-						parameter_values[PAR_P1_DEST] = paramToModTarget[dst];
+						dst=0;
+					parameter_values[PAR_P1_DEST] = paramToModTarget[dst];
 					menu_repaintAll();
 				}
 				else if(frontParser_midiMsg.status == SET_P2_DEST)
@@ -296,9 +295,8 @@ void frontPanel_parseData(uint8_t data)
 					//**AUTOM - translate cortex value to mod target index
 					uint8_t dst=(uint8_t)((frontParser_midiMsg.data1<<7) | frontParser_midiMsg.data2);
 					if(dst==0xFF)
-						parameter_values[PAR_P2_DEST] = 0;
-					else
-						parameter_values[PAR_P2_DEST] = paramToModTarget[dst];
+						dst=0;
+					parameter_values[PAR_P2_DEST] = paramToModTarget[dst];
 					menu_repaintAll();
 				}
 				else if(frontParser_midiMsg.status == SET_P1_VAL)
@@ -411,10 +409,6 @@ void frontPanel_parseData(uint8_t data)
 						
 						case LED_QUERY_SEQ_TRACK:
 						//this message is only send by the frontpanel, so it doesnt need to handle it
-						break;
-						
-						case SEQ_RESYNC_LFO:
-
 						break;
 					};						
 				}

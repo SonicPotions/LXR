@@ -621,6 +621,9 @@ void frontParser_parseUartData(unsigned char data)
 				{
 					uint8_t voice = frontParser_midiMsg.data2 >> 4;
 					uint8_t channel = frontParser_midiMsg.data2 & 0x0f;
+					// --AS if midi channel changed, and a note was playing on old channel, turn it off
+					if(midi_MidiChannels[voice] != channel)
+						seq_midiNoteOff(midi_MidiChannels[voice]);
 					midi_MidiChannels[voice] = channel;
 				}
 					break;

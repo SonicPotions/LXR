@@ -419,7 +419,7 @@ enum
 #define FRONT_SEQ_NOTE					0x13
 #define FRONT_SEQ_PROB					0x14
 #define FRONT_SEQ_SET_ACTIVE_TRACK 		0x15	/**< select the active track. all track specific messages (request step params etc) received will refer to the track selected with this command*/
-#define FRONT_SEQ_RESYNC_LFO			0x16	/**< informs the avr that an LFO syncpoint occured. necessary to keep tight syncing when using 2 different xtals*/
+//#define FRONT_SEQ_RESYNC_LFO			0x16	/**< LFO is no longer running on the front */
 #define FRONT_SEQ_EUKLID_LENGTH 		0x17	/** sets the length of the current track from 0 to 16 steps*/
 #define FRONT_SEQ_EUKLID_STEPS			0x18
 #define FRONT_SEQ_REQUEST_EUKLID_PARAMS 0x19

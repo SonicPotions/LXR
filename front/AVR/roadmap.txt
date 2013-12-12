@@ -1,19 +1,3 @@
-____globals____
-parameters - this is an array of all the parameters that are currently active in the front panel. 
-these include all the settings for each voice. Each element consists of a value and a datatype. 
-The datatype dictates how that parameter is rendered on the screen. It might be possible to move 
-this datatype into progmem as it doesn't change. Right now there appear to be 255 parameters. 
-Toward the end of this array are parameters that are updated based on the active step in the active 
-pattern and voice
-
-____interesting functions_____
-menu.c:menu_repaint - this is the guts of the code that updates the display.
-
-___menu structure___
-For most of the menus, the hierarchy is stored in menuPages array. This is an array of Page arrays. Each Page has 8
-text indicators, and 8 parameters. The text indicators (the top* elements) point to the text that should be displayed
-for that item. And the parameters (bot* elements) refer to the parameter that is being edited in that slot. 
-
 ___modulation stuff___
 There are 3 types of modulation
 
@@ -61,5 +45,13 @@ Strategy for automation target fix: (search for **AUTOM in the code)
 - any time we receive a value from cortex, we translate it to this value
 - any time we send the value to cortex we translate it to a param number
 - frontParser_stepData doesn't need to change because it's only used for transferring data between file and sequencer and vice versa
-- 
+
+
+___fixes in progress (QA test list)___
+- Added midi note off when switching patterns
+- Added midi note off when changing midi channel
+- Added midi note off when muting voice
+- Move midi note off into function (affects sequencer playing, should still send note off, and stop sequencer should send all off)
+- front parset set p1 dest optimize (autom targets 1 and 2 should still default to off)
+
 

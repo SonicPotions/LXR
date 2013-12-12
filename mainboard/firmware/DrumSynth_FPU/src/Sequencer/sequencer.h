@@ -209,5 +209,9 @@ void seq_recordAutomation(uint8_t voice, uint8_t dest, uint8_t value);
 //------------------------------------------------------------------------------
 uint8_t seq_isNextStepSyncStep();
 //------------------------------------------------------------------------------
+// send a note off for a channel if there is a note playing on that channel
+// if 0xff is specified, send a note off on all channels that have a note playing
+void seq_midiNoteOff(uint8_t chan);
+
 
 #endif /* SEQUENCER_H_ */

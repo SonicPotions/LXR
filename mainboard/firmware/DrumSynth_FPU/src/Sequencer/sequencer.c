@@ -137,6 +137,7 @@ uint8_t seq_newPatternAvailable = 0; //indicate that a new pattern has loaded in
 
 //for the automation tracks each track needs 2 modNodes
 static AutomationNode seq_automationNodes[NUM_TRACKS][2];
+
 //------------------------------------------------------------------------------
 void seq_init()
 {
@@ -328,8 +329,8 @@ void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note)
 
 	trigger_triggerVoice(voiceNr);
 
-	//to retrigger the LFOs the Frontpanel AVR needs to know about note ons
-	uart_sendFrontpanelByte(0x90);
+	//to flash the LED, the Frontpanel AVR needs to know about note ons
+	uart_sendFrontpanelByte(NOTE_ON);
 	uart_sendFrontpanelByte(voiceNr);
 	uart_sendFrontpanelByte(0);
 
@@ -353,10 +354,8 @@ void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note)
 	//}
 
 	//--AS if a note is on for that channel send note-off first
-	// The proper way to do a note off is with 0x80. 0x90 with velocity 0 is also used, however I think there is still
-	// synth gear out there that doesn't recognize that properly.
-	if((1<<midiChan) & midi_notes_on)
-		seq_sendMidi(0x80 | midiChan,midi_chan_notes[midiChan],0);
+	seq_midiNoteOff(midiChan);
+
 	//send the new note to midi out
 	seq_sendMidi(0x90 | midiChan,midiNote,
 			seq_patternSet.seq_subStepPattern[seq_activePattern][voiceNr][seq_stepIndex[voiceNr]].volume&STEP_VOLUME_MASK);
@@ -433,6 +432,9 @@ void seq_nextStep()
 				uart_sendFrontpanelByte(FRONT_SEQ_CC);
 				uart_sendFrontpanelByte(FRONT_SEQ_CHANGE_PAT);
 				uart_sendFrontpanelByte(seq_activePattern);
+
+				// --AS all notes off here since we are switching patterns
+				seq_midiNoteOff(0xFF);
 			}
 		}
 
@@ -731,10 +733,7 @@ void seq_setRunning(uint8_t isRunning)
 		uart_sendMidiByte(MIDI_STOP);
 
 		//--AS send notes off on all channels that have notes playing and reset our bitmap to reflect that
-		for(i=0;i<16;i++)
-			if((1<<i) & midi_notes_on)
-				seq_sendMidi(0x80 | i, midi_chan_notes[i],0);
-		midi_notes_on=0;
+		seq_midiNoteOff(0xFF);
 
 		trigger_reset(1);
 	} else {
@@ -765,6 +764,8 @@ void seq_setMute(uint8_t trackNr, uint8_t isMuted)
 		if(isMuted) {
 			//mute track
 			seq_mutedTracks |= (1<<trackNr);
+			// --AS turn off the midi note that may be playing on that track
+			seq_midiNoteOff(midi_MidiChannels[trackNr]);
 		} else {
 			//unmute track
 			seq_mutedTracks &= ~(1<<trackNr);
@@ -1201,3 +1202,19 @@ uint8_t seq_isNextStepSyncStep()
 }
 //------------------------------------------------------------------------------
 
+void seq_midiNoteOff(uint8_t chan)
+{
+	uint8_t i;
+	if(chan==0xff) { // all notes off
+		for(i=0; i<16; i++)
+			if((1<<i) & midi_notes_on)
+				seq_sendMidi(0x80 | i, midi_chan_notes[i],0);
+		// reset all
+		midi_notes_on=0;
+		return;
+	}
+	// The proper way to do a note off is with 0x80. 0x90 with velocity 0 is also used, however I think there is still
+	// synth gear out there that doesn't recognize that properly.
+	if((1<<chan) & midi_notes_on)
+		seq_sendMidi(0x80 | chan,midi_chan_notes[chan],0);
+}
