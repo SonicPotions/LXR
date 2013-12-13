@@ -109,11 +109,13 @@ void initDrumVoice()
 #endif
 		voiceArray[i].decimationCnt = 0;
 		voiceArray[i].decimationRate = 1;
+
 	}
 }
 //---------------------------------------------------
 void Drum_trigger(const uint8_t voiceNr, const uint8_t vol, const uint8_t note)
 {
+
 	lfo_retrigger(voiceNr);
 
 	//update velocity modulation
@@ -137,19 +139,14 @@ void Drum_trigger(const uint8_t voiceNr, const uint8_t vol, const uint8_t note)
 			setOnePoleCoef(&voiceArray[voiceNr].ampFilter,ampSmoothValue);
 #endif
 		}
+
 		if(voiceArray[voiceNr].osc.waveform == SINE)
-			voiceArray[voiceNr].osc.phase = (0x3ff<<20)*offset;//voiceArray[voiceNr].osc.startPhase ;
+			voiceArray[voiceNr].osc.phase = 1024 + ( (0x3ff<<20) - 1024)*offset;//voiceArray[voiceNr].osc.startPhase ;
 		else if(voiceArray[voiceNr].osc.waveform > SINE && voiceArray[voiceNr].osc.waveform <= REC)
 			voiceArray[voiceNr].osc.phase = (0xff<<20)*offset;
 		else
 			voiceArray[voiceNr].osc.phase = 0;
 
-		if(voiceArray[voiceNr].modOsc.waveform == SINE)
-			voiceArray[voiceNr].modOsc.phase = (0x3ff<<20)*offset;//voiceArray[voiceNr].osc.startPhase ;
-		else if(voiceArray[voiceNr].modOsc.waveform > SINE && voiceArray[voiceNr].modOsc.waveform <= REC)
-			voiceArray[voiceNr].modOsc.phase = (0xff<<20)*offset;
-		else
-			voiceArray[voiceNr].modOsc.phase = 0;
 	}
 
 	osc_setBaseNote(&voiceArray[voiceNr].osc,note);
@@ -163,10 +160,14 @@ void Drum_trigger(const uint8_t voiceNr, const uint8_t vol, const uint8_t note)
 	transient_trigger(&voiceArray[voiceNr].transGen);
 
 	SnapEg_trigger(&voiceArray[voiceNr].snapEg);
+
+
 }
 //---------------------------------------------------
 void calcDrumVoiceAsync(const uint8_t voiceNr)
 {
+
+
 	//add modulation eg to osc freq (1 = no change. a+eg = original freq + modulation
 	const float egPitchVal = DecayEg_calc(&voiceArray[voiceNr].oscPitchEg);
 	const float pitchEgValue = egPitchVal*voiceArray[voiceNr].egPitchModAmount;
@@ -188,12 +189,10 @@ void calcDrumVoiceAsync(const uint8_t voiceNr)
 	//check if in attack phase
 	if( (voiceArray[voiceNr].oscVolEg.attack == 1 ) && ((voiceArray[voiceNr].oscVolEg.state == EG_A) || (voiceArray[voiceNr].oscVolEg.state == EG_REPEAT)) )
 	{
-		if(voiceArray[voiceNr].oscVolEg.attack == 1 )
-		{
-			//if attack is set to 0 -> no interpolation
-			voiceArray[voiceNr].ampFilterInput = slopeEg2_calc(&voiceArray[voiceNr].oscVolEg);
-			voiceArray[voiceNr].lastGain = voiceArray[voiceNr].ampFilterInput;voiceArray[voiceNr].lastGain = voiceArray[voiceNr].ampFilterInput;
-		}
+		//if attack is set to 0 -> no interpolation
+		voiceArray[voiceNr].ampFilterInput = slopeEg2_calc(&voiceArray[voiceNr].oscVolEg);
+		voiceArray[voiceNr].lastGain = voiceArray[voiceNr].ampFilterInput;
+
 	}
 	else
 	{
@@ -205,6 +204,7 @@ void calcDrumVoiceAsync(const uint8_t voiceNr)
 	//update osc phaseInc
 	osc_setFreq(&voiceArray[voiceNr].osc);
 	osc_setFreq(&voiceArray[voiceNr].modOsc);
+
 }
 
 //---------------------------------------------------

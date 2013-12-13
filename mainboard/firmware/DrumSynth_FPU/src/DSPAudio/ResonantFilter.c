@@ -111,7 +111,7 @@ void SVF_directSetFilterValue(ResonantFilter* filter, float val)
 
 }
 //------------------------------------------------------------------------------------
-#if ENABLE_NONLINEAR_INTEGRATORS
+//#if ENABLE_NONLINEAR_INTEGRATORS
 float tanhXdX(float x)
 {
 	float a = x*x;
@@ -119,7 +119,7 @@ float tanhXdX(float x)
 	x = ((a + 105)*a + 945) / ((15*a + 420)*a + 945);
 	return x;
 }
-#endif
+//#endif
 //------------------------------------------------------------------------------------
 float softClipTwo(float in)
 {
