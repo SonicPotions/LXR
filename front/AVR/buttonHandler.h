@@ -128,4 +128,5 @@ void buttonHandler_muteVoice(uint8_t voice, uint8_t isMuted);
 //--------------------------------------------------------
 void buttonHandler_showMuteLEDs();
 //--------------------------------------------------------
+void buttonHandler_setRunStopState(uint8_t running);
 #endif /* BUTTONHANDLER_H_ */

@@ -48,13 +48,13 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue);
 void midiParser_parseMidiMessage(MidiMsg msg);
 float midiParser_calcDetune(uint8_t value);
 void midiParser_handleSystemByte(unsigned char data);
+// check mtc status, might stop the sequencer
+void midiParser_checkMtc();
 
 // a place to store all the incoming CC values
 //needed to know to which value the automation node should return
 extern uint8_t midiParser_originalCcValues[0xff];
 
-// will be true if mtc clock is running
-extern uint8_t midiParser_mtc_is_running;
 
 extern uint8_t midi_MidiChannels[7];
 extern uint8_t midi_NoteOverride[7];

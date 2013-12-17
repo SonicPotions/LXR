@@ -406,10 +406,18 @@ void frontPanel_parseData(uint8_t data)
 						
 						
 						break;
+						case SEQ_RUN_STOP:
+							// --AS This tells the front that the sequencer has started/stopped due to MTC msg
+							// we simply use this to turn on/off the led and cause the next press of start
+							// button to act properly
+							buttonHandler_setRunStopState(frontParser_midiMsg.data2);
+							break;
 						
 						case LED_QUERY_SEQ_TRACK:
 						//this message is only send by the frontpanel, so it doesnt need to handle it
 						break;
+
+
 					};						
 				}
 				else if(frontParser_midiMsg.status == SAMPLE_CC)

@@ -857,14 +857,11 @@ return;
 		//Sequencer Start Stop button
 		//because the output shift registers are full, this buttons LED is on a single uC pin
 		case BUT_START_STOP:
-			//toggle the led
+			//toggle the state and update led
+			buttonHandler_setRunStopState((uint8_t)(1-buttonHandler_stateMemory.seqRunning));
 			//send run/stop command to soundchip
-			led_setValue(buttonHandler_stateMemory.seqRunning,LED_START_STOP);
-			
-			buttonHandler_stateMemory.seqRunning = (uint8_t)((1-buttonHandler_stateMemory.seqRunning)&0x01);
 			frontPanel_sendData(SEQ_CC,SEQ_RUN_STOP,buttonHandler_stateMemory.seqRunning);
-
-		break;
+			break;
 		
 		case BUT_REC:
 			if(buttonHandler_getShift()) {
@@ -1250,3 +1247,11 @@ uint8_t buttonHandler_getMode()
 	return buttonHandler_stateMemory.selectButtonMode;
 };
 //--------------------------------------------------------------
+
+void buttonHandler_setRunStopState(uint8_t running)
+{
+	// set the state
+	buttonHandler_stateMemory.seqRunning = (uint8_t)(running&0x01);
+	// set the led
+	led_setValue(buttonHandler_stateMemory.seqRunning,LED_START_STOP);
+}

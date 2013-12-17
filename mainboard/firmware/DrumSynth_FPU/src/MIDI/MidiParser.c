@@ -50,9 +50,13 @@
 #include "frontPanelParser.h"
 
 static uint16_t midiParser_activeNrpnNumber = 0;
-uint8_t midiParser_mtc_is_running = 0;
 
 uint8_t midiParser_originalCcValues[0xff];
+
+// this will be set to some value if we are ignoring all mtc messages until the next 0 message
+static uint8_t midiParser_mtcIgnore=0;
+static uint32_t midiParser_lastMtcReceived=0xFFFFFFFF;
+static uint8_t midiParser_mtcIsRunning=0;
 
 enum State
 {
@@ -1024,14 +1028,84 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 		modNode_originalValueChanged(paramNr);
 	}
 }
+
+//-----------------------------------------------------------
+// this will check whether mtc is running, and if so will
+// check to see whether we need to stop the sequencer due to
+// lack of recent mtc activity. It will also reset our running indicator
+// if the sequencer has stopped for some other reason
+void midiParser_checkMtc()
+{
+	if(!midiParser_mtcIsRunning)
+		return;
+
+	if(!seq_isRunning()) {
+		midiParser_mtcIsRunning=0;
+		return;
+	}
+
+	// at a 24fps framerate (the lowest) we should receive a message (we receive one every 2 frames)
+	// every 21 ms.
+	if(midiParser_lastMtcReceived + 30 > systick_ticks) {
+		// too much time has elapsed since our last message
+		midiParser_mtcIsRunning=0;
+		uart_sendFrontpanelByte(FRONT_SEQ_CC);
+		uart_sendFrontpanelByte(FRONT_SEQ_RUN_STOP);
+		uart_sendFrontpanelByte(0);
+		// stop the sequencer
+		seq_setRunning(0);
+	}
+}
+
 //-----------------------------------------------------------
 /** Parse incoming midi messages and invoke corresponding action
  */
 void midiParser_parseMidiMessage(MidiMsg msg)
 {
-	//only do something if the midi channel is right
-	if(midiParser_isValidMidiChannel(msg.status))
-	{
+	if((msg.status & 0xF0) == 0XF0) {
+		// non-channel specific messages (system messages)
+		switch(msg.status) {
+		case MIDI_MTC_QFRAME:
+			/* --AS Strategy:
+			 * If we get through all 8 of the mtc messages with a value of 0, it means that
+			 * the song has just started playing. That is the only time we will start the
+			 * sequencer. so we will not start it if they start the tape recorder playing half way
+			 * through the song. Also, if the sequencer is running, or we are in external sync mode
+			 * we will ignore mtc messages as well
+			 */
+			if(seq_isRunning() || seq_getExtSync())
+				break; // bypass the lot
+
+			if((msg.data1 & 0x70)==0) { // this is the first mtc message of the set
+				midiParser_mtcIgnore=0; // reset our level of ignorance
+				midiParser_lastMtcReceived=systick_ticks;
+			} else if(midiParser_mtcIgnore) { // not the first msg and we are ignoring
+				break; // get out of here fast
+			} else if((msg.data1 & 0x70)!=0x70) { // messages 0 to 6 and we are not ignoring yet
+				if((msg.data1 & 0x0F) !=0) {
+					midiParser_mtcIgnore=1;
+					break; // get out fast
+				}
+			} else { // message 7 and we are not ignoring yet
+				if((msg.data1 & 0x01)==0) { // hour high nibble is 0
+					midiParser_mtcIsRunning=1;
+					// well, we got all the way thru all 8 messages with 0, so the song has just begun
+					// tell the front that we've started running on our own
+					uart_sendFrontpanelByte(FRONT_SEQ_CC);
+					uart_sendFrontpanelByte(FRONT_SEQ_RUN_STOP);
+					uart_sendFrontpanelByte(1);
+					// start the sequencer
+					seq_setRunning(1);
+				}
+			}
+
+			break;
+		default:
+			break;
+		}
+
+	} else if(midiParser_isValidMidiChannel(msg.status)) {
+		//only do something if the midi channel is right
 		switch(msg.status)
 		{
 		case NOTE_OFF:
@@ -1088,9 +1162,6 @@ void midiParser_handleSystemByte(unsigned char data)
 {
 	switch(data)
 	{
-	default:
-		break;
-
 	case MIDI_CLOCK:
 		if(seq_getExtSync())
 		{
@@ -1112,13 +1183,13 @@ void midiParser_handleSystemByte(unsigned char data)
 			sync_midiStartStop(0);
 		}
 		break;
-	case MIDI_MTC_QFRAME: // --AS TODO only respond when we are at 0:00:00, so we don't give the false impression we are in sync
-		// Also TODO at the end of each beat, see when the last mtc was received, if we didn't get one for a while, stop seq
-		if(!midiParser_mtc_is_running) {
-			seq_setRunning(1);
-			midiParser_mtc_is_running=1;
-		}
-		parserState = IGNORE; // --AS ignore the data, we just don't care right now.
+	case MIDI_MTC_QFRAME:
+		// fall through to handle data byte
+		midiMsg_tmp.status = data;
+		parserState = MIDI_DATA1; // we expect the nugget of mtc frame info
+		msgLength = 1;
+		break;
+	default:
 		break;
 	}
 }
@@ -1137,8 +1208,6 @@ void midiParser_handleStatusByte(unsigned char data)
 		case MIDI_CC:
 		case MIDI_PITCH_WHEEL:
 		case MIDI_AT:
-		case CHANNEL_PRESSURE:
-
 			// store the new status byte
 			midiMsg_tmp.status = data;
 			//status received, next should be data byte 1
@@ -1150,6 +1219,7 @@ void midiParser_handleStatusByte(unsigned char data)
 			break;
 		// 1 databyte messages
 		case PROG_CHANGE:
+		case CHANNEL_PRESSURE:
 			// store the new status byte
 			midiMsg_tmp.status = data;
 			//status received, next should be data byte 1
@@ -1161,6 +1231,7 @@ void midiParser_handleStatusByte(unsigned char data)
 
 		default:
 			//unkown status byte - ignore
+			msgLength = 0;
 			parserState = IGNORE;
 			break;
 		}
@@ -1176,29 +1247,39 @@ void midiParser_handleDataByte(unsigned char data)
 {
 	switch(parserState)
 	{
+	case MIDI_STATUS:
+		// we are expecting status msg, but got data, so running status (channel pressure maybe?)
 	case MIDI_DATA1:
 		midiMsg_tmp.data1 = data;
-		parserState = MIDI_DATA2;
+		if(msgLength == 1) {
+			// single byte message
+			midiMsg_tmp.data2=0;
+		} else {
+			// we need another byte before we can do anything meaningful
+			parserState = MIDI_DATA2;
+			return;
+		}
 		break;
-
 	case MIDI_DATA2:
 		midiMsg_tmp.data2 = data;
-		//both databytes received. next should be status again
-		parserState = MIDI_STATUS;
-		midiParser_parseMidiMessage(midiMsg_tmp);
-		break;
-
-	case MIDI_STATUS:
-		// running status
-		midiMsg_tmp.data1 = data;
-		parserState = MIDI_DATA2;
-
 		break;
 
 	default:
 		//we are expecting no data byte.
-		break;
+		return;
 	}
+
+	// process the message:
+
+	// data bytes for the message were received (either one or two depending on msg)
+	// so we handle the message as a whole now
+
+	//all databyte(s) received. next should be status again
+	parserState = MIDI_STATUS;
+
+	midiParser_parseMidiMessage(midiMsg_tmp);
+
+
 }
 //-----------------------------------------------------------
 void midiParser_parseUartData(unsigned char data)
@@ -1208,21 +1289,20 @@ void midiParser_parseUartData(unsigned char data)
 	{
 		if( (data&0xf0) == 0xf0)
 		{
-			//system message
+			//system message (including MTC quarter frame)
 			midiParser_handleSystemByte(data);
 		}
 		else
 		{
-			//status byte
+			//status byte (channel specific message)
 			midiParser_handleStatusByte(data);
 		}
 	}
 	else
 	{
-		//data byte
+		//data byte - handle channel messages as well as system messages that have data
 		midiParser_handleDataByte(data);
 	}
 
 }
 //-----------------------------------------------------------
-

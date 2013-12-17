@@ -2354,7 +2354,7 @@ void menu_parseGlobalParam(uint16_t paramNr, uint8_t value)
 	}
 }
 //-----------------------------------------------------------------
-static void menu_processSpecialCaseValues(uint16_t paramNr, const uint8_t *value)
+static void menu_processSpecialCaseValues(uint16_t paramNr/*, const uint8_t *value*/)
 {
 	if(paramNr == PAR_BPM)
 	{
@@ -2473,7 +2473,7 @@ void menu_parseKnobValue(uint8_t potNr, uint8_t potValue)
 		return;
 	}
 
-	menu_processSpecialCaseValues(paramNr,&dtypeValue);
+	menu_processSpecialCaseValues(paramNr/*,&dtypeValue*/);
 
 	//if parameter lock is on, do nothing
 	if((parameterFetch & (1<<potNr)) != 0 )

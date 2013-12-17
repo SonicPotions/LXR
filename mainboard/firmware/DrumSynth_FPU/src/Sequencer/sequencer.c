@@ -369,169 +369,173 @@ void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note)
 //------------------------------------------------------------------------------
 void seq_nextStep()
 {
-	if(seq_running)
+	if(!seq_running)
+		return;
+
+	trigger_clockTick();
+	seq_masterStepCnt++;
+
+	//---- calc master step position. max value is 127. also take in regard the pattern end bit from the note value -----
+	uint8_t masterStepPos;
+	//if( (((seq_stepIndex[0]+1) &0x7f) == 0) || (((seq_patternSet.seq_subStepPattern[seq_activePattern][0][seq_stepIndex[0]+1]).note & PATTERN_END_MASK)>=PATTERN_END_MASK) )
+	if( (((seq_stepIndex[0]+1) &0x7f) == 0) || (((seq_patternSet.seq_subStepPattern[seq_activePattern][0][seq_stepIndex[0]+1]).note & PATTERN_END)) )
 	{
-		trigger_clockTick();
-		seq_masterStepCnt++;
-
-		//---- calc master step position. max value is 127. also take in regard the pattern end bit from the note value -----
-		uint8_t masterStepPos;
-		//if( (((seq_stepIndex[0]+1) &0x7f) == 0) || (((seq_patternSet.seq_subStepPattern[seq_activePattern][0][seq_stepIndex[0]+1]).note & PATTERN_END_MASK)>=PATTERN_END_MASK) )
-		if( (((seq_stepIndex[0]+1) &0x7f) == 0) || (((seq_patternSet.seq_subStepPattern[seq_activePattern][0][seq_stepIndex[0]+1]).note & PATTERN_END)) )
-		{
-			masterStepPos = 0;
-			//a bar has passed
-			seq_barCounter++;
-		}
-		else
-		{
-			masterStepPos = seq_stepIndex[0]+1;
-		}
-
-		//-------- check if the master track has ended and check if a pattern switch is necessary --------
-		if(masterStepPos == 0)
-		{
-			if(seq_activePattern == seq_pendingPattern)
-			{
-				//check pattern settings if we have to auto change patterns
-				if(seq_barCounter%(seq_patternSet.seq_patternSettings[seq_activePattern].changeBar+1) == 0)
-				{
-					//we have to change to the next pattern
-					if(seq_patternSet.seq_patternSettings[seq_activePattern].nextPattern < SEQ_NEXT_RANDOM)
-					{
-						seq_pendingPattern = seq_patternSet.seq_patternSettings[seq_activePattern].nextPattern;
-					}
-					else if(seq_patternSet.seq_patternSettings[seq_activePattern].nextPattern >= SEQ_NEXT_RANDOM)
-					{
-						uint8_t limit = seq_patternSet.seq_patternSettings[seq_activePattern].nextPattern - SEQ_NEXT_RANDOM +2;
-						uint8_t rnd = GetRngValue() % limit;
-						seq_pendingPattern = rnd;
-					}
-				}
-			}
-
-			// a new pattern is about to start
-			// set pendingPattern active
-			if((seq_activePattern != seq_pendingPattern) || seq_loadPendigFlag)
-			{
-
-				seq_loadPendigFlag = 0;
-				//first check if 2 new pattern is available
-				if(seq_newPatternAvailable)
-				{
-					seq_newPatternAvailable = 0;
-					seq_activateTmpPattern();
-				}
-
-				seq_activePattern = seq_pendingPattern;
-
-				//reset pattern position to zero
-				memset(seq_stepIndex,-1,NUM_TRACKS);
-
-				//send the ack message to tell the front that a new pattern starts playing
-				uart_sendFrontpanelByte(FRONT_SEQ_CC);
-				uart_sendFrontpanelByte(FRONT_SEQ_CHANGE_PAT);
-				uart_sendFrontpanelByte(seq_activePattern);
-
-				// --AS all notes off here since we are switching patterns
-				seq_midiNoteOff(0xFF);
-			}
-		}
-
-		//---------- now check if the master track is at a full beat position to flash the start/stop button --------
-		if((masterStepPos&31) == 0)
-		{
-			//&32 <=> %32
-			//a quarter beat occured (multiple of 32 steps in the 128 step pattern)
-			//turn on the start/stop led (beat indicator)
-			uart_sendFrontpanelByte(FRONT_STEP_LED_STATUS_BYTE);
-			uart_sendFrontpanelByte(FRONT_LED_PULSE_BEAT);
-			uart_sendFrontpanelByte(1);
-		}
-		else if ((masterStepPos&31) == 1)
-		{
-			//TODO datenmenge zur front reduzieren
-			//turn it of again on the next step
-			uart_sendFrontpanelByte(FRONT_STEP_LED_STATUS_BYTE);
-			uart_sendFrontpanelByte(FRONT_LED_PULSE_BEAT);
-			uart_sendFrontpanelByte(0);
-		}
-
-		//--------- Now its time to process the single tracks -------------------------
-
-		int i;
-		for(i=0;i<NUM_TRACKS;i++)
-		{
-			//increment the step index
-			seq_stepIndex[i]++;
-			//check if track end is reached
-			if(((seq_patternSet.seq_subStepPattern[seq_activePattern][i][seq_stepIndex[i]].note & PATTERN_END)) || ((seq_stepIndex[i] & 0x7f) == 0))
-			{
-				//if end is reached reset track to step 0
-				seq_stepIndex[i] = 0;
-			}
-
-
-			if(seq_SomModeActive)
-			{
-				som_tick(seq_stepIndex[0],seq_mutedTracks);
-
-			} else {
-				//if track is not muted
-				if(!(seq_mutedTracks & (1<<i) ) )
-				{
-					//if main step + sub step is active
-					if(seq_isMainStepActive(i,seq_stepIndex[i]/8,seq_activePattern) && (seq_isStepActive(i,seq_stepIndex[i],seq_activePattern)))
-					{
-						//PROBABILITY
-						//every 8th step a new random value is generated
-						//thus every sub step block has only one random value to compare against
-						//allows randomisation of rolls by chance
-
-						if((seq_stepIndex[i] & 0x07) == 0x00) //every 8th step
-						{
-							seq_rndValue[i] = GetRngValue()&0x7f;
-						}
-
-						if( (seq_rndValue[i]) <= seq_patternSet.seq_subStepPattern[seq_activePattern][i][seq_stepIndex[i]].prob )
-						{
-							const uint8_t vol = seq_patternSet.seq_subStepPattern[seq_activePattern][i][seq_stepIndex[i]].volume&STEP_VOLUME_MASK;
-							const uint8_t note = seq_patternSet.seq_subStepPattern[seq_activePattern][i][seq_stepIndex[i]].note;
-							seq_triggerVoice(i,vol,note);
-						}
-					}
-
-				}
-			}
-
-			//---- check if the roll mode has to trigger the voice
-			if(seq_rollRate!=0xff) //not in oneshot mode
-			{
-				if(seq_rollState & (1<<i))
-				{
-					//check if roll is active
-					{
-						if((seq_stepIndex[i]%seq_rollRate)==0)
-						{
-							const uint8_t vol = ROLL_VOLUME;
-
-							const uint8_t note = seq_patternSet.seq_subStepPattern[seq_activePattern][i][seq_stepIndex[i]].note;
-							seq_triggerVoice(i,vol,note);
-
-							seq_addNote(i,vol);
-						}
-					}
-				}
-			}//end oneshot
-
-		}
-
-		//send message to frontpanel
-		//to display the current step
-		uart_sendFrontpanelByte(FRONT_STEP_LED_STATUS_BYTE);
-		uart_sendFrontpanelByte(FRONT_CURRENT_STEP_NUMBER_CC);
-		uart_sendFrontpanelByte(seq_stepIndex[frontParser_activeTrack]);
+		masterStepPos = 0;
+		//a bar has passed
+		seq_barCounter++;
 	}
+	else
+	{
+		masterStepPos = seq_stepIndex[0]+1;
+	}
+
+	//-------- check if the master track has ended and check if a pattern switch is necessary --------
+	if(masterStepPos == 0)
+	{
+		if(seq_activePattern == seq_pendingPattern)
+		{
+			//check pattern settings if we have to auto change patterns
+			if(seq_barCounter%(seq_patternSet.seq_patternSettings[seq_activePattern].changeBar+1) == 0)
+			{
+				//we have to change to the next pattern
+				if(seq_patternSet.seq_patternSettings[seq_activePattern].nextPattern < SEQ_NEXT_RANDOM)
+				{
+					seq_pendingPattern = seq_patternSet.seq_patternSettings[seq_activePattern].nextPattern;
+				}
+				else if(seq_patternSet.seq_patternSettings[seq_activePattern].nextPattern >= SEQ_NEXT_RANDOM)
+				{
+					uint8_t limit = seq_patternSet.seq_patternSettings[seq_activePattern].nextPattern - SEQ_NEXT_RANDOM +2;
+					uint8_t rnd = GetRngValue() % limit;
+					seq_pendingPattern = rnd;
+				}
+			}
+		}
+
+		// a new pattern is about to start
+		// set pendingPattern active
+		if((seq_activePattern != seq_pendingPattern) || seq_loadPendigFlag)
+		{
+
+			seq_loadPendigFlag = 0;
+			//first check if 2 new pattern is available
+			if(seq_newPatternAvailable)
+			{
+				seq_newPatternAvailable = 0;
+				seq_activateTmpPattern();
+			}
+
+			seq_activePattern = seq_pendingPattern;
+
+			//reset pattern position to zero
+			memset(seq_stepIndex,-1,NUM_TRACKS);
+
+			//send the ack message to tell the front that a new pattern starts playing
+			uart_sendFrontpanelByte(FRONT_SEQ_CC);
+			uart_sendFrontpanelByte(FRONT_SEQ_CHANGE_PAT);
+			uart_sendFrontpanelByte(seq_activePattern);
+
+			// --AS all notes off here since we are switching patterns
+			seq_midiNoteOff(0xFF);
+		}
+	}
+
+	//---------- now check if the master track is at a full beat position to flash the start/stop button --------
+	if((masterStepPos&31) == 0)
+	{
+		//&32 <=> %32
+		//a quarter beat occured (multiple of 32 steps in the 128 step pattern)
+		//turn on the start/stop led (beat indicator)
+		uart_sendFrontpanelByte(FRONT_STEP_LED_STATUS_BYTE);
+		uart_sendFrontpanelByte(FRONT_LED_PULSE_BEAT);
+		uart_sendFrontpanelByte(1);
+	}
+	else if ((masterStepPos&31) == 1)
+	{
+		//TODO datenmenge zur front reduzieren
+		//turn it of again on the next step
+		uart_sendFrontpanelByte(FRONT_STEP_LED_STATUS_BYTE);
+		uart_sendFrontpanelByte(FRONT_LED_PULSE_BEAT);
+		uart_sendFrontpanelByte(0);
+	}
+
+	//--------- Now its time to process the single tracks -------------------------
+
+	int i;
+	for(i=0;i<NUM_TRACKS;i++)
+	{
+		//increment the step index
+		seq_stepIndex[i]++;
+		//check if track end is reached
+		if(((seq_patternSet.seq_subStepPattern[seq_activePattern][i][seq_stepIndex[i]].note & PATTERN_END)) || ((seq_stepIndex[i] & 0x7f) == 0))
+		{
+			//if end is reached reset track to step 0
+			seq_stepIndex[i] = 0;
+		}
+
+
+		if(seq_SomModeActive)
+		{
+			som_tick(seq_stepIndex[0],seq_mutedTracks);
+
+		} else {
+			//if track is not muted
+			if(!(seq_mutedTracks & (1<<i) ) )
+			{
+				//if main step + sub step is active
+				if(seq_isMainStepActive(i,seq_stepIndex[i]/8,seq_activePattern) && (seq_isStepActive(i,seq_stepIndex[i],seq_activePattern)))
+				{
+					//PROBABILITY
+					//every 8th step a new random value is generated
+					//thus every sub step block has only one random value to compare against
+					//allows randomisation of rolls by chance
+
+					if((seq_stepIndex[i] & 0x07) == 0x00) //every 8th step
+					{
+						seq_rndValue[i] = GetRngValue()&0x7f;
+					}
+
+					if( (seq_rndValue[i]) <= seq_patternSet.seq_subStepPattern[seq_activePattern][i][seq_stepIndex[i]].prob )
+					{
+						const uint8_t vol = seq_patternSet.seq_subStepPattern[seq_activePattern][i][seq_stepIndex[i]].volume&STEP_VOLUME_MASK;
+						const uint8_t note = seq_patternSet.seq_subStepPattern[seq_activePattern][i][seq_stepIndex[i]].note;
+						seq_triggerVoice(i,vol,note);
+					}
+				}
+
+			}
+		}
+
+		//---- check if the roll mode has to trigger the voice
+		if(seq_rollRate!=0xff) //not in oneshot mode
+		{
+			if(seq_rollState & (1<<i))
+			{
+				//check if roll is active
+				{
+					if((seq_stepIndex[i]%seq_rollRate)==0)
+					{
+						const uint8_t vol = ROLL_VOLUME;
+
+						const uint8_t note = seq_patternSet.seq_subStepPattern[seq_activePattern][i][seq_stepIndex[i]].note;
+						seq_triggerVoice(i,vol,note);
+
+						seq_addNote(i,vol);
+					}
+				}
+			}
+		}//end oneshot
+
+	}
+
+	//send message to frontpanel
+	//to display the current step
+	uart_sendFrontpanelByte(FRONT_STEP_LED_STATUS_BYTE);
+	uart_sendFrontpanelByte(FRONT_CURRENT_STEP_NUMBER_CC);
+	uart_sendFrontpanelByte(seq_stepIndex[frontParser_activeTrack]);
+
+	// --AS check mtc, which might stop the sequencer if we haven't seen one in a while
+	midiParser_checkMtc();
+
 }
 //------------------------------------------------------------------------------
 uint8_t seq_getExtSync()
@@ -735,10 +739,10 @@ void seq_setRunning(uint8_t isRunning)
 		//--AS send notes off on all channels that have notes playing and reset our bitmap to reflect that
 		seq_midiNoteOff(0xFF);
 
-		//--AS reset mtc so that further mtc messages will start us up again
-		midiParser_mtc_is_running=0;
-
 		trigger_reset(1);
+
+		// --AS if mtc was doing it's thing, tell it to stop it.
+		midiParser_checkMtc();
 	} else {
 		seq_prescaleCounter = 0;
 		uart_sendMidiByte(MIDI_START);
