@@ -50,6 +50,7 @@
 #include "frontPanelParser.h"
 
 static uint16_t midiParser_activeNrpnNumber = 0;
+uint8_t midiParser_mtc_is_running = 0;
 
 uint8_t midiParser_originalCcValues[0xff];
 
@@ -1110,6 +1111,14 @@ void midiParser_handleSystemByte(unsigned char data)
 		{
 			sync_midiStartStop(0);
 		}
+		break;
+	case MIDI_MTC_QFRAME: // --AS TODO only respond when we are at 0:00:00, so we don't give the false impression we are in sync
+		// Also TODO at the end of each beat, see when the last mtc was received, if we didn't get one for a while, stop seq
+		if(!midiParser_mtc_is_running) {
+			seq_setRunning(1);
+			midiParser_mtc_is_running=1;
+		}
+		parserState = IGNORE; // --AS ignore the data, we just don't care right now.
 		break;
 	}
 }

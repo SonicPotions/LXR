@@ -53,6 +53,9 @@ void midiParser_handleSystemByte(unsigned char data);
 //needed to know to which value the automation node should return
 extern uint8_t midiParser_originalCcValues[0xff];
 
+// will be true if mtc clock is running
+extern uint8_t midiParser_mtc_is_running;
+
 extern uint8_t midi_MidiChannels[7];
 extern uint8_t midi_NoteOverride[7];
 //extern uint8_t midi_mode; --AS not used anymore

@@ -735,6 +735,9 @@ void seq_setRunning(uint8_t isRunning)
 		//--AS send notes off on all channels that have notes playing and reset our bitmap to reflect that
 		seq_midiNoteOff(0xFF);
 
+		//--AS reset mtc so that further mtc messages will start us up again
+		midiParser_mtc_is_running=0;
+
 		trigger_reset(1);
 	} else {
 		seq_prescaleCounter = 0;

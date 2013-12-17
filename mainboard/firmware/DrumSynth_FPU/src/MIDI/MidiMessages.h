@@ -75,6 +75,7 @@ typedef struct MidiStruct {
 #define MIDI_START			0xFA
 #define MIDI_STOP			0xFC
 #define MIDI_CONTINUE		0xFB
+#define MIDI_MTC_QFRAME		0xF1	//--AS
 
 //------------------------------------------------------------
 
