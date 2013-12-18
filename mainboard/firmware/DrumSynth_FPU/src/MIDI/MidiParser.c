@@ -54,8 +54,8 @@ static uint16_t midiParser_activeNrpnNumber = 0;
 uint8_t midiParser_originalCcValues[0xff];
 
 // this will be set to some value if we are ignoring all mtc messages until the next 0 message
-static uint8_t midiParser_mtcIgnore=0;
-static uint32_t midiParser_lastMtcReceived=0xFFFFFFFF;
+static uint8_t midiParser_mtcIgnore=1;
+static uint32_t volatile midiParser_lastMtcReceived=0x0;
 static uint8_t midiParser_mtcIsRunning=0;
 
 enum State
@@ -73,6 +73,16 @@ enum State
 
 #define NUM_LFO 6
 uint8_t midiParser_selectedLfoVoice[NUM_LFO] = {0,0,0,0,0,0};
+
+#if 0
+// -- AS for debugging
+static void midiDebugSend(uint8_t b1, uint8_t b2)
+{
+	uart_sendMidiByte(0xF2);
+	uart_sendMidiByte(b1&0x7F);
+	uart_sendMidiByte(b2&0x7F);
+}
+#endif
 
 //----------------------------------------------------------
 inline uint16_t calcSlopeEgTime(uint8_t data2)
@@ -1040,15 +1050,17 @@ void midiParser_checkMtc()
 		return;
 
 	if(!seq_isRunning()) {
+		// inform mtc that his services are no longer needed
 		midiParser_mtcIsRunning=0;
 		return;
 	}
 
-	// at a 24fps framerate (the lowest) we should receive a message (we receive one every 2 frames)
-	// every 21 ms.
-	if(midiParser_lastMtcReceived + 30 > systick_ticks) {
-		// too much time has elapsed since our last message
+	// at a 24fps framerate (the lowest) we should receive a completed message (we receive one every 2 frames)
+	// every 83 ms. our tick counter is .25 ms resolution
+	if(systick_ticks-midiParser_lastMtcReceived > 100 * 4) { // overestimate, just in case something untoward should happen
+		// too much time has elapsed since our last message. mtc has gone away.
 		midiParser_mtcIsRunning=0;
+
 		uart_sendFrontpanelByte(FRONT_SEQ_CC);
 		uart_sendFrontpanelByte(FRONT_SEQ_RUN_STOP);
 		uart_sendFrontpanelByte(0);
@@ -1073,12 +1085,20 @@ void midiParser_parseMidiMessage(MidiMsg msg)
 			 * through the song. Also, if the sequencer is running, or we are in external sync mode
 			 * we will ignore mtc messages as well
 			 */
-			if(seq_isRunning() || seq_getExtSync())
-				break; // bypass the lot
-
-			if((msg.data1 & 0x70)==0) { // this is the first mtc message of the set
-				midiParser_mtcIgnore=0; // reset our level of ignorance
+			// keep track of when we got the last mtc. only do this for the 0 msg to save time
+			if((msg.data1 & 0x70)==0) {
 				midiParser_lastMtcReceived=systick_ticks;
+			}
+
+			if(seq_isRunning()) {
+				break; //already running, so we don't care to figure out where we are
+			}
+			if(seq_getExtSync())
+				break; // bypass the lot. we are using external midi clock sync
+
+			// figure out whether we are at 0:0:0:0
+			if((msg.data1 & 0x7F)==0) { // this is the first mtc message of the set AND it's value is 0
+				midiParser_mtcIgnore=0; // reset our level of ignorance
 			} else if(midiParser_mtcIgnore) { // not the first msg and we are ignoring
 				break; // get out of here fast
 			} else if((msg.data1 & 0x70)!=0x70) { // messages 0 to 6 and we are not ignoring yet
@@ -1088,12 +1108,14 @@ void midiParser_parseMidiMessage(MidiMsg msg)
 				}
 			} else { // message 7 and we are not ignoring yet
 				if((msg.data1 & 0x01)==0) { // hour high nibble is 0
-					midiParser_mtcIsRunning=1;
 					// well, we got all the way thru all 8 messages with 0, so the song has just begun
 					// tell the front that we've started running on our own
 					uart_sendFrontpanelByte(FRONT_SEQ_CC);
 					uart_sendFrontpanelByte(FRONT_SEQ_RUN_STOP);
 					uart_sendFrontpanelByte(1);
+					midiParser_mtcIgnore=1; // in case we happen to miss a 0 message. probably wouldn't happen, but...
+					midiParser_mtcIsRunning=1;
+					midiParser_lastMtcReceived=systick_ticks; // also might not be needed, but...
 					// start the sequencer
 					seq_setRunning(1);
 				}
@@ -1106,7 +1128,7 @@ void midiParser_parseMidiMessage(MidiMsg msg)
 
 	} else if(midiParser_isValidMidiChannel(msg.status)) {
 		//only do something if the midi channel is right
-		switch(msg.status)
+		switch(msg.status & 0xF0)
 		{
 		case NOTE_OFF:
 			voiceControl_noteOff(msg.data1, msg.data2);
@@ -1143,7 +1165,8 @@ void midiParser_parseMidiMessage(MidiMsg msg)
 			break;
 
 		case PROG_CHANGE:
-
+			// --AS respond to prog change and change patterns TODO right now this responds only when voice 0 channel matches
+			seq_setNextPattern(msg.data1 & 0x7);
 			break;
 
 		case MIDI_PITCH_WHEEL:
@@ -1200,7 +1223,7 @@ void midiParser_handleStatusByte(unsigned char data)
 	// so we send it to the message handler
 	if(midiParser_isValidMidiChannel(data))
 	{
-		switch(data)
+		switch(data&0xF0)
 		{
 		// 2 databyte messages
 		case NOTE_OFF:
@@ -1277,6 +1300,13 @@ void midiParser_handleDataByte(unsigned char data)
 	//all databyte(s) received. next should be status again
 	parserState = MIDI_STATUS;
 
+#if 0
+	// --AS for debugging TODO remove
+	uart_sendMidiByte(midiMsg_tmp.status);
+	uart_sendMidiByte(midiMsg_tmp.data1);
+	if(msgLength==2)
+		uart_sendMidiByte(midiMsg_tmp.data2);
+#endif
 	midiParser_parseMidiMessage(midiMsg_tmp);
 
 

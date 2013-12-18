@@ -54,4 +54,14 @@ ___fixes in progress (QA test list)___
 - Move midi note off into function (affects sequencer playing, should still send note off, and stop sequencer should send all off)
 - front parset set p1 dest optimize (autom targets 1 and 2 should still default to off)
 
+mtc stuff
+- rearrange some code in midi parser for readability
+- add code in front to recognize start/stop from back and toggle sequncer play stop (the led is meaningless as it flashes)
+- play will start when mtc 0:0:0:0 received and stop when mtc stops
+- prog change is recognized on MIDI port and causes pattern change
+- prog change is sent to MIDI port when a pattern changes
+- fix midiparser to properly recognize channel messages
+
+
+
 

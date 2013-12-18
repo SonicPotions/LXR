@@ -194,6 +194,7 @@ int main(void)
 	RCC_GetClocksFreq(&RCC_Clocks);
 	/* set timebase systick to 1ms*/
 	//SysTick_Config(RCC_Clocks.HCLK_Frequency / 1000);
+	// looks like it's really being set to .25 ms
 	SysTick_Config(RCC_Clocks.HCLK_Frequency / 4000);
 
 	initAudioJackDiscoverPins();

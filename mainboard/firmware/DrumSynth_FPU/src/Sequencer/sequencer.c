@@ -434,6 +434,12 @@ void seq_nextStep()
 			uart_sendFrontpanelByte(FRONT_SEQ_CHANGE_PAT);
 			uart_sendFrontpanelByte(seq_activePattern);
 
+			// --AS send a pattern change message to midi out (todo this should be configurable whether its on or off)
+			// also whether it goes to usb, etc.
+			uart_sendMidiByte(PROG_CHANGE);
+			uart_sendMidiByte(seq_activePattern);
+
+
 			// --AS all notes off here since we are switching patterns
 			seq_midiNoteOff(0xFF);
 		}
