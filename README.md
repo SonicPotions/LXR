@@ -7,6 +7,9 @@ that are important to me. I will be freely offering any changes back to the Soni
 Here are a list of current changes (differences from Sonic Potions repos):
 --------------------------------------------------------------------------
 - Midi note off fixes. Will send midi off when changing pattern, channel or muting voice
+- MTC sync. Will now recognize MIDI MTC quarter frames and start when it receives a 0:0:0 location, and stop when MTC stops
+- Program change. Will respond to program change and will change between the 8 patterns when received via MIDI port. For programs > 7 will use remainder when divided by 8. Also will send on MIDI
+- Program change. Will send program change 1 to 8 on MIDI when manually changing drum patterns.
 
 Here are a list of changes that are now merged back into the Sonic Potions repos:
 ---------------------------------------------------------------------------------
