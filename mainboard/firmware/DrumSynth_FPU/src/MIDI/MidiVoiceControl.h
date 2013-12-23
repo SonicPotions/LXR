@@ -43,13 +43,13 @@
 
 //-------------- DEFINES ----------------------------
 //Note numbers to trigger drum channels
-#define NOTE_VOICE1		36
+#define NOTE_VOICE1		36 // C2
 #define NOTE_VOICE2		37
 #define NOTE_VOICE3		38
 #define NOTE_VOICE4		39
 #define NOTE_VOICE5		40
 #define NOTE_VOICE6		41
-#define NOTE_VOICE7		42
+#define NOTE_VOICE7		42 // F#2
 //-------------- ENUMS ------------------------------
 
 //--------------- VARS ------------------------------
