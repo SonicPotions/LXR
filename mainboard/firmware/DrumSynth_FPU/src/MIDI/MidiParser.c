@@ -1145,6 +1145,7 @@ void midiParser_parseMidiMessage(MidiMsg msg)
 				voiceControl_noteOn(msg.data1, msg.data2);
 				//Also used in sequencer trigger note function
 				//to retrigger the LFOs the Frontpanel AVR needs to know about note ons
+				// --AS TODO is the front panel still caring about this?
 				uart_sendFrontpanelByte(msg.status);
 				uart_sendFrontpanelByte(msg.data1-NOTE_VOICE1);
 				uart_sendFrontpanelByte(msg.data2);
