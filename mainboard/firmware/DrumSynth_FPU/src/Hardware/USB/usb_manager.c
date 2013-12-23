@@ -93,14 +93,7 @@ void usb_tick()
 void usb_start()
 {
 	//zero init the usb receive buffer
-	int i;
-	for(i=0;i<USB_MIDI_INPUT_BUFFER_SIZE;i++)
-	{
-		usb_MidiMessages[i].status = 0;
-		usb_MidiMessages[i].data1 = 0;
-		usb_MidiMessages[i].data2 = 0;
-		usb_MidiMessages[i].length = 0;
-	}
+	memset(usb_MidiMessages,0, sizeof(MidiMsg)*USB_MIDI_INPUT_BUFFER_SIZE);
 
 	//start usb port
 	 USBD_Init(&USB_OTG_dev,

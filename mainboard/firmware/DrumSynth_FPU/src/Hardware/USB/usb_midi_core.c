@@ -518,7 +518,9 @@ static uint8_t  usbd_midi_DataOut (void *pdev, uint8_t epnum)
     		usb_MidiMessages[usb_MidiMessagesWrite].status	= usbData.status;
     		usb_MidiMessages[usb_MidiMessagesWrite].data1 	= usbData.data1;
     		usb_MidiMessages[usb_MidiMessagesWrite].data2 	= usbData.data2;
-    		usb_MidiMessages[usb_MidiMessagesWrite].length 	= length;
+    		usb_MidiMessages[usb_MidiMessagesWrite].bits.length = length;
+    		usb_MidiMessages[usb_MidiMessagesWrite].bits.sysxbyte = 0;
+    		usb_MidiMessages[usb_MidiMessagesWrite].bits.source = 1; /* source usb */
 
     		//increment and wrap write pointer
     		usb_MidiMessagesWrite++;

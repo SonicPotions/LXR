@@ -39,13 +39,20 @@
 
 #include "stm32f4xx.h"
 
+struct MidiBits {
+	unsigned source:1; // 0 for midi, 1 for usb
+	unsigned sysxbyte:1; // 1 if this message is a sysex payload only
+	unsigned length:2; // how many data bytes have been filled
+	unsigned :4;
+};
+
 //-----------------------------------------------------------
 /** a struct defining a standard midi message*/
 typedef struct MidiStruct {
 	uint8_t status;
 	uint8_t data1;
 	uint8_t data2;
-	uint8_t length;
+	struct MidiBits bits;
 } MidiMsg;
 
 //-----------------------------------------------------------
@@ -75,7 +82,8 @@ typedef struct MidiStruct {
 #define MIDI_START			0xFA
 #define MIDI_STOP			0xFC
 #define MIDI_CONTINUE		0xFB
-#define MIDI_MTC_QFRAME		0xF1	//--AS
+#define MIDI_MTC_QFRAME		0xF1	//--AS mtc timecodes
+#define MIDI_SONG_SEL		0xF3	//--AS passthru only
 
 //------------------------------------------------------------
 

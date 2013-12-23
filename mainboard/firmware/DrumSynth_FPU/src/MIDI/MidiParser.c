@@ -100,14 +100,17 @@ inline float calcPitchModAmount(uint8_t data2)
 //-----------------------------------------------------------
 // vars
 //-----------------------------------------------------------
-uint8_t midi_MidiChannels[7];	// the currently selected midi channel
+uint8_t midi_MidiChannels[7];	// the currently selected midi channel for each voice
 
 //--AS note overrides for each voice
 uint8_t midi_NoteOverride[7];
 //uint8_t midi_mode; //--AS not used anymore
 MidiMsg midiMsg_tmp;				// buffer message where the incoming data is stored
-uint8_t msgLength;					// number of following data bytes for current status
-uint8_t parserState = MIDI_STATUS;	// state of the parser state machine
+// these two are used only when building up a midi message
+//static uint8_t msgLength;					// number of following data bytes expected for current status
+static uint8_t parserState = IGNORE;	// state of the parser state machine. Set to what it's expecting next
+										// we set it to ignore initially so that any random data we get before
+										// a valid msg header is ignored
 //-----------------------------------------------------------
 //macros
 //-----------------------------------------------------------
@@ -1074,9 +1077,29 @@ void midiParser_checkMtc()
  */
 void midiParser_parseMidiMessage(MidiMsg msg)
 {
+	if(msg.bits.sysxbyte) {
+		goto routing; // we don't accept any sysex messages right now, just route the data
+	}
+
 	if((msg.status & 0xF0) == 0XF0) {
 		// non-channel specific messages (system messages)
 		switch(msg.status) {
+		case MIDI_CLOCK:
+			if(seq_getExtSync())
+				seq_sync();
+			break;
+
+		case MIDI_START:
+		case MIDI_CONTINUE:
+			if(seq_getExtSync())
+				sync_midiStartStop(1);
+			break;
+
+		case MIDI_STOP:
+			if(seq_getExtSync())
+				sync_midiStartStop(0);
+			break;
+
 		case MIDI_MTC_QFRAME:
 			/* --AS Strategy:
 			 * If we get through all 8 of the mtc messages with a value of 0, it means that
@@ -1135,13 +1158,10 @@ void midiParser_parseMidiMessage(MidiMsg msg)
 			break;
 
 		case NOTE_ON:
-			if(msg.data2 == 0)
-			{
+			if(msg.data2 == 0) {
 				//zero velocity note off
 				voiceControl_noteOff(msg.data1, msg.data2);
-			}
-			else
-			{
+			} else {
 				voiceControl_noteOn(msg.data1, msg.data2);
 				//Also used in sequencer trigger note function
 				//to retrigger the LFOs the Frontpanel AVR needs to know about note ons
@@ -1171,169 +1191,151 @@ void midiParser_parseMidiMessage(MidiMsg msg)
 			break;
 
 		case MIDI_PITCH_WHEEL:
-
 			break;
 
 		default:
-			//unknown
-			parserState = IGNORE;
+			//unknown midi message. do nothing
 			break;
 		}
 	}
-};
-//-----------------------------------------------------------
-void midiParser_handleSystemByte(unsigned char data)
-{
-	switch(data)
-	{
-	case MIDI_CLOCK:
-		if(seq_getExtSync())
-		{
-			seq_sync();
-		}
-		break;
 
-	case MIDI_START:
-	case MIDI_CONTINUE:
-		if(seq_getExtSync())
-		{
-			sync_midiStartStop(1);
-		}
-		break;
+routing:
+	return;
 
-	case MIDI_STOP:
-		if(seq_getExtSync())
-		{
-			sync_midiStartStop(0);
-		}
-		break;
-	case MIDI_MTC_QFRAME:
-		// fall through to handle data byte
-		midiMsg_tmp.status = data;
-		parserState = MIDI_DATA1; // we expect the nugget of mtc frame info
-		msgLength = 1;
-		break;
-	default:
-		break;
-	}
+	// route the message if appropriate
+	// --AS todo
+	// possible routings:
+	// Off - nothing to nothing
+	// U2M - usb in to midi out
+	// M2M - midi in to midi out
+	// A2M - usb in and midi in to midi out
+	// M2U - midi in to usb out
+	// M2A - midi in to usb out and midi out
+
+
 }
 //-----------------------------------------------------------
+
 void midiParser_handleStatusByte(unsigned char data)
 {
-	// we received another status byte. this means the previous message should be completed
-	// so we send it to the message handler
-	if(midiParser_isValidMidiChannel(data))
-	{
-		switch(data&0xF0)
-		{
-		// 2 databyte messages
-		case NOTE_OFF:
-		case NOTE_ON:
-		case MIDI_CC:
-		case MIDI_PITCH_WHEEL:
-		case MIDI_AT:
-			// store the new status byte
-			midiMsg_tmp.status = data;
-			//status received, next should be data byte 1
-			parserState = MIDI_DATA1;
-
-			// status is followed by 2 data bytes
-			msgLength = 2;
-
-			break;
-		// 1 databyte messages
-		case PROG_CHANGE:
-		case CHANNEL_PRESSURE:
-			// store the new status byte
-			midiMsg_tmp.status = data;
-			//status received, next should be data byte 1
-			parserState = MIDI_DATA1;
-
-			// status is followed by 1 data bytes
-			msgLength = 1;
-			break;
-
-		default:
-			//unkown status byte - ignore
-			msgLength = 0;
-			parserState = IGNORE;
-			break;
-		}
-	}
-	else
-	{
-		//not our channel
-		parserState = IGNORE;
-	}
-}
-//-----------------------------------------------------------
-void midiParser_handleDataByte(unsigned char data)
-{
-	switch(parserState)
-	{
-	case MIDI_STATUS:
-		// we are expecting status msg, but got data, so running status (channel pressure maybe?)
-	case MIDI_DATA1:
-		midiMsg_tmp.data1 = data;
-		if(msgLength == 1) {
-			// single byte message
-			midiMsg_tmp.data2=0;
-		} else {
-			// we need another byte before we can do anything meaningful
-			parserState = MIDI_DATA2;
-			return;
-		}
-		break;
-	case MIDI_DATA2:
-		midiMsg_tmp.data2 = data;
+	// we received a channel voice/mode byte. set the status as appropriate
+	switch(data&0xF0) {
+	// 2 databyte messages
+	case NOTE_OFF:
+	case NOTE_ON:
+	case MIDI_CC:
+	case MIDI_PITCH_WHEEL:
+	case MIDI_AT:
+		midiMsg_tmp.status = data;	// store the new status byte
+		parserState = MIDI_DATA1;	//status received, next should be data byte 1
+		midiMsg_tmp.bits.length=2;// status is followed by 2 data bytes
 		break;
 
+	// 1 databyte messages
+	case PROG_CHANGE:
+	case CHANNEL_PRESSURE:
+		midiMsg_tmp.status = data;	// store the new status byte
+		parserState = MIDI_DATA1;	//status received, next should be data byte 1
+		midiMsg_tmp.bits.length=1;// status is followed by 1 data bytes
+		break;
+
+	// messages we don't care about right now, and don't know how to handle or passthru (Are there any?).
 	default:
-		//we are expecting no data byte.
-		return;
+		parserState = IGNORE;	// throw away any data bytes until next message
+		midiMsg_tmp.bits.length=0;
+
+		break;
 	}
-
-	// process the message:
-
-	// data bytes for the message were received (either one or two depending on msg)
-	// so we handle the message as a whole now
-
-	//all databyte(s) received. next should be status again
-	parserState = MIDI_STATUS;
-
-#if 0
-	// --AS for debugging TODO remove
-	uart_sendMidiByte(midiMsg_tmp.status);
-	uart_sendMidiByte(midiMsg_tmp.data1);
-	if(msgLength==2)
-		uart_sendMidiByte(midiMsg_tmp.data2);
-#endif
-	midiParser_parseMidiMessage(midiMsg_tmp);
-
-
 }
 //-----------------------------------------------------------
+// This will build up the midi message and hand it off to
+// parseMidiMessage when it's complete
 void midiParser_parseUartData(unsigned char data)
 {
-	// if high byte set its either a status or a system message
-	if(data&0x80)
-	{
-		if( (data&0xf0) == 0xf0)
-		{
-			//system message (including MTC quarter frame)
-			midiParser_handleSystemByte(data);
-		}
-		else
-		{
-			//status byte (channel specific message)
+
+	if(data&0x80) { // High bit is set -  its either a status or a system message.
+		// regardless of current state, we blindly start a new message without questioning it
+		midiMsg_tmp.bits.sysxbyte=0;
+		if( (data&0xf0) == 0xf0) { // system message
+			midiMsg_tmp.status = data;
+			switch(data) {
+			case SYSEX_START: // get into sysex receive mode
+				parserState = SYSEX_DATA;
+				midiMsg_tmp.bits.length=0;
+				goto parseMsg; // we will still parse it in case we are doing a passthru
+			case SYSEX_END:	  // get out of sysex mode
+				if(parserState==SYSEX_DATA) {
+					parserState=MIDI_STATUS;
+					midiMsg_tmp.bits.length=0;
+					goto parseMsg; // we will still parse it in case we are doing a passthru
+				} else {
+					// spurious sysex end msg received. ignore it
+				}
+				break; //
+			// 1 byte payload messages
+			case MIDI_SONG_SEL:		// passthru only
+			case MIDI_MTC_QFRAME: 	// mtc chunk
+				parserState = MIDI_DATA1; 	// we expect the nugget of mtc frame info
+				midiMsg_tmp.bits.length=1;// we expect 1 data byte
+				break;
+
+			// 0 byte payload messages (we will assume that any system message
+			// other than those above has 0 byte payload)
+			default:
+				midiMsg_tmp.bits.length=0;
+				goto parseMsg;
+			}
+		} else { //status byte (channel specific message containing a channel number)
 			midiParser_handleStatusByte(data);
 		}
-	}
-	else
-	{
-		//data byte - handle channel messages as well as system messages that have data
-		midiParser_handleDataByte(data);
-	}
+	} else { // high bit is not set - it's a data byte
+
+		switch(parserState)	{
+		case MIDI_STATUS: // we are expecting status msg, but got data, so running status may be in effect
+			if(midiMsg_tmp.bits.length) {
+				midiMsg_tmp.data1 = data;
+				if(midiMsg_tmp.bits.length==2)
+					parserState=MIDI_DATA2;
+				else {
+					midiMsg_tmp.data2=0;
+					goto parseMsg;
+				}
+			} else {
+				break; // last msg had 0 payload, so wtf is this? just ignore it
+			}
+			break;
+
+		case MIDI_DATA1:
+			midiMsg_tmp.data1 = data;
+			if(midiMsg_tmp.bits.length==2) {
+				// we need another byte before we can do anything meaningful
+				parserState = MIDI_DATA2;
+			} else {
+				midiMsg_tmp.data2=0;
+				goto parseMsg;
+			}
+			break;
+		case MIDI_DATA2:
+			midiMsg_tmp.data2 = data;
+			goto parseMsg; // message complete
+		case SYSEX_DATA: // we are in sysex mode
+			midiMsg_tmp.bits.sysxbyte=1;
+			midiMsg_tmp.data1 = data;
+			midiMsg_tmp.bits.length=0;
+			goto parseMsg;
+		default: //we are expecting no data byte, but we got one.
+			// ignore it
+			break;
+		} // switch parserState
+	} // if high bit is set
+
+	return;
+
+parseMsg:
+	// we get here if we have proudly received a message that we want to do something with
+	if(parserState != SYSEX_DATA) // we are still in sysex receive mode
+		parserState = MIDI_STATUS; // next byte should be a new message, or we don't care about it
+	midiMsg_tmp.bits.source=0; // signify it's from midi port (as opposed to usb)
+	midiParser_parseMidiMessage(midiMsg_tmp);
 
 }
-//-----------------------------------------------------------
