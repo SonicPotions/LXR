@@ -3,6 +3,7 @@ Sonic Potions LXR Drumsynth Firmware
 
 This is a fork of the LXR DrumSynth firmware. My intention for this fork is to add features and fix issues
 that are important to me. I will be freely offering any changes back to the SonicPotions repository.
+The custom firmware is <a href="https://github.com/rudeog/LXR/raw/master/firmware%20image/FIRMWARE.BIN">RIGHT HERE</a> (right click the link and do save as).
 
 Here are a list of current changes (differences from Sonic Potions repos):
 --------------------------------------------------------------------------
