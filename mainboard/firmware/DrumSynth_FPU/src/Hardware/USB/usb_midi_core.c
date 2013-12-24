@@ -518,7 +518,7 @@ static uint8_t  usbd_midi_DataOut (void *pdev, uint8_t epnum)
     		usb_MidiMessages[usb_MidiMessagesWrite].status	= usbData.status;
     		usb_MidiMessages[usb_MidiMessagesWrite].data1 	= usbData.data1;
     		usb_MidiMessages[usb_MidiMessagesWrite].data2 	= usbData.data2;
-    		usb_MidiMessages[usb_MidiMessagesWrite].bits.length = length;
+    		usb_MidiMessages[usb_MidiMessagesWrite].bits.length = length-1; // we don't count the status byte in our length
     		// --AS todo keep track of sysex mode
     		// if we are in sysex mode, this will be set, and status will contain the current sysex message byte
     		// is it possible for there to be more than one sysex message byte received?

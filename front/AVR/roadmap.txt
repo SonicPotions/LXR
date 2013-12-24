@@ -63,7 +63,18 @@ mtc stuff
 - fix midiparser to properly recognize channel messages
 
 routing stuff
-- 
+- MidiStruct is modified to store more info for routing
+- code rearranged so that parseMidiMessage handles all messages and does routing midi and usb
+- add menu item for midi routing which can be in 1 of 6 states
+- midi routing menu item will set routing options on back end
+- back end will respond to midi routing options and save state
+- back end will route midi messages to usb/midi as appropriate
+- usb_sendMidi is changed to take a midi message so that it can check the number of bytes to send
+- keep track of sysex mode, and use this for routing sysex data properly 
+still needed:
+still need work in usb reception of sysex data bytes (how many bytes will be set at a time?)
+need to properly interpret note on messages according to the setting of midi note for each voice
+check the program change as it relates to channels
 
 
 
