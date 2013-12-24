@@ -277,18 +277,17 @@ void seq_setNextPattern(const uint8_t patNr)
 	seq_loadPendigFlag = 1;
 }
 //------------------------------------------------------------------------------
-void seq_sendMidi(uint8_t status, uint8_t data1, uint8_t data2)
+void seq_sendMidi(MidiMsg msg)
 {
 	//TODO midi out seq mode
 	//TODO usb und uart einjzeln aktivierbar
 
 	//send to usb midi
-	usb_sendMidi(status,data1,data2);
+	usb_sendMidi(msg);
 
 	//send to hardware midi out jack
-	uart_sendMidiByte(status);
-	uart_sendMidiByte(data1);
-	uart_sendMidiByte(data2);
+	uart_sendMidi(msg);
+
 }
 //------------------------------------------------------------------------------
 void seq_parseAutomationNodes(uint8_t track, Step* stepData)
@@ -305,6 +304,7 @@ void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note)
 {
 	uint8_t midiChan; // which midi channel to send a note on
 	uint8_t midiNote; // which midi note to send
+	MidiMsg msg;
 
 	if(voiceNr > 6) return;
 
@@ -356,9 +356,13 @@ void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note)
 	//--AS if a note is on for that channel send note-off first
 	seq_midiNoteOff(midiChan);
 
-	//send the new note to midi out
-	seq_sendMidi(0x90 | midiChan,midiNote,
-			seq_patternSet.seq_subStepPattern[seq_activePattern][voiceNr][seq_stepIndex[voiceNr]].volume&STEP_VOLUME_MASK);
+	msg.status=0x90 | midiChan;
+	msg.data1 = midiNote;
+	msg.data2 =seq_patternSet.seq_subStepPattern[seq_activePattern][voiceNr][seq_stepIndex[voiceNr]].volume&STEP_VOLUME_MASK;
+	msg.bits.length=2;
+
+	//send the new note to midi/usb out
+	seq_sendMidi(msg);
 	// finally, keep track of which notes are on so we can turn them off later
 	midi_chan_notes[midiChan]=midiNote;
 	midi_notes_on |= (1 << midiChan);
@@ -1218,16 +1222,27 @@ uint8_t seq_isNextStepSyncStep()
 void seq_midiNoteOff(uint8_t chan)
 {
 	uint8_t i;
+	MidiMsg msg;
+
+	msg.bits.length=2;
+	msg.data2=0;
+
 	if(chan==0xff) { // all notes off
 		for(i=0; i<16; i++)
-			if((1<<i) & midi_notes_on)
-				seq_sendMidi(0x80 | i, midi_chan_notes[i],0);
+			if((1<<i) & midi_notes_on) {
+				msg.status=	NOTE_OFF | i;
+				msg.data1=midi_chan_notes[i];
+				seq_sendMidi(msg);
+			}
 		// reset all
 		midi_notes_on=0;
 		return;
 	}
 	// The proper way to do a note off is with 0x80. 0x90 with velocity 0 is also used, however I think there is still
 	// synth gear out there that doesn't recognize that properly.
-	if((1<<chan) & midi_notes_on)
-		seq_sendMidi(0x80 | chan,midi_chan_notes[chan],0);
+	if((1<<chan) & midi_notes_on) {
+		msg.status=	NOTE_OFF | chan;
+		msg.data1=midi_chan_notes[chan];
+		seq_sendMidi(msg);
+	}
 }

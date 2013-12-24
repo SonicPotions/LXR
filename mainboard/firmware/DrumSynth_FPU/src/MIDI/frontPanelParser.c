@@ -826,7 +826,9 @@ static void frontParser_handleSeqCC()
 	case FRONT_SEQ_UNMUTE_TRACK:
 		seq_setMute(frontParser_midiMsg.data2,0);
 		break;
-
+	case FRONT_SEQ_MIDI_ROUTING:
+		midiParser_setRouting(frontParser_midiMsg.data2);
+		break;
 	default:
 		break;
 	}

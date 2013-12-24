@@ -48,6 +48,7 @@
 #include "valueShaper.h"
 #include "modulationNode.h"
 #include "frontPanelParser.h"
+#include "usb_manager.h"
 
 static uint16_t midiParser_activeNrpnNumber = 0;
 
@@ -57,6 +58,18 @@ uint8_t midiParser_originalCcValues[0xff];
 static uint8_t midiParser_mtcIgnore=1;
 static uint32_t volatile midiParser_lastMtcReceived=0x0;
 static uint8_t midiParser_mtcIsRunning=0;
+
+static union {
+	uint8_t value;
+	struct {
+		unsigned usb2midi:1;
+		unsigned usb2usb:1;   // not used
+		unsigned midi2midi:1;
+		unsigned midi2usb:1;
+		unsigned :4;
+	} route;
+} midiParser_routing = {0};
+
 
 enum State
 {
@@ -1077,9 +1090,28 @@ void midiParser_checkMtc()
  */
 void midiParser_parseMidiMessage(MidiMsg msg)
 {
-	if(msg.bits.sysxbyte) {
-		goto routing; // we don't accept any sysex messages right now, just route the data
+	// route message if needed
+	if(midiParser_routing.value) {
+		if(msg.bits.source==midiSourceUSB) {
+			if(midiParser_routing.route.usb2midi){
+				// route to midi out port
+				uart_sendMidi(msg);
+			}
+		} else if(msg.bits.source==midiSourceMIDI) {
+			if(midiParser_routing.route.midi2midi) {
+				// route to midi out port
+				uart_sendMidi(msg);
+			}
+			if(midiParser_routing.route.midi2usb) {
+				// route to usb out port
+				usb_sendMidi(msg);
+			}
+		}
 	}
+
+	if(msg.bits.sysxbyte)
+		return; // no further action needed. we don't interpret sysex data right now
+
 
 	if((msg.status & 0xF0) == 0XF0) {
 		// non-channel specific messages (system messages)
@@ -1164,8 +1196,7 @@ void midiParser_parseMidiMessage(MidiMsg msg)
 			} else {
 				voiceControl_noteOn(msg.data1, msg.data2);
 				//Also used in sequencer trigger note function
-				//to retrigger the LFOs the Frontpanel AVR needs to know about note ons
-				// --AS TODO is the front panel still caring about this?
+				// Send to front panel so it can pulse the LED
 				uart_sendFrontpanelByte(msg.status);
 				uart_sendFrontpanelByte(msg.data1-NOTE_VOICE1);
 				uart_sendFrontpanelByte(msg.data2);
@@ -1198,21 +1229,6 @@ void midiParser_parseMidiMessage(MidiMsg msg)
 			break;
 		}
 	}
-
-routing:
-	return;
-
-	// route the message if appropriate
-	// --AS todo
-	// possible routings:
-	// Off - nothing to nothing
-	// U2M - usb in to midi out
-	// M2M - midi in to midi out
-	// A2M - usb in and midi in to midi out
-	// M2U - midi in to usb out
-	// M2A - midi in to usb out and midi out
-
-
 }
 //-----------------------------------------------------------
 
@@ -1259,7 +1275,8 @@ void midiParser_parseUartData(unsigned char data)
 		if( (data&0xf0) == 0xf0) { // system message
 			midiMsg_tmp.status = data;
 			switch(data) {
-			case SYSEX_START: // get into sysex receive mode
+			case SYSEX_START: // get into sysex receive mode. any more bytes received until this status changes are considered
+							  // to be sysex data. we still need to parse this sysex start, in case we are routing it
 				parserState = SYSEX_DATA;
 				midiMsg_tmp.bits.length=0;
 				goto parseMsg; // we will still parse it in case we are doing a passthru
@@ -1310,8 +1327,7 @@ void midiParser_parseUartData(unsigned char data)
 			if(midiMsg_tmp.bits.length==2) {
 				// we need another byte before we can do anything meaningful
 				parserState = MIDI_DATA2;
-			} else {
-				midiMsg_tmp.data2=0;
+			} else { // it must be 1
 				goto parseMsg;
 			}
 			break;
@@ -1320,7 +1336,7 @@ void midiParser_parseUartData(unsigned char data)
 			goto parseMsg; // message complete
 		case SYSEX_DATA: // we are in sysex mode
 			midiMsg_tmp.bits.sysxbyte=1;
-			midiMsg_tmp.data1 = data;
+			midiMsg_tmp.status = data; // status will contain the sysex byte
 			midiMsg_tmp.bits.length=0;
 			goto parseMsg;
 		default: //we are expecting no data byte, but we got one.
@@ -1335,7 +1351,44 @@ parseMsg:
 	// we get here if we have proudly received a message that we want to do something with
 	if(parserState != SYSEX_DATA) // we are still in sysex receive mode
 		parserState = MIDI_STATUS; // next byte should be a new message, or we don't care about it
-	midiMsg_tmp.bits.source=0; // signify it's from midi port (as opposed to usb)
+	midiMsg_tmp.bits.source=midiSourceMIDI;
 	midiParser_parseMidiMessage(midiMsg_tmp);
+
+}
+
+// 0 - Off - nothing to nothing
+// 1 - U2M - usb in to midi out
+// 2 - M2M - midi in to midi out
+// 3 - A2M - usb in and midi in to midi out
+// 4 - M2U - midi in to usb out
+// 5 - M2A - midi in to usb out and midi out
+
+void midiParser_setRouting(uint8_t value)
+{
+	midiParser_routing.value=0;
+
+	switch(value) {
+	case 1:
+		midiParser_routing.route.usb2midi=1;
+		break;
+	case 2:
+		midiParser_routing.route.midi2midi=1;
+		break;
+	case 3:
+		midiParser_routing.route.usb2midi=1;
+		midiParser_routing.route.midi2midi=1;
+		break;
+	case 4:
+		midiParser_routing.route.midi2usb=1;
+		break;
+	case 5:
+		midiParser_routing.route.midi2midi=1;
+		midiParser_routing.route.midi2usb=1;
+		break;
+	default:
+	case 0:
+
+		break;
+	}
 
 }

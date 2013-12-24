@@ -203,6 +203,7 @@ const Name valueNames[NUM_NAMES] PROGMEM =
 		{SHORT_FLUX,CAT_GENERATOR,LONG_FLUX},	//TEXT_FLUX,								//70
 		{SHORT_FREQ,CAT_GENERATOR,LONG_FREQ},	//TEXT_SOM_FREQ,
 		{SHORT_MIDI,CAT_MIDI,LONG_MODE},	//TEXT_MIDI_MODE
+		{SHORT_MIDI_ROUTING, CAT_MIDI, LONG_MIDI_ROUTING}, // TEXT_MIDI_ROUTING
 };
 
 //---------------------------------------------------------------
@@ -471,6 +472,7 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 	    /*PAR_SCREENSAVER_ON_OFF*/ DTYPE_ON_OFF,
 	    /*PAR_MIDI_MODE*/ 		DTYPE_MENU | (MENU_MIDI<<4),			//260  //--AS This is now unused.
 	    /*PAR_MIDI_CHAN_7*/ 	DTYPE_1B16,
+	    /*PAR_MIDI_ROUTING*/	DTYPE_MENU | (MENU_MIDI_ROUTING<<4)
 };
 
 
@@ -1592,6 +1594,8 @@ static uint8_t getMaxEntriesForMenu(uint8_t menuId)
 		return (uint8_t)(waveformNames[0][0] + menu_numSamples);
 	case MENU_ROLL_RATES:
 		return rollRateNames[0][0];
+	case MENU_MIDI_ROUTING:
+		return midiRoutingNames[0][0];
 	default:
 		return 0;
 	}
@@ -1644,6 +1648,9 @@ static void getMenuItemNameForValue(const uint8_t menuId, const uint8_t curParmV
 		break;
 	case MENU_ROLL_RATES:
 		p=rollRateNames[curParmVal+1];
+		break;
+	case MENU_MIDI_ROUTING:
+		p=midiRoutingNames[curParmVal+1];
 		break;
 	default:
 		p=menuText_dash;
@@ -2350,6 +2357,9 @@ void menu_parseGlobalParam(uint16_t paramNr, uint8_t value)
 
 	case PAR_STEP_VOLUME:
 		frontPanel_sendData(SEQ_CC,SEQ_VOLUME,value);
+		break;
+	case PAR_MIDI_ROUTING:
+		frontPanel_sendData(SEQ_CC, SEQ_MIDI_ROUTING, value);
 		break;
 	}
 }

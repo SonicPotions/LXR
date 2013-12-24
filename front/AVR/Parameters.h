@@ -362,6 +362,7 @@ enum ParamEnums
 	PAR_SCREENSAVER_ON_OFF,
 	PAR_MIDI_MODE,						/*260*/ //--AS unused now
 	PAR_MIDI_CHAN_7,
+	PAR_MIDI_ROUTING,
 
 	NUM_PARAMS	
 };

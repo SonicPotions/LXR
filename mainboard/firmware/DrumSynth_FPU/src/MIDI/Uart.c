@@ -128,6 +128,17 @@ void uart_processMidi()
 		midiParser_parseUartData(data);
 	}
 }
+
+void uart_sendMidi(MidiMsg msg)
+{
+	uart_sendMidiByte(msg.status);
+	if(msg.bits.length) {
+		uart_sendMidiByte(msg.data1);
+		if(msg.bits.length > 1)
+			uart_sendMidiByte(msg.data2);
+	}
+
+}
 //-----------------------------------------------------------------------------
 void uart_sendMidiByte(uint8_t data)
 {

@@ -50,6 +50,15 @@ float midiParser_calcDetune(uint8_t value);
 // check mtc status, might stop the sequencer
 void midiParser_checkMtc();
 
+// 0 - Off - nothing to nothing
+// 1 - U2M - usb in to midi out
+// 2 - M2M - midi in to midi out
+// 3 - A2M - usb in and midi in to midi out
+// 4 - M2U - midi in to usb out
+// 5 - M2A - midi in to usb out and midi out
+
+void midiParser_setRouting(uint8_t value);
+
 // a place to store all the incoming CC values
 //needed to know to which value the automation node should return
 extern uint8_t midiParser_originalCcValues[0xff];

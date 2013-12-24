@@ -178,7 +178,7 @@ enum NamesEnum
 	TEXT_FLUX,						//70
 	TEXT_SOM_FREQ,
 	TEXT_MIDI_MODE,	//--AS This is now unused
-	
+	TEXT_MIDI_ROUTING,
 	NUM_NAMES
 };
 //-----------------------------------------------------------------
@@ -260,7 +260,7 @@ enum shortNamesEnum
 	SHORT_Y,
 	SHORT_FLUX,
 	SHORT_MIDI,
-	
+	SHORT_MIDI_ROUTING,
 
 	
 };
@@ -359,7 +359,8 @@ enum longNamesEnum
 	LONG_FREQ1,
 	LONG_FREQ2,
 	LONG_GAIN1,
-	LONG_GAIN2
+	LONG_GAIN2,
+	LONG_MIDI_ROUTING,
 	
 };
 //-----------------------------------------------------------------

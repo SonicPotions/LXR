@@ -40,6 +40,8 @@
 
 void initMidiUart();
 
+void uart_sendMidi(MidiMsg msg);
+
 void uart_sendMidiByte(uint8_t data);
 //check if there is some received data in the Rx buffer and send it to the midi parser
 void uart_processMidi();

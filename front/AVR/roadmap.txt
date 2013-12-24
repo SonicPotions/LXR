@@ -62,6 +62,8 @@ mtc stuff
 - prog change is sent to MIDI port when a pattern changes
 - fix midiparser to properly recognize channel messages
 
+routing stuff
+- 
 
 
 

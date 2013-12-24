@@ -21,6 +21,7 @@
 #define MENU_SEQ_QUANT		9
 #define MENU_TRANS			10
 #define MENU_MIDI			11
+#define MENU_MIDI_ROUTING	12
 //-----------------------------------------------------------------
 // Shared texts. Reduce mem usage by pooling common text
 // all of these need to be 3 chars
@@ -189,6 +190,18 @@ const char filterTypes[][8] PROGMEM  =
 	{"off"}	,	//7 - 111
 	//{"All"}	,	//7 - 111
 };
+
+//-----------------------------------------------------------------
+const char midiRoutingNames[][6] PROGMEM =
+{
+		{6},	// number of entries
+		{"off"},
+		{"U2M"},
+		{"M2M"},
+		{"A2M"},
+		{"M2U"},
+		{"M2A"},
+};
 //-----------------------------------------------------------------
 const char shortNames[][4] PROGMEM  = 
 {
@@ -255,7 +268,7 @@ const char shortNames[][4] PROGMEM  =
 	{"y"},
 	{"flx"},
 	{"mid"},
-		
+	{"mrt"}, // midi routing
 	
 };
 //-----------------------------------------------------------------
@@ -356,6 +369,7 @@ const char longNames[][16] PROGMEM =
 	{"Freqcy 2"},
 	{"Gain 1"},
 	{"Gain 2"},
+	{"Routing"}, // midi routing
 };
 
 

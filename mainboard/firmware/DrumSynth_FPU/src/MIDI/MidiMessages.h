@@ -39,8 +39,13 @@
 
 #include "stm32f4xx.h"
 
+enum MidiSource {
+	midiSourceMIDI,
+	midiSourceUSB
+};
+
 struct MidiBits {
-	unsigned source:1; // 0 for midi, 1 for usb
+	enum MidiSource source:1; // 0 for midi, 1 for usb
 	unsigned sysxbyte:1; // 1 if this message is a sysex payload only
 	unsigned length:2; // how many data bytes have been filled
 	unsigned :4;
@@ -54,6 +59,8 @@ typedef struct MidiStruct {
 	uint8_t data2;
 	struct MidiBits bits;
 } MidiMsg;
+
+
 
 //-----------------------------------------------------------
 //Status bytes
@@ -455,6 +462,7 @@ enum
 #define FRONT_SEQ_SOM_FREQ				0x2c
 #define FRONT_SEQ_MIDI_CHAN				0x2d	//voiceNr (0xf0) + channel (0x0f)
 #define FRONT_SEQ_MIDI_MODE				0x2e //--AS not used anymore
+#define FRONT_SEQ_MIDI_ROUTING			0x2f	// midi routing
 
 //codec control messages
 #define EQ_ON_OFF						0x01
