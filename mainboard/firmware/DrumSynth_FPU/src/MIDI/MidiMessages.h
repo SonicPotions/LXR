@@ -463,6 +463,8 @@ enum
 #define FRONT_SEQ_MIDI_CHAN				0x2d	//voiceNr (0xf0) + channel (0x0f)
 #define FRONT_SEQ_MIDI_MODE				0x2e //--AS not used anymore
 #define FRONT_SEQ_MIDI_ROUTING			0x2f	// midi routing
+#define FRONT_SEQ_MIDI_TX_FILTER		0x30    // tx filtering
+#define FRONT_SEQ_MIDI_RX_FILTER		0x31    // rx filtering
 
 //codec control messages
 #define EQ_ON_OFF						0x01

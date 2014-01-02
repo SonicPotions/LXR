@@ -363,6 +363,8 @@ enum ParamEnums
 	PAR_MIDI_MODE,						/*260*/ //--AS unused now
 	PAR_MIDI_CHAN_7,
 	PAR_MIDI_ROUTING,
+	PAR_MIDI_FILT_TX,
+	PAR_MIDI_FILT_RX,
 
 	NUM_PARAMS	
 };

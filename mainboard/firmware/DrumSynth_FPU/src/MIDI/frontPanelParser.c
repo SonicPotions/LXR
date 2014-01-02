@@ -829,6 +829,11 @@ static void frontParser_handleSeqCC()
 	case FRONT_SEQ_MIDI_ROUTING:
 		midiParser_setRouting(frontParser_midiMsg.data2);
 		break;
+	case FRONT_SEQ_MIDI_TX_FILTER:
+	case FRONT_SEQ_MIDI_RX_FILTER:
+		midiParser_setFilter(frontParser_midiMsg.data1==FRONT_SEQ_MIDI_TX_FILTER, frontParser_midiMsg.data2);
+		break;
+
 	default:
 		break;
 	}

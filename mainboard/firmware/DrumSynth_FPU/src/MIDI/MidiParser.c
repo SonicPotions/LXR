@@ -70,6 +70,7 @@ static union {
 	} route;
 } midiParser_routing = {0};
 
+uint8_t midiParser_txRxFilter = 0xFF;
 
 enum State
 {
@@ -91,9 +92,9 @@ uint8_t midiParser_selectedLfoVoice[NUM_LFO] = {0,0,0,0,0,0};
 // -- AS for debugging
 static void midiDebugSend(uint8_t b1, uint8_t b2)
 {
-	uart_sendMidiByte(0xF2);
-	uart_sendMidiByte(b1&0x7F);
-	uart_sendMidiByte(b2&0x7F);
+//	uart_sendMidiByte(0xF2);
+//	uart_sendMidiByte(b1&0x7F);
+//	uart_sendMidiByte(b2&0x7F);
 }
 #endif
 
@@ -1112,23 +1113,26 @@ void midiParser_parseMidiMessage(MidiMsg msg)
 	if(msg.bits.sysxbyte)
 		return; // no further action needed. we don't interpret sysex data right now
 
+	// --AS FILT filter messages here. Filter inline below to be more optimal
+	// we are interested in the low nibble since we are Rx here
+
 
 	if((msg.status & 0xF0) == 0XF0) {
 		// non-channel specific messages (system messages)
 		switch(msg.status) {
 		case MIDI_CLOCK:
-			if(seq_getExtSync())
+			if((midiParser_txRxFilter & 0x02) && seq_getExtSync())
 				seq_sync();
 			break;
 
 		case MIDI_START:
 		case MIDI_CONTINUE:
-			if(seq_getExtSync())
+			if((midiParser_txRxFilter & 0x02) && seq_getExtSync())
 				sync_midiStartStop(1);
 			break;
 
 		case MIDI_STOP:
-			if(seq_getExtSync())
+			if((midiParser_txRxFilter & 0x02) && seq_getExtSync())
 				sync_midiStartStop(0);
 			break;
 
@@ -1140,6 +1144,9 @@ void midiParser_parseMidiMessage(MidiMsg msg)
 			 * through the song. Also, if the sequencer is running, or we are in external sync mode
 			 * we will ignore mtc messages as well
 			 */
+			if ((midiParser_txRxFilter & 0x02) == 0)
+				break; // ignore filtered
+
 			// keep track of when we got the last mtc. only do this for the 0 msg to save time
 			if((msg.data1 & 0x70)==0) {
 				midiParser_lastMtcReceived=systick_ticks;
@@ -1183,42 +1190,50 @@ void midiParser_parseMidiMessage(MidiMsg msg)
 
 	} else if(midiParser_isValidMidiChannel(msg.status)) {
 		//only do something if the midi channel is right
+		// --AS todo we need to honor the channels on each voice for some of these
 		switch(msg.status & 0xF0)
 		{
 		case NOTE_OFF:
-			voiceControl_noteOff(msg.data1, msg.data2);
+			if(midiParser_txRxFilter & 0x01)
+				voiceControl_noteOff(msg.data1, msg.data2);
 			break;
 
 		case NOTE_ON:
-			if(msg.data2 == 0) {
-				//zero velocity note off
-				voiceControl_noteOff(msg.data1, msg.data2);
-			} else {
-				voiceControl_noteOn(msg.data1, msg.data2);
-				//Also used in sequencer trigger note function
-				// Send to front panel so it can pulse the LED
-				uart_sendFrontpanelByte(msg.status);
-				uart_sendFrontpanelByte(msg.data1-NOTE_VOICE1);
-				uart_sendFrontpanelByte(msg.data2);
+			if(midiParser_txRxFilter & 0x01) {
+				if(msg.data2 == 0) {
+					//zero velocity note off
+					voiceControl_noteOff(msg.data1, msg.data2);
+				} else {
+					voiceControl_noteOn(msg.data1, msg.data2);
+					//Also used in sequencer trigger note function
+					// Send to front panel so it can pulse the LED
+					uart_sendFrontpanelByte(msg.status);
+					uart_sendFrontpanelByte(msg.data1-NOTE_VOICE1);
+					uart_sendFrontpanelByte(msg.data2);
+				}
 			}
 			break;
 
 		case MIDI_CC:
-			//record automation if record is turned on
-			seq_recordAutomation(frontParser_activeTrack, msg.data1, msg.data2);
+			if(midiParser_txRxFilter & 0x04) {
+				//record automation if record is turned on
+				seq_recordAutomation(frontParser_activeTrack, msg.data1, msg.data2);
 
-			//handle midi data
-			midiParser_ccHandler(msg,1);
-			//we received a midi cc message from the physical midi in port
-			//forward it to the front panel
-			uart_sendFrontpanelByte(msg.status);
-			uart_sendFrontpanelByte(msg.data1);
-			uart_sendFrontpanelByte(msg.data2);
+				//handle midi data
+				midiParser_ccHandler(msg,1);
+				//we received a midi cc message from the physical midi in port
+				//forward it to the front panel
+				uart_sendFrontpanelByte(msg.status);
+				uart_sendFrontpanelByte(msg.data1);
+				uart_sendFrontpanelByte(msg.data2);
+			}
 			break;
 
 		case PROG_CHANGE:
-			// --AS respond to prog change and change patterns TODO right now this responds only when voice 0 channel matches
-			seq_setNextPattern(msg.data1 & 0x7);
+			// --AS respond to prog change and change patterns TODO right now this responds only when voice 0 channel matches.
+			// should it respond on any channel?
+			if(midiParser_txRxFilter & 0x08)
+				seq_setNextPattern(msg.data1 & 0x7);
 			break;
 
 		case MIDI_PITCH_WHEEL:
@@ -1390,5 +1405,15 @@ void midiParser_setRouting(uint8_t value)
 
 		break;
 	}
+
+}
+
+void midiParser_setFilter(uint8_t is_tx, uint8_t value)
+{
+
+	if(is_tx) // set the high nibble to value
+		midiParser_txRxFilter = (value << 4) | (midiParser_txRxFilter & 0x0F);
+	else // set the low nibble to value
+		midiParser_txRxFilter = (value & 0x0F) | (midiParser_txRxFilter & 0xF0);
 
 }

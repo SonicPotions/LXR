@@ -156,7 +156,7 @@ sei();
 
 
 	//main loop
-	while(1) 
+	for(;;) // this usually results in less instructions than while(1)
 	{		
 		//read next button
 		din_readNextInput();

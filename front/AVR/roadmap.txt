@@ -73,8 +73,16 @@ routing stuff
 - keep track of sysex mode, and use this for routing sysex data properly 
 still needed:
 still need work in usb reception of sysex data bytes (how many bytes will be set at a time?)
-need to properly interpret note on messages according to the setting of midi note for each voice
+need to properly interpret note-on messages according to the setting of midi note for each voice
 check the program change as it relates to channels
 
+filtering stuff:
+- added function to set filter byte
+- added code in midi parsing to ignore messages if they are filtered
+- added code in sequencer to not send out messages if they are filtered
+- fixed avr side to add two new menu items for tx filter and rx filter
+- avr side code to send filter settings
+- back end code to receive filter settings and set bits
+- prog change code will now send on the channel associated with voice 1
 
 

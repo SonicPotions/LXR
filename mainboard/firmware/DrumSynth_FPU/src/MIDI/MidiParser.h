@@ -59,6 +59,13 @@ void midiParser_checkMtc();
 
 void midiParser_setRouting(uint8_t value);
 
+// it's either tx or rx. value is a bitmap value from 0 to 15 where (lsb first):
+// bit 1 - Note on/off
+// bit 2 - Realtime on/off
+// bit 3 - CC on/off (right now only applies to Rx)
+// bit 4 - Prog chg on/off
+void midiParser_setFilter(uint8_t is_tx, uint8_t value);
+
 // a place to store all the incoming CC values
 //needed to know to which value the automation node should return
 extern uint8_t midiParser_originalCcValues[0xff];
@@ -74,5 +81,7 @@ extern uint8_t midi_NoteOverride[7];
 //	MIDI_MODE_NOTE,
 //} MidiModes;
 
+// high nibble is TX low nibble is RX. see above (midiParser_setFilter) for bitmap
+extern uint8_t midiParser_txRxFilter;
 
 #endif /* MIDIPARSER_H_ */

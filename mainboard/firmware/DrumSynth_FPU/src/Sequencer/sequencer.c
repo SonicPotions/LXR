@@ -138,6 +138,12 @@ uint8_t seq_newPatternAvailable = 0; //indicate that a new pattern has loaded in
 //for the automation tracks each track needs 2 modNodes
 static AutomationNode seq_automationNodes[NUM_TRACKS][2];
 
+static void seq_sendMidi(MidiMsg msg);
+static void seq_sendRealtime(const uint8_t status);
+static void seq_sendNoteOn(const uint8_t channel, const uint8_t note, const uint8_t veloc);
+static void seq_sendProgChg(const uint8_t ptn);
+
+
 //------------------------------------------------------------------------------
 void seq_init()
 {
@@ -277,7 +283,7 @@ void seq_setNextPattern(const uint8_t patNr)
 	seq_loadPendigFlag = 1;
 }
 //------------------------------------------------------------------------------
-void seq_sendMidi(MidiMsg msg)
+static void seq_sendMidi(MidiMsg msg)
 {
 	//TODO midi out seq mode
 	//TODO usb und uart einjzeln aktivierbar
@@ -289,6 +295,8 @@ void seq_sendMidi(MidiMsg msg)
 	uart_sendMidi(msg);
 
 }
+
+
 //------------------------------------------------------------------------------
 void seq_parseAutomationNodes(uint8_t track, Step* stepData)
 {
@@ -304,7 +312,6 @@ void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note)
 {
 	uint8_t midiChan; // which midi channel to send a note on
 	uint8_t midiNote; // which midi note to send
-	MidiMsg msg;
 
 	if(voiceNr > 6) return;
 
@@ -356,13 +363,10 @@ void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note)
 	//--AS if a note is on for that channel send note-off first
 	seq_midiNoteOff(midiChan);
 
-	msg.status=0x90 | midiChan;
-	msg.data1 = midiNote;
-	msg.data2 =seq_patternSet.seq_subStepPattern[seq_activePattern][voiceNr][seq_stepIndex[voiceNr]].volume&STEP_VOLUME_MASK;
-	msg.bits.length=2;
-
 	//send the new note to midi/usb out
-	seq_sendMidi(msg);
+	seq_sendNoteOn(midiChan, midiNote,
+			seq_patternSet.seq_subStepPattern[seq_activePattern][voiceNr][seq_stepIndex[voiceNr]].volume&STEP_VOLUME_MASK);
+
 	// finally, keep track of which notes are on so we can turn them off later
 	midi_chan_notes[midiChan]=midiNote;
 	midi_notes_on |= (1 << midiChan);
@@ -419,7 +423,6 @@ void seq_nextStep()
 		// set pendingPattern active
 		if((seq_activePattern != seq_pendingPattern) || seq_loadPendigFlag)
 		{
-
 			seq_loadPendigFlag = 0;
 			//first check if 2 new pattern is available
 			if(seq_newPatternAvailable)
@@ -438,10 +441,8 @@ void seq_nextStep()
 			uart_sendFrontpanelByte(FRONT_SEQ_CHANGE_PAT);
 			uart_sendFrontpanelByte(seq_activePattern);
 
-			// --AS send a pattern change message to midi out (todo this should be configurable whether its on or off)
-			// also whether it goes to usb, etc.
-			uart_sendMidiByte(PROG_CHANGE);
-			uart_sendMidiByte(seq_activePattern);
+			// --AS send a pattern change message to midi/usb out
+			seq_sendProgChg(seq_activePattern);
 
 
 			// --AS all notes off here since we are switching patterns
@@ -671,7 +672,7 @@ void seq_tick()
 		{
 			if((seq_prescaleCounter%MIDI_PRESCALER_MASK) == 0)
 			{
-				uart_sendMidiByte(MIDI_CLOCK);
+				seq_sendRealtime(MIDI_CLOCK);
 			}
 		}
 		seq_prescaleCounter++;
@@ -744,7 +745,7 @@ void seq_setRunning(uint8_t isRunning)
 		seq_masterStepCnt = 0;
 		//so the next seq_tick call will trigger the next step immediately
 		seq_deltaT = 0;
-		uart_sendMidiByte(MIDI_STOP);
+		seq_sendRealtime(MIDI_STOP);
 
 		//--AS send notes off on all channels that have notes playing and reset our bitmap to reflect that
 		seq_midiNoteOff(0xFF);
@@ -755,7 +756,7 @@ void seq_setRunning(uint8_t isRunning)
 		midiParser_checkMtc();
 	} else {
 		seq_prescaleCounter = 0;
-		uart_sendMidiByte(MIDI_START);
+		seq_sendRealtime(MIDI_START);
 		trigger_reset(0);
 	}
 }
@@ -1224,6 +1225,9 @@ void seq_midiNoteOff(uint8_t chan)
 	uint8_t i;
 	MidiMsg msg;
 
+	// we are not filtering according to tx filter because they might have turned that
+	// setting on while a note was sustaining
+
 	msg.bits.length=2;
 	msg.data2=0;
 
@@ -1245,4 +1249,46 @@ void seq_midiNoteOff(uint8_t chan)
 		msg.data1=midi_chan_notes[chan];
 		seq_sendMidi(msg);
 	}
+}
+
+static void seq_sendRealtime(const uint8_t status)
+{
+	static MidiMsg msg = {0,0,0, {0,0,0}};
+	// --AS FILT filter out realtime msgs if appropriate
+	if((midiParser_txRxFilter & 0x20)==0)
+		return;
+	msg.status=status;
+	seq_sendMidi(msg);
+}
+
+/* Send a note on message. This will filter out these messages if appropriate
+ */
+static void seq_sendNoteOn(const uint8_t channel, const uint8_t note, const uint8_t veloc)
+{
+	static MidiMsg msg = {0,0,0, {0,0,2}};
+	// --AS FILT filter out note msgs if appropriate
+	if((midiParser_txRxFilter & 0x10)==0)
+		return;
+
+	msg.status=NOTE_ON | channel;
+	msg.data1=note;
+	msg.data2=veloc;
+	seq_sendMidi(msg);
+}
+
+/* This will send a prog change on the channel associated with voice 1 and will filter
+ * out the message if appropriate
+ */
+static void seq_sendProgChg(const uint8_t ptn)
+{
+	static MidiMsg msg = {0,0,0, {0,0,1}};
+
+	// --AS FILT filter out PC msgs if appropriate
+	if((midiParser_txRxFilter & 0x80)==0)
+		return;
+
+	msg.status = PROG_CHANGE | midi_MidiChannels[0];
+	msg.data1=ptn;
+	msg.bits.length=1;
+	seq_sendMidi(msg);
 }

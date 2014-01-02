@@ -179,6 +179,8 @@ enum NamesEnum
 	TEXT_SOM_FREQ,
 	TEXT_MIDI_MODE,	//--AS This is now unused
 	TEXT_MIDI_ROUTING,
+	TEXT_MIDI_FILT_TX,
+	TEXT_MIDI_FILT_RX,
 	NUM_NAMES
 };
 //-----------------------------------------------------------------
@@ -261,6 +263,9 @@ enum shortNamesEnum
 	SHORT_FLUX,
 	SHORT_MIDI,
 	SHORT_MIDI_ROUTING,
+	SHORT_MIDI_FILT_TX,
+	SHORT_MIDI_FILT_RX
+
 
 	
 };
@@ -297,6 +302,7 @@ enum catNamesEnum
 	CAT_MIDI
 };
 //-----------------------------------------------------------------
+// these must correspond with longNames in MenuText.h
 enum longNamesEnum
 {
 	LONG_EMPTY,
@@ -361,6 +367,8 @@ enum longNamesEnum
 	LONG_GAIN1,
 	LONG_GAIN2,
 	LONG_MIDI_ROUTING,
+	LONG_MIDI_FILT_TX,
+	LONG_MIDI_FILT_RX
 	
 };
 //-----------------------------------------------------------------

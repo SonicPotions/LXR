@@ -17,8 +17,9 @@ volatile int8_t		enc_delta;          // -128 ... 127
 static int8_t		last;
 static int8_t		lastButton;
 volatile uint8_t	buttonValue;
- 
-volatile  uint8_t encoder_calcLFOs = 1;
+
+// --AS I don't think this is used anymore
+//volatile  uint8_t encoder_calcLFOs = 1;
 
 void encode_init( void )
 {
@@ -60,10 +61,10 @@ void encode_init( void )
   buttonValue = 1;
 }
 
-void encode_setInterrupt(uint8_t enabled)
-{
-	encoder_calcLFOs = enabled;
-}
+//void encode_setInterrupt(uint8_t enabled)
+//{
+//	encoder_calcLFOs = enabled;
+//}
  
  
 ISR( TIMER0_COMPA_vect )             // 1ms for manual movement
