@@ -7,6 +7,7 @@ The custom firmware is <a href="https://github.com/rudeog/LXR/raw/master/firmwar
 
 Here are a list of current changes (differences from Sonic Potions repos):
 --------------------------------------------------------------------------
+- Midi routing (midi soft thru). You can route midi messages from input to output. This is set in the global menu under "mrt". There are 6 possible values: off - no routing, U2M - usb midi is routed to midi out port; M2M - midi received on midi in port is routed to midi out port; A2M - both usb and midi are routed to midi out port; M2U - midi input port is routed to usb output port; M2A - midi received on midi port is routed to both midi output and USB output.
 - Midi note off fixes. Will send midi off when changing pattern, channel or muting voice
 - MTC sync. Will now recognize MIDI MTC quarter frames and start when it receives a 0:0:0 location, and stop when MTC stops
 - Program change. Will respond to program change and will change between the 8 patterns when received via MIDI port. For programs > 7 will use remainder when divided by 8. Also will send on MIDI
