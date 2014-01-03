@@ -257,14 +257,8 @@ static void buttonHandler_handleModeButtons(uint8_t mode) {
 		menu_switchPage(LOAD_PAGE);
 		break;
 
-	case SELECT_MODE_MENU: {
-		uint8_t toggle = (menu_getActivePage() == MENU_MIDI_PAGE);
+	case SELECT_MODE_MENU:
 		menu_switchPage(MENU_MIDI_PAGE);
-
-		if (toggle) {
-			menu_switchSubPage(menu_getSubPage()); //to enable toggle
-		}
-	}
 		break;
 
 	case SELECT_MODE_SOM_GEN:
@@ -452,6 +446,7 @@ static void buttonHandler_leaveSeqModeStepMode() {
 //	menu_switchPage(lastActivePage);
 }
 //--------------------------------------------------------
+// when in voice mode you press shift, you enter sequencer mode
 static void buttonHandler_enterSeqMode() {
 	lastActivePage = menu_activePage;
 	lastActiveSubPage = menu_getSubPage();

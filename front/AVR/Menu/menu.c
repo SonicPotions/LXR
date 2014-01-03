@@ -1884,8 +1884,8 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 
 			//check if next parameter is not empty
 			//if inc is negative avoid to integer underflow (don't decrement 0)
-			uint8_t activeParameter	= (menuIndex+inc) & MASK_PARAMETER;
-			uint8_t activePage		= (uint8_t)(((menuIndex+inc)&MASK_PAGE)>>PAGE_SHIFT);
+			uint8_t activeParameter	= (menuIndex+inc) & MASK_PARAMETER; // desired parameter
+			uint8_t activePage		= (uint8_t)(((menuIndex+inc)&MASK_PAGE)>>PAGE_SHIFT); // desired page
 
 			uint8_t param = pgm_read_byte(&menuPages[menu_activePage][activePage].top1 + activeParameter);
 
@@ -1988,9 +1988,8 @@ void menu_switchSubPage(uint8_t subPageNr)
 	uint8_t activeParameter	= menuIndex & MASK_PARAMETER;
 	uint8_t activePage		= (menuIndex&MASK_PAGE)>>PAGE_SHIFT;
 
-	if( has2ndPage(subPageNr) &&(subPageNr == activePage))
-	{
-		//toggle between 1st and 2nd page
+	if( has2ndPage(subPageNr) &&(subPageNr == activePage)) {
+		//if we are already on the desired sub-page, toggle between 1st and 2nd page
 		DISABLE_CONV_WARNING
 		if(activeParameter>=4)
 		{
@@ -2003,11 +2002,11 @@ void menu_switchSubPage(uint8_t subPageNr)
 		menuIndex &= ~(MASK_PARAMETER);
 		menuIndex |= (activeParameter&MASK_PARAMETER);
 		END_DISABLE_CONV_WARNING
-	} else
-	{		
-		//prevent empty pages
-		if(!has2ndPage(subPageNr)) 
-		{
+	} else	{
+		// otherwise, we are moving to a different sub page
+
+		if(!has2ndPage(subPageNr)) { // only 4 or less parameters on this sub-page
+			//if we were on the second section of the sub-page, switch to the first
 			DISABLE_CONV_WARNING
 			if(activeParameter>=4)
 			{
@@ -2018,13 +2017,15 @@ void menu_switchSubPage(uint8_t subPageNr)
 			END_DISABLE_CONV_WARNING
 
 		}
-		//got to selected sub page
+
+		//go to selected sub page
 		DISABLE_CONV_WARNING
 		menuIndex &= ~(MASK_PAGE);
 		menuIndex |= (subPageNr)<<PAGE_SHIFT;
 		END_DISABLE_CONV_WARNING
 	}		
-};
+}
+
 //-----------------------------------------------------------------
 void menu_resetActiveParameter()
 {
@@ -2044,14 +2045,23 @@ uint8_t menu_getSubPage()
 //-----------------------------------------------------------------
 void menu_switchPage(uint8_t pageNr)
 {
-
-
 	//clear all sequencer buttons
 	led_clearSequencerLeds();
 
+	switch(pageNr) {
+	case MENU_MIDI_PAGE: { // global settings page
+		uint8_t toggle = (menu_activePage == MENU_MIDI_PAGE);
+		menu_activePage=MENU_MIDI_PAGE;
+		// leave edit mode if active
+		editModeActive = 0;
+		//activate the parameter lock
+		lockPotentiometerFetch();
 
-	switch(pageNr)
-	{
+		if (toggle) // if we are on the settings page already, toggle between 1 and 2
+			menu_switchSubPage(menu_getSubPage());
+
+		}
+		break;
 
 	case PERFORMANCE_PAGE:
 	case PATTERN_SETTINGS_PAGE:
@@ -2076,23 +2086,20 @@ void menu_switchPage(uint8_t pageNr)
 			//menu_saveOptions.what	= SAVE_TYPE_SOUND;
 		}
 
-		//if we are already on the load/save page, toggle between load/save
+		//if we are already on the load page, toggle to save page
+		// otherwise go to load page (because we were somewhere else or we were on the save page)
 		if(menu_activePage == LOAD_PAGE)
-		{
 			menu_activePage = SAVE_PAGE;
-		}
 		else
-		{
 			menu_activePage = LOAD_PAGE;
-		}
 
 		//leave edit mode if active
 		//editModeActive = 0;
 		preset_loadName(menu_currentPresetNr[menu_saveOptions.what], menu_saveOptions.what);
 	}
-	break;
+		break;
 
-	default: //voice pages
+	default: //voice pages etc
 	{
 		menu_activePage = pageNr;
 		if(pageNr<7) {
@@ -2100,7 +2107,6 @@ void menu_switchPage(uint8_t pageNr)
 		}
 		//leave edit mode if active
 		editModeActive = 0;
-
 
 		//activate the parameter lock
 		lockPotentiometerFetch();
@@ -2110,8 +2116,8 @@ void menu_switchPage(uint8_t pageNr)
 		uint8_t patternNr = menu_shownPattern; //max 7 => 0x07 = 0b111
 		uint8_t value = (uint8_t)((trackNr<<4) | (patternNr&0x7));
 		frontPanel_sendData(LED_CC,LED_QUERY_SEQ_TRACK,value);
-	}
-	break;
+		}
+		break;
 	}		
 
 

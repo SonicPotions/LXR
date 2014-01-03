@@ -45,7 +45,7 @@ enum PageNames
 	VOICE5_PAGE,
 	VOICE6_PAGE,
 	VOICE7_PAGE,
-	MENU_MIDI_PAGE,
+	MENU_MIDI_PAGE, // this is the global settings page
 	LOAD_PAGE,
 	SAVE_PAGE,
 	/*
