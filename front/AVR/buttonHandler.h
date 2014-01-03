@@ -101,21 +101,11 @@ void buttonHandler_tick();
 //--------------------------------------------------------
 void buttonHandler_buttonPressed(uint8_t buttonNr);
 //--------------------------------------------------------
-uint8_t buttonHandler_getMutedVoices();
+//uint8_t buttonHandler_getMutedVoices();
 //--------------------------------------------------------
 void buttonHandler_buttonReleased(uint8_t buttonNr);
 //--------------------------------------------------------
-void buttonHandler_enterSeqMode();
-//--------------------------------------------------------
-void buttonHandler_leaveSeqMode();
-//--------------------------------------------------------
-void buttonHandler_enterSeqModeStepMode();
-//--------------------------------------------------------
-void buttonHandler_toggleEuklidMode();
-//--------------------------------------------------------
-void buttonHandler_selectActiveStep(uint8_t ledNr, uint8_t seqButtonPressed);
-//--------------------------------------------------------
-void buttonHandler_setRemoveStep(uint8_t ledNr, uint8_t seqButtonPressed);
+//void buttonHandler_toggleEuklidMode();
 //--------------------------------------------------------
 /** return the menu state selected by mode2 button*/
 uint8_t buttonHandler_getMode();

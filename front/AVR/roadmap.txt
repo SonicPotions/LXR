@@ -85,4 +85,7 @@ filtering stuff:
 - back end code to receive filter settings and set bits
 - prog change code will now send on the channel associated with voice 1
 
+code cleanup prior to global menu expansion:
+- button handling code refactoring.
+- check shift button release when in perf mode. should it do anything with mute led's on voices? (code might have a bug)
 
