@@ -367,12 +367,6 @@ void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note)
 	seq_sendNoteOn(midiChan, midiNote,
 			seq_patternSet.seq_subStepPattern[seq_activePattern][voiceNr][seq_stepIndex[voiceNr]].volume&STEP_VOLUME_MASK);
 
-	// finally, keep track of which notes are on so we can turn them off later
-	midi_chan_notes[midiChan]=midiNote;
-	midi_notes_on |= (1 << midiChan);
-
-
-
 }
 //------------------------------------------------------------------------------
 void seq_nextStep()
@@ -1248,6 +1242,8 @@ void seq_midiNoteOff(uint8_t chan)
 		msg.status=	NOTE_OFF | chan;
 		msg.data1=midi_chan_notes[chan];
 		seq_sendMidi(msg);
+		// turn off our knowledge of that note playing
+		midi_notes_on &= (~(1<<chan));
 	}
 }
 
@@ -1274,6 +1270,11 @@ static void seq_sendNoteOn(const uint8_t channel, const uint8_t note, const uint
 	msg.data1=note;
 	msg.data2=veloc;
 	seq_sendMidi(msg);
+
+	// keep track of which notes are on so we can turn them off later
+	midi_chan_notes[channel]=note;
+	midi_notes_on |= (1 << channel);
+
 }
 
 /* This will send a prog change on the channel associated with voice 1 and will filter
