@@ -32,6 +32,7 @@
 
 
 #include "usb_manager.h"
+#include <string.h>
 
 enum {
 	USB_NOT_DETECTED,
@@ -93,14 +94,7 @@ void usb_tick()
 void usb_start()
 {
 	//zero init the usb receive buffer
-	int i;
-	for(i=0;i<USB_MIDI_INPUT_BUFFER_SIZE;i++)
-	{
-		usb_MidiMessages[i].status = 0;
-		usb_MidiMessages[i].data1 = 0;
-		usb_MidiMessages[i].data2 = 0;
-		usb_MidiMessages[i].length = 0;
-	}
+	memset(usb_MidiMessages,0, sizeof(MidiMsg)*USB_MIDI_INPUT_BUFFER_SIZE);
 
 	//start usb port
 	 USBD_Init(&USB_OTG_dev,
@@ -126,15 +120,18 @@ void usb_sendByte(uint8_t byte)
 	}
 }
 //-------------------------------------------------------------------------------
-void usb_sendMidi(uint8_t status, uint8_t data1, uint8_t data2)
+void usb_sendMidi(MidiMsg msg)
 {
 
 	if(USB_OTG_dev.dev.device_status != USB_OTG_SUSPENDED)
 	{
 		usb_sendByte(0x09);
-		usb_sendByte(status);
-		usb_sendByte(data1);
-		usb_sendByte(data2);
+		usb_sendByte(msg.status);
+		if(msg.bits.length) {
+			usb_sendByte(msg.data1);
+			if(msg.bits.length > 1)
+				usb_sendByte(msg.data2);
+		}
 
 		DCD_EP_Flush (&USB_OTG_dev,MIDI_IN_EP);
 		//TODO größe auf 4 testen statt 0x40

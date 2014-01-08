@@ -74,7 +74,7 @@ int main(void)
 	lcd_string_F(PSTR("Sonic Potions"));
 	//goto 2nd line
 	lcd_setcursor(0,2);
-	lcd_string_F(PSTR("LXR Drums V"));
+	lcd_string_F(PSTR("LXR*Drums V"));
 	lcd_string(FIRMWARE_VERSION);
 #endif
 
@@ -156,7 +156,7 @@ sei();
 
 
 	//main loop
-	while(1) 
+	for(;;) // this usually results in less instructions than while(1)
 	{		
 		//read next button
 		din_readNextInput();

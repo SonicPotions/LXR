@@ -39,14 +39,28 @@
 
 #include "stm32f4xx.h"
 
+enum MidiSource {
+	midiSourceMIDI,
+	midiSourceUSB
+};
+
+struct MidiBits {
+	enum MidiSource source:1; // 0 for midi, 1 for usb
+	unsigned sysxbyte:1; // 1 if this message is a sysex payload only
+	unsigned length:2; // how many data bytes have been filled
+	unsigned :4;
+};
+
 //-----------------------------------------------------------
 /** a struct defining a standard midi message*/
 typedef struct MidiStruct {
 	uint8_t status;
 	uint8_t data1;
 	uint8_t data2;
-	uint8_t length;
+	struct MidiBits bits;
 } MidiMsg;
+
+
 
 //-----------------------------------------------------------
 //Status bytes
@@ -75,6 +89,8 @@ typedef struct MidiStruct {
 #define MIDI_START			0xFA
 #define MIDI_STOP			0xFC
 #define MIDI_CONTINUE		0xFB
+#define MIDI_MTC_QFRAME		0xF1	//--AS mtc timecodes
+#define MIDI_SONG_SEL		0xF3	//--AS passthru only
 
 //------------------------------------------------------------
 
@@ -419,7 +435,7 @@ enum
 #define FRONT_SEQ_NOTE					0x13
 #define FRONT_SEQ_PROB					0x14
 #define FRONT_SEQ_SET_ACTIVE_TRACK 		0x15	/**< select the active track. all track specific messages (request step params etc) received will refer to the track selected with this command*/
-#define FRONT_SEQ_RESYNC_LFO			0x16	/**< informs the avr that an LFO syncpoint occured. necessary to keep tight syncing when using 2 different xtals*/
+//#define FRONT_SEQ_RESYNC_LFO			0x16	/**< LFO is no longer running on the front */
 #define FRONT_SEQ_EUKLID_LENGTH 		0x17	/** sets the length of the current track from 0 to 16 steps*/
 #define FRONT_SEQ_EUKLID_STEPS			0x18
 #define FRONT_SEQ_REQUEST_EUKLID_PARAMS 0x19
@@ -446,6 +462,9 @@ enum
 #define FRONT_SEQ_SOM_FREQ				0x2c
 #define FRONT_SEQ_MIDI_CHAN				0x2d	//voiceNr (0xf0) + channel (0x0f)
 #define FRONT_SEQ_MIDI_MODE				0x2e //--AS not used anymore
+#define FRONT_SEQ_MIDI_ROUTING			0x2f	// midi routing
+#define FRONT_SEQ_MIDI_TX_FILTER		0x30    // tx filtering
+#define FRONT_SEQ_MIDI_RX_FILTER		0x31    // rx filtering
 
 //codec control messages
 #define EQ_ON_OFF						0x01

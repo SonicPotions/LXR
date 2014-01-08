@@ -283,15 +283,20 @@ void frontPanel_parseData(uint8_t data)
 				else if(frontParser_midiMsg.status == SET_P1_DEST)
 				{
 					//**AUTOM - translate cortex value to mod target index
-					parameter_values[PAR_P1_DEST] =
-						paramToModTarget[(uint8_t)((frontParser_midiMsg.data1<<7) | frontParser_midiMsg.data2)];
+					// a value of FF means no automation (on the back end)
+					uint8_t dst=(uint8_t)((frontParser_midiMsg.data1<<7) | frontParser_midiMsg.data2);
+					if(dst==0xFF)
+						dst=0;
+					parameter_values[PAR_P1_DEST] = paramToModTarget[dst];
 					menu_repaintAll();
 				}
 				else if(frontParser_midiMsg.status == SET_P2_DEST)
 				{
 					//**AUTOM - translate cortex value to mod target index
-					parameter_values[PAR_P2_DEST] =
-						paramToModTarget[(uint8_t)((frontParser_midiMsg.data1<<7) | frontParser_midiMsg.data2)];
+					uint8_t dst=(uint8_t)((frontParser_midiMsg.data1<<7) | frontParser_midiMsg.data2);
+					if(dst==0xFF)
+						dst=0;
+					parameter_values[PAR_P2_DEST] = paramToModTarget[dst];
 					menu_repaintAll();
 				}
 				else if(frontParser_midiMsg.status == SET_P1_VAL)
@@ -401,14 +406,18 @@ void frontPanel_parseData(uint8_t data)
 						
 						
 						break;
+						case SEQ_RUN_STOP:
+							// --AS This tells the front that the sequencer has started/stopped due to MTC msg
+							// we simply use this to turn on/off the led and cause the next press of start
+							// button to act properly
+							buttonHandler_setRunStopState(frontParser_midiMsg.data2);
+							break;
 						
 						case LED_QUERY_SEQ_TRACK:
 						//this message is only send by the frontpanel, so it doesnt need to handle it
 						break;
-						
-						case SEQ_RESYNC_LFO:
 
-						break;
+
 					};						
 				}
 				else if(frontParser_midiMsg.status == SAMPLE_CC)

@@ -194,6 +194,7 @@ int main(void)
 	RCC_GetClocksFreq(&RCC_Clocks);
 	/* set timebase systick to 1ms*/
 	//SysTick_Config(RCC_Clocks.HCLK_Frequency / 1000);
+	// looks like it's really being set to .25 ms
 	SysTick_Config(RCC_Clocks.HCLK_Frequency / 4000);
 
 	initAudioJackDiscoverPins();
@@ -262,7 +263,7 @@ int main(void)
     		calcNextSampleBlock();
     	}
 
-		//process midi
+		//process midi on midi port
 		uart_processMidi();
 
 		//process incoming frontpanel data
@@ -270,17 +271,8 @@ int main(void)
 
 		//check if we have some usb midi messages and process them
 		MidiMsg msg;
-		if(usb_getMidi(&msg))
-		{
-			if( (msg.status&0xf0) == 0xf0)
-			{
-				//system message
-				midiParser_handleSystemByte(msg.status);
-			}
-			else
-			{
-				midiParser_parseMidiMessage(msg);
-			}
+		if(usb_getMidi(&msg)) {
+			midiParser_parseMidiMessage(msg);
 		}
 
 		//generate next sample if no valid sample is present

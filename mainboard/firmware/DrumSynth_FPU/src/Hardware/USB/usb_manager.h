@@ -46,7 +46,7 @@ void usb_init();
 void usb_stop();
 void usb_start();
 void usb_tick();
-void usb_sendMidi(uint8_t status, uint8_t data1, uint8_t data2);
+void usb_sendMidi(MidiMsg msg);
 uint8_t usb_getMidi(MidiMsg* msg);
 
 #endif /* USB_MANAGER_H_ */

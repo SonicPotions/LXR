@@ -48,7 +48,7 @@ int8_t encode_read2( void );
 // read four step encoders
 int8_t encode_read4( void );
 
-void encode_setInterrupt(uint8_t enabled);
+//void encode_setInterrupt(uint8_t enabled);
 
 //get the state of the encoder button
 uint8_t encode_readButton();

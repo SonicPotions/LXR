@@ -21,6 +21,9 @@
 #define MENU_SEQ_QUANT		9
 #define MENU_TRANS			10
 #define MENU_MIDI			11
+#define MENU_MIDI_ROUTING	12
+#define MENU_MIDI_FILTERING 13
+
 //-----------------------------------------------------------------
 // Shared texts. Reduce mem usage by pooling common text
 // all of these need to be 3 chars
@@ -189,7 +192,41 @@ const char filterTypes[][8] PROGMEM  =
 	{"off"}	,	//7 - 111
 	//{"All"}	,	//7 - 111
 };
+
 //-----------------------------------------------------------------
+const char midiRoutingNames[][6] PROGMEM =
+{
+		{6},	// number of entries
+		{"off"},
+		{"U2M"},
+		{"M2M"},
+		{"A2M"},
+		{"M2U"},
+		{"M2A"},
+};
+//-----------------------------------------------------------------
+const char midiFilterNames[][16] PROGMEM =
+{
+	{16},	// number of entries
+	{"off"},
+	{"N"},
+	{"R"},
+	{"RN"},
+	{"C"},
+	{"CN"},
+	{"CR"},
+	{"CRN"},
+	{"P"},
+	{"PN"},
+	{"PR"},
+	{"PRN"},
+	{"PC"},
+	{"PCN"},
+	{"PCR"},
+	{"all"},
+};
+//-----------------------------------------------------------------
+// these must correspond with shortNamesEnum
 const char shortNames[][4] PROGMEM  = 
 {
 	{""},
@@ -255,8 +292,9 @@ const char shortNames[][4] PROGMEM  =
 	{"y"},
 	{"flx"},
 	{"mid"},
-		
-	
+	{"mrt"}, // midi routing
+	{"txf"}, // midi tx filter
+	{"rxf"}  // midi rx filter
 };
 //-----------------------------------------------------------------
 // These correspond with the catNamesEnum in menu.h
@@ -292,6 +330,7 @@ const char catNames[][16] PROGMEM =
 	{"MIDI"},
 };
 //-----------------------------------------------------------------
+// these must correspond to longNamesEnum
 const char longNames[][16] PROGMEM = 
 {
 	{""},
@@ -356,6 +395,9 @@ const char longNames[][16] PROGMEM =
 	{"Freqcy 2"},
 	{"Gain 1"},
 	{"Gain 2"},
+	{"Routing"}, // midi routing
+	{"TxFilter"}, // midi tx filtering
+	{"RxFilter"}, // midi rx filtering
 };
 
 
