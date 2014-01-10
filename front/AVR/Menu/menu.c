@@ -913,6 +913,12 @@ static uint8_t checkScrollSign(uint8_t activePage, uint8_t activeParameter)
 	//const uint8_t textType = pgm_read_byte(&menuPages[menu_activePage][activePage].top1 + 4);
 	if(has2ndPage(activePage))
 	{
+		// --AS GMENU if we are on 2nd page, and there are more pages after this show *
+		// to signify both ways are available
+		if(is2ndPage && menu_activePage==MENU_MIDI_PAGE) {
+			if(activePage < 7 && pgm_read_byte(&menuPages[MENU_MIDI_PAGE][activePage+1].top1 != TEXT_EMPTY)
+				return '*';
+		}
 		return is2ndPage?'<':'>';
 	}
 	else return 0;	
@@ -1902,7 +1908,8 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 
 				}
 				// --AS NOTE activeParameter here would be 0 ONLY if we were on last param of page 2 and went right (wrapped)
-				// --AS GMENU possible to only check activeParameter!=0 if not on global menu? would that get gmenu working (same below for inc -1)
+				// --AS GMENU we normally don't jump between sub-pages with encoder, but for the global settings page,
+				//            we make an exception
 				if((param != TEXT_EMPTY) && (activeParameter!=0 || menu_activePage==MENU_MIDI_PAGE) )
 				{
 					if(parameterFetch & PARAMETER_LOCK_ACTIVE)
@@ -1939,6 +1946,8 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 
 				// --AS NOTE activeParameter would only be MASK_PARAMETER if we were on 1st parm of 1st page and went left
 				// --AS NOTE menuindex check is needed in case inc was -2 or less
+				// --AS GMENU we normally don't jump between sub-pages with encoder, but for the global settings page,
+				//            we make an exception
 				if( (menuIndex!=0) && (activeParameter != MASK_PARAMETER || menu_activePage==MENU_MIDI_PAGE) )
 				{
 					//check if parameter lock for fetch is needed
@@ -2000,18 +2009,28 @@ void menu_switchSubPage(uint8_t subPageNr)
 
 	if( has2ndPage(subPageNr) &&(subPageNr == activePage)) {
 		//if we are already on the desired sub-page, toggle between 1st and 2nd page
-		DISABLE_CONV_WARNING
 		if(activeParameter>=4)
 		{
+			// --AS GMENU if we are in global menu, move to next sub page if any
+			if(menu_activePage==MENU_MIDI_PAGE) {
+				// see if there is a subpage after this with valid items
+				if(activePage < 7 && pgm_read_byte(&menuPages[menu_activePage][activePage+1].top1 != TEXT_EMPTY) {
+					activePage++; // move to next sub page
+				} else {
+					// no page after this, move to first subpage (wrap around)
+					activePage=0;
+				}
+			}
+
 			activeParameter -= 4;	
 		} else {
 			activeParameter +=4;
 		}
 
+		menuIndex = (uint8_t)( (activePage << PAGE_SHIFT) | activeParameter);
+		//menuIndex &= ~(MASK_PARAMETER);
+		//menuIndex |= (activeParameter&MASK_PARAMETER);
 
-		menuIndex &= ~(MASK_PARAMETER);
-		menuIndex |= (activeParameter&MASK_PARAMETER);
-		END_DISABLE_CONV_WARNING
 	} else	{
 		// otherwise, we are moving to a different sub page
 
@@ -2067,9 +2086,8 @@ void menu_switchPage(uint8_t pageNr)
 		//activate the parameter lock
 		lockPotentiometerFetch();
 
-		// --AS GMENU TODO toggle to other pages as well
 		// --AS GMENU TODO do we need to clear any leds?
-		if (toggle) // if we are on the settings page already, toggle between 1 and 2
+		if (toggle) // if we are on the settings page already, toggle between all pages
 			menu_switchSubPage(menu_getSubPage());
 
 		}
