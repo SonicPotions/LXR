@@ -1692,7 +1692,6 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 	//limit to +/- 1
 	//	inc = inc>0?1:-1;
 
-
 	if(menu_activePage == LOAD_PAGE || menu_activePage == SAVE_PAGE) {
 		menu_handleLoadSaveMenu(inc, btnClicked);
 	} else if(inc != 0) {
@@ -1884,7 +1883,10 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 
 			//check if next parameter is not empty
 			//if inc is negative avoid to integer underflow (don't decrement 0)
+			// --AS NOTE ie if inc is -1 and we are on 0, we will be on 7
 			uint8_t activeParameter	= (menuIndex+inc) & MASK_PARAMETER; // desired parameter
+			// --AS TODO couldn't this set activepage outside the range of 8 if menuIndex was 0 and is now FF? (ie inc is -1)
+			// would happen if we are on first page and try to scroll left (cause a bad param read below)
 			uint8_t activePage		= (uint8_t)(((menuIndex+inc)&MASK_PAGE)>>PAGE_SHIFT); // desired page
 
 			uint8_t param = pgm_read_byte(&menuPages[menu_activePage][activePage].top1 + activeParameter);
@@ -1899,11 +1901,14 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 					param = pgm_read_byte(&menuPages[menu_activePage][activePage].top1 + activeParameter);
 
 				}
-				if((param != TEXT_EMPTY) && (activeParameter!=0) )
+				// --AS NOTE activeParameter here would be 0 ONLY if we were on last param of page 2 and went right (wrapped)
+				// --AS GMENU possible to only check activeParameter!=0 if not on global menu? would that get gmenu working (same below for inc -1)
+				if((param != TEXT_EMPTY) && (activeParameter!=0 || menu_activePage==MENU_MIDI_PAGE) )
 				{
 					if(parameterFetch & PARAMETER_LOCK_ACTIVE)
 					{
-						//check if parameter lock for fetch is needed
+						//check if parameter lock for fetch is needed. If we are moving from
+						// a parameter on 1st page to a parameter on 2nd page...
 						const uint8_t currentActiveParameter	= (menuIndex) & MASK_PARAMETER;
 						if( (currentActiveParameter<=3) && (activeParameter>3) )
 							//if( (((menuIndex+inc)&MASK_PAGE)>>PAGE_SHIFT) != activePage)
@@ -1920,6 +1925,8 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 				}
 			} else { // inc is implicitly < 0
 
+				// --AS NOTE this assumes we'd never have a 0 item with TEXT_SKIP. We should only have TEXT_SKIP as a spacer on end of 1st page to force items to 2nd page
+				// --AS NOTE also assumes we'd never have two TEXT_SKIPs in a row
 				if((param == TEXT_SKIP) && (activeParameter!=0) )
 				{
 					//skip entry
@@ -1930,9 +1937,12 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 
 				}
 
-				if( (menuIndex!=0) && (activeParameter != MASK_PARAMETER) )
+				// --AS NOTE activeParameter would only be MASK_PARAMETER if we were on 1st parm of 1st page and went left
+				// --AS NOTE menuindex check is needed in case inc was -2 or less
+				if( (menuIndex!=0) && (activeParameter != MASK_PARAMETER || menu_activePage==MENU_MIDI_PAGE) )
 				{
 					//check if parameter lock for fetch is needed
+					// if we are moving from 2nd page to 1st page...
 					if(parameterFetch & PARAMETER_LOCK_ACTIVE)
 					{
 						const uint8_t currentActiveParameter	= (menuIndex) & MASK_PARAMETER;
@@ -2057,6 +2067,8 @@ void menu_switchPage(uint8_t pageNr)
 		//activate the parameter lock
 		lockPotentiometerFetch();
 
+		// --AS GMENU TODO toggle to other pages as well
+		// --AS GMENU TODO do we need to clear any leds?
 		if (toggle) // if we are on the settings page already, toggle between 1 and 2
 			menu_switchSubPage(menu_getSubPage());
 

@@ -89,3 +89,7 @@ code cleanup prior to global menu expansion:
 - button handling code refactoring.
 - check shift button release when in perf mode. should it do anything with mute led's on voices? (code might have a bug)
 
+note TEXT_SKIP is only used as a spacer to force items onto page 2 if they belong there
+things to try:
+go to 1st page on page 1 of any voice, encode to left and encode left before 1st item. What happens
+go to a page that has two full pages and scroll right, does it go to next page?

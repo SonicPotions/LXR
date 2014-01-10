@@ -214,8 +214,7 @@ uint8_t buttonHandler_getShift() {
 static void buttonHandler_handleModeButtons(uint8_t mode) {
 	if (buttonHandler_getShift()) {
 		//set the new mode
-		buttonHandler_stateMemory.selectButtonMode = (uint8_t) ((mode + 4)
-				& 0x07);
+		buttonHandler_stateMemory.selectButtonMode = (uint8_t) ((mode + 4) & 0x07);
 	} else {
 		//set the new mode
 		buttonHandler_stateMemory.selectButtonMode = (uint8_t) (mode & 0x07);
