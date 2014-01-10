@@ -42,6 +42,9 @@ static uint8_t getMaxEntriesForMenu(uint8_t menuId);
 // given a number, convert it to a note name
 static void setNoteName(uint8_t num, char *buf);
 
+static void menu_moveToMenuItem(int8_t inc);
+static void menu_encoderChangeParameter(int8_t inc);
+
 #define ARROW_SIGN '>'
 
 //enum for the save what parameter
@@ -910,13 +913,12 @@ static uint8_t has2ndPage(uint8_t menuPage)
 static uint8_t checkScrollSign(uint8_t activePage, uint8_t activeParameter)
 {
 	const uint8_t is2ndPage = (activeParameter>3);
-	//const uint8_t textType = pgm_read_byte(&menuPages[menu_activePage][activePage].top1 + 4);
 	if(has2ndPage(activePage))
 	{
-		// --AS GMENU if we are on 2nd page, and there are more pages after this show *
-		// to signify both ways are available
+		// --AS **GMENU if we are on 2nd page, and there are more pages after this show "*"
+		//              to signify both ways are available
 		if(is2ndPage && menu_activePage==MENU_MIDI_PAGE) {
-			if(activePage < 7 && pgm_read_byte(&menuPages[MENU_MIDI_PAGE][activePage+1].top1 != TEXT_EMPTY)
+			if((activePage < NUM_SUB_PAGES-1) && (pgm_read_byte(&menuPages[MENU_MIDI_PAGE][activePage+1].top1) != TEXT_EMPTY))
 				return '*';
 		}
 		return is2ndPage?'<':'>';
@@ -1675,13 +1677,13 @@ static void getMenuItemNameForValue(const uint8_t menuId, const uint8_t curParmV
 	memcpy_P(buf,p,3);
 
 }
+
 //-----------------------------------------------------------------
+// called when either the encoder is rotated, or the encoder button is clicked
+// inc - the number of clicks the encoder has moved
+// button - 1 if the button is depressed, 0 if its not
 void menu_parseEncoder(int8_t inc, uint8_t button)
 {
-	// inc - the number of clicks the encoder has moved
-	// button - 1 if the button is depressed, 0 if its not
-
-
 	uint8_t btnClicked=0;
 	// handle the button being clicked or released
 	if(button != lastEncoderButton) { // was the button clicked?
@@ -1695,286 +1697,272 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 	screensaver_touch();
 
 	inc = (int8_t)(inc * -1);
-	//limit to +/- 1
-	//	inc = inc>0?1:-1;
 
 	if(menu_activePage == LOAD_PAGE || menu_activePage == SAVE_PAGE) {
 		menu_handleLoadSaveMenu(inc, btnClicked);
-	} else if(inc != 0) {
-		//============================= handle encoder ==============================
-		if(copyClear_isClearModeActive()) {
-			//encoder selects clear target
-			uint8_t target = copyClear_getClearTarget();
-			if(inc<0) {
-				if(target!=0) {
-					target--;
-				}
-			} else if(inc>0) {
-				if(target!=CLEAR_AUTOMATION2) {
-					target++;
-				}
+		return;
+	}
+	if(inc==0)
+		return;
+
+	//============================= handle encoder change ==============================
+	if(copyClear_isClearModeActive()) {
+		//encoder selects clear target
+		uint8_t target = copyClear_getClearTarget();
+		if(inc<0) {
+			if(target!=0) {
+				target--;
 			}
-			copyClear_setClearTarget(target);
-			return;
-
-		} // copyClear_isClearModeActive()
-		else if(editModeActive) {
-			//we are in edit mode
-			//encoder controls parameter value
-			const uint8_t activeParameter	= menuIndex & MASK_PARAMETER;
-			const uint8_t activePage		= (menuIndex&MASK_PAGE)>>PAGE_SHIFT;
-
-			//get address from top1-8 from activeParameter (base adress top1 + offset)
-			uint16_t paramNr		= pgm_read_word(&menuPages[menu_activePage][activePage].bot1 + activeParameter);
-			uint8_t *paramValue = &parameter_values[paramNr];
-
-			//increase parameter value
-			if(inc>0) //positive increase
-			{
-				if(*paramValue != 255) //omit wrap for 0B255 dtypes
-					*paramValue = (uint8_t)(*paramValue + inc);
+		} else if(inc>0) {
+			if(target!=CLEAR_AUTOMATION2) {
+				target++;
 			}
-			else if (inc<0) //neg increase
-			{
-				if(*paramValue >= abs(inc)) //omit negative wrap. inc can also be -2 or -3 depending on turn speed!
-				{
-					DISABLE_CONV_WARNING
-					*paramValue += inc;
-					END_DISABLE_CONV_WARNING
-				}
-			}
+		}
+		copyClear_setClearTarget(target);
+		return;
 
-			switch(pgm_read_byte(&parameter_dtypes[paramNr]) & 0x0F)
-			{
-			case DTYPE_TARGET_SELECTION_VELO: //parameter_dtypes[paramNr] & 0x0F
-			{
-				//**VELO encoder value limit to start and end of range for this voice
-				// get voice, and figure valid range, translate to param number before sending
-				uint8_t voiceNr=(uint8_t)(paramNr - PAR_VEL_DEST_1);
-				if(*paramValue < pgm_read_byte(&modTargetVoiceOffsets[voiceNr].start)) {
-					if(inc < 0) // going down, allow 0
-						*paramValue=0;
-					else // going up fix to start
-						*paramValue = pgm_read_byte(&modTargetVoiceOffsets[voiceNr].start);
-				} else if (*paramValue > pgm_read_byte(&modTargetVoiceOffsets[voiceNr].end)) {
-					*paramValue = pgm_read_byte(&modTargetVoiceOffsets[voiceNr].end);
-				}
-
-				// determine the parameter id to send across
-				uint8_t value = (uint8_t)pgm_read_word(&modTargets[*paramValue].param);
-				uint8_t upper,lower;
-				/*
-				 *  upper: rightmost bit is 1 if the parameter we are targeting is in the "above 127" range
-				 *         next 6 bits are the voice number (0 to 5) of which voice is being dealt with here
-				 *  lower: the (0-127) value representing which parameter is being modulated
-				 */
-				upper = (uint8_t)( (uint8_t)((value&0x80)>>7) | ((voiceNr&0x3f)<<1) );
-				lower = value&0x7f;
-				frontPanel_sendData(CC_VELO_TARGET,upper,lower);
-				//return;
-			}
-				break;
-
-			case DTYPE_VOICE_LFO://parameter_dtypes[paramNr] & 0x0F
-			{
-				//**LFO - limit voice number to 1-6 range. determine target selection so we can send it with voice #
-				if(*paramValue < 1)
-					*paramValue = 1;
-				else if(*paramValue > 6)
-					*paramValue = 6;
-
-				// rectify PAR_TARGET_LFO parameter and get new value
-				const uint8_t newTargVal=fixLfoTargetForVoice((uint8_t)(paramNr - PAR_VOICE_LFO1), *paramValue);
-
-				// determine the real param value given the index into modTargets
-				uint8_t value =  (uint8_t)pgm_read_word(&modTargets[newTargVal].param);
-
-				/*  upper: rightmost bit is 1 if the parameter we are targeting is in the "above 127" range
-				 *         next 6 bits are the voice number (0 to 5) of which voice is being dealt with here
-				 *  lower: the (0-127) value representing which parameter is being modulated
-				 */
-				uint8_t upper,lower;
-				upper = (uint8_t)(((value&0x80)>>7) | ((((uint8_t)(paramNr - PAR_VOICE_LFO1))&0x3f)<<1));
-				lower = value&0x7f;
-				frontPanel_sendData(CC_LFO_TARGET,upper,lower);
-				//return;
-			}
-				break;
-			case DTYPE_TARGET_SELECTION_LFO://parameter_dtypes[paramNr] & 0x0F
-			{
-				//**LFO - limit encoder start and end to range for the voice
-				uint8_t voiceNr =  (uint8_t)(parameter_values[PAR_VOICE_LFO1+(paramNr - PAR_TARGET_LFO1)]-1);
-				if(*paramValue < pgm_read_byte(&modTargetVoiceOffsets[voiceNr].start)) {
-					if(inc < 0) // going down, allow 0
-						*paramValue=0;
-					else // going up fix to start
-						*paramValue = pgm_read_byte(&modTargetVoiceOffsets[voiceNr].start);
-				} else if (*paramValue > pgm_read_byte(&modTargetVoiceOffsets[voiceNr].end)) {
-					*paramValue = pgm_read_byte(&modTargetVoiceOffsets[voiceNr].end);
-				}
-
-				uint8_t value =  (uint8_t)pgm_read_word(&modTargets[*paramValue].param);
-				uint8_t upper,lower;
-				upper = (uint8_t)((uint8_t)((value&0x80)>>7) | (((paramNr - PAR_TARGET_LFO1)&0x3f)<<1));
-				lower = value&0x7f;
-				frontPanel_sendData(CC_LFO_TARGET,upper,lower);
-				//--AS fall thru to update display
-			}
-				break;
-
-			case DTYPE_AUTOM_TARGET: {//parameter_dtypes[paramNr] & 0x0F
-				const uint8_t nmt=getNumModTargets();
-				//**AUTOM - limit to valid range for encoder
-				if(*paramValue >= nmt)
-					*paramValue = (uint8_t)(nmt-1);
-				break;
-			}
-
-			case DTYPE_0B255:
-				//if(*paramValue > 255)
-				//	*paramValue = 255;
-				break;
-
-
-			case DTYPE_1B16://parameter_dtypes[paramNr] & 0x0F
-				if(*paramValue < 1)
-					*paramValue = 1;
-				else if(*paramValue > 16)
-					*paramValue = 16;
-				break;
-			case DTYPE_MIX_FM://parameter_dtypes[paramNr] & 0x0F
-			case DTYPE_ON_OFF:
-			case DTYPE_0b1:
-				if(*paramValue > 1)
-					*paramValue = 1;
-				break;
-
-
-
-			case DTYPE_MENU://parameter_dtypes[paramNr] & 0x0F
-			{
-				//get the used menu (upper 4 bit)
-				const uint8_t menuId = pgm_read_byte(&parameter_dtypes[paramNr]) >> 4;
-				//get the number of entries
-				uint8_t numEntries = getMaxEntriesForMenu(menuId);
-				if(*paramValue >= numEntries)
-					*paramValue = (uint8_t)(numEntries-1);
-
-			} // parameter_dtypes[paramNr] & 0x0F case DTYPE_MENU
-				break;
-
-			default://parameter_dtypes[paramNr] & 0x0F
-			case DTYPE_0B127:
-				if(*paramValue > 127)
-					*paramValue = 127;
-				break;
-			} //parameter_dtypes[paramNr] & 0x0F
-
-
-			// --AS TODO this will also send MIDI_CC or CC_2 for the above items that have already been sent. is this desired?
-			//send parameter change to uart tx
-			if(paramNr < 128) // => Sound Parameter
-				frontPanel_sendData(MIDI_CC,(uint8_t)paramNr,*paramValue);
-			else if(paramNr > 127 && (paramNr < END_OF_SOUND_PARAMETERS)) // => Sound Parameter above 127
-				frontPanel_sendData(CC_2,(uint8_t)(paramNr-128),*paramValue);
-			else // non sound parameters (ie current step data, etc)
-				menu_parseGlobalParam(paramNr,parameter_values[paramNr]);
-
-			//frontPanel_sendData(0xb0,paramNr,*paramValue);
-		} //editModeActive
-
-		else //-------- not in edit mode --------
-		{
-			//encoder selects active parameter
-
-			//check if next parameter is not empty
-			//if inc is negative avoid to integer underflow (don't decrement 0)
-			// --AS NOTE ie if inc is -1 and we are on 0, we will be on 7
-			uint8_t activeParameter	= (menuIndex+inc) & MASK_PARAMETER; // desired parameter
-			// --AS TODO couldn't this set activepage outside the range of 8 if menuIndex was 0 and is now FF? (ie inc is -1)
-			// would happen if we are on first page and try to scroll left (cause a bad param read below)
-			uint8_t activePage		= (uint8_t)(((menuIndex+inc)&MASK_PAGE)>>PAGE_SHIFT); // desired page
-
-			uint8_t param = pgm_read_byte(&menuPages[menu_activePage][activePage].top1 + activeParameter);
-
-			if(inc>0) {
-				if((param == TEXT_SKIP) && (activeParameter!=0) )
-				{
-					//skip entry
-					inc++;
-					activeParameter	= (menuIndex+inc) & MASK_PARAMETER;
-					activePage		= (uint8_t)(((menuIndex+inc)&MASK_PAGE)>>PAGE_SHIFT);
-					param = pgm_read_byte(&menuPages[menu_activePage][activePage].top1 + activeParameter);
-
-				}
-				// --AS NOTE activeParameter here would be 0 ONLY if we were on last param of page 2 and went right (wrapped)
-				// --AS GMENU we normally don't jump between sub-pages with encoder, but for the global settings page,
-				//            we make an exception
-				if((param != TEXT_EMPTY) && (activeParameter!=0 || menu_activePage==MENU_MIDI_PAGE) )
-				{
-					if(parameterFetch & PARAMETER_LOCK_ACTIVE)
-					{
-						//check if parameter lock for fetch is needed. If we are moving from
-						// a parameter on 1st page to a parameter on 2nd page...
-						const uint8_t currentActiveParameter	= (menuIndex) & MASK_PARAMETER;
-						if( (currentActiveParameter<=3) && (activeParameter>3) )
-							//if( (((menuIndex+inc)&MASK_PAGE)>>PAGE_SHIFT) != activePage)
-						{
-							//lock all parameters
-							lockPotentiometerFetch();
-						}
-					}
-
-					//switch menu
-					DISABLE_CONV_WARNING
-					menuIndex += inc;
-					END_DISABLE_CONV_WARNING
-				}
-			} else { // inc is implicitly < 0
-
-				// --AS NOTE this assumes we'd never have a 0 item with TEXT_SKIP. We should only have TEXT_SKIP as a spacer on end of 1st page to force items to 2nd page
-				// --AS NOTE also assumes we'd never have two TEXT_SKIPs in a row
-				if((param == TEXT_SKIP) && (activeParameter!=0) )
-				{
-					//skip entry
-					inc--;
-					activeParameter	= (menuIndex+inc) & MASK_PARAMETER;
-					activePage		= (uint8_t)(((menuIndex+inc)&MASK_PAGE)>>PAGE_SHIFT);
-					param = pgm_read_byte(&menuPages[menu_activePage][activePage].top1 + activeParameter);
-
-				}
-
-				// --AS NOTE activeParameter would only be MASK_PARAMETER if we were on 1st parm of 1st page and went left
-				// --AS NOTE menuindex check is needed in case inc was -2 or less
-				// --AS GMENU we normally don't jump between sub-pages with encoder, but for the global settings page,
-				//            we make an exception
-				if( (menuIndex!=0) && (activeParameter != MASK_PARAMETER || menu_activePage==MENU_MIDI_PAGE) )
-				{
-					//check if parameter lock for fetch is needed
-					// if we are moving from 2nd page to 1st page...
-					if(parameterFetch & PARAMETER_LOCK_ACTIVE)
-					{
-						const uint8_t currentActiveParameter	= (menuIndex) & MASK_PARAMETER;
-						//if( (((menuIndex+inc)&MASK_PAGE)>>PAGE_SHIFT) != activePage)
-						if( (currentActiveParameter>3) && (activeParameter<=3) )
-						{
-							//lock all parameters
-							lockPotentiometerFetch();
-						}
-					}
-
-					//switch menu
-					DISABLE_CONV_WARNING
-					menuIndex += inc;
-					END_DISABLE_CONV_WARNING
-				}
-			} // if(inc>0)
-		} //not in edit mode
-	} // if in load/save mode / inc !=0
+	} else if(editModeActive) {
+		// edit mode is active so change the value of the current parameter
+		menu_encoderChangeParameter(inc);
+	} else {
+		//edit mode not active so encoder selects active parameter
+		menu_moveToMenuItem(inc);
+	}
 
 	menu_repaintAll();
+}
 
-};
+//-----------------------------------------------------------------
+// called when edit mode is active
+// encoder controls parameter value
+// given a delta, will apply that to the current parameter
+static void menu_encoderChangeParameter(int8_t inc)
+{
+	const uint8_t activeParameter	= menuIndex & MASK_PARAMETER;
+	const uint8_t activePage		= (menuIndex&MASK_PAGE)>>PAGE_SHIFT;
+
+	//get address from top1-8 from activeParameter (base adress top1 + offset)
+	uint16_t paramNr		= pgm_read_word(&menuPages[menu_activePage][activePage].bot1 + activeParameter);
+	uint8_t *paramValue = &parameter_values[paramNr];
+
+	//increase parameter value
+	if(inc>0) //positive increase
+	{
+		if(*paramValue != 255) //omit wrap for 0B255 dtypes
+			*paramValue = (uint8_t)(*paramValue + inc);
+	}
+	else if (inc<0) //neg increase
+	{
+		if(*paramValue >= abs(inc)) //omit negative wrap. inc can also be -2 or -3 depending on turn speed!
+		{
+			DISABLE_CONV_WARNING
+			*paramValue += inc;
+			END_DISABLE_CONV_WARNING
+		}
+	}
+
+	switch(pgm_read_byte(&parameter_dtypes[paramNr]) & 0x0F)
+	{
+	case DTYPE_TARGET_SELECTION_VELO: //parameter_dtypes[paramNr] & 0x0F
+	{
+		//**VELO encoder value limit to start and end of range for this voice
+		// get voice, and figure valid range, translate to param number before sending
+		uint8_t voiceNr=(uint8_t)(paramNr - PAR_VEL_DEST_1);
+		if(*paramValue < pgm_read_byte(&modTargetVoiceOffsets[voiceNr].start)) {
+			if(inc < 0) // going down, allow 0
+				*paramValue=0;
+			else // going up fix to start
+				*paramValue = pgm_read_byte(&modTargetVoiceOffsets[voiceNr].start);
+		} else if (*paramValue > pgm_read_byte(&modTargetVoiceOffsets[voiceNr].end)) {
+			*paramValue = pgm_read_byte(&modTargetVoiceOffsets[voiceNr].end);
+		}
+
+		// determine the parameter id to send across
+		uint8_t value = (uint8_t)pgm_read_word(&modTargets[*paramValue].param);
+		uint8_t upper,lower;
+		/*
+		 *  upper: rightmost bit is 1 if the parameter we are targeting is in the "above 127" range
+		 *         next 6 bits are the voice number (0 to 5) of which voice is being dealt with here
+		 *  lower: the (0-127) value representing which parameter is being modulated
+		 */
+		upper = (uint8_t)( (uint8_t)((value&0x80)>>7) | ((voiceNr&0x3f)<<1) );
+		lower = value&0x7f;
+		frontPanel_sendData(CC_VELO_TARGET,upper,lower);
+		//return;
+	}
+		break;
+
+	case DTYPE_VOICE_LFO://parameter_dtypes[paramNr] & 0x0F
+	{
+		//**LFO - limit voice number to 1-6 range. determine target selection so we can send it with voice #
+		if(*paramValue < 1)
+			*paramValue = 1;
+		else if(*paramValue > 6)
+			*paramValue = 6;
+
+		// rectify PAR_TARGET_LFO parameter and get new value
+		const uint8_t newTargVal=fixLfoTargetForVoice((uint8_t)(paramNr - PAR_VOICE_LFO1), *paramValue);
+
+		// determine the real param value given the index into modTargets
+		uint8_t value =  (uint8_t)pgm_read_word(&modTargets[newTargVal].param);
+
+		/*  upper: rightmost bit is 1 if the parameter we are targeting is in the "above 127" range
+		 *         next 6 bits are the voice number (0 to 5) of which voice is being dealt with here
+		 *  lower: the (0-127) value representing which parameter is being modulated
+		 */
+		uint8_t upper,lower;
+		upper = (uint8_t)(((value&0x80)>>7) | ((((uint8_t)(paramNr - PAR_VOICE_LFO1))&0x3f)<<1));
+		lower = value&0x7f;
+		frontPanel_sendData(CC_LFO_TARGET,upper,lower);
+		//return;
+	}
+		break;
+	case DTYPE_TARGET_SELECTION_LFO://parameter_dtypes[paramNr] & 0x0F
+	{
+		//**LFO - limit encoder start and end to range for the voice
+		uint8_t voiceNr =  (uint8_t)(parameter_values[PAR_VOICE_LFO1+(paramNr - PAR_TARGET_LFO1)]-1);
+		if(*paramValue < pgm_read_byte(&modTargetVoiceOffsets[voiceNr].start)) {
+			if(inc < 0) // going down, allow 0
+				*paramValue=0;
+			else // going up fix to start
+				*paramValue = pgm_read_byte(&modTargetVoiceOffsets[voiceNr].start);
+		} else if (*paramValue > pgm_read_byte(&modTargetVoiceOffsets[voiceNr].end)) {
+			*paramValue = pgm_read_byte(&modTargetVoiceOffsets[voiceNr].end);
+		}
+
+		uint8_t value =  (uint8_t)pgm_read_word(&modTargets[*paramValue].param);
+		uint8_t upper,lower;
+		upper = (uint8_t)((uint8_t)((value&0x80)>>7) | (((paramNr - PAR_TARGET_LFO1)&0x3f)<<1));
+		lower = value&0x7f;
+		frontPanel_sendData(CC_LFO_TARGET,upper,lower);
+		//--AS fall thru to update display
+	}
+		break;
+
+	case DTYPE_AUTOM_TARGET: {//parameter_dtypes[paramNr] & 0x0F
+		const uint8_t nmt=getNumModTargets();
+		//**AUTOM - limit to valid range for encoder
+		if(*paramValue >= nmt)
+			*paramValue = (uint8_t)(nmt-1);
+		break;
+	}
+
+	case DTYPE_0B255:
+		//if(*paramValue > 255)
+		//	*paramValue = 255;
+		break;
+
+
+	case DTYPE_1B16://parameter_dtypes[paramNr] & 0x0F
+		if(*paramValue < 1)
+			*paramValue = 1;
+		else if(*paramValue > 16)
+			*paramValue = 16;
+		break;
+	case DTYPE_MIX_FM://parameter_dtypes[paramNr] & 0x0F
+	case DTYPE_ON_OFF:
+	case DTYPE_0b1:
+		if(*paramValue > 1)
+			*paramValue = 1;
+		break;
+
+
+
+	case DTYPE_MENU://parameter_dtypes[paramNr] & 0x0F
+	{
+		//get the used menu (upper 4 bit)
+		const uint8_t menuId = pgm_read_byte(&parameter_dtypes[paramNr]) >> 4;
+		//get the number of entries
+		uint8_t numEntries = getMaxEntriesForMenu(menuId);
+		if(*paramValue >= numEntries)
+			*paramValue = (uint8_t)(numEntries-1);
+
+	} // parameter_dtypes[paramNr] & 0x0F case DTYPE_MENU
+		break;
+
+	default://parameter_dtypes[paramNr] & 0x0F
+	case DTYPE_0B127:
+		if(*paramValue > 127)
+			*paramValue = 127;
+		break;
+	} //parameter_dtypes[paramNr] & 0x0F
+
+
+	// --AS TODO this will also send MIDI_CC or CC_2 for the above items that have already been sent. is this desired?
+	//send parameter change to uart tx
+	if(paramNr < 128) // => Sound Parameter
+		frontPanel_sendData(MIDI_CC,(uint8_t)paramNr,*paramValue);
+	else if(paramNr > 127 && (paramNr < END_OF_SOUND_PARAMETERS)) // => Sound Parameter above 127
+		frontPanel_sendData(CC_2,(uint8_t)(paramNr-128),*paramValue);
+	else // non sound parameters (ie current step data, etc)
+		menu_parseGlobalParam(paramNr,parameter_values[paramNr]);
+
+	//frontPanel_sendData(0xb0,paramNr,*paramValue);
+}
+
+//-----------------------------------------------------------------
+// given an encoder wheel change, will set the menu item to the correct new one
+// or not change it if boundaries are reached
+static void menu_moveToMenuItem(int8_t inc)
+{
+
+	int8_t activeParameter	= menuIndex & MASK_PARAMETER; // will be 0 to 7
+	int8_t activePage		= (int8_t)(menuIndex >> PAGE_SHIFT); // will be 0 to 31
+	uint8_t needLock=0;
+	uint8_t param;
+	uint8_t allowedSkips	=3; //how many skip items do we allow in a row
+
+	// clamp encoder to +/- 1 to make logic simpler
+	inc = inc>0?1:-1;
+
+checkvalid:
+	DISABLE_CONV_WARNING
+	activeParameter+=inc; // set new desired active parameter value
+	END_DISABLE_CONV_WARNING
+	if(inc > 0) {
+		if(activeParameter == 4) { // move to 2nd section of sub-page
+			needLock=1;
+		} else if(activeParameter == 8) { // moved past end of 2nd sub-page
+			if(menu_activePage==MENU_MIDI_PAGE) { // in global menu, we can move to next sub-page
+				needLock=1;
+				activeParameter=0; // set to par 0 of next sub page
+				activePage++; // and change page
+				if(activePage >=NUM_SUB_PAGES)
+					activePage=0; // wrap around to 1st (would only happen if we fill all 8. unlikely)
+			} else
+				return; // moved past last param on section 2. not allowed in most modes
+		}
+	} else { // inc == -1
+		if(activeParameter == 3) { // move to first section of sub-page
+			needLock=1;
+		} else if(activeParameter==-1) { // if we went past 0
+			if(menu_activePage==MENU_MIDI_PAGE) { // in global menu, we can move to previous sub-page
+				needLock=1;
+				activeParameter=7; // put us on the last param of the previous sub-page
+				activePage--; // and change page
+				if(activePage < 0)
+					activePage=NUM_SUB_PAGES-1; //wrap around to last page (would only happen if we fill all 8. unlikely)
+			} else
+				return; // move past first param on section 1. not allowed in most modes
+		}
+	}
+
+	// read the new param
+	param = pgm_read_byte(&menuPages[menu_activePage][activePage].top1 + activeParameter);
+	if(param == TEXT_SKIP && allowedSkips--) // skip this one and check the next
+		goto checkvalid;
+	else
+		return; // would never happen unless we have > 3 skips in a row
+
+	if(param == TEXT_EMPTY) // disallow the change
+		return;
+
+	// set the change
+	menuIndex = (uint8_t)( (activePage << PAGE_SHIFT) | activeParameter);
+	if(needLock)
+		lockPotentiometerFetch();
+}
+
 //-----------------------------------------------------------------
 void menu_resetSaveParameters()
 {
@@ -1995,6 +1983,9 @@ void menu_resetSaveParameters()
 
 }
 //-----------------------------------------------------------------
+// switches us to a different menu sub page. If that page is already active
+// and has multiple screens, will toggle to the other screen
+// if its the global menu, and there are multiple pages will toggle to the next page
 void menu_switchSubPage(uint8_t subPageNr)
 {
 	//lock all parameters
@@ -2011,20 +2002,24 @@ void menu_switchSubPage(uint8_t subPageNr)
 		//if we are already on the desired sub-page, toggle between 1st and 2nd page
 		if(activeParameter>=4)
 		{
-			// --AS GMENU if we are in global menu, move to next sub page if any
+			// --AS **GMENU if we are in global menu, move to next sub page if any
 			if(menu_activePage==MENU_MIDI_PAGE) {
 				// see if there is a subpage after this with valid items
-				if(activePage < 7 && pgm_read_byte(&menuPages[menu_activePage][activePage+1].top1 != TEXT_EMPTY) {
+				if(activePage < NUM_SUB_PAGES-1 && pgm_read_byte(&menuPages[menu_activePage][activePage+1].top1) != TEXT_EMPTY) {
 					activePage++; // move to next sub page
 				} else {
-					// no page after this, move to first subpage (wrap around)
+					// no page after this, move to first subpage (wrap around to first)
 					activePage=0;
 				}
 			}
 
-			activeParameter -= 4;	
+			DISABLE_CONV_WARNING
+			activeParameter -= 4;
+			END_DISABLE_CONV_WARNING
 		} else {
+			DISABLE_CONV_WARNING
 			activeParameter +=4;
+			END_DISABLE_CONV_WARNING
 		}
 
 		menuIndex = (uint8_t)( (activePage << PAGE_SHIFT) | activeParameter);
