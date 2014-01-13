@@ -85,11 +85,36 @@ filtering stuff:
 - back end code to receive filter settings and set bits
 - prog change code will now send on the channel associated with voice 1
 
-code cleanup prior to global menu expansion (GMENU):
-- button handling code refactoring.
-- check shift button release when in perf mode. should it do anything with mute led's on voices? (code might have a bug)
+global menu expansion:
+This allows the global menu to have more than 8 items. Code might be designated with GMENU.
+- button handling code refactoring. This was done to make the code easier to read and maintain
+  + designate functions as static to aid inlining
+  + move functions to keep all static ones together
+  + comment out unused functions
+  + buttonHandler_buttonReleased - reduce comparisons by simplifying case stmt
+  + break out sequence and part select buttons into own functions buttonHandler_seqButtonReleased and buttonHandler_partButtonReleased
+  + buttonHandler_seqButtonReleased comment out timer action check (timer would not be armed in that place)
+  + buttonHandler_buttonPressed - reduce comparisons by simplifying case stmt
+  + break out sequence, part and voice button presses into own functions 
+- menu_switchPage - add specific handling for MENU_MIDI_PAGE ( was handled under default case which might have been problematic now or in the future)
+- param fetch lock fix to work if switching to another global sub-page
+- when in global menu, and there are pages both before and after current, show a * for the cursor
+- when in global menu, allow moving to next sub-page if there is a param available on the next page
+- break out menu_moveToMenuItem and menu_encoderChangeParameter for readability/maintainability
+- menu_moveToMenuItem - this was made simpler, also fixed to handle the global menu page switches. also allow up to 3 skip items
 
-note TEXT_SKIP is only used as a spacer to force items onto page 2 if they belong there
-things to try:
-go to 1st page on page 1 of any voice, encode to left and encode left before 1st item. What happens
-go to a page that has two full pages and scroll right, does it go to next page?
+midi note handling:
+This functionality allows midi notes received on channels to be handled in a way that is consistent with how the 
+midi note setting is set for each voice. If a voice's midi note setting is set to "any" and a note is received on the
+channel designated for that voice, the drum sound is triggered with that note value. If the setting is a specific note, then
+only that note will cause the drum sound to trigger (with the default note value)
+- make some functions static
+- voiceControl_noteOn - this is to consolidate code that plays a voice, blinks the led and does the hardware triggers (there was duplicated code)
+- midiParser_noteOn - check midi note for voice against "any" or the note coming in
+- midiParser_parseMidiMessage - for note on/note off we loop through the voices to see what channels are listening
+- NOTE_VOICE* comment out, as we don't need these (Each voice is configurable now)
+- seq_addNote now takes the note value to add
+
+- todo check shift button release when in perf mode. should it do anything with mute led's on voices? (code might have a bug)
+- todo check that shift voice in perf mode unmutes all up to clicked voice
+
