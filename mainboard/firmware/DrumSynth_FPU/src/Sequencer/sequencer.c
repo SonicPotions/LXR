@@ -298,7 +298,7 @@ static void seq_sendMidi(MidiMsg msg)
 
 
 //------------------------------------------------------------------------------
-void seq_parseAutomationNodes(uint8_t track, Step* stepData)
+static void seq_parseAutomationNodes(uint8_t track, Step* stepData)
 {
 	//set new destination
 	autoNode_setDestination(&seq_automationNodes[track][0], stepData->param1Nr);
@@ -317,35 +317,13 @@ void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note)
 
 	seq_parseAutomationNodes(voiceNr, &seq_patternSet.seq_subStepPattern[seq_activePattern][voiceNr][seq_stepIndex[voiceNr]]);
 
-	if(voiceNr < 3)
-	{
-		Drum_trigger(voiceNr,vol, note);
-	}
-	else if(voiceNr<4)
-	{
-		Snare_trigger(vol,note);
-	}
-	else if(voiceNr<5)
-	{
-		Cymbal_trigger(vol,note);
-	}
-	else
-	{
-		HiHat_trigger(vol,voiceNr-5,note);
-	}
-
-	trigger_triggerVoice(voiceNr);
-
-	//to flash the LED, the Frontpanel AVR needs to know about note ons
-	uart_sendFrontpanelByte(NOTE_ON);
-	uart_sendFrontpanelByte(voiceNr);
-	uart_sendFrontpanelByte(0);
+	voiceControl_noteOn(voiceNr,vol,note);
 
 	/* --AS getting ride of the midi mode
-	if(midi_mode == MIDI_MODE_TRIGGER)
+	//if(midi_mode == MIDI_MODE_TRIGGER)
 	{
-		 midiChan = midi_MidiChannels[0];
-		 midiNote=NOTE_VOICE1+voiceNr;
+		// midiChan = midi_MidiChannels[0];
+		 //midiNote=NOTE_VOICE1+voiceNr;
 	}
 	else
 	{*/
@@ -524,7 +502,7 @@ void seq_nextStep()
 						const uint8_t note = seq_patternSet.seq_subStepPattern[seq_activePattern][i][seq_stepIndex[i]].note;
 						seq_triggerVoice(i,vol,note);
 
-						seq_addNote(i,vol);
+						seq_addNote(i,vol, note); // --AS todo should this be note or should it be SEQ_DEFAULT_NOTE (before my change it would have been SEQ_DEFAULT_NOTE)
 					}
 				}
 			}
@@ -872,7 +850,7 @@ void seq_setRoll(uint8_t voice, uint8_t onOff)
 			//trigger one shot
 			seq_triggerVoice(voice,ROLL_VOLUME,SEQ_DEFAULT_NOTE);
 			//record roll notes
-			seq_addNote(voice,ROLL_VOLUME);
+			seq_addNote(voice,ROLL_VOLUME,SEQ_DEFAULT_NOTE);
 		}
 	} else {
 		seq_rollState &= ~(1<<voice);
@@ -1042,7 +1020,7 @@ void seq_recordAutomation(uint8_t voice, uint8_t dest, uint8_t value)
 	}
 }
 //------------------------------------------------------------------------
-void seq_addNote(uint8_t trackNr,uint8_t vel)
+void seq_addNote(uint8_t trackNr,uint8_t vel, uint8_t note)
 {
 	//only record notes when seq is running and recording
 	if(seq_running && seq_recordActive)
@@ -1060,7 +1038,7 @@ void seq_addNote(uint8_t trackNr,uint8_t vel)
 		}
 
 		//set the current step in the requested track active
-		seq_patternSet.seq_subStepPattern[seq_activePattern][trackNr][quantizedStep].note 		= SEQ_DEFAULT_NOTE;	// default note
+		seq_patternSet.seq_subStepPattern[seq_activePattern][trackNr][quantizedStep].note 		= note;				// note (--AS was SEQ_DEFAULT_NOTE)
 		seq_patternSet.seq_subStepPattern[seq_activePattern][trackNr][quantizedStep].volume		= vel;				// new velocity
 		seq_patternSet.seq_subStepPattern[seq_activePattern][trackNr][quantizedStep].prob		= 127;				// 100% probability
 

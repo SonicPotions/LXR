@@ -915,8 +915,7 @@ static uint8_t checkScrollSign(uint8_t activePage, uint8_t activeParameter)
 	const uint8_t is2ndPage = (activeParameter>3);
 	if(has2ndPage(activePage))
 	{
-		// --AS **GMENU if we are on 2nd page, and there are more pages after this show "*"
-		//              to signify both ways are available
+		//**GMENU if we are on 2nd page, and there are more pages after this show "*" to signify both ways are available
 		if(is2ndPage && menu_activePage==MENU_MIDI_PAGE) {
 			if((activePage < NUM_SUB_PAGES-1) && (pgm_read_byte(&menuPages[MENU_MIDI_PAGE][activePage+1].top1) != TEXT_EMPTY))
 				return '*';
@@ -2002,7 +2001,7 @@ void menu_switchSubPage(uint8_t subPageNr)
 		//if we are already on the desired sub-page, toggle between 1st and 2nd page
 		if(activeParameter>=4)
 		{
-			// --AS **GMENU if we are in global menu, move to next sub page if any
+			//**GMENU if we are in global menu, move to next sub page if any
 			if(menu_activePage==MENU_MIDI_PAGE) {
 				// see if there is a subpage after this with valid items
 				if(activePage < NUM_SUB_PAGES-1 && pgm_read_byte(&menuPages[menu_activePage][activePage+1].top1) != TEXT_EMPTY) {
@@ -2081,7 +2080,7 @@ void menu_switchPage(uint8_t pageNr)
 		//activate the parameter lock
 		lockPotentiometerFetch();
 
-		// --AS GMENU TODO do we need to clear any leds?
+		// **GMENU TODO do we need to clear any leds?
 		if (toggle) // if we are on the settings page already, toggle between all pages
 			menu_switchSubPage(menu_getSubPage());
 

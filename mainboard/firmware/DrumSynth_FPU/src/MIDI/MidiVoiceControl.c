@@ -41,54 +41,35 @@
 #include "MidiMessages.h"
 #include "CymbalVoice.h"
 #include "sequencer.h"
+#include "TriggerOut.h"
+#include "Uart.h"
 //#include "LCD_driver.h"
 
 //static uint8_t c = 0;
 //------------------------------------------------------
-void voiceControl_noteOn(uint8_t note, uint8_t vel)
+// this fn assumes a valid voice is sent
+void voiceControl_noteOn(uint8_t voice, uint8_t note, uint8_t vel)
 {
+	if(voice < 3)
+		Drum_trigger(voice, vel, note);
+	else if(voice < 4)
+		Snare_trigger(vel, note);
+	else if(voice < 5)
+		Cymbal_trigger(vel, note);
+	else
+		HiHat_trigger(vel,voice-5,note);
 
-	uint8_t voice = note-NOTE_VOICE1;
-	if(seq_isTrackMuted(voice))
-	{
-		return;
-	}
+	// drum triggers
+	trigger_triggerVoice(voice);
 
-	switch(note)
-	{
-	case NOTE_VOICE1:
-	case NOTE_VOICE2:
-	case NOTE_VOICE3:
-
-		Drum_trigger(note-NOTE_VOICE1, vel,SEQ_DEFAULT_NOTE);
-		break;
-
-	case NOTE_VOICE4:
-		Snare_trigger(vel,SEQ_DEFAULT_NOTE);
-		break;
-	case NOTE_VOICE5:
-		Cymbal_trigger(vel,SEQ_DEFAULT_NOTE);
-		break;
-
-	case NOTE_VOICE6:
-		HiHat_trigger(vel,0,SEQ_DEFAULT_NOTE);
-		break;
-
-	case NOTE_VOICE7:
-		HiHat_trigger(vel,1,SEQ_DEFAULT_NOTE);
-		break;
-	default:
-
-		return;
-		break;
-	}
-
-	//Recording Mode
-	seq_addNote(note-NOTE_VOICE1,vel);
+	// Send to front panel so it can pulse the LED
+	uart_sendFrontpanelByte(NOTE_ON);
+	uart_sendFrontpanelByte(voice);
+	uart_sendFrontpanelByte(0);
 }
 //------------------------------------------------------
-void voiceControl_noteOff(uint8_t note, uint8_t vel)
-{
-
-}
+//void voiceControl_noteOff(uint8_t voice, uint8_t note, uint8_t vel)
+//{
+//
+//}
 //------------------------------------------------------

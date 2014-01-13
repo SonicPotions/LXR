@@ -188,7 +188,7 @@ void seq_setRoll(uint8_t voice, uint8_t onOff);
 void seq_setRollRate(uint8_t rate);
 //------------------------------------------------------------------------------
 /** add a note to the current pattern position*/
-void seq_addNote(uint8_t trackNr,uint8_t vel);
+void seq_addNote(uint8_t trackNr,uint8_t vel, uint8_t note);
 //------------------------------------------------------------------------------
 void seq_setRecordingMode(uint8_t active);
 //------------------------------------------------------------------------------

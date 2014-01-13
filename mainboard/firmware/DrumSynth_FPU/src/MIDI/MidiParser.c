@@ -99,13 +99,15 @@ static void midiDebugSend(uint8_t b1, uint8_t b2)
 #endif
 
 //----------------------------------------------------------
+#if 0
 inline uint16_t calcSlopeEgTime(uint8_t data2)
 {
 	float val = (data2+1)/128.f;
 	return data2>0?val*val*data2*128:1;
 }
+#endif
 //-----------------------------------------------------------
-inline float calcPitchModAmount(uint8_t data2)
+static inline float calcPitchModAmount(uint8_t data2)
 {
 	const float val = data2/127.f;
 	return val*val*PITCH_AMOUNT_FACTOR;
@@ -125,11 +127,7 @@ MidiMsg midiMsg_tmp;				// buffer message where the incoming data is stored
 static uint8_t parserState = IGNORE;	// state of the parser state machine. Set to what it's expecting next
 										// we set it to ignore initially so that any random data we get before
 										// a valid msg header is ignored
-//-----------------------------------------------------------
-//macros
-//-----------------------------------------------------------
-/**check if the lower nibble of the status byte fits our midi channel (track 1)*/
-#define midiParser_isValidMidiChannel(x) ((x&0x0f) == midi_MidiChannels[0])
+
 //-----------------------------------------------------------
 //takes a midi value from 0 to 127 and return +/- 50 cent detune factor
 float midiParser_calcDetune(uint8_t value)
@@ -148,7 +146,7 @@ float midiParser_calcDetune(uint8_t value)
 	return cent;
 }
 //-----------------------------------------------------------
-void midiParser_nrpnHandler(uint16_t value)
+static void midiParser_nrpnHandler(uint16_t value)
 {
 	MidiMsg msg2;
 	msg2.status = MIDI_CC2;
@@ -1086,6 +1084,38 @@ void midiParser_checkMtc()
 	}
 }
 
+//------------------------------------------------------
+// this fn assumes a valid voice is sent
+static void midiParser_noteOn(uint8_t voice, uint8_t note, uint8_t vel)
+{
+
+	if(seq_isTrackMuted(voice))
+		return;
+
+	// --AS check the midi mode for the voice. If it's "any", trigger that note.
+	// if it's some other note, trigger the drum voice only if it matches, and in this case
+	// trigger the default note
+
+	if(midi_NoteOverride[voice] != 0) {
+		// looking for specific note
+		if(note==midi_NoteOverride[voice])
+			note=SEQ_DEFAULT_NOTE; // match found. Play default note
+		else
+			return; // note does not match. Do nothing
+	}
+
+	voiceControl_noteOn(voice,note,vel);
+
+	//Recording Mode - record the note to sequencer
+	seq_addNote(voice,vel, note);
+}
+//------------------------------------------------------
+//static void midiParser_noteOff(uint8_t voice, uint8_t note, uint8_t vel)
+//{
+	// in case we ever need it
+//}
+
+
 //-----------------------------------------------------------
 /** Parse incoming midi messages and invoke corresponding action
  */
@@ -1188,63 +1218,53 @@ void midiParser_parseMidiMessage(MidiMsg msg)
 			break;
 		}
 
-	} else if(midiParser_isValidMidiChannel(msg.status)) {
-		//only do something if the midi channel is right
-		// --AS todo we need to honor the channels on each voice for some of these
-		switch(msg.status & 0xF0)
-		{
-		case NOTE_OFF:
-			if(midiParser_txRxFilter & 0x01)
-				voiceControl_noteOff(msg.data1, msg.data2);
-			break;
+	} else { // channel specific message
+		const uint8_t msgonly =msg.status & 0xF0;
+		const uint8_t chanonly=msg.status & 0x0F;
 
-		case NOTE_ON:
+		if((msgonly & 0xE0) == 0x80) {
+			// note on or note off message (one of these two only)
 			if(midiParser_txRxFilter & 0x01) {
-				if(msg.data2 == 0) {
-					//zero velocity note off
-					voiceControl_noteOff(msg.data1, msg.data2);
-				} else {
-					voiceControl_noteOn(msg.data1, msg.data2);
-					//Also used in sequencer trigger note function
-					// Send to front panel so it can pulse the LED
-					uart_sendFrontpanelByte(msg.status);
-					uart_sendFrontpanelByte(msg.data1-NOTE_VOICE1);
-					uart_sendFrontpanelByte(msg.data2);
-				}
-			}
-			break;
+				// check each voice to see if it cares about this message
+				int8_t v;
+				for(v=0;v<7;v++) {
+					if(midi_MidiChannels[v]==chanonly) {
+						if(msgonly==NOTE_ON && msg.data2) {
+							midiParser_noteOn(v, msg.data1, msg.data2);
+							//Also used in sequencer trigger note function
+						} else { // NOTE_OFF or zero velocity note
+							//midiParser_noteOff(v, msg.data1, msg.data2);
+						}
+					} // if channel matches
+				} // for each voice
+			} // check midi filter
 
-		case MIDI_CC:
-			if(midiParser_txRxFilter & 0x04) {
+		} else if(msgonly==PROG_CHANGE) {
+			// --AS respond to prog change and change patterns. This responds only when voice 0 channel matches.
+			if((midiParser_txRxFilter & 0x08) && (chanonly == midi_MidiChannels[0]))
+				seq_setNextPattern(msg.data1 & 0x07);
+
+		} else if(msgonly==MIDI_CC){
+			// respond to CC message. This responds only when voice 0 channel matches the cc message
+			if((midiParser_txRxFilter & 0x04) && (chanonly == midi_MidiChannels[0])) {
 				//record automation if record is turned on
 				seq_recordAutomation(frontParser_activeTrack, msg.data1, msg.data2);
 
 				//handle midi data
 				midiParser_ccHandler(msg,1);
-				//we received a midi cc message from the physical midi in port
-				//forward it to the front panel
+				//we received a midi cc message forward it to the front panel
 				uart_sendFrontpanelByte(msg.status);
 				uart_sendFrontpanelByte(msg.data1);
 				uart_sendFrontpanelByte(msg.data2);
 			}
-			break;
-
-		case PROG_CHANGE:
-			// --AS respond to prog change and change patterns TODO right now this responds only when voice 0 channel matches.
-			// should it respond on any channel?
-			if(midiParser_txRxFilter & 0x08)
-				seq_setNextPattern(msg.data1 & 0x7);
-			break;
-
-		case MIDI_PITCH_WHEEL:
-			break;
-
-		default:
-			//unknown midi message. do nothing
-			break;
+		} else {
+			// anything else
+			// TODO MIDI_PITCH_WHEEL ?
 		}
-	}
+	} // channel specific vs non channel specific
+
 }
+
 //-----------------------------------------------------------
 
 void midiParser_handleStatusByte(unsigned char data)
