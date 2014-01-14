@@ -103,6 +103,10 @@ uint8_t seq_barCounter;						/**< counts the absolute position in bars since the
 
 static uint8_t seq_loadPendigFlag = 0;
 
+// --AS Allow it to be configured whether it keeps track of bar position in the song for
+// the purpose of pattern changes
+uint8_t seq_resetBarOnPatternChange=0;
+
 // --AS keep track of which midi notes are playing
 static uint8_t midi_chan_notes[16];		    /**< what note is playing on each channel */
 static uint16_t midi_notes_on=0;		    /**< which channels have a note currently playing */
@@ -155,7 +159,6 @@ void seq_init()
 	}
 
 	memset(seq_stepIndex,0,NUM_TRACKS);
-
 
 	for(i=0;i<NUM_PATTERN;i++)
 	{
@@ -395,6 +398,11 @@ void seq_nextStep()
 		// set pendingPattern active
 		if((seq_activePattern != seq_pendingPattern) || seq_loadPendigFlag)
 		{
+			//--AS if this setting is active and the user has manually changed patterns,
+			// reset the bar counter
+			if(seq_loadPendigFlag && seq_resetBarOnPatternChange)
+				seq_barCounter=0;
+
 			seq_loadPendigFlag = 0;
 			//first check if 2 new pattern is available
 			if(seq_newPatternAvailable)

@@ -294,7 +294,8 @@ const char shortNames[][4] PROGMEM  =
 	{"mid"},
 	{"mrt"}, // midi routing
 	{"txf"}, // midi tx filter
-	{"rxf"}  // midi rx filter
+	{"rxf"},  // midi rx filter
+	{"pcr"}, // pattern change resets bar counter
 };
 //-----------------------------------------------------------------
 // These correspond with the catNamesEnum in menu.h
@@ -398,6 +399,7 @@ const char longNames[][16] PROGMEM =
 	{"Routing"}, // midi routing
 	{"TxFilter"}, // midi tx filtering
 	{"RxFilter"}, // midi rx filtering
+	{"PCReset" }, // reset bar counter on manual pattern change
 };
 
 

@@ -833,7 +833,11 @@ static void frontParser_handleSeqCC()
 	case FRONT_SEQ_MIDI_RX_FILTER:
 		midiParser_setFilter(frontParser_midiMsg.data1==FRONT_SEQ_MIDI_TX_FILTER, frontParser_midiMsg.data2);
 		break;
-
+	case FRONT_SEQ_BAR_RESET_MODE:
+		// --AS a setting of 0 is default (keep track of bars in song), a setting of 1 is
+		// to reset the bar counter when a manual pattern change occurs
+		seq_resetBarOnPatternChange = frontParser_midiMsg.data2;
+		break;
 	default:
 		break;
 	}

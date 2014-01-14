@@ -126,6 +126,7 @@ extern uint8_t frontPanel_sysexMode;
 #define SEQ_MIDI_ROUTING    0x2f
 #define SEQ_MIDI_FILT_TX	0x30
 #define SEQ_MIDI_FILT_RX	0x31
+#define SEQ_BAR_RESET_MODE  0x32 //--AS
 
 //SysEx
 #define SYSEX_REQUEST_STEP_DATA			0x01

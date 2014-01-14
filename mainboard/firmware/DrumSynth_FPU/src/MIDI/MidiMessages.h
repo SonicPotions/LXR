@@ -465,6 +465,7 @@ enum
 #define FRONT_SEQ_MIDI_ROUTING			0x2f	// midi routing
 #define FRONT_SEQ_MIDI_TX_FILTER		0x30    // tx filtering
 #define FRONT_SEQ_MIDI_RX_FILTER		0x31    // rx filtering
+#define FRONT_SEQ_BAR_RESET_MODE		0x32	// --AS reset bar on manual pattern change (0 is default - to not reset)
 
 //codec control messages
 #define EQ_ON_OFF						0x01

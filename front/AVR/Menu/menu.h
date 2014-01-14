@@ -181,6 +181,7 @@ enum NamesEnum
 	TEXT_MIDI_ROUTING,
 	TEXT_MIDI_FILT_TX,
 	TEXT_MIDI_FILT_RX,
+	TEXT_BAR_RESET_MODE,
 	NUM_NAMES
 };
 //-----------------------------------------------------------------
@@ -264,7 +265,8 @@ enum shortNamesEnum
 	SHORT_MIDI,
 	SHORT_MIDI_ROUTING,
 	SHORT_MIDI_FILT_TX,
-	SHORT_MIDI_FILT_RX
+	SHORT_MIDI_FILT_RX,
+	SHORT_BAR_RESET_MODE
 
 
 	
@@ -368,7 +370,8 @@ enum longNamesEnum
 	LONG_GAIN2,
 	LONG_MIDI_ROUTING,
 	LONG_MIDI_FILT_TX,
-	LONG_MIDI_FILT_RX
+	LONG_MIDI_FILT_RX,
+	LONG_BAR_RESET_MODE,
 	
 };
 //-----------------------------------------------------------------

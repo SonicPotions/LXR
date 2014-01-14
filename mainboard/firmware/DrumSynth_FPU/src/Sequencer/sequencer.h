@@ -120,6 +120,8 @@ extern TempPattern seq_tmpPattern;
 
 extern uint8_t seq_selectedStep;
 
+extern uint8_t seq_resetBarOnPatternChange;
+
 //------------------------------------------------------------------------------
 void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note);
 //------------------------------------------------------------------------------

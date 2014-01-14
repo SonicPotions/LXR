@@ -209,6 +209,7 @@ const Name valueNames[NUM_NAMES] PROGMEM =
 		{SHORT_MIDI_ROUTING, CAT_MIDI, LONG_MIDI_ROUTING}, // TEXT_MIDI_ROUTING
 		{SHORT_MIDI_FILT_TX, CAT_MIDI, LONG_MIDI_FILT_TX}, // TEXT_MIDI_FILT_TX
 		{SHORT_MIDI_FILT_RX, CAT_MIDI, LONG_MIDI_FILT_RX}, // TEXT_MIDI_FILT_RX
+		{SHORT_BAR_RESET_MODE, CAT_SEQUENCER, LONG_BAR_RESET_MODE}, // TEXT_BAR_RESET_MODE
 
 };
 
@@ -480,7 +481,8 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 	    /*PAR_MIDI_CHAN_7*/ 	DTYPE_1B16,
 	    /*PAR_MIDI_ROUTING*/	DTYPE_MENU | (MENU_MIDI_ROUTING<<4),
 	    /*PAR_MIDI_FILT_TX*/    DTYPE_MENU | (MENU_MIDI_FILTERING<<4),
-	    /*PAR_MIDI_FILT_RX*/    DTYPE_MENU | (MENU_MIDI_FILTERING<<4)
+	    /*PAR_MIDI_FILT_RX*/    DTYPE_MENU | (MENU_MIDI_FILTERING<<4),
+	    /*PAR_BAR_RESET_MODE*/  DTYPE_ON_OFF,
 };
 
 
@@ -2425,8 +2427,11 @@ void menu_parseGlobalParam(uint16_t paramNr, uint8_t value)
 		frontPanel_sendData(SEQ_CC, SEQ_MIDI_FILT_TX, value);
 		break;
 	case PAR_MIDI_FILT_RX:
-			frontPanel_sendData(SEQ_CC, SEQ_MIDI_FILT_RX, value);
-			break;
+		frontPanel_sendData(SEQ_CC, SEQ_MIDI_FILT_RX, value);
+		break;
+	case PAR_BAR_RESET_MODE:
+		frontPanel_sendData(SEQ_CC, SEQ_BAR_RESET_MODE, value);
+		break;
 
 	}
 }

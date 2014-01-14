@@ -353,18 +353,19 @@ enum ParamEnums
 	PAR_MIDI_CHAN_5,
 	PAR_MIDI_CHAN_6,
 
-	PAR_FETCH,
-	PAR_FOLLOW,
+	PAR_FETCH,							// bool
+	PAR_FOLLOW,							// bool
 	
 	
 	PAR_QUANTISATION,
 	
-	PAR_SCREENSAVER_ON_OFF,
+	PAR_SCREENSAVER_ON_OFF,				// bool
 	PAR_MIDI_MODE,						/*260*/ //--AS unused now
 	PAR_MIDI_CHAN_7,
 	PAR_MIDI_ROUTING,
 	PAR_MIDI_FILT_TX,
 	PAR_MIDI_FILT_RX,
+	PAR_BAR_RESET_MODE,					// bool --AS 0 or 1
 
 	NUM_PARAMS	
 };
