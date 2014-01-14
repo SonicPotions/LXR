@@ -913,16 +913,37 @@ static uint8_t has2ndPage(uint8_t menuPage)
 static uint8_t checkScrollSign(uint8_t activePage, uint8_t activeParameter)
 {
 	const uint8_t is2ndPage = (activeParameter>3);
-	if(has2ndPage(activePage))
-	{
-		//**GMENU if we are on 2nd page, and there are more pages after this show "*" to signify both ways are available
-		if(is2ndPage && menu_activePage==MENU_MIDI_PAGE) {
+
+	//**GMENU show '*' when both left and right movement are possible in the global settings menu
+	// show > or < as appropriate
+	if(menu_activePage==MENU_MIDI_PAGE) {
+		if(is2ndPage) {
+			//if we are on 2nd screen, and there are more sub-pages after this show "*" to signify both ways are available
 			if((activePage < NUM_SUB_PAGES-1) && (pgm_read_byte(&menuPages[MENU_MIDI_PAGE][activePage+1].top1) != TEXT_EMPTY))
 				return '*';
+			else // on 2nd screen, no sub-pages after this
+				return '<';
+		} else { // on 1st screen
+			if(has2ndPage(activePage)) { // have a second screen
+				if(activePage > 0)  // on first screen and there are sub-pages before this and a second screen after
+					return '*';
+				else
+					return '>';
+			} else { // don't have a second screen
+				if(activePage > 0) // on first screen and have sub-pages before this but not second screen after
+					return '<';
+				else // on first screen, no sub-pages before... would not happen
+					return 0;
+			}
 		}
-		return is2ndPage?'<':'>';
 	}
-	else return 0;	
+
+	// normal handling for other menus
+	if(has2ndPage(activePage))
+		return is2ndPage?'<':'>';
+	else
+		return 0;
+
 }
 //-----------------------------------------------------------------
 void menu_setNumSamples(uint8_t num)
