@@ -317,7 +317,7 @@ void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note)
 
 	seq_parseAutomationNodes(voiceNr, &seq_patternSet.seq_subStepPattern[seq_activePattern][voiceNr][seq_stepIndex[voiceNr]]);
 
-	voiceControl_noteOn(voiceNr,vol,note);
+	voiceControl_noteOn(voiceNr, note, vol);
 
 	/* --AS getting ride of the midi mode
 	//if(midi_mode == MIDI_MODE_TRIGGER)

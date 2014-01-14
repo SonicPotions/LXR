@@ -118,3 +118,7 @@ only that note will cause the drum sound to trigger (with the default note value
 - todo check shift button release when in perf mode. should it do anything with mute led's on voices? (code might have a bug)
 - todo check that shift voice in perf mode unmutes all up to clicked voice
 
+
+bugs:
+-were we always sending timing clock even when not running? it is now
+- star is shown only on 2nd page if there is a subsequent (should be shown on 1st page too if there is a previous subpage)

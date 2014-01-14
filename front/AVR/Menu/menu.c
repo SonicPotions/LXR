@@ -1699,35 +1699,32 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 
 	if(menu_activePage == LOAD_PAGE || menu_activePage == SAVE_PAGE) {
 		menu_handleLoadSaveMenu(inc, btnClicked);
-		return;
-	}
-	if(inc==0)
-		return;
+	} else if(inc!=0) {
+		//============================= handle encoder change ==============================
+		if(copyClear_isClearModeActive()) {
+			//encoder selects clear target
+			uint8_t target = copyClear_getClearTarget();
+			if(inc<0) {
+				if(target!=0) {
+					target--;
+				}
+			} else if(inc>0) {
+				if(target!=CLEAR_AUTOMATION2) {
+					target++;
+				}
+			}
+			copyClear_setClearTarget(target);
+			return;
 
-	//============================= handle encoder change ==============================
-	if(copyClear_isClearModeActive()) {
-		//encoder selects clear target
-		uint8_t target = copyClear_getClearTarget();
-		if(inc<0) {
-			if(target!=0) {
-				target--;
-			}
-		} else if(inc>0) {
-			if(target!=CLEAR_AUTOMATION2) {
-				target++;
-			}
+		} else if(editModeActive) {
+			// edit mode is active so change the value of the current parameter
+			menu_encoderChangeParameter(inc);
+		} else {
+			//edit mode not active so encoder selects active parameter
+			menu_moveToMenuItem(inc);
 		}
-		copyClear_setClearTarget(target);
-		return;
 
-	} else if(editModeActive) {
-		// edit mode is active so change the value of the current parameter
-		menu_encoderChangeParameter(inc);
-	} else {
-		//edit mode not active so encoder selects active parameter
-		menu_moveToMenuItem(inc);
 	}
-
 	menu_repaintAll();
 }
 
@@ -1948,10 +1945,12 @@ checkvalid:
 
 	// read the new param
 	param = pgm_read_byte(&menuPages[menu_activePage][activePage].top1 + activeParameter);
-	if(param == TEXT_SKIP && allowedSkips--) // skip this one and check the next
-		goto checkvalid;
-	else
-		return; // would never happen unless we have > 3 skips in a row
+	if(param == TEXT_SKIP) {
+		if(allowedSkips--) // skip this one and check the next
+			goto checkvalid;
+		else
+			return; // would never happen unless we have > 3 skips in a row
+	}
 
 	if(param == TEXT_EMPTY) // disallow the change
 		return;
