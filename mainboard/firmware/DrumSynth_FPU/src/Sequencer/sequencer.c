@@ -1263,7 +1263,7 @@ static void seq_sendNoteOn(const uint8_t channel, const uint8_t note, const uint
 
 }
 
-/* This will send a prog change on the channel associated with voice 1 and will filter
+/* This will send a prog change on the global channel and will filter
  * out the message if appropriate
  */
 static void seq_sendProgChg(const uint8_t ptn)
@@ -1274,7 +1274,7 @@ static void seq_sendProgChg(const uint8_t ptn)
 	if((midiParser_txRxFilter & 0x80)==0)
 		return;
 
-	msg.status = PROG_CHANGE | midi_MidiChannels[0];
+	msg.status = PROG_CHANGE | midi_MidiChannels[7];
 	msg.data1=ptn;
 	msg.bits.length=1;
 	seq_sendMidi(msg);

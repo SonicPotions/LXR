@@ -71,7 +71,7 @@ void midiParser_setFilter(uint8_t is_tx, uint8_t value);
 extern uint8_t midiParser_originalCcValues[0xff];
 
 
-extern uint8_t midi_MidiChannels[7];
+extern uint8_t midi_MidiChannels[8]; // last element is global channel
 extern uint8_t midi_NoteOverride[7];
 //extern uint8_t midi_mode; --AS not used anymore
 

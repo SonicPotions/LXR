@@ -210,6 +210,7 @@ const Name valueNames[NUM_NAMES] PROGMEM =
 		{SHORT_MIDI_FILT_TX, CAT_MIDI, LONG_MIDI_FILT_TX}, // TEXT_MIDI_FILT_TX
 		{SHORT_MIDI_FILT_RX, CAT_MIDI, LONG_MIDI_FILT_RX}, // TEXT_MIDI_FILT_RX
 		{SHORT_BAR_RESET_MODE, CAT_SEQUENCER, LONG_BAR_RESET_MODE}, // TEXT_BAR_RESET_MODE
+		{SHORT_CHANNEL, CAT_MIDI, LONG_MIDI_CHANNEL}, // TEXT_MIDI_CHAN_GLOBAL
 
 };
 
@@ -483,6 +484,7 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 	    /*PAR_MIDI_FILT_TX*/    DTYPE_MENU | (MENU_MIDI_FILTERING<<4),
 	    /*PAR_MIDI_FILT_RX*/    DTYPE_MENU | (MENU_MIDI_FILTERING<<4),
 	    /*PAR_BAR_RESET_MODE*/  DTYPE_ON_OFF,
+	    /*PAR_MIDI_CHAN_GLOBAL*/DTYPE_1B16,		//--AS global midi channel
 };
 
 
@@ -2214,13 +2216,18 @@ void menu_parseGlobalParam(uint16_t paramNr, uint8_t value)
 	case PAR_MIDI_CHAN_4:
 	case PAR_MIDI_CHAN_5:
 	case PAR_MIDI_CHAN_6:
-
+	case PAR_MIDI_CHAN_GLOBAL:
 	{
-		uint8_t voice = (uint8_t)(paramNr - PAR_MIDI_CHAN_1);
+		uint8_t voice;
 		uint8_t channel = (uint8_t)(value-1);
+		if(paramNr==PAR_MIDI_CHAN_GLOBAL)
+			voice= 7; // will be 7 for global channel
+		else
+			voice=(uint8_t)(paramNr - PAR_MIDI_CHAN_1); // will be 0-6 for voice channels
 		frontPanel_sendData(SEQ_CC,SEQ_MIDI_CHAN,(uint8_t)((voice<<4) | channel ));
 	}
 	break;
+
 
 	case PAR_POS_X:
 		frontPanel_sendData(SEQ_CC,SEQ_SET_ACTIVE_TRACK,menu_getActiveVoice());

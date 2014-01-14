@@ -182,6 +182,7 @@ enum NamesEnum
 	TEXT_MIDI_FILT_TX,
 	TEXT_MIDI_FILT_RX,
 	TEXT_BAR_RESET_MODE,
+	TEXT_MIDI_CHAN_GLOBAL,
 	NUM_NAMES
 };
 //-----------------------------------------------------------------

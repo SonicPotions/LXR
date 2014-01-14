@@ -121,6 +121,15 @@ only that note will cause the drum sound to trigger (with the default note value
 bar reset switch:
 - This allows you to reset the bar to 1 when a pattern change is requested. It avoid the bar counting which causes patterns to
   fit a certain way (as described on p24 of manual). search for seq_resetBarOnPatternChange
+  
+Global midi channel:
+- added a global midi channel setting. This affects
+  + prog change - pc will only respond on this channel (used to be channel assoc with voice 0)
+  + ctrl change - cc will only respond on this channel (used to be channel assoc with voice 0)
+  + currently active voice will always respond to notes on this channel
+- Was able to reuse a front-to-back message and some of the code by adding an 8th element that represents this channel
+- midi_MidiChannels now has 8 elements where the last one represents global channel
+- 
 
 bugs:
 - star is shown only on 2nd page if there is a subsequent (should be shown on 1st page too if there is a previous subpage)

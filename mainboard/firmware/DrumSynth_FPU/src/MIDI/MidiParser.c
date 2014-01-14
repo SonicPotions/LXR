@@ -116,7 +116,7 @@ static inline float calcPitchModAmount(uint8_t data2)
 //-----------------------------------------------------------
 // vars
 //-----------------------------------------------------------
-uint8_t midi_MidiChannels[7];	// the currently selected midi channel for each voice
+uint8_t midi_MidiChannels[8];	// the currently selected midi channel for each voice (element 7 is global channel)
 
 //--AS note overrides for each voice
 uint8_t midi_NoteOverride[7];
@@ -1225,10 +1225,23 @@ void midiParser_parseMidiMessage(MidiMsg msg)
 		if((msgonly & 0xE0) == 0x80) {
 			// note on or note off message (one of these two only)
 			if(midiParser_txRxFilter & 0x01) {
+				int8_t v, q=-1;
+				// --AS if a note message comes in on global channel, then send that note to
+				// the voice that is currently active on the front.
+				if(midi_MidiChannels[7]==chanonly) {
+					q=frontParser_activeTrack; // avoid sending it again later if the active track happens to have the same channel set
+											   // (this might not really matter. does sending a note on twice do any harm?)
+					if(msgonly==NOTE_ON && msg.data2) {
+						midiParser_noteOn(frontParser_activeTrack, msg.data1, msg.data2);
+						//Also used in sequencer trigger note function
+					} else { // NOTE_OFF or zero velocity note
+						//midiParser_noteOff(v, msg.data1, msg.data2);
+					}
+				}
+
 				// check each voice to see if it cares about this message
-				int8_t v;
 				for(v=0;v<7;v++) {
-					if(midi_MidiChannels[v]==chanonly) {
+					if(midi_MidiChannels[v]==chanonly && v != q) { // if channel match and we haven't sent it already for the voice
 						if(msgonly==NOTE_ON && msg.data2) {
 							midiParser_noteOn(v, msg.data1, msg.data2);
 							//Also used in sequencer trigger note function
@@ -1240,13 +1253,13 @@ void midiParser_parseMidiMessage(MidiMsg msg)
 			} // check midi filter
 
 		} else if(msgonly==PROG_CHANGE) {
-			// --AS respond to prog change and change patterns. This responds only when voice 0 channel matches.
-			if((midiParser_txRxFilter & 0x08) && (chanonly == midi_MidiChannels[0]))
+			// --AS respond to prog change and change patterns. This responds only when global channel matches the PC message's channel.
+			if((midiParser_txRxFilter & 0x08) && (chanonly == midi_MidiChannels[7]))
 				seq_setNextPattern(msg.data1 & 0x07);
 
 		} else if(msgonly==MIDI_CC){
-			// respond to CC message. This responds only when voice 0 channel matches the cc message
-			if((midiParser_txRxFilter & 0x04) && (chanonly == midi_MidiChannels[0])) {
+			// respond to CC message. This responds only when global channel matches the cc message's channel
+			if((midiParser_txRxFilter & 0x04) && (chanonly == midi_MidiChannels[7])) {
 				//record automation if record is turned on
 				seq_recordAutomation(frontParser_activeTrack, msg.data1, msg.data2);
 

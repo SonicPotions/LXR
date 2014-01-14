@@ -231,7 +231,7 @@ int main(void)
 	seq_init();
 	seq_setBpm(120);
 
-	memset(midi_MidiChannels,0,7);
+	memset(midi_MidiChannels,0,8);
 	memset(midi_NoteOverride,0,7);
 
 	initDrumVoice();

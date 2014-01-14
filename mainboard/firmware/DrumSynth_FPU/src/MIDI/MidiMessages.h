@@ -418,7 +418,8 @@ enum
 #define FRONT_LED_PULSE_BEAT			0x04	/**< pulse the beat indicator LED*/
 #define FRONT_LED_SEQ_SUB_STEP			0x05
 
-#define VOICE_MIDI_CHAN					0x02
+//--AS appears unused
+//#define VOICE_MIDI_CHAN					0x02
 
 //Sequencer commands
 #define FRONT_SEQ_RUN_STOP				0x01
@@ -460,12 +461,13 @@ enum
 #define FRONT_SEQ_POSY					0x2a
 #define FRONT_SEQ_FLUX					0x2b
 #define FRONT_SEQ_SOM_FREQ				0x2c
-#define FRONT_SEQ_MIDI_CHAN				0x2d	//voiceNr (0xf0) + channel (0x0f)
+#define FRONT_SEQ_MIDI_CHAN				0x2d	//voiceNr (0xf0) + channel (0x0f). --AS voice 7=global channel
 #define FRONT_SEQ_MIDI_MODE				0x2e //--AS not used anymore
 #define FRONT_SEQ_MIDI_ROUTING			0x2f	// midi routing
 #define FRONT_SEQ_MIDI_TX_FILTER		0x30    // tx filtering
 #define FRONT_SEQ_MIDI_RX_FILTER		0x31    // rx filtering
 #define FRONT_SEQ_BAR_RESET_MODE		0x32	// --AS reset bar on manual pattern change (0 is default - to not reset)
+
 
 //codec control messages
 #define EQ_ON_OFF						0x01

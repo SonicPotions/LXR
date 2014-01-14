@@ -75,7 +75,8 @@ extern uint8_t frontPanel_sysexMode;
 
 //VOICE_CC
 //#define VOICE_AUDIO_OUT		0x01
-#define VOICE_MIDI_CHAN		0x02
+// --AS appears unused
+//#define VOICE_MIDI_CHAN		0x02
 #define VOICE_DECIMATION	0x03
 
 //TODO in hex werten... nicht dezimal als hex
@@ -121,7 +122,7 @@ extern uint8_t frontPanel_sysexMode;
 #define SEQ_POSY			0x2a
 #define SEQ_FLUX			0x2b
 #define SEQ_SOM_FREQ		0x2c
-#define SEQ_MIDI_CHAN		0x2d	//voiceNr (0xf0) + channel (0x0f)
+#define SEQ_MIDI_CHAN		0x2d	//voiceNr (0xf0) + channel (0x0f). --AS voice 7=global channel
 #define SEQ_MIDI_MODE		0x2e //--AS unused now
 #define SEQ_MIDI_ROUTING    0x2f
 #define SEQ_MIDI_FILT_TX	0x30
