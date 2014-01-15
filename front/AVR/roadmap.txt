@@ -132,4 +132,3 @@ Global midi channel:
 - 
 
 bugs:
-- star is shown only on 2nd page if there is a subsequent (should be shown on 1st page too if there is a previous subpage)

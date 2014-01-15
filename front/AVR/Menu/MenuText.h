@@ -374,7 +374,7 @@ const char longNames[][16] PROGMEM =
 	{"Steps"},
 	{"Tempo"},
 	{"AudioOut"},
-	{"MIDIChan"},
+	{"Channel"},
 	{"SampleRt"},
 	{"NextPatt"},
 	{"Phase"},

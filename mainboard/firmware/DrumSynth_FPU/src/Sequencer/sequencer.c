@@ -399,8 +399,10 @@ void seq_nextStep()
 		if((seq_activePattern != seq_pendingPattern) || seq_loadPendigFlag)
 		{
 			//--AS if this setting is active and the user has manually changed patterns,
-			// reset the bar counter
-			if(seq_loadPendigFlag && seq_resetBarOnPatternChange)
+			// reset the bar counter. uncommenting the below will cause it to only reset
+			// when a manual pattern change is invoked. to me the whole auto pattern change modulo stuff
+			// above is a bit broken.
+			if(/*seq_loadPendigFlag &&*/ seq_resetBarOnPatternChange)
 				seq_barCounter=0;
 
 			seq_loadPendigFlag = 0;

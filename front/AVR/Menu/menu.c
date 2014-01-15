@@ -2021,56 +2021,39 @@ void menu_switchSubPage(uint8_t subPageNr)
 	uint8_t activeParameter	= menuIndex & MASK_PARAMETER;
 	uint8_t activePage		= (menuIndex&MASK_PAGE)>>PAGE_SHIFT;
 
-	if( has2ndPage(subPageNr) &&(subPageNr == activePage)) {
-		//if we are already on the desired sub-page, toggle between 1st and 2nd page
-		if(activeParameter>=4)
-		{
-			//**GMENU if we are in global menu, move to next sub page if any
-			if(menu_activePage==MENU_MIDI_PAGE) {
-				// see if there is a subpage after this with valid items
-				if(activePage < NUM_SUB_PAGES-1 && pgm_read_byte(&menuPages[menu_activePage][activePage+1].top1) != TEXT_EMPTY) {
-					activePage++; // move to next sub page
+	if(subPageNr == activePage) { // toggle only
+		// we are toggling to next screen, or back to first
+		if(activeParameter < 4) {
+			// toggle to next if possible
+			if(has2ndPage(activePage))
+				activeParameter=4;
+			else if(menu_activePage==MENU_MIDI_PAGE) { // special case for global - wrap around to first
+				activePage=0;
+				activeParameter=0;
+			}
+		} else { // we are on 2nd screen
+
+			if(menu_activePage==MENU_MIDI_PAGE){
+				// in global mode, we move to next page if possible (or wrap to first)
+				if(activePage < NUM_SUB_PAGES-1 &&
+				   pgm_read_byte(&menuPages[menu_activePage][activePage+1].top1) != TEXT_EMPTY) {
+					activePage++;
 				} else {
-					// no page after this, move to first subpage (wrap around to first)
 					activePage=0;
 				}
 			}
-
-			DISABLE_CONV_WARNING
-			activeParameter -= 4;
-			END_DISABLE_CONV_WARNING
-		} else {
-			DISABLE_CONV_WARNING
-			activeParameter +=4;
-			END_DISABLE_CONV_WARNING
+			activeParameter=0;
 		}
+	} else { // move to different sub page
+		// we are moving to a different (specific) subpage
+		activePage=subPageNr;
+		if(activeParameter > 3 && has2ndPage(activePage))
+			activeParameter = 4;
+		else
+			activeParameter = 0;
+	}
 
-		menuIndex = (uint8_t)( (activePage << PAGE_SHIFT) | activeParameter);
-		//menuIndex &= ~(MASK_PARAMETER);
-		//menuIndex |= (activeParameter&MASK_PARAMETER);
-
-	} else	{
-		// otherwise, we are moving to a different sub page
-
-		if(!has2ndPage(subPageNr)) { // only 4 or less parameters on this sub-page
-			//if we were on the second section of the sub-page, switch to the first
-			DISABLE_CONV_WARNING
-			if(activeParameter>=4)
-			{
-				activeParameter -= 4;	
-			}
-			menuIndex &= ~(MASK_PARAMETER);
-			menuIndex |= (activeParameter&MASK_PARAMETER);
-			END_DISABLE_CONV_WARNING
-
-		}
-
-		//go to selected sub page
-		DISABLE_CONV_WARNING
-		menuIndex &= ~(MASK_PAGE);
-		menuIndex |= (subPageNr)<<PAGE_SHIFT;
-		END_DISABLE_CONV_WARNING
-	}		
+	menuIndex = (uint8_t)( (activePage << PAGE_SHIFT) | activeParameter);
 }
 
 //-----------------------------------------------------------------
