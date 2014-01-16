@@ -214,6 +214,6 @@ uint8_t seq_isNextStepSyncStep();
 // send a note off for a channel if there is a note playing on that channel
 // if 0xff is specified, send a note off on all channels that have a note playing
 void seq_midiNoteOff(uint8_t chan);
-
+void seq_sendMidiNoteOn(const uint8_t channel, const uint8_t note, const uint8_t veloc);
 
 #endif /* SEQUENCER_H_ */

@@ -129,6 +129,8 @@ Global midi channel:
   + currently active voice will always respond to notes on this channel
 - Was able to reuse a front-to-back message and some of the code by adding an 8th element that represents this channel
 - midi_MidiChannels now has 8 elements where the last one represents global channel
-- 
+- recording will only take place on the active voice (will not record on voices when record is on and messages are received
+  on their respective channels). This makes more sense for live recording on one keyboard.
+- when playing notes on global channel from ext keyboard, they will be echoed to channel assigned to that voice
 
 bugs:

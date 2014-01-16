@@ -144,7 +144,6 @@ static AutomationNode seq_automationNodes[NUM_TRACKS][2];
 
 static void seq_sendMidi(MidiMsg msg);
 static void seq_sendRealtime(const uint8_t status);
-static void seq_sendNoteOn(const uint8_t channel, const uint8_t note, const uint8_t veloc);
 static void seq_sendProgChg(const uint8_t ptn);
 
 
@@ -345,7 +344,7 @@ void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note)
 	seq_midiNoteOff(midiChan);
 
 	//send the new note to midi/usb out
-	seq_sendNoteOn(midiChan, midiNote,
+	seq_sendMidiNoteOn(midiChan, midiNote,
 			seq_patternSet.seq_subStepPattern[seq_activePattern][voiceNr][seq_stepIndex[voiceNr]].volume&STEP_VOLUME_MASK);
 
 }
@@ -1247,7 +1246,7 @@ static void seq_sendRealtime(const uint8_t status)
 
 /* Send a note on message. This will filter out these messages if appropriate
  */
-static void seq_sendNoteOn(const uint8_t channel, const uint8_t note, const uint8_t veloc)
+void seq_sendMidiNoteOn(const uint8_t channel, const uint8_t note, const uint8_t veloc)
 {
 	static MidiMsg msg = {0,0,0, {0,0,2}};
 	// --AS FILT filter out note msgs if appropriate

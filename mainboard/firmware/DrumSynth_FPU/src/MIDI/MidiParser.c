@@ -1086,7 +1086,9 @@ void midiParser_checkMtc()
 
 //------------------------------------------------------
 // this fn assumes a valid voice is sent
-static void midiParser_noteOn(uint8_t voice, uint8_t note, uint8_t vel)
+// do_rec - whether we want to allow it to be recorded and echoed - we will only record
+// to the active track for notes received from the global channel
+static void midiParser_noteOn(uint8_t voice, uint8_t note, uint8_t vel, uint8_t do_rec)
 {
 
 	if(seq_isTrackMuted(voice))
@@ -1106,8 +1108,22 @@ static void midiParser_noteOn(uint8_t voice, uint8_t note, uint8_t vel)
 
 	voiceControl_noteOn(voice,note,vel);
 
-	//Recording Mode - record the note to sequencer
-	seq_addNote(voice,vel, note);
+	//Recording Mode - record the note to sequencer and echo to channel of that voice
+	// (we'd want to hear what's being recorded)
+	if(do_rec) {
+		const uint8_t chan=midi_MidiChannels[voice];
+
+		// record note if rec is on
+		seq_addNote(voice,vel, note);
+
+		//if a note is on for that channel send note-off first
+		seq_midiNoteOff(chan);
+		//send the new note to midi/usb out
+		seq_sendMidiNoteOn(chan, note, vel);
+	}
+
+
+
 }
 //------------------------------------------------------
 //static void midiParser_noteOff(uint8_t voice, uint8_t note, uint8_t vel)
@@ -1232,8 +1248,7 @@ void midiParser_parseMidiMessage(MidiMsg msg)
 					q=frontParser_activeTrack; // avoid sending it again later if the active track happens to have the same channel set
 											   // (this might not really matter. does sending a note on twice do any harm?)
 					if(msgonly==NOTE_ON && msg.data2) {
-						midiParser_noteOn(frontParser_activeTrack, msg.data1, msg.data2);
-						//Also used in sequencer trigger note function
+						midiParser_noteOn(frontParser_activeTrack, msg.data1, msg.data2, 1);
 					} else { // NOTE_OFF or zero velocity note
 						//midiParser_noteOff(v, msg.data1, msg.data2);
 					}
@@ -1243,7 +1258,7 @@ void midiParser_parseMidiMessage(MidiMsg msg)
 				for(v=0;v<7;v++) {
 					if(midi_MidiChannels[v]==chanonly && v != q) { // if channel match and we haven't sent it already for the voice
 						if(msgonly==NOTE_ON && msg.data2) {
-							midiParser_noteOn(v, msg.data1, msg.data2);
+							midiParser_noteOn(v, msg.data1, msg.data2, 0);
 							//Also used in sequencer trigger note function
 						} else { // NOTE_OFF or zero velocity note
 							//midiParser_noteOff(v, msg.data1, msg.data2);
