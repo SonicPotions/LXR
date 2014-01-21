@@ -133,4 +133,21 @@ Global midi channel:
   on their respective channels). This makes more sense for live recording on one keyboard.
 - when playing notes on global channel from ext keyboard, they will be echoed to channel assigned to that voice
 
+Erase mode and record fix (**RECORD)
+This allows you to hold shift-clear while record is active and sequencer is playing to erase notes as they are 
+encountered. If a main step is encountered while this mode is on, that main step and all substeps are erased. Only
+the active flags are set (velocity, automation, note value remain untouched). Should they be zeroed out?
+- add seqErasing mode to buttonHandler_stateMemory. This tracks whether we are in erase mode
+- add SEQ_ERASE_ON_OFF message that is sent from front to back to toggle erase mode
+- detect if copy button is pressed while shift is active. if so turn on erase mode and send erase message to back.
+- detect when erase mode is active and either copy button or shift button is released. if so turn off erase mode
+- make some functions static to aid in compiler optimization. fix desired inline functions that had ext linkage
+- in seq_nextStep detect when erasing and main step is encountered. erase step and substeps
+
+Fix recording across pattern boundaries. This forces a quantized note onto the next pattern if it would end up
+at position 0.
+- Move next pattern determination into it's own function to isolate logic
+- seq_addNote will check to see whether a note should end up on a different pattern
+
 bugs:
+- need to update led's during erase mode

@@ -355,6 +355,15 @@ void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note)
 
 }
 //------------------------------------------------------------------------------
+static uint8_t seq_determineNextPattern()
+{
+	const PatternSetting * const p=&seq_patternSet.seq_patternSettings[seq_activePattern];
+	if(seq_barCounter % (p->changeBar+1) == 0)
+		return p->nextPattern;
+	else
+		return seq_activePattern;
+}
+
 static void seq_nextStep()
 {
 	if(!seq_running)
@@ -383,19 +392,12 @@ static void seq_nextStep()
 		if(seq_activePattern == seq_pendingPattern)
 		{
 			//check pattern settings if we have to auto change patterns
-			if(seq_barCounter%(seq_patternSet.seq_patternSettings[seq_activePattern].changeBar+1) == 0)
+			seq_pendingPattern = seq_determineNextPattern();
+			if(seq_pendingPattern >= SEQ_NEXT_RANDOM)
 			{
-				//we have to change to the next pattern
-				if(seq_patternSet.seq_patternSettings[seq_activePattern].nextPattern < SEQ_NEXT_RANDOM)
-				{
-					seq_pendingPattern = seq_patternSet.seq_patternSettings[seq_activePattern].nextPattern;
-				}
-				else if(seq_patternSet.seq_patternSettings[seq_activePattern].nextPattern >= SEQ_NEXT_RANDOM)
-				{
-					uint8_t limit = seq_patternSet.seq_patternSettings[seq_activePattern].nextPattern - SEQ_NEXT_RANDOM +2;
-					uint8_t rnd = GetRngValue() % limit;
-					seq_pendingPattern = rnd;
-				}
+				uint8_t limit = seq_pendingPattern - SEQ_NEXT_RANDOM +2;
+				uint8_t rnd = GetRngValue() % limit;
+				seq_pendingPattern = rnd;
 			}
 		}
 
@@ -699,15 +701,15 @@ void seq_toggleMainStep(uint8_t voice, uint8_t stepNr, uint8_t patternNr)
 	seq_patternSet.seq_mainSteps[patternNr][voice] ^= (1<<stepNr);
 }
 //------------------------------------------------------------------------------
-static void seq_setMainStep(uint8_t voice, uint8_t stepNr, uint8_t onOff)
+static void seq_setMainStep(uint8_t patternNr, uint8_t voice, uint8_t stepNr, uint8_t onOff)
 {
 	if(onOff)
 	{
-		seq_patternSet.seq_mainSteps[seq_activePattern][voice] |= (1<<stepNr);
+		seq_patternSet.seq_mainSteps[patternNr][voice] |= (1<<stepNr);
 	}
 	else
 	{
-		seq_patternSet.seq_mainSteps[seq_activePattern][voice] &= ~(1<<stepNr);
+		seq_patternSet.seq_mainSteps[patternNr][voice] &= ~(1<<stepNr);
 	}
 }
 //------------------------------------------------------------------------------
@@ -1062,32 +1064,47 @@ void seq_recordAutomation(uint8_t voice, uint8_t dest, uint8_t value)
 //------------------------------------------------------------------------
 void seq_addNote(uint8_t trackNr,uint8_t vel, uint8_t note)
 {
+	uint8_t targetPattern;
+	Step *stepPtr;
 	//only record notes when seq is running and recording
 	if(seq_running && seq_recordActive)
 	{
 		const int8_t quantizedStep = seq_quantize(seq_stepIndex[trackNr]);
 
+
+		// --AS **RECORD fix for recording across patterns
+		if(quantizedStep==0 && seq_stepIndex[trackNr] > (NUM_STEPS/2)) {
+			// this means that we hit a note in 2nd half of the bar and quantization pushed
+			// the note to position 0 of the next bar.
+			// need to see if there is about to be a pattern change so that the note
+			// ends up on 0 of the next pattern
+			targetPattern=seq_determineNextPattern();
+
+		} else
+			targetPattern=seq_activePattern;
+
 		//special care must be taken when recording midi notes!
 		//since per default the 1st substep of a mainstep cluster is always active
 		//we will get double notes when a substep other than ss1 is recorded
-		if(!seq_intIsMainStepActive(trackNr, quantizedStep/8, seq_activePattern))
+		if(!seq_intIsMainStepActive(trackNr, quantizedStep/8, targetPattern))
 		{
 			//if the mainstep is not active, we clear the 1st substep
 			//to prevent double notes while recording
-			seq_patternSet.seq_subStepPattern[seq_activePattern][trackNr][(quantizedStep/8)*8].volume 	&= ~STEP_ACTIVE_MASK;
+			seq_patternSet.seq_subStepPattern[targetPattern][trackNr][(quantizedStep/8)*8].volume 	&= ~STEP_ACTIVE_MASK;
 		}
 
 		//set the current step in the requested track active
-		seq_patternSet.seq_subStepPattern[seq_activePattern][trackNr][quantizedStep].note 		= note;				// note (--AS was SEQ_DEFAULT_NOTE)
-		seq_patternSet.seq_subStepPattern[seq_activePattern][trackNr][quantizedStep].volume		= vel;				// new velocity
-		seq_patternSet.seq_subStepPattern[seq_activePattern][trackNr][quantizedStep].prob		= 127;				// 100% probability
+		stepPtr=&seq_patternSet.seq_subStepPattern[targetPattern][trackNr][quantizedStep];
+		stepPtr->note 		= note;				// note (--AS was SEQ_DEFAULT_NOTE)
+		stepPtr->volume		= vel;				// new velocity
+		stepPtr->prob		= 127;				// 100% probability
 
-		seq_patternSet.seq_subStepPattern[seq_activePattern][trackNr][quantizedStep].volume 	|= STEP_ACTIVE_MASK;
+		stepPtr->volume 	|= STEP_ACTIVE_MASK;
 
 		//activate corresponding main step
-		seq_setMainStep(trackNr, quantizedStep/8,1);
+		seq_setMainStep(targetPattern, trackNr, quantizedStep/8,1);
 
-		if( (frontParser_shownPattern == seq_activePattern) && ( frontParser_activeTrack == trackNr) )
+		if( (frontParser_shownPattern == targetPattern) && ( frontParser_activeTrack == trackNr) )
 		{
 			//update front sub step LED
 			uart_sendFrontpanelByte(FRONT_STEP_LED_STATUS_BYTE);
@@ -1109,7 +1126,7 @@ static void seq_eraseStepAndSubSteps(const uint8_t voice, const uint8_t mainStep
 	uint8_t i;
 	// --AS todo should we also zero out velocity and note? what about automation?
 	// turn off the main step
-	seq_setMainStep(voice,mainStep,0);
+	seq_setMainStep(seq_activePattern, voice, mainStep,0);
 	// turn off all substeps
 	for(i=(uint8_t)(mainStep*8);i<(uint8_t)((mainStep+1)*8);i++) {
 		seq_patternSet.seq_subStepPattern[seq_activePattern][voice][i].volume &= ~STEP_ACTIVE_MASK;

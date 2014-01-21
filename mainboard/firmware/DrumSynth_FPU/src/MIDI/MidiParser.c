@@ -1087,7 +1087,7 @@ void midiParser_checkMtc()
 //------------------------------------------------------
 // this fn assumes a valid voice is sent
 // do_rec - whether we want to allow it to be recorded and echoed - we will only record
-// to the active track for notes received from the global channel
+//          to the active track for notes received from the global channel
 static void midiParser_noteOn(uint8_t voice, uint8_t note, uint8_t vel, uint8_t do_rec)
 {
 
@@ -1119,6 +1119,9 @@ static void midiParser_noteOn(uint8_t voice, uint8_t note, uint8_t vel, uint8_t 
 		//if a note is on for that channel send note-off first
 		seq_midiNoteOff(chan);
 		//send the new note to midi/usb out
+		// --AS todo a user played note will end up being turned off if a pattern switch happens.
+		//           to fix this we'd have to differentiate between a user played note and a
+		//           note triggered from sequencer, and also recognize note off on user played note and send it.
 		seq_sendMidiNoteOn(chan, note, vel);
 	}
 
