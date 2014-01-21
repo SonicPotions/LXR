@@ -102,7 +102,7 @@ extern uint8_t frontPanel_sysexMode;
 #define SEQ_REQUEST_EUKLID_PARAMS 0x19
 #define SEQ_SET_SHOWN_PATTERN	0x1A
 
-#define SEQ_REC_ON_OFF		0x1B	/**< start(data2=1) or stop(data2=0) recording mode */
+#define SEQ_REC_ON_OFF		0x1B		/**< start(data2=1) or stop(data2=0) recording mode */
 #define SEQ_REQUEST_PATTERN_PARAMS 0x1C /**< the sequencer sends back the data of the active pattern */
 #define SEQ_SET_PAT_BEAT	0x1D		/**< on every Nth bar the pattern will change to the next pattern*/
 #define SEQ_SET_PAT_NEXT	0x1E		/**< the next pattern that will be played when the current finishes*/
@@ -128,6 +128,7 @@ extern uint8_t frontPanel_sysexMode;
 #define SEQ_MIDI_FILT_TX	0x30
 #define SEQ_MIDI_FILT_RX	0x31
 #define SEQ_BAR_RESET_MODE  0x32 //--AS
+#define SEQ_ERASE_ON_OFF    0x33 //--AS **RECORD data2=1: erase on data2=0: erase off
 
 //SysEx
 #define SYSEX_REQUEST_STEP_DATA			0x01

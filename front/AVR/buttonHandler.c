@@ -39,6 +39,7 @@ volatile struct {
 	unsigned selectButtonMode :3; // 0-3 for unshifted, 4-7 for shifted
 	unsigned seqRunning :1;
 	unsigned seqRecording :1;
+	unsigned seqErasing :1; //--AS **RECORD
 
 } buttonHandler_stateMemory;
 
@@ -846,18 +847,27 @@ void buttonHandler_buttonPressed(uint8_t buttonNr) {
 
 	case BUT_COPY:
 		if (buttonHandler_getShift()) {
-			//with shift -> clear mode
-			if (copyClear_Mode == MODE_CLEAR) {
-				//execute
-				copyClear_executeClear();
-				/*
-				 copyClear_clearCurrentTrack();
-				 copyClear_armClearMenu(0);
-				 copyClear_Mode = MODE_NONE;
-				 */
+			//with shift -> clear mode. unless we are record active and playing. In this case,
+			// holding down the copy button does a realtime erase on the active voice
+			if(buttonHandler_stateMemory.seqRecording && buttonHandler_stateMemory.seqRunning) {
+				buttonHandler_stateMemory.seqErasing=1;
+				frontPanel_sendData(SEQ_CC, SEQ_ERASE_ON_OFF,
+						buttonHandler_stateMemory.seqErasing);
+				// --AS **RECORD todo update the display
 			} else {
-				copyClear_Mode = MODE_CLEAR;
-				copyClear_armClearMenu(1);
+
+				if (copyClear_Mode == MODE_CLEAR) {
+					//execute
+					copyClear_executeClear();
+					/*
+					 copyClear_clearCurrentTrack();
+					 copyClear_armClearMenu(0);
+					 copyClear_Mode = MODE_NONE;
+					 */
+				} else {
+					copyClear_Mode = MODE_CLEAR;
+					copyClear_armClearMenu(1);
+				}
 			}
 
 		} else {
@@ -943,13 +953,31 @@ void buttonHandler_buttonReleased(uint8_t buttonNr) {
 	// for the rest...
 	switch (buttonNr) {
 	case BUT_COPY:
-		if (!buttonHandler_getShift()) {
-			//copy mode abort/exit
-			copyClear_reset();
+
+		if(buttonHandler_stateMemory.seqErasing) {
+			// --AS **RECORD if we are in erase mode, exit that mode
+			buttonHandler_stateMemory.seqErasing=0;
+			frontPanel_sendData(SEQ_CC, SEQ_ERASE_ON_OFF,
+									buttonHandler_stateMemory.seqErasing);
+		} else {
+			if (!buttonHandler_getShift()) {
+				//copy mode abort/exit
+				copyClear_reset();
+			}
 		}
+
+
 		break;
 
 	case BUT_SHIFT: // when this button is released, revert back to normal operating mode
+
+		if(buttonHandler_stateMemory.seqErasing) {
+			// --AS **RECORD if we are in erase mode, exit that mode
+			buttonHandler_stateMemory.seqErasing=0;
+			frontPanel_sendData(SEQ_CC, SEQ_ERASE_ON_OFF,
+						buttonHandler_stateMemory.seqErasing);
+		}
+
 		if (copyClear_Mode == MODE_CLEAR) {
 			copyClear_armClearMenu(0);
 			copyClear_Mode = MODE_NONE;

@@ -131,7 +131,7 @@ void seq_setTrackLength(uint8_t trackNr, uint8_t length);
 //------------------------------------------------------------------------------
 uint8_t seq_getTrackLength(uint8_t trackNr);
 //------------------------------------------------------------------------------
-void seq_activateTmpPattern();
+//void seq_activateTmpPattern();
 //------------------------------------------------------------------------------
 void seq_init();
 //------------------------------------------------------------------------------
@@ -150,7 +150,7 @@ uint16_t seq_getBpm();
 //------------------------------------------------------------------------------
 void seq_sync();
 //------------------------------------------------------------------------------
-void seq_nextStep();
+//void seq_nextStep();
 //------------------------------------------------------------------------------
 uint8_t seq_getExtSync();
 //------------------------------------------------------------------------------
@@ -165,15 +165,15 @@ void seq_toggleStep(uint8_t voice, uint8_t stepNr, uint8_t patternNr);
 //------------------------------------------------------------------------------
 void seq_toggleMainStep(uint8_t voice, uint8_t stepNr, uint8_t patternNr);
 //------------------------------------------------------------------------------
-void seq_setStep(uint8_t voice, uint8_t stepNr, uint8_t onOff);
+//void seq_setStep(uint8_t voice, uint8_t stepNr, uint8_t onOff);
 //------------------------------------------------------------------------------
 void seq_setRunning(uint8_t isRunning);
 //------------------------------------------------------------------------------
 uint8_t seq_isRunning();
 //------------------------------------------------------------------------------
-inline uint8_t seq_isStepActive(uint8_t voice, uint8_t stepNr, uint8_t patternNr);
+uint8_t seq_isStepActive(uint8_t voice, uint8_t stepNr, uint8_t patternNr);
 //------------------------------------------------------------------------------
-inline uint8_t seq_isMainStepActive(uint8_t voice, uint8_t mainStepNr, uint8_t pattern);
+uint8_t seq_isMainStepActive(uint8_t voice, uint8_t mainStepNr, uint8_t pattern);
 //------------------------------------------------------------------------------
 /** mutes and unmutes a track [0..maxTrack]*/
 void seq_setMute(uint8_t trackNr, uint8_t isMuted);
@@ -194,6 +194,8 @@ void seq_addNote(uint8_t trackNr,uint8_t vel, uint8_t note);
 //------------------------------------------------------------------------------
 void seq_setRecordingMode(uint8_t active);
 //------------------------------------------------------------------------------
+void seq_setErasingMode(uint8_t active);
+//------------------------------------------------------------------------------
 void seq_clearTrack(uint8_t trackNr, uint8_t pattern);
 //------------------------------------------------------------------------------
 void seq_clearAutomation(uint8_t trackNr, uint8_t pattern, uint8_t automTrack);
@@ -209,7 +211,7 @@ void seq_setActiveAutomationTrack(uint8_t trackNr);
 //------------------------------------------------------------------------------
 void seq_recordAutomation(uint8_t voice, uint8_t dest, uint8_t value);
 //------------------------------------------------------------------------------
-uint8_t seq_isNextStepSyncStep();
+//uint8_t seq_isNextStepSyncStep();
 //------------------------------------------------------------------------------
 // send a note off for a channel if there is a note playing on that channel
 // if 0xff is specified, send a note off on all channels that have a note playing

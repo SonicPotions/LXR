@@ -95,6 +95,8 @@ uint8_t seq_selectedStep = 0;
 
 uint8_t seq_recordActive = 0;				/**< set to 1 to activate the reording mode*/
 
+uint8_t seq_eraseActive=0;					/**RECORD will be 1 if live erasing the active voice  */
+
 uint8_t seq_quantisation = QUANT_16;
 
 uint8_t seq_rndValue[NUM_TRACKS];			/**< random value for probability function*/
@@ -145,8 +147,12 @@ static AutomationNode seq_automationNodes[NUM_TRACKS][2];
 static void seq_sendMidi(MidiMsg msg);
 static void seq_sendRealtime(const uint8_t status);
 static void seq_sendProgChg(const uint8_t ptn);
-
-
+static void seq_eraseStepAndSubSteps(const uint8_t voice, const uint8_t mainStep);
+static void seq_activateTmpPattern();
+static void seq_nextStep();
+static uint8_t seq_isNextStepSyncStep();
+static uint8_t seq_intIsStepActive(uint8_t voice, uint8_t stepNr, uint8_t patternNr);
+static uint8_t seq_intIsMainStepActive(uint8_t voice, uint8_t mainStepNr, uint8_t pattern);
 //------------------------------------------------------------------------------
 void seq_init()
 {
@@ -189,7 +195,7 @@ void seq_init()
 	}
 }
 //------------------------------------------------------------------------------
-void seq_activateTmpPattern()
+static void seq_activateTmpPattern()
 {
 	memcpy(&seq_patternSet.seq_subStepPattern[seq_activePattern],&seq_tmpPattern.seq_subStepPattern,sizeof(Step)*NUM_TRACKS*NUM_STEPS);
 	memcpy(&seq_patternSet.seq_mainSteps[seq_activePattern],&seq_tmpPattern.seq_mainSteps,sizeof(uint16_t)*NUM_TRACKS);
@@ -234,7 +240,7 @@ uint8_t seq_getTrackLength(uint8_t trackNr)
 	return 16;
 }
 //------------------------------------------------------------------------------
-void seq_calcDeltaT(uint16_t bpm)
+static void seq_calcDeltaT(uint16_t bpm)
 {
 	//--- calc deltaT ----
 	// für 4/4tel takt -> 1 beat = 4 main steps = 4*8 = 32 sub steps
@@ -349,7 +355,7 @@ void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note)
 
 }
 //------------------------------------------------------------------------------
-void seq_nextStep()
+static void seq_nextStep()
 {
 	if(!seq_running)
 		return;
@@ -473,28 +479,40 @@ void seq_nextStep()
 			//if track is not muted
 			if(!(seq_mutedTracks & (1<<i) ) )
 			{
-				//if main step + sub step is active
-				if(seq_isMainStepActive(i,seq_stepIndex[i]/8,seq_activePattern) && (seq_isStepActive(i,seq_stepIndex[i],seq_activePattern)))
-				{
-					//PROBABILITY
-					//every 8th step a new random value is generated
-					//thus every sub step block has only one random value to compare against
-					//allows randomisation of rolls by chance
+				//if main step (associated with current substep) is active
+				if(seq_intIsMainStepActive(i,seq_stepIndex[i]/8,seq_activePattern)) {
 
-					if((seq_stepIndex[i] & 0x07) == 0x00) //every 8th step
-					{
-						seq_rndValue[i] = GetRngValue()&0x7f;
+					// --AS **RECORD if we are in erase mode (shift clear while record and playing)
+					// and this is the active track on the front, we erase the note value
+					// only do so if we are on a main step while erase is active. in this case, the main step and
+					// all it's substeps are erased.
+					if(seq_eraseActive && i==frontParser_activeTrack && seq_stepIndex[i]%8==0) {
+						// erase the main step and all substeps
+						seq_eraseStepAndSubSteps(frontParser_activeTrack,seq_stepIndex[i]/8);
 					}
 
-					if( (seq_rndValue[i]) <= seq_patternSet.seq_subStepPattern[seq_activePattern][i][seq_stepIndex[i]].prob )
+					// if sub-step is active
+					if(seq_intIsStepActive(i,seq_stepIndex[i],seq_activePattern))
 					{
-						const uint8_t vol = seq_patternSet.seq_subStepPattern[seq_activePattern][i][seq_stepIndex[i]].volume&STEP_VOLUME_MASK;
-						const uint8_t note = seq_patternSet.seq_subStepPattern[seq_activePattern][i][seq_stepIndex[i]].note;
-						seq_triggerVoice(i,vol,note);
-					}
-				}
+						//PROBABILITY
+						//every 8th step a new random value is generated
+						//thus every sub step block has only one random value to compare against
+						//allows randomisation of rolls by chance
 
-			}
+						if((seq_stepIndex[i] & 0x07) == 0x00) //every 8th step
+						{
+							seq_rndValue[i] = GetRngValue()&0x7f;
+						}
+
+						if( (seq_rndValue[i]) <= seq_patternSet.seq_subStepPattern[seq_activePattern][i][seq_stepIndex[i]].prob )
+						{
+							const uint8_t vol = seq_patternSet.seq_subStepPattern[seq_activePattern][i][seq_stepIndex[i]].volume&STEP_VOLUME_MASK;
+							const uint8_t note = seq_patternSet.seq_subStepPattern[seq_activePattern][i][seq_stepIndex[i]].note;
+							seq_triggerVoice(i,vol,note);
+						}
+					} // if sub step is active
+				} // if main step is active
+			} // if this track is not muted
 		}
 
 		//---- check if the roll mode has to trigger the voice
@@ -681,7 +699,7 @@ void seq_toggleMainStep(uint8_t voice, uint8_t stepNr, uint8_t patternNr)
 	seq_patternSet.seq_mainSteps[patternNr][voice] ^= (1<<stepNr);
 }
 //------------------------------------------------------------------------------
-void seq_setMainStep(uint8_t voice, uint8_t stepNr, uint8_t onOff)
+static void seq_setMainStep(uint8_t voice, uint8_t stepNr, uint8_t onOff)
 {
 	if(onOff)
 	{
@@ -693,17 +711,18 @@ void seq_setMainStep(uint8_t voice, uint8_t stepNr, uint8_t onOff)
 	}
 }
 //------------------------------------------------------------------------------
-void seq_setStep(uint8_t voice, uint8_t stepNr, uint8_t onOff)
-{
-	if(onOff)
-	{
-		seq_patternSet.seq_subStepPattern[seq_activePattern][voice][stepNr].volume |= STEP_ACTIVE_MASK;
-	}
-	else
-	{
-		seq_patternSet.seq_subStepPattern[seq_activePattern][voice][stepNr].volume &= ~STEP_ACTIVE_MASK;
-	}
-}
+// --AS this appears unused
+//void seq_setStep(uint8_t voice, uint8_t stepNr, uint8_t onOff)
+//{
+//	if(onOff)
+//	{
+//		seq_patternSet.seq_subStepPattern[seq_activePattern][voice][stepNr].volume |= STEP_ACTIVE_MASK;
+//	}
+//	else
+//	{
+//		seq_patternSet.seq_subStepPattern[seq_activePattern][voice][stepNr].volume &= ~STEP_ACTIVE_MASK;
+//	}
+//}
 //------------------------------------------------------------------------------
 uint8_t seq_isRunning() {
 	return seq_running;
@@ -742,15 +761,27 @@ void seq_setRunning(uint8_t isRunning)
 	}
 }
 //------------------------------------------------------------------------------
-inline uint8_t seq_isStepActive(uint8_t voice, uint8_t stepNr, uint8_t patternNr)
+static uint8_t seq_intIsStepActive(uint8_t voice, uint8_t stepNr, uint8_t patternNr)
 {
 	return ((seq_patternSet.seq_subStepPattern[patternNr][voice][stepNr].volume & STEP_ACTIVE_MASK) > 0);
 }
+// --AS above will be inlined, below is for ext linkage
+uint8_t seq_isStepActive(uint8_t voice, uint8_t stepNr, uint8_t patternNr)
+{
+	return seq_intIsStepActive(voice,stepNr,patternNr);
+}
+
 //------------------------------------------------------------------------------
-inline uint8_t seq_isMainStepActive(uint8_t voice, uint8_t mainStepNr, uint8_t pattern)
+static uint8_t seq_intIsMainStepActive(uint8_t voice, uint8_t mainStepNr, uint8_t pattern)
 {
 	return (seq_patternSet.seq_mainSteps[pattern][voice] & (1<<mainStepNr)) > 0;
 }
+// --AS above is inlined below for ext linkage
+uint8_t seq_isMainStepActive(uint8_t voice, uint8_t mainStepNr, uint8_t pattern)
+{
+	return seq_intIsMainStepActive(voice, mainStepNr, pattern);
+}
+
 //------------------------------------------------------------------------------
 void seq_setMute(uint8_t trackNr, uint8_t isMuted)
 {
@@ -948,7 +979,7 @@ void seq_setRollRate(uint8_t rate)
 //------------------------------------------------------------------------
 /** quantize a step to the seq_quantisation value*/
 #define QUANT(x) (NUM_STEPS/x)
-int8_t seq_quantize(int8_t step)
+static int8_t seq_quantize(int8_t step)
 {
 	uint8_t quantisationMultiplier=1;
 	switch(seq_quantisation)
@@ -994,8 +1025,8 @@ void seq_recordAutomation(uint8_t voice, uint8_t dest, uint8_t value)
 		uint8_t quantizedStep = seq_quantize(seq_stepIndex[voice]);
 
 		//only record to active steps
-		if( seq_isMainStepActive(voice,quantizedStep/8,seq_activePattern) &&
-				seq_isStepActive(voice,quantizedStep,seq_activePattern))
+		if( seq_intIsMainStepActive(voice,quantizedStep/8,seq_activePattern) &&
+				seq_intIsStepActive(voice,quantizedStep,seq_activePattern))
 		{
 			if(seq_activeAutomTrack == 0) {
 				seq_patternSet.seq_subStepPattern[seq_activePattern][voice][quantizedStep].param1Nr = dest;
@@ -1039,7 +1070,7 @@ void seq_addNote(uint8_t trackNr,uint8_t vel, uint8_t note)
 		//special care must be taken when recording midi notes!
 		//since per default the 1st substep of a mainstep cluster is always active
 		//we will get double notes when a substep other than ss1 is recorded
-		if(!seq_isMainStepActive(trackNr, quantizedStep/8, seq_activePattern))
+		if(!seq_intIsMainStepActive(trackNr, quantizedStep/8, seq_activePattern))
 		{
 			//if the mainstep is not active, we clear the 1st substep
 			//to prevent double notes while recording
@@ -1069,11 +1100,41 @@ void seq_addNote(uint8_t trackNr,uint8_t vel, uint8_t note)
 		}
 	}
 }
+
+//------------------------------------------------------------------------
+// --AS **RECORD erase a main step and all it's sub steps on the active pattern
+// for the specified voice
+static void seq_eraseStepAndSubSteps(const uint8_t voice, const uint8_t mainStep)
+{
+	uint8_t i;
+	// --AS todo should we also zero out velocity and note? what about automation?
+	// turn off the main step
+	seq_setMainStep(voice,mainStep,0);
+	// turn off all substeps
+	for(i=(uint8_t)(mainStep*8);i<(uint8_t)((mainStep+1)*8);i++) {
+		seq_patternSet.seq_subStepPattern[seq_activePattern][voice][i].volume &= ~STEP_ACTIVE_MASK;
+	}
+
+
+	if( (frontParser_shownPattern == seq_activePattern) && ( frontParser_activeTrack == voice) )
+	{
+		// --AS todo if the pattern is shown on the front, update the leds
+		// 		figure out
+	}
+
+}
+
 //------------------------------------------------------------------------
 void seq_setRecordingMode(uint8_t active)
 {
 	seq_recordActive = active;
 }
+
+void seq_setErasingMode(uint8_t active)
+{
+	seq_eraseActive = active;
+}
+
 //------------------------------------------------------------------------------
 void seq_clearTrack(uint8_t trackNr, uint8_t pattern)
 {
@@ -1186,7 +1247,7 @@ void seq_setActiveAutomationTrack(uint8_t trackNr)
 	seq_activeAutomTrack = trackNr;
 }
 //------------------------------------------------------------------------------
-uint8_t seq_isNextStepSyncStep()
+static uint8_t seq_isNextStepSyncStep()
 {
 	if(seq_delayedSyncStepFlag)
 	{

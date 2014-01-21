@@ -587,6 +587,9 @@ static void frontParser_handleSeqCC()
 		seq_setRecordingMode(frontParser_midiMsg.data2);
 		break;
 
+	case FRONT_SEQ_ERASE_ON_OFF:
+		seq_setErasingMode(frontParser_midiMsg.data2);
+		break;
 
 	case FRONT_SEQ_NOTE:
 		seq_patternSet.seq_subStepPattern[frontParser_shownPattern][frontParser_activeTrack][frontParser_activeStep].note = frontParser_midiMsg.data2;
