@@ -148,6 +148,6 @@ Fix recording across pattern boundaries. This forces a quantized note onto the n
 at position 0.
 - Move next pattern determination into it's own function to isolate logic
 - seq_addNote will check to see whether a note should end up on a different pattern
-
+- consolidate step clearing code. reduce code size by using ptrs instead of a lot of indexing (shaved 300 bytes!)
 bugs:
 - need to update led's during erase mode

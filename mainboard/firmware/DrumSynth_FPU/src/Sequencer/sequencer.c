@@ -153,6 +153,7 @@ static void seq_nextStep();
 static uint8_t seq_isNextStepSyncStep();
 static uint8_t seq_intIsStepActive(uint8_t voice, uint8_t stepNr, uint8_t patternNr);
 static uint8_t seq_intIsMainStepActive(uint8_t voice, uint8_t mainStepNr, uint8_t pattern);
+static void seq_resetNote(Step *step);
 //------------------------------------------------------------------------------
 void seq_init()
 {
@@ -174,13 +175,7 @@ void seq_init()
 		{
 			for(k=0;k<128;k++)
 			{
-				seq_patternSet.seq_subStepPattern[i][j][k].note 		= SEQ_DEFAULT_NOTE;
-				seq_patternSet.seq_subStepPattern[i][j][k].param1Nr 	= NO_AUTOMATION;
-				seq_patternSet.seq_subStepPattern[i][j][k].param1Val 	= 0;
-				seq_patternSet.seq_subStepPattern[i][j][k].param2Nr	= NO_AUTOMATION;
-				seq_patternSet.seq_subStepPattern[i][j][k].param2Val	= 0;
-				seq_patternSet.seq_subStepPattern[i][j][k].prob		= 127;
-				seq_patternSet.seq_subStepPattern[i][j][k].volume		= 100;
+				seq_resetNote(&seq_patternSet.seq_subStepPattern[i][j][k]);
 
 				//every 1st step in a substep pattern active
 				if( (k%8) == 0)
@@ -466,7 +461,8 @@ static void seq_nextStep()
 		//increment the step index
 		seq_stepIndex[i]++;
 		//check if track end is reached
-		if(((seq_patternSet.seq_subStepPattern[seq_activePattern][i][seq_stepIndex[i]].note & PATTERN_END)) || ((seq_stepIndex[i] & 0x7f) == 0))
+		if(((seq_patternSet.seq_subStepPattern[seq_activePattern][i][seq_stepIndex[i]].note & PATTERN_END))
+				|| ((seq_stepIndex[i] & 0x7f) == 0))
 		{
 			//if end is reached reset track to step 0
 			seq_stepIndex[i] = 0;
@@ -1098,7 +1094,6 @@ void seq_addNote(uint8_t trackNr,uint8_t vel, uint8_t note)
 		stepPtr->note 		= note;				// note (--AS was SEQ_DEFAULT_NOTE)
 		stepPtr->volume		= vel;				// new velocity
 		stepPtr->prob		= 127;				// 100% probability
-
 		stepPtr->volume 	|= STEP_ACTIVE_MASK;
 
 		//activate corresponding main step
@@ -1124,20 +1119,22 @@ void seq_addNote(uint8_t trackNr,uint8_t vel, uint8_t note)
 static void seq_eraseStepAndSubSteps(const uint8_t voice, const uint8_t mainStep)
 {
 	uint8_t i;
-	// --AS todo should we also zero out velocity and note? what about automation?
 	// turn off the main step
 	seq_setMainStep(seq_activePattern, voice, mainStep,0);
+
 	// turn off all substeps
 	for(i=(uint8_t)(mainStep*8);i<(uint8_t)((mainStep+1)*8);i++) {
-		seq_patternSet.seq_subStepPattern[seq_activePattern][voice][i].volume &= ~STEP_ACTIVE_MASK;
+		seq_resetNote(&seq_patternSet.seq_subStepPattern[seq_activePattern][voice][i]);
 	}
 
+	// first substep needs to be made active
+	seq_patternSet.seq_subStepPattern[seq_activePattern][voice][(uint8_t)(mainStep*8)].volume |= STEP_ACTIVE_MASK;
 
-	if( (frontParser_shownPattern == seq_activePattern) && ( frontParser_activeTrack == voice) )
-	{
+	//if( (frontParser_shownPattern == seq_activePattern) && ( frontParser_activeTrack == voice) )
+	//{
 		// --AS todo if the pattern is shown on the front, update the leds
-		// 		figure out
-	}
+		// 		figure out. Right now it clears the LED's after shift is released... which is fine for now.
+	//}
 
 }
 
@@ -1153,18 +1150,24 @@ void seq_setErasingMode(uint8_t active)
 }
 
 //------------------------------------------------------------------------------
+// --AS reset a step to it's default state
+static void seq_resetNote(Step *step)
+{
+	step->note 		= SEQ_DEFAULT_NOTE;
+	step->param1Nr 	= NO_AUTOMATION;
+	step->param1Val = 0;
+	step->param2Nr	= NO_AUTOMATION;
+	step->param2Val	= 0;
+	step->prob		= 127;
+	step->volume	= 100; // clears active bit as well
+}
+//------------------------------------------------------------------------------
 void seq_clearTrack(uint8_t trackNr, uint8_t pattern)
 {
 	int k;
 	for(k=0;k<128;k++)
 	{
-		seq_patternSet.seq_subStepPattern[pattern][trackNr][k].note 		= SEQ_DEFAULT_NOTE;
-		seq_patternSet.seq_subStepPattern[pattern][trackNr][k].param1Nr 	= NO_AUTOMATION;
-		seq_patternSet.seq_subStepPattern[pattern][trackNr][k].param1Val 	= 0;
-		seq_patternSet.seq_subStepPattern[pattern][trackNr][k].param2Nr	= NO_AUTOMATION;
-		seq_patternSet.seq_subStepPattern[pattern][trackNr][k].param2Val	= 0;
-		seq_patternSet.seq_subStepPattern[pattern][trackNr][k].prob		= 127;
-		seq_patternSet.seq_subStepPattern[pattern][trackNr][k].volume		= 100;//STEP_VOLUME_MASK;
+		seq_resetNote(&seq_patternSet.seq_subStepPattern[pattern][trackNr][k]);
 
 		//every 1st step in a substep pattern active
 		if( (k%8) == 0)
@@ -1183,13 +1186,7 @@ void seq_clearPattern(uint8_t pattern)
 	{
 		for(i=0;i<NUM_TRACKS;i++)
 		{
-			seq_patternSet.seq_subStepPattern[pattern][i][k].note 		= SEQ_DEFAULT_NOTE;
-			seq_patternSet.seq_subStepPattern[pattern][i][k].param1Nr 	= NO_AUTOMATION;
-			seq_patternSet.seq_subStepPattern[pattern][i][k].param1Val 	= 0;
-			seq_patternSet.seq_subStepPattern[pattern][i][k].param2Nr	= NO_AUTOMATION;
-			seq_patternSet.seq_subStepPattern[pattern][i][k].param2Val	= 0;
-			seq_patternSet.seq_subStepPattern[pattern][i][k].prob		= 127;
-			seq_patternSet.seq_subStepPattern[pattern][i][k].volume		= 100;//STEP_VOLUME_MASK;
+			seq_resetNote(&seq_patternSet.seq_subStepPattern[pattern][i][k]);
 
 			//every 1st step in a substep pattern active
 			if( (k%8) == 0)
@@ -1225,15 +1222,18 @@ void seq_clearAutomation(uint8_t trackNr, uint8_t pattern, uint8_t automTrack)
 void seq_copyTrack(uint8_t srcNr, uint8_t dstNr, uint8_t pattern)
 {
 	int k;
+	Step *src, *dst;
 	for(k=0;k<128;k++)
 	{
-		seq_patternSet.seq_subStepPattern[pattern][dstNr][k].note 		= seq_patternSet.seq_subStepPattern[pattern][srcNr][k].note;
-		seq_patternSet.seq_subStepPattern[pattern][dstNr][k].param1Nr 	= seq_patternSet.seq_subStepPattern[pattern][srcNr][k].param1Nr;
-		seq_patternSet.seq_subStepPattern[pattern][dstNr][k].param1Val 	= seq_patternSet.seq_subStepPattern[pattern][srcNr][k].param1Val;
-		seq_patternSet.seq_subStepPattern[pattern][dstNr][k].param2Nr		= seq_patternSet.seq_subStepPattern[pattern][srcNr][k].param2Nr;
-		seq_patternSet.seq_subStepPattern[pattern][dstNr][k].param2Val	= seq_patternSet.seq_subStepPattern[pattern][srcNr][k].param2Val;
-		seq_patternSet.seq_subStepPattern[pattern][dstNr][k].prob			= seq_patternSet.seq_subStepPattern[pattern][srcNr][k].prob;
-		seq_patternSet.seq_subStepPattern[pattern][dstNr][k].volume		= seq_patternSet.seq_subStepPattern[pattern][srcNr][k].volume;
+		dst=&seq_patternSet.seq_subStepPattern[pattern][dstNr][k];
+		src=&seq_patternSet.seq_subStepPattern[pattern][srcNr][k];
+		dst->note		= src->note;
+		dst->param1Nr 	= src->param1Nr;
+		dst->param1Val 	= src->param1Val;
+		dst->param2Nr	= src->param2Nr;
+		dst->param2Val	= src->param2Val;
+		dst->prob		= src->prob;
+		dst->volume		= src->volume;
 	}
 
 	seq_patternSet.seq_mainSteps[pattern][dstNr] = seq_patternSet.seq_mainSteps[pattern][srcNr];
@@ -1242,17 +1242,20 @@ void seq_copyTrack(uint8_t srcNr, uint8_t dstNr, uint8_t pattern)
 void seq_copyPattern(uint8_t src, uint8_t dst)
 {
 	int k,j;
+	Step *psrc, *pdst;
 	for(j=0;j<NUM_TRACKS;j++)
 	{
 		for(k=0;k<128;k++)
 		{
-			seq_patternSet.seq_subStepPattern[dst][j][k].note 		= seq_patternSet.seq_subStepPattern[src][j][k].note;
-			seq_patternSet.seq_subStepPattern[dst][j][k].param1Nr 	= seq_patternSet.seq_subStepPattern[src][j][k].param1Nr;
-			seq_patternSet.seq_subStepPattern[dst][j][k].param1Val 	= seq_patternSet.seq_subStepPattern[src][j][k].param1Val;
-			seq_patternSet.seq_subStepPattern[dst][j][k].param2Nr		= seq_patternSet.seq_subStepPattern[src][j][k].param2Nr;
-			seq_patternSet.seq_subStepPattern[dst][j][k].param2Val	= seq_patternSet.seq_subStepPattern[src][j][k].param2Val;
-			seq_patternSet.seq_subStepPattern[dst][j][k].prob			= seq_patternSet.seq_subStepPattern[src][j][k].prob;
-			seq_patternSet.seq_subStepPattern[dst][j][k].volume		= seq_patternSet.seq_subStepPattern[src][j][k].volume;
+			pdst=&seq_patternSet.seq_subStepPattern[dst][j][k];
+			psrc=&seq_patternSet.seq_subStepPattern[src][j][k];
+			pdst->note			= psrc->note;
+			pdst->param1Nr 		= psrc->param1Nr;
+			pdst->param1Val 	= psrc->param1Val;
+			pdst->param2Nr		= psrc->param2Nr;
+			pdst->param2Val		= psrc->param2Val;
+			pdst->prob			= psrc->prob;
+			pdst->volume		= psrc->volume;
 		}
 
 		seq_patternSet.seq_mainSteps[dst][j] = seq_patternSet.seq_mainSteps[src][j];
