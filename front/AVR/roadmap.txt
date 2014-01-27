@@ -149,5 +149,27 @@ at position 0.
 - Move next pattern determination into it's own function to isolate logic
 - seq_addNote will check to see whether a note should end up on a different pattern
 
+Save all and performance (**SAVEALL):
+Will allow you to save all data in one file for selection and loading (settings, kit, pattern). Will allow you to save
+performance data in one file for selection and loading (kit, pattern). There will be two new load and save options:
+"All", "Perform". When loading All, or perform data, the sequencer must be stopped (can figure out that one later).
+File will be:
+ Perform file:
+NAMEXXXX[version byte][kit data][pattern data]
+
+all file:
+NAMEXXXX[version byte][globals][kit data][pattern data]
+
+Pattern data is last since it's easier to anticipate new kit settings and pad that out.
+
+- removed sprintf calls (saving 1378 bytes progmem and 20 bytes ram!)
+- moved numtostr* functions to shared
+- add preset_saveAll which saves either all or performance
+- add preset_loadAll which loads either all or performance
+- separated the 3 load and 3 save functions to separate the file open/read preset name from the loading of the data.
+  This allows the data loading code to be called from preset_loadAll and preset_saveAll
+- the loadAll and saveAll have a version check and padding which should aid in loading old files in future versions
+
+
 bugs:
 - need to update led's during erase mode

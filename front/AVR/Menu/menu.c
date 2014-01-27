@@ -24,15 +24,6 @@
 #include <ctype.h>
 #include "../front.h"
 
-/* fill up to 3 bytes of a buffer with string representation of a number */
-// space padded unsigned
-static void numtostrpu(char *buf, uint8_t num);
-// space padded signed
-static void numtostrps(char *buf, int8_t num);
-// non space padded unsigned
-static void numtostru(char *buf, uint8_t num);
-// non space padded signed
-static void numtostrs(char *buf, int8_t num);
 // uppercase 3 letters in buf
 static void upr_three(char *buf);
 // given a menuid and a param value fill buf with the short menu item value. will not exceed 3 chars
@@ -709,7 +700,7 @@ static void menu_repaintLoadSavePage()
 		if( menu_saveOptions.what < SAVE_TYPE_GLO) //no name and number for global settings
 		{
 			//the preset number
-			numtostrpu(&editDisplayBuffer[1][1],menu_currentPresetNr[menu_saveOptions.what]);
+			numtostrpu(&editDisplayBuffer[1][1],menu_currentPresetNr[menu_saveOptions.what],' ');
 
 			if(menu_saveOptions.state == SAVE_STATE_EDIT_PRESET_NR)
 			{
@@ -864,7 +855,7 @@ static void menu_repaintLoadSavePage()
 
 		if( menu_saveOptions.what < SAVE_TYPE_GLO) //no mane and number for global settings
 		{
-			numtostrpu(&editDisplayBuffer[1][1], menu_currentPresetNr[menu_saveOptions.what]);
+			numtostrpu(&editDisplayBuffer[1][1], menu_currentPresetNr[menu_saveOptions.what],' ');
 
 			if(menu_saveOptions.state == SAVE_STATE_EDIT_PRESET_NR)
 			{
@@ -1100,7 +1091,7 @@ void menu_repaintGeneric()
 				break;
 
 			case DTYPE_0b1: //--AS the only 0/1 is automation track, make it look 1 based
-				numtostrpu(&editDisplayBuffer[1][13],(uint8_t)(curParmVal+1));
+				numtostrpu(&editDisplayBuffer[1][13],(uint8_t)(curParmVal+1),' ');
 				break;
 			default: //switch(parameters_dtypes[parNr] & 0x0F)
 				// unsigned numeric value: just print the value
@@ -1108,7 +1099,7 @@ void menu_repaintGeneric()
 			case DTYPE_0B255:
 			case DTYPE_1B16:
 			case DTYPE_VOICE_LFO:
-				numtostrpu(&editDisplayBuffer[1][13],(uint8_t)(curParmVal));
+				numtostrpu(&editDisplayBuffer[1][13],(uint8_t)(curParmVal),' ');
 				break;
 			} //switch(parameters_dtypes[parNr] & 0x0F) end
 
@@ -1200,7 +1191,7 @@ void menu_repaintGeneric()
 
 				case DTYPE_0b1: // switch(parameters[parNr].dtype&0x0F)
 					//automation track 0/1 value, make it look 1 based
-					numtostrpu(valueAsText,(uint8_t)(curParmVal+1));
+					numtostrpu(valueAsText,(uint8_t)(curParmVal+1),' ');
 					break;
 				default: //switch(parameters[parNr].dtype&0x0F)
 				case DTYPE_0B127:
@@ -1208,7 +1199,7 @@ void menu_repaintGeneric()
 				case DTYPE_1B16:
 				case DTYPE_VOICE_LFO:
 					// fallthrough for the rest of the unsigned values
-					numtostrpu(valueAsText,curParmVal);
+					numtostrpu(valueAsText,curParmVal,' ');
 					break;
 				} //switch(parameters[parNr].dtype&0x0F) end
 
@@ -2682,19 +2673,19 @@ void setNoteName(uint8_t num, char *buf)
 
 /* fill up to 3 bytes of a buffer with string representation of a number */
 // space padded unsigned
-void numtostrpu(char *buf, uint8_t num)
+void numtostrpu(char *buf, uint8_t num, char pad)
 {
     if(num > 99) {
         buf[0]=(char)('0'+(num / 100));
         num %= 100;
     } else {
-        buf[0]=' ';
+        buf[0]=pad;
     }
     if(num > 9) {
         buf[1]=(char)('0'+(num / 10));
         num %=10;
-    } else if(buf[0]==' ') {
-        buf[1]=' ';
+    } else if(buf[0]==pad) {
+        buf[1]=pad;
     } else
         buf[1]='0';
     buf[2]=(char)('0'+num);
@@ -2743,6 +2734,7 @@ void numtostru(char *buf, uint8_t num)
 }
 
 // non space padded signed
+#if 0
 void numtostrs(char *buf, int8_t num)
 {
     uint8_t b=0;
@@ -2762,6 +2754,7 @@ void numtostrs(char *buf, int8_t num)
     }
     buf[b]=(char)('0'+num);
 }
+#endif
 
 // make 1st 3 letters of buffer uppercase
 void upr_three(char *buf)

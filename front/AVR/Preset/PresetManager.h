@@ -20,7 +20,7 @@ void preset_init();
 if isMorph==1 the sound will be loaded into the morph buffer
 */
 void preset_saveDrumset(uint8_t presetNr, uint8_t isMorph);
-uint8_t preset_loadDrumset(uint8_t presetNr, uint8_t isMorph);
+void preset_loadDrumset(uint8_t presetNr, uint8_t isMorph);
 
 
 void preset_saveGlobals();

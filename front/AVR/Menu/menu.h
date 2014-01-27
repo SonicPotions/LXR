@@ -523,4 +523,15 @@ void menu_setActiveVoice(uint8_t voiceNr);
 //-----------------------------------------------------------------
 /** used to upodate all global parameters that need processing after a preset is loaded*/
 void menu_sendAllGlobals();
+
+/* fill up to 3 bytes of a buffer with string representation of a number */
+// left padded with specified char unsigned
+void numtostrpu(char *buf, uint8_t num, char pad);
+// space padded signed
+void numtostrps(char *buf, int8_t num);
+// non space padded unsigned
+void numtostru(char *buf, uint8_t num);
+// non space padded signed
+//void numtostrs(char *buf, int8_t num);
+
 #endif
