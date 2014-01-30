@@ -375,6 +375,20 @@ enum longNamesEnum
 	LONG_BAR_RESET_MODE,
 	
 };
+
+//enum for the save what parameter
+enum loadSaveEnum
+{
+	SAVE_TYPE_KIT = 0,
+	SAVE_TYPE_PATTERN,
+	SAVE_TYPE_MORPH,
+	SAVE_TYPE_PERFORMANCE,	// kit data, pattern data and BPM
+	SAVE_TYPE_ALL,			// all global settings, kit data and pattern data
+	SAVE_TYPE_GLO,
+	SAVE_TYPE_SAMPLES,
+	NUM_SAVE_TYPES
+};
+
 //-----------------------------------------------------------------
 
 //-----------------------------------------------------------------

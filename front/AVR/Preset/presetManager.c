@@ -287,55 +287,33 @@ static void preset_sendDrumsetParameters()
 
 }
 //----------------------------------------------------
-char* preset_getPatternName(uint8_t presetNr)
-{
-	
-#if USE_SD_CARD	
-//filename in 8.3  format
-	char filename[9];
-	//sprintf(filename,"p%03d.pat",presetNr);
-	preset_makeFileName(filename,presetNr,FEXT_PAT);
-
-	memcpy_P((void*)preset_currentName,PSTR("Empty   "),8);
-	//try to open the file
-	FRESULT res = f_open((FIL*)&preset_File,filename,FA_OPEN_EXISTING | FA_READ);
-	
-	if(res!=FR_OK) {
-		//error opening the file
-		return NULL;	
-	}
-	
-	//file opened correctly -> extract name (first 8 bytes)
-	unsigned int bytesRead;
-	f_read((FIL*)&preset_File,(void*)preset_currentName,8,&bytesRead);
-	
-	//close the file handle
-	f_close((FIL*)&preset_File);
-	
-	return (char*)preset_currentName;
-	
-#else
-return "ToDo";
-#endif
-};
-//----------------------------------------------------
 char* preset_loadName(uint8_t presetNr, uint8_t what)
 {
-	if(what == 1) {
-		return preset_getPatternName(presetNr);
-	} else {
-		return preset_getDrumsetName(presetNr);
+	uint8_t type;
+
+	switch(what) {
+	case SAVE_TYPE_PATTERN:
+		type=FEXT_PAT;
+		break;
+	case SAVE_TYPE_KIT:
+	case SAVE_TYPE_MORPH:
+		type=FEXT_SOUND;
+		break;
+	case SAVE_TYPE_ALL:
+		type=FEXT_ALL;
+		break;
+	case SAVE_TYPE_PERFORMANCE:
+		type=FEXT_PERF;
+		break;
+	default:
+		return NULL; // for glo and sample we don't load a name
 	}
-}
-//----------------------------------------------------
-char* preset_getDrumsetName(uint8_t presetNr)
-{
 	
+
 #if USE_SD_CARD		
 	//filename in 8.3  format
 	char filename[9];
-	//sprintf(filename,"p%03d.snd",presetNr);
-	preset_makeFileName(filename,presetNr,FEXT_SOUND);
+	preset_makeFileName(filename,presetNr,type);
 
 	//try to open the file
 	FRESULT res = f_open((FIL*)&preset_File,filename,FA_OPEN_EXISTING | FA_READ);
@@ -360,7 +338,8 @@ char* preset_getDrumsetName(uint8_t presetNr)
 
 return "ToDo";
 #endif
-};
+}
+
 //----------------------------------------------------
 /** request step data from the cortex via uart and save it in the provided step struct*/
 void preset_queryStepDataFromSeq(uint16_t stepNr)
