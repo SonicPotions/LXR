@@ -169,7 +169,13 @@ Pattern data is last since it's easier to anticipate new kit settings and pad th
 - separated the 3 load and 3 save functions to separate the file open/read preset name from the loading of the data.
   This allows the data loading code to be called from preset_loadAll and preset_saveAll
 - the loadAll and saveAll have a version check and padding which should aid in loading old files in future versions
+- Add new SAVE_STATE types - saveOptions.what should still be able to hold the value.
+- menu_repaintLoadSavePage - this was refactored to reduce code footprint and also add new types
+- menu_handleLoadSaveMenu - Add hooks to call load and save for perf and all
+- preset_loadName - consolidate for loading the name of any preset type
 
+QA
+check repainting of load save page thoroughly
 
 bugs:
 - need to update led's during erase mode

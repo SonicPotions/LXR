@@ -42,7 +42,7 @@ char preset_currentName[8];
 // fill buffer (length 9 total) with a filename. type is one of above
 // eg p001.snd
 static void preset_makeFileName(char *buf, uint8_t num, uint8_t type);
-static void preset_sendDrumsetParameters();
+
 
 //----------------------------------------------------
 void preset_init()
@@ -213,7 +213,7 @@ static FRESULT preset_readDrumsetData(uint8_t isMorph)
 }
 
 //----------------------------------------------------
-void preset_loadDrumset(uint8_t presetNr, uint8_t isMorph)
+uint8_t preset_loadDrumset(uint8_t presetNr, uint8_t isMorph)
 {
 #if USE_SD_CARD
 	//filename in 8.3  format
@@ -226,7 +226,7 @@ void preset_loadDrumset(uint8_t presetNr, uint8_t isMorph)
 	//open the file
 	FRESULT res = f_open((FIL*)&preset_File,filename,FA_OPEN_EXISTING | FA_READ);
 	if(res!=FR_OK)
-		return; //file open error... maybe the file does not exist?
+		goto error; //file open error... maybe the file does not exist?
 
 	//first the preset name
 	res=f_read((FIL*)&preset_File,(void*)preset_currentName,8,&bytesRead);
@@ -243,8 +243,12 @@ closeFile:
 	f_close((FIL*)&preset_File);
 
 	// update the back with the new parameters
-	if(res==FR_OK)
+	if(res==FR_OK) {
 		preset_sendDrumsetParameters();
+		return 1;
+	}
+error:
+	return 0;
 #else
 	frontPanel_sendData(PRESET,PRESET_LOAD,presetNr);
 #endif
@@ -252,7 +256,7 @@ closeFile:
 
 //----------------------------------------------------
 // send loaded parameters to back
-static void preset_sendDrumsetParameters()
+void preset_sendDrumsetParameters()
 {
 	uint8_t i;
 	//special case mod targets
@@ -846,6 +850,8 @@ void preset_saveAll(uint8_t presetNr, uint8_t isAll)
 	filename[0]=FILE_VERSION;
 	f_write((FIL*)&preset_File, filename, 1, &bytesWritten);
 
+	memset(filename,0xFF,GEN_BUF_LEN); // reuse this as our buffer for padding
+
 	if(isAll) {
 		// write global settings
 		preset_writeGlobalData();
@@ -853,7 +859,6 @@ void preset_saveAll(uint8_t presetNr, uint8_t isAll)
 		// write some padding (we'll allocate 64 bytes for globals, right now we have +/- 18) so that
 		// we don't need to change the file format later
 		remain=	64- (NUM_PARAMS - PAR_BEGINNING_OF_GLOBALS);
-		memset(filename,0,GEN_BUF_LEN); // reuse this as our buffer
 		while(remain){
 			if(remain < GEN_BUF_LEN)
 				siz=(uint8_t)remain;
@@ -927,6 +932,18 @@ void preset_loadAll(uint8_t presetNr, uint8_t isAll)
 		// read global data
 		if(!preset_readGlobalData())
 			goto closeFile;
+		// read padding after globals
+		remain=	64- (NUM_PARAMS - PAR_BEGINNING_OF_GLOBALS);
+		while(remain){
+			if(remain < GEN_BUF_LEN)
+				siz=(uint8_t)remain;
+			else
+				siz=GEN_BUF_LEN;
+			f_read((FIL*)&preset_File, filename, siz, &bytesRead);
+			if(bytesRead !=siz)
+				goto closeFile;
+			remain -=siz;
+		}
 	} else {
 		// read bpm
 		f_read((FIL*)&preset_File,&parameter_values[PAR_BPM],1,&bytesRead);
@@ -934,18 +951,7 @@ void preset_loadAll(uint8_t presetNr, uint8_t isAll)
 			goto closeFile;
 	}
 
-	// read padding
-	remain=	64- (NUM_PARAMS - PAR_BEGINNING_OF_GLOBALS);
-	while(remain){
-		if(remain < GEN_BUF_LEN)
-			siz=(uint8_t)remain;
-		else
-			siz=GEN_BUF_LEN;
-		f_read((FIL*)&preset_File, filename, siz, &bytesRead);
-		if(bytesRead !=siz)
-			goto closeFile;
-		remain -=siz;
-	}
+
 
 	// read kit data
 	res=preset_readDrumsetData(0);
@@ -994,7 +1000,7 @@ static void preset_makeFileName(char *buf, uint8_t num, uint8_t type)
 {
 	const char *ext;
 	buf[0]='p';
-	numtostrpu(&buf[1],num,0);
+	numtostrpu(&buf[1],num,'0');
 	switch(type) {
 	case 0:
 		ext=PSTR(".snd");

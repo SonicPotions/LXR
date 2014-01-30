@@ -608,6 +608,7 @@ void menu_repaintAll()
 		menu_repaint();
 	}		
 }
+
 //-----------------------------------------------------------------
 static void menu_repaintLoadSavePage()
 {
