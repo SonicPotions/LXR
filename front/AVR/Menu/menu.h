@@ -375,6 +375,20 @@ enum longNamesEnum
 	LONG_BAR_RESET_MODE,
 	
 };
+
+//enum for the save what parameter
+enum loadSaveEnum
+{
+	SAVE_TYPE_KIT = 0,
+	SAVE_TYPE_PATTERN,
+	SAVE_TYPE_MORPH,
+	SAVE_TYPE_PERFORMANCE,	// kit data, pattern data and BPM
+	SAVE_TYPE_ALL,			// all global settings, kit data and pattern data
+	SAVE_TYPE_GLO,
+	SAVE_TYPE_SAMPLES,
+	NUM_SAVE_TYPES
+};
+
 //-----------------------------------------------------------------
 
 //-----------------------------------------------------------------
@@ -523,4 +537,15 @@ void menu_setActiveVoice(uint8_t voiceNr);
 //-----------------------------------------------------------------
 /** used to upodate all global parameters that need processing after a preset is loaded*/
 void menu_sendAllGlobals();
+
+/* fill up to 3 bytes of a buffer with string representation of a number */
+// left padded with specified char unsigned
+void numtostrpu(char *buf, uint8_t num, char pad);
+// space padded signed
+void numtostrps(char *buf, int8_t num);
+// non space padded unsigned
+void numtostru(char *buf, uint8_t num);
+// non space padded signed
+//void numtostrs(char *buf, int8_t num);
+
 #endif

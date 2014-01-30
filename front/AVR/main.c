@@ -144,7 +144,12 @@ sei();
 
 #if USE_SD_CARD		
 	//load init preset
-	preset_loadDrumset(0,0);
+	if(!preset_loadDrumset(0,0)) {
+		lcd_home();
+		lcd_string_F(PSTR("Kit read error"));
+		_delay_ms(2000);
+		preset_sendDrumsetParameters(); // send initial parameters (all 0's)
+	}
 #endif		
 
 	//initialize empty pattern

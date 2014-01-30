@@ -24,15 +24,6 @@
 #include <ctype.h>
 #include "../front.h"
 
-/* fill up to 3 bytes of a buffer with string representation of a number */
-// space padded unsigned
-static void numtostrpu(char *buf, uint8_t num);
-// space padded signed
-static void numtostrps(char *buf, int8_t num);
-// non space padded unsigned
-static void numtostru(char *buf, uint8_t num);
-// non space padded signed
-static void numtostrs(char *buf, int8_t num);
 // uppercase 3 letters in buf
 static void upr_three(char *buf);
 // given a menuid and a param value fill buf with the short menu item value. will not exceed 3 chars
@@ -47,20 +38,10 @@ static void menu_encoderChangeParameter(int8_t inc);
 
 #define ARROW_SIGN '>'
 
-//enum for the save what parameter
-enum loadSaveEnum
-{
-	SAVE_TYPE_KIT = 0,
-	SAVE_TYPE_PATTERN,
-	SAVE_TYPE_MORPH,
-	SAVE_TYPE_GLO,
-	SAVE_TYPE_SAMPLES,
-};
-
 enum saveStateEnum
 {
-	SAVE_STATE_EDIT_TYPE,
-	SAVE_STATE_EDIT_PRESET_NR,
+	SAVE_STATE_EDIT_TYPE,			// select one of the types of data to load/save (kit, pattern etc)
+	SAVE_STATE_EDIT_PRESET_NR,		// editing the preset number slot
 	SAVE_STATE_EDIT_NAME1,
 	SAVE_STATE_EDIT_NAME2,
 	SAVE_STATE_EDIT_NAME3,
@@ -69,12 +50,12 @@ enum saveStateEnum
 	SAVE_STATE_EDIT_NAME6,
 	SAVE_STATE_EDIT_NAME7,
 	SAVE_STATE_EDIT_NAME8,
-	SAVE_STATE_OK,
+	SAVE_STATE_OK					// confirmation is active
 };
 
 /** a struct for some save page parameters.*/
 static volatile struct {
-	unsigned what:3;		/**< 0= save kit, 1 = save pattern, 2 = morph sound */
+	unsigned what:3;		/**< 0= save kit, 1 = save pattern, 2 = morph sound, etc */
 	unsigned state:4;		/**< 0=edit kit/pat, 1=edit preset nr, 2-9 = edit name, 10=ok*/
 
 } menu_saveOptions;
@@ -500,7 +481,7 @@ static uint8_t menuIndex = 0;
 uint8_t menu_numSamples = 0;
 
 //preset vars
-#define NUM_PRESET_LOCATIONS 3 //kit, pattern, morph sound
+#define NUM_PRESET_LOCATIONS 5 //kit, pattern, morph sound, performance, all
 static uint8_t menu_currentPresetNr[NUM_PRESET_LOCATIONS];
 
 uint8_t menu_shownPattern = 0;
@@ -627,269 +608,90 @@ void menu_repaintAll()
 		menu_repaint();
 	}		
 }
+
 //-----------------------------------------------------------------
 static void menu_repaintLoadSavePage()
 {
+	const char *toptxt=0;
+	//Top row
+	strcpy_P(&editDisplayBuffer[0][0],
+			menu_activePage == SAVE_PAGE ?
+					PSTR("Save:") :
+					PSTR("Load:"));
 
+	switch(menu_saveOptions.what) {
+	case SAVE_TYPE_KIT:			toptxt=PSTR("Kit     "); break;
+	case SAVE_TYPE_PATTERN:		toptxt=PSTR("Pattern "); break;
+	case SAVE_TYPE_MORPH:		toptxt=PSTR("MorphKit"); break;
+	case SAVE_TYPE_GLO:			toptxt=PSTR("Settings"); break;
+	case SAVE_TYPE_PERFORMANCE:	toptxt=PSTR("Perform "); break;
+	case SAVE_TYPE_ALL:			toptxt=PSTR("All     "); break;
+	case SAVE_TYPE_SAMPLES:     toptxt=PSTR("Samples "); break;
+	}
 
-	if(menu_activePage == SAVE_PAGE)
-	{
-		//Top row 
-		strcpy_P(&editDisplayBuffer[0][0],PSTR("Save:"));
+	strcpy_P(&editDisplayBuffer[0][6],toptxt);
+	if(menu_saveOptions.state == SAVE_STATE_EDIT_TYPE) {
+		if(editModeActive) {
+			editDisplayBuffer[0][5]='[';
+			editDisplayBuffer[0][14]=']';
+		} else {
+			//arrow before parameter
+			editDisplayBuffer[0][5]= ARROW_SIGN;
+		}
+	}
 
-		switch(menu_saveOptions.what)
+	//Bottom row - name and number if applicable
+	if( menu_saveOptions.what < SAVE_TYPE_GLO) { //no name and number for global settings or samples
+		//the preset number
+		numtostrpu(&editDisplayBuffer[1][1], menu_currentPresetNr[menu_saveOptions.what],' ');
+
+		if(menu_saveOptions.state == SAVE_STATE_EDIT_PRESET_NR)
 		{
-		case SAVE_TYPE_KIT:
-			strcpy_P(&editDisplayBuffer[0][6],PSTR("Kit     "));
-			if(menu_saveOptions.state == SAVE_STATE_EDIT_TYPE) {
-				if(editModeActive) {
-					editDisplayBuffer[0][5]='[';
-					editDisplayBuffer[0][11]=']';
-				} else {
-					//arrow before parameter
-					editDisplayBuffer[0][5]= ARROW_SIGN;
-					//visibleCursor = VIS_CURS(0,6,1);
-				}
-			}	
-			break;
-
-		case SAVE_TYPE_PATTERN:
-		{
-			strcpy_P(&editDisplayBuffer[0][6],PSTR("Pattern "));
-			if(menu_saveOptions.state == SAVE_STATE_EDIT_TYPE) {
-				if(editModeActive) {
-					editDisplayBuffer[0][5]='[';
-					editDisplayBuffer[0][13]=']';
-				} else {
-					//arrow before parameter
-					editDisplayBuffer[0][5]= ARROW_SIGN;
-					//visibleCursor = VIS_CURS(0,6,1);
-				}
+			if(editModeActive) {
+				editDisplayBuffer[1][0]='[';
+				editDisplayBuffer[1][4]=']';
+			} else {
+				//arrow before parameter
+				editDisplayBuffer[1][0]= ARROW_SIGN;
+				//visibleCursor = VIS_CURS(1,1,1);
 			}
 		}
-		break;
+		// write the full preset name
+		memcpy(&editDisplayBuffer[1][5],(const void*)preset_currentName,8);
+	}
 
-		case SAVE_TYPE_MORPH:
+	// bottom row - for save page, we show editing box or underline cursor as applicable
+	if(menu_activePage == SAVE_PAGE){
+		//the preset number
+		if( menu_saveOptions.what < SAVE_TYPE_GLO) //not saving global settings, so print name and number
 		{
-			strcpy_P(&editDisplayBuffer[0][6],PSTR("MorphKit"));
-			if(menu_saveOptions.state == SAVE_STATE_EDIT_TYPE)
-			{
-				if(editModeActive) {
-					editDisplayBuffer[0][5]='[';
-					editDisplayBuffer[0][14]=']';
-				} else {
-					//arrow before parameter
-					editDisplayBuffer[0][5]= ARROW_SIGN;
-					//visibleCursor = VIS_CURS(0,6,1);
-				}
-			}
-		}
-		break;
-
-		case SAVE_TYPE_GLO:
-		{
-			strcpy_P(&editDisplayBuffer[0][6],PSTR("Settings"));
-			if(menu_saveOptions.state == SAVE_STATE_EDIT_TYPE)
-			{
-				if(editModeActive) {
-					editDisplayBuffer[0][5]='[';
-					editDisplayBuffer[0][14]=']';
-				} else {
-					//arrow before parameter
-					editDisplayBuffer[0][5]= ARROW_SIGN;
-					//visibleCursor = VIS_CURS(0,6,1);
-				}
-			}
-		}
-		break;
-		} // switch(menu_saveOptions.what)
-
-		//Bottom row 
-
-		if( menu_saveOptions.what < SAVE_TYPE_GLO) //no name and number for global settings
-		{
-			//the preset number
-			numtostrpu(&editDisplayBuffer[1][1],menu_currentPresetNr[menu_saveOptions.what]);
-
-			if(menu_saveOptions.state == SAVE_STATE_EDIT_PRESET_NR)
-			{
-				if(editModeActive) {
-					editDisplayBuffer[1][0]='[';
-					editDisplayBuffer[1][4]=']';
-				} else {
-					//arrow before parameter
-					editDisplayBuffer[1][0]= ARROW_SIGN;
-					//visibleCursor = VIS_CURS(1,1,1);
-				}
-			}
-
+			// if we are editing the name
 			if( (menu_saveOptions.state >= SAVE_STATE_EDIT_NAME1) && (menu_saveOptions.state <= SAVE_STATE_EDIT_NAME8) )
 			{			
-				//write name up to active char
-				memcpy(&editDisplayBuffer[1][5],(const void*)preset_currentName,8);
-				if(editModeActive) {
+				if(editModeActive) { // draw a box around active character (encoder changes value)
 					editDisplayBuffer[1][4+menu_saveOptions.state-SAVE_STATE_EDIT_NAME1]='[';
 					editDisplayBuffer[1][6+menu_saveOptions.state-SAVE_STATE_EDIT_NAME1]=']';	
-				} else {
-					//arrow before parameter
-					//editDisplayBuffer[1][4+menu_saveOptions.state-SAVE_STATE_EDIT_NAME1]= ARROW_SIGN;
+				} else { // using encoder to move left and right, using knob to change letter
+					//underline under current char
 					visibleCursor =(uint8_t)( VIS_CURS(1,5+menu_saveOptions.state-SAVE_STATE_EDIT_NAME1,1));
 				}
 			}
-			else
-			{
-				memcpy(&editDisplayBuffer[1][5],(const void*)preset_currentName,8);
-			}
-		}			
+		} // not saving global settings
 
-		//ok button
+		//ok button - shown in all cases
 		memcpy_P(&editDisplayBuffer[1][14],menuText_ok,2);
 		if((menu_saveOptions.state==SAVE_STATE_OK) ||
 				(menu_saveOptions.what >= SAVE_TYPE_GLO && menu_saveOptions.state > SAVE_STATE_EDIT_TYPE))
 		{	
-			{
-				//arrow before parameter
-				editDisplayBuffer[1][13]= ARROW_SIGN;
-				//visibleCursor = VIS_CURS(1,14,1);
-			}
+			//arrow before parameter
+			editDisplayBuffer[1][13]= ARROW_SIGN;
+			//visibleCursor = VIS_CURS(1,14,1);
 		}	
-
-
-	}
-	//-------------- Load Page ----------------------------------------
-	else
-	{
-		//Top row 
-		strcpy_P(&editDisplayBuffer[0][0],PSTR("Load:"));
-
-		switch(menu_saveOptions.what) {
-		case SAVE_TYPE_PATTERN:
-		{
-			strcpy_P(&editDisplayBuffer[0][6],PSTR("Pattern"));
-			if(menu_saveOptions.state == SAVE_STATE_EDIT_TYPE)
-			{
-				if(editModeActive)
-				{
-					editDisplayBuffer[0][5]='[';
-					editDisplayBuffer[0][13]=']';
-				}
-				else
-				{
-					//arrow before parameter
-					editDisplayBuffer[0][5]= ARROW_SIGN;
-					//visibleCursor = VIS_CURS(0,6,1);
-				}
-
-			}
-		}
-			break;
-
-		case SAVE_TYPE_KIT:
-		{
-			strcpy_P(&editDisplayBuffer[0][6],PSTR("Kit    "));
-			if(menu_saveOptions.state == SAVE_STATE_EDIT_TYPE)
-			{
-				if(editModeActive)
-				{
-					editDisplayBuffer[0][5]='[';
-					editDisplayBuffer[0][11]=']';
-				}
-				else
-				{
-					//arrow before parameter
-					editDisplayBuffer[0][5]= ARROW_SIGN;
-					//visibleCursor = VIS_CURS(0,6,1);
-				}
-			}
-		}
-			break;
-
-		case SAVE_TYPE_MORPH:
-		{
-			strcpy_P(&editDisplayBuffer[0][6],PSTR("MorphKit"));
-			if(menu_saveOptions.state == SAVE_STATE_EDIT_TYPE)
-			{
-				if(editModeActive)
-				{
-					editDisplayBuffer[0][5]='[';
-					editDisplayBuffer[0][14]=']';
-				}
-				else
-				{
-					//arrow before parameter
-					editDisplayBuffer[0][5]= ARROW_SIGN;
-					//visibleCursor = VIS_CURS(0,6,1);
-				}
-
-			}
-		}
-			break;
-
-		case SAVE_TYPE_GLO:
-		{
-			strcpy_P(&editDisplayBuffer[0][6],PSTR("Settings"));
-			if(menu_saveOptions.state == SAVE_STATE_EDIT_TYPE)
-			{
-				if(editModeActive) {
-					editDisplayBuffer[0][5]='[';
-					editDisplayBuffer[0][14]=']';
-				} else {
-					//arrow before parameter
-					editDisplayBuffer[0][5]= ARROW_SIGN;
-					//visibleCursor = VIS_CURS(0,6,1);
-				}
-			}
-		}
-			break;
-		case SAVE_TYPE_SAMPLES:
-		{
-			strcpy_P(&editDisplayBuffer[0][6],PSTR("Samples"));
-			if(menu_saveOptions.state == SAVE_STATE_EDIT_TYPE)
-			{
-				if(editModeActive) {
-					editDisplayBuffer[0][5]='[';
-					editDisplayBuffer[0][13]=']';
-				} else {
-					//arrow before parameter
-					editDisplayBuffer[0][5]= ARROW_SIGN;
-					//visibleCursor = VIS_CURS(0,6,1);
-				}
-			}
-		}
-			break;
-		} //switch(menu_saveOptions.what)
-
-		//############ Bottom row  ############
-		//the preset number
-
-		if( menu_saveOptions.what < SAVE_TYPE_GLO) //no mane and number for global settings
-		{
-			numtostrpu(&editDisplayBuffer[1][1], menu_currentPresetNr[menu_saveOptions.what]);
-
-			if(menu_saveOptions.state == SAVE_STATE_EDIT_PRESET_NR)
-			{
-				if(editModeActive)
-				{
-					editDisplayBuffer[1][0]='[';
-					editDisplayBuffer[1][4]=']';
-				}
-				else
-				{
-					//arrow before parameter
-					editDisplayBuffer[1][0]= ARROW_SIGN;
-					//visibleCursor = VIS_CURS(1,1,1);
-				}
-			}
-
-			//the preset name
-			memcpy(&editDisplayBuffer[1][5],(const void*)preset_currentName,8);
-		}		
-
-
-
-		//ok button for pattern page
-		if(menu_saveOptions.what == SAVE_TYPE_PATTERN || menu_saveOptions.what >= SAVE_TYPE_GLO) {
+	} else { // bottom row - Load page is active
+		//ok button shown for loading everything except kit and morph - which are loaded instantaneously
+		if(menu_saveOptions.what != SAVE_TYPE_KIT && menu_saveOptions.what != SAVE_TYPE_MORPH) {
 			memcpy_P(&editDisplayBuffer[1][14],menuText_ok,2);
+
 			if((menu_saveOptions.state==SAVE_STATE_OK) ||
 					(menu_saveOptions.what >= SAVE_TYPE_GLO && menu_saveOptions.state > SAVE_STATE_EDIT_TYPE)) {
 				//arrow before parameter
@@ -1100,7 +902,7 @@ void menu_repaintGeneric()
 				break;
 
 			case DTYPE_0b1: //--AS the only 0/1 is automation track, make it look 1 based
-				numtostrpu(&editDisplayBuffer[1][13],(uint8_t)(curParmVal+1));
+				numtostrpu(&editDisplayBuffer[1][13],(uint8_t)(curParmVal+1),' ');
 				break;
 			default: //switch(parameters_dtypes[parNr] & 0x0F)
 				// unsigned numeric value: just print the value
@@ -1108,7 +910,7 @@ void menu_repaintGeneric()
 			case DTYPE_0B255:
 			case DTYPE_1B16:
 			case DTYPE_VOICE_LFO:
-				numtostrpu(&editDisplayBuffer[1][13],(uint8_t)(curParmVal));
+				numtostrpu(&editDisplayBuffer[1][13],(uint8_t)(curParmVal),' ');
 				break;
 			} //switch(parameters_dtypes[parNr] & 0x0F) end
 
@@ -1200,7 +1002,7 @@ void menu_repaintGeneric()
 
 				case DTYPE_0b1: // switch(parameters[parNr].dtype&0x0F)
 					//automation track 0/1 value, make it look 1 based
-					numtostrpu(valueAsText,(uint8_t)(curParmVal+1));
+					numtostrpu(valueAsText,(uint8_t)(curParmVal+1),' ');
 					break;
 				default: //switch(parameters[parNr].dtype&0x0F)
 				case DTYPE_0B127:
@@ -1208,7 +1010,7 @@ void menu_repaintGeneric()
 				case DTYPE_1B16:
 				case DTYPE_VOICE_LFO:
 					// fallthrough for the rest of the unsigned values
-					numtostrpu(valueAsText,curParmVal);
+					numtostrpu(valueAsText,curParmVal,' ');
 					break;
 				} //switch(parameters[parNr].dtype&0x0F) end
 
@@ -1245,74 +1047,28 @@ void menu_handleSaveScreenKnobValue(uint8_t potNr, uint8_t value)
 
 	if(menu_saveOptions.state >=SAVE_STATE_EDIT_TYPE && menu_saveOptions.state <=SAVE_STATE_EDIT_PRESET_NR)
 	{
-		switch(potNr)
-		{
-		// change type
-		case 0:
-			x = value/(255/5); //0-5 // --AS TODO - this really only has 4 values, why are we ranging to 5?
+		if(potNr==0) {
+			// change type  to be loaded/saved
+			x = value/(255/NUM_SAVE_TYPES);
 			if(menu_activePage == SAVE_PAGE) {
-				if(x>3) x=3;
+				// can't save samples
+				if(x>SAVE_TYPE_GLO) x=SAVE_TYPE_GLO;
 			} else {
-				if(x>4) x=4;
+				if(x>SAVE_TYPE_SAMPLES) x=SAVE_TYPE_SAMPLES;
 			}
 
 			menu_saveOptions.what = (uint8_t)(x & 0x07); // avoid compiler warning
-			switch(menu_saveOptions.what)
-			{
 
-			case SAVE_TYPE_PATTERN: {
-				preset_getPatternName(menu_currentPresetNr[menu_saveOptions.what]);
+			// load preset name for applicable types
+			if(menu_saveOptions.what < SAVE_TYPE_GLO) {
+				preset_loadName(menu_currentPresetNr[menu_saveOptions.what], menu_saveOptions.what);
 			}
-			break;
 
-			case SAVE_TYPE_MORPH:
-			case SAVE_TYPE_KIT: {
-				preset_getDrumsetName(menu_currentPresetNr[menu_saveOptions.what]);
-			}
-			break;
-			}
 			//force complete repaint
 			menu_repaintAll();
-			break;
-
-			// change preset nr
-			/*
-			case 1:
-				x = value/(256/127); //0-127
-				menu_currentPresetNr[menu_saveOptions.what] = x;
-				switch(menu_saveOptions.what)
-				{
-
-					case SAVE_TYPE_PATTERN: {
-						preset_getPatternName(menu_currentPresetNr[menu_saveOptions.what]);
-					}
-					break;
-
-					case SAVE_TYPE_SOUND: {
-						preset_loadDrumset(menu_currentPresetNr[menu_saveOptions.what],0);
-						preset_getDrumsetName(menu_currentPresetNr[menu_saveOptions.what]);
-					}				
-					break;
-
-					case SAVE_TYPE_MORPH: {
-						//load to morph buffer
-						preset_loadDrumset(menu_currentPresetNr[menu_saveOptions.what],1);
-						preset_getDrumsetName(menu_currentPresetNr[menu_saveOptions.what]);								
-					}	
-					break;
-				}
-
-				menu_repaintAll();
-
-			break;
-			 */
-
-			default:
-				break;
 		}			
-
 	}
-	else if(menu_saveOptions.state >=2 && menu_saveOptions.state <=9)
+	else if(menu_saveOptions.state >=SAVE_STATE_EDIT_NAME1 && menu_saveOptions.state <=SAVE_STATE_EDIT_NAME8)
 	{
 		switch(potNr) {
 		// move cursor
@@ -1369,7 +1125,7 @@ void menu_handleLoadSaveMenu(int8_t inc, uint8_t btnClicked)
 
 	//---- handle the button ----
 	if(btnClicked) {
-		//if the ok button is active, save/load the preset on click
+		//if the ok button is active or we are in global save and ok is active, save/load the preset on click
 		if( (editModeActive && menu_saveOptions.state == SAVE_STATE_OK) ||
 			(menu_saveOptions.what >= SAVE_TYPE_GLO && menu_saveOptions.state > SAVE_STATE_EDIT_TYPE) ) {
 
@@ -1391,6 +1147,14 @@ void menu_handleLoadSaveMenu(int8_t inc, uint8_t btnClicked)
 				case SAVE_TYPE_GLO:
 					preset_saveGlobals();
 					break;
+
+				case SAVE_TYPE_PERFORMANCE:
+					preset_saveAll(menu_currentPresetNr[SAVE_TYPE_PERFORMANCE],0);
+					break;
+
+				case SAVE_TYPE_ALL:
+					preset_saveAll(menu_currentPresetNr[SAVE_TYPE_ALL],1);
+					break;
 				}
 				menu_resetSaveParameters();						
 
@@ -1403,10 +1167,21 @@ void menu_handleLoadSaveMenu(int8_t inc, uint8_t btnClicked)
 						menu_resetSaveParameters();
 					break;
 
+				case SAVE_TYPE_PERFORMANCE:
+					preset_loadAll(menu_currentPresetNr[SAVE_TYPE_PERFORMANCE],0);
+					menu_resetSaveParameters();
+					break;
+
+				case SAVE_TYPE_ALL:
+					preset_loadAll(menu_currentPresetNr[SAVE_TYPE_ALL],1);
+					menu_resetSaveParameters();
+					break;
+
 				case SAVE_TYPE_GLO:
 					preset_loadGlobals();
 					menu_resetSaveParameters();						
 					break;
+
 				case SAVE_TYPE_SAMPLES:
 					spi_deInit();
 					//send load sample command to mainboard
@@ -1462,19 +1237,7 @@ void menu_handleLoadSaveMenu(int8_t inc, uint8_t btnClicked)
 				}
 			}
 
-			switch(menu_saveOptions.what) {
-			case SAVE_TYPE_PATTERN:
-				preset_getPatternName(menu_currentPresetNr[SAVE_TYPE_PATTERN]);
-				break;
-			case SAVE_TYPE_KIT:
-				preset_getDrumsetName(menu_currentPresetNr[SAVE_TYPE_KIT]);
-				break;
-			case SAVE_TYPE_MORPH:
-				preset_getDrumsetName(menu_currentPresetNr[SAVE_TYPE_MORPH]);
-				break;
-			default:
-				break;
-			}
+			preset_loadName(menu_currentPresetNr[menu_saveOptions.what],menu_saveOptions.what);
 			break;
 
 		case 1: //switch(menu_saveOptions.state) - edit preset nr
@@ -1493,23 +1256,21 @@ void menu_handleLoadSaveMenu(int8_t inc, uint8_t btnClicked)
 			}
 			//if on load page, load the new preset when the preset number is changed
 			if((inc!=0)) {
+
+				// always load the name regardless of what else
+				preset_loadName(menu_currentPresetNr[menu_saveOptions.what], menu_saveOptions.what);
+
 				if(menu_activePage == LOAD_PAGE) {
+					// if loading and type is kit and morph do an insta-load
 					switch(menu_saveOptions.what) {
-					case SAVE_TYPE_PATTERN:
-						preset_getPatternName(menu_currentPresetNr[menu_saveOptions.what]);
-						break;
 					case SAVE_TYPE_KIT:
 						preset_loadDrumset(menu_currentPresetNr[menu_saveOptions.what],0);
-						preset_getDrumsetName(menu_currentPresetNr[menu_saveOptions.what]);
 						break;
 					case SAVE_TYPE_MORPH:
 						//load to morph buffer
 						preset_loadDrumset(menu_currentPresetNr[menu_saveOptions.what],1);
-						preset_getDrumsetName(menu_currentPresetNr[menu_saveOptions.what]);
 						break;
 					}
-				} else { //save page -> always load name
-					preset_loadName(menu_currentPresetNr[menu_saveOptions.what], menu_saveOptions.what);
 				}
 			}
 			break; //switch(menu_saveOptions.state) - edit preset nr
@@ -1551,12 +1312,19 @@ void menu_handleLoadSaveMenu(int8_t inc, uint8_t btnClicked)
 					if(menu_saveOptions.state >= SAVE_STATE_EDIT_NAME1 ) {
 						menu_saveOptions.state = SAVE_STATE_OK;
 					}
-					//ok button only for load pattern
-					if( (menu_saveOptions.what != SAVE_TYPE_PATTERN) &&
-						(menu_saveOptions.what >= SAVE_TYPE_GLO)  &&
-						 menu_saveOptions.state == SAVE_STATE_OK ) {
-						menu_saveOptions.state = SAVE_STATE_EDIT_PRESET_NR;
+
+					// ok button doesnt exist on kit and morph
+					if(menu_saveOptions.state == SAVE_STATE_OK ) {
+						if(menu_saveOptions.what == SAVE_TYPE_KIT ||
+							menu_saveOptions.what == SAVE_TYPE_MORPH)
+							menu_saveOptions.state = SAVE_STATE_EDIT_PRESET_NR;
 					}
+
+					//ok button only for load pattern
+					//if( (menu_saveOptions.what != SAVE_TYPE_PATTERN) &&
+					//	(menu_saveOptions.what >= SAVE_TYPE_GLO)  && menu_saveOptions.state == SAVE_STATE_OK ) {
+					//	menu_saveOptions.state = SAVE_STATE_EDIT_PRESET_NR;
+					//}
 				}
 			}
 		} // inc<0
@@ -1987,17 +1755,21 @@ checkvalid:
 }
 
 //-----------------------------------------------------------------
+// this is called when we need to reset the load/save page to it's default
+// state
 void menu_resetSaveParameters()
 {
 
 	//reset save params
-	if(menu_saveOptions.what >= SAVE_TYPE_GLO)
+	if(menu_saveOptions.what >= SAVE_TYPE_GLO) // global and samples only have one choice - hit ok.
 	{
+		// return to the load/save kit page with "type" selected
 		menu_saveOptions.state = SAVE_STATE_EDIT_TYPE;
 		menu_saveOptions.what = SAVE_TYPE_KIT;
 	}
 	else
 	{
+		// return to the state where preset number is selected
 		editModeActive = 1;
 		menu_saveOptions.state	= SAVE_STATE_EDIT_PRESET_NR;//SAVE_STATE_EDIT_TYPE;
 	}		
@@ -2126,6 +1898,8 @@ void menu_switchPage(uint8_t pageNr)
 
 		//leave edit mode if active
 		//editModeActive = 0;
+
+		// load the name of the current preset from disk
 		preset_loadName(menu_currentPresetNr[menu_saveOptions.what], menu_saveOptions.what);
 	}
 		break;
@@ -2682,19 +2456,19 @@ void setNoteName(uint8_t num, char *buf)
 
 /* fill up to 3 bytes of a buffer with string representation of a number */
 // space padded unsigned
-void numtostrpu(char *buf, uint8_t num)
+void numtostrpu(char *buf, uint8_t num, char pad)
 {
     if(num > 99) {
         buf[0]=(char)('0'+(num / 100));
         num %= 100;
     } else {
-        buf[0]=' ';
+        buf[0]=pad;
     }
     if(num > 9) {
         buf[1]=(char)('0'+(num / 10));
         num %=10;
-    } else if(buf[0]==' ') {
-        buf[1]=' ';
+    } else if(buf[0]==pad) {
+        buf[1]=pad;
     } else
         buf[1]='0';
     buf[2]=(char)('0'+num);
@@ -2743,6 +2517,7 @@ void numtostru(char *buf, uint8_t num)
 }
 
 // non space padded signed
+#if 0
 void numtostrs(char *buf, int8_t num)
 {
     uint8_t b=0;
@@ -2762,6 +2537,7 @@ void numtostrs(char *buf, int8_t num)
     }
     buf[b]=(char)('0'+num);
 }
+#endif
 
 // make 1st 3 letters of buffer uppercase
 void upr_three(char *buf)

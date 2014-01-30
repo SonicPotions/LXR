@@ -121,7 +121,7 @@ void frontParser_parseUartData(unsigned char data)
 	//TODO der ganze sysex kram kann sicher noch optimiert werden
 	//das das nicht andauernd abgefragt werden muss
 
-	// if high byte set a new message starts
+	// if high bit is set, a new message starts
 	if(data&0x80)
 	{
 		//reset the byte counter
@@ -324,7 +324,7 @@ static void frontParser_handleSysexData(unsigned char data)
 
 	default:
 	case SYSEX_ACTIVE_MODE_NONE:
-		//we received a mode message -> set mode
+		//we received a mode message -> set the active mode
 		frontParser_sysexActive = data;
 		frontParser_sysexSeqStepNr = 0;
 		frontParser_rxCnt = 0;
