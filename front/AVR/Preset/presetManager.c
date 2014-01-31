@@ -28,7 +28,7 @@ FIL preset_File;		/* place to hold 1 file*/
 char preset_currentName[8];
 
 
-#define FILE_VERSION 1
+#define FILE_VERSION 2
 
 
 #define NUM_TRACKS 7
@@ -859,17 +859,24 @@ void preset_saveAll(uint8_t presetNr, uint8_t isAll)
 		// write some padding (we'll allocate 64 bytes for globals, right now we have +/- 18) so that
 		// we don't need to change the file format later
 		remain=	64- (NUM_PARAMS - PAR_BEGINNING_OF_GLOBALS);
-		while(remain){
-			if(remain < GEN_BUF_LEN)
-				siz=(uint8_t)remain;
-			else
-				siz=GEN_BUF_LEN;
-			f_write((FIL*)&preset_File, filename, siz, &bytesWritten);
-			remain -=siz;
-		}
+
 	} else {
 		// write the bpm
 		f_write((FIL*)&preset_File, &parameter_values[PAR_BPM], 1, &bytesWritten);
+		// bar reset mode
+		f_write((FIL*)&preset_File, &parameter_values[PAR_BAR_RESET_MODE], 1, &bytesWritten);
+
+		remain=	64 - (1+1);
+	}
+
+	// write padding after globals/perf data
+	while(remain){
+		if(remain < GEN_BUF_LEN)
+			siz=(uint8_t)remain;
+		else
+			siz=GEN_BUF_LEN;
+		f_write((FIL*)&preset_File, filename, siz, &bytesWritten);
+		remain -=siz;
 	}
 
 	// save kit
@@ -906,6 +913,7 @@ void preset_loadAll(uint8_t presetNr, uint8_t isAll)
 	UINT bytesRead;
 	uint16_t remain;
 	uint8_t siz;
+	uint8_t version=0;
 	//sprintf(filename,"p%03d.snd",presetNr);
 	if(isAll)
 		preset_makeFileName(filename,presetNr,FEXT_ALL);
@@ -924,31 +932,43 @@ void preset_loadAll(uint8_t presetNr, uint8_t isAll)
 		goto closeFile;
 
 	// read version number and make sure its valid
-	f_read((FIL*)&preset_File,&filename,1,&bytesRead);
-	if(!bytesRead || filename[0] != FILE_VERSION)
+	f_read((FIL*)&preset_File,&version,1,&bytesRead);
+	if(!bytesRead || version > FILE_VERSION)
 		goto closeFile;
 
 	if(isAll){
 		// read global data
 		if(!preset_readGlobalData())
 			goto closeFile;
-		// read padding after globals
+		// size of padding after globals
 		remain=	64- (NUM_PARAMS - PAR_BEGINNING_OF_GLOBALS);
-		while(remain){
-			if(remain < GEN_BUF_LEN)
-				siz=(uint8_t)remain;
-			else
-				siz=GEN_BUF_LEN;
-			f_read((FIL*)&preset_File, filename, siz, &bytesRead);
-			if(bytesRead !=siz)
-				goto closeFile;
-			remain -=siz;
-		}
+
 	} else {
 		// read bpm
 		f_read((FIL*)&preset_File,&parameter_values[PAR_BPM],1,&bytesRead);
 		if(!bytesRead)
 			goto closeFile;
+
+		// size of padding after these
+		if(version>1) {
+			// read pat reset bit
+			f_read((FIL*)&preset_File,&parameter_values[PAR_BAR_RESET_MODE],1,&bytesRead);
+			if(!bytesRead)
+				goto closeFile;
+			remain=	64- (1+1);
+		} else
+			remain=0; // version 1 didn't have padding for performances
+	}
+
+	while(remain){
+		if(remain < GEN_BUF_LEN)
+			siz=(uint8_t)remain;
+		else
+			siz=GEN_BUF_LEN;
+		f_read((FIL*)&preset_File, filename, siz, &bytesRead);
+		if(bytesRead !=siz)
+			goto closeFile;
+		remain -=siz;
 	}
 
 

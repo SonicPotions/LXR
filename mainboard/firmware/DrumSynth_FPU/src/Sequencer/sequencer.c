@@ -487,8 +487,7 @@ static void seq_nextStep()
 					if(seq_eraseActive && i==frontParser_activeTrack && seq_stepIndex[i]%8==0) {
 						// erase the main step and all substeps
 						seq_eraseStepAndSubSteps(frontParser_activeTrack,seq_stepIndex[i]/8);
-					}
-
+					} else
 					// if sub-step is active
 					if(seq_intIsStepActive(i,seq_stepIndex[i],seq_activePattern))
 					{
