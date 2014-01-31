@@ -7,6 +7,11 @@ The custom firmware is <a href="https://github.com/rudeog/LXR/raw/master/firmwar
 
 Here are a list of current changes (differences from Sonic Potions repos):
 --------------------------------------------------------------------------
+- Save/Load performance - this new save option lets you save the current drum patch along with the pattern set and the BPM into one file allowing multiple slots.
+- Save/Load all - this new save option lets you save all the data in the LXR (kit, pattern, settings) into one file allowing multiple slots.
+- Better handling of startup not finding the default drum kit. Will display an error and continue with a patch that needs editing before it will work.
+- Realtime erase - This is useful, I've found, when recording sequences on a keyboard that are multiple bars (measures) in length. Hold down shift and copy(clear) button. While these are held, the notes on the active voice are erased. You must be in record mode, and the sequencer must be playing. So you could erase a few bad notes as you listen to your sequence, or erase multiple bars as they switch without having to mess around with selecting patterns.
+- Recording quantization enhancement - When recording a sequence that spans multiple bars, if you are quantizing, and you hit a note right before the next bar starts (such that the note should quantize to the next bar's first step) it will now do so.
 - Global menu can now hold more than 8 items and will scroll to page 3 (and beyond) when toggling pages or moving encoder right
 - Pattern change reset mode. This is a new global setting that, when turned on, will cause song counter to start from 0 whenever a pattern changes. This prevents the behavior of not playing the displayed number of repetitions for a pattern (when in certain song positions. see the LXR manual). 
 - Global midi channel setting. Affects recording notes from external gear, program change, and control change messages.
