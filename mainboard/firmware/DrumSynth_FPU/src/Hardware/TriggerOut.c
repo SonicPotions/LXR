@@ -38,16 +38,27 @@
 #include "TriggerOut.h"
 #include "string.h"
 #include "sequencer.h"
+#include "limits.h"
+#include "config.h"
+#include "../DSPAudio/medianFilter.h"
 
 uint8_t trigger_dividerClock1 = 8;
 uint8_t trigger_dividerClock2 = 8;
-uint8_t trigger_dividerClock_Input = 1;
+uint8_t trigger_prescalerClockInput = PRE_8_PPQ;
 
 uint8_t trigger_clockCnt = 0;
-uint8_t trigger_clockCnt_Input = 0;
+
 
 uint32_t trigger_pulseTimes[NUM_PINS];
 uint8_t trigger_pulseActive[NUM_PINS];
+
+
+volatile float trigger_phase = 0;
+volatile float trigger_phaseInc = 0;
+static uint8_t trigger_phaseWrapCounter = 1;	// count how many times the phase increased by 1.0
+												// with a preascaler of 8 (4ppq) 1 clock pulse
+												// has to increment the sequencer by 8 steps
+#define COUNTER_DURATION (1.0f/42000000l)
 
 //--------------------------------------------------
 void EXTI9_5_IRQHandler()
@@ -55,7 +66,7 @@ void EXTI9_5_IRQHandler()
 	//reset in
 	if(EXTI_GetITStatus(EXTI_Line8) != RESET)
 	{
-		const uint8_t pinState = (GPIOA->IDR & GPIO_Pin_8);
+		const uint16_t pinState = (GPIOA->IDR & GPIO_Pin_8);
 		if(pinState)
 		{
 			//reset pin is high -> stop and reset sequencer
@@ -67,22 +78,32 @@ void EXTI9_5_IRQHandler()
 
 		EXTI_ClearITPendingBit(EXTI_Line8);
 	}
-	//clock in
+	//clock in falling edge (inverted due to input transistor)
 	else if(EXTI_GetITStatus(EXTI_Line9) != RESET)
     {
-        //Handle the interrupt
-		if(trigger_clockCnt_Input % trigger_dividerClock_Input == 0)
+		uint32_t counter = medianFilter(TIM_GetCounter(TIM2));
+
+		//time for a 128th substep
+		float t =  (counter) * COUNTER_DURATION / (trigger_prescalerClockInput);
+		const float f = (1.f/t);
+		trigger_phaseInc = (1/(REAL_FS/f)) ;
+
+        //divide incoming clocks with prescaler
+		//if(trigger_prescaleCounterClockInput % trigger_prescalerClockInput == 0)
 		{
 			if(seq_isRunning()!=0)
 			{
-				seq_setDeltaT(-1);
+				seq_triggerNextMasterStep(trigger_prescalerClockInput);
+				//reset phase counter
+				trigger_phase = 0;
+				trigger_phaseWrapCounter = 1;
+
 			}
 		}
-		trigger_clockCnt_Input++;
-
+		//reset measurement timer
+		TIM_SetCounter(TIM2,0);
         EXTI_ClearITPendingBit(EXTI_Line9);
     }
-
 }
 //--------------------------------------------------
 void trigger_setPin(uint8_t index, uint8_t isOn)
@@ -223,13 +244,25 @@ void trigger_init()
 	EXTI_InitStructure.EXTI_LineCmd = ENABLE;
 	EXTI_Init(&EXTI_InitStructure);
 
-	/* Enable and set EXTI Line9 Interrupt to the lowest priority */
+	/* Enable and set EXTI Line9 Interrupt  */
 	NVIC_InitStructure.NVIC_IRQChannel = EXTI9_5_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x0F;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x00;
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x0F;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
 
+	//Timer 2 (32-bit) for time measuring of external clock pulses (trigger IO)
+	TIM_TimeBaseInitTypeDef TIM_TimeBase_InitStructure;
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
+
+	//HSE 168MHz, APB1 Prescaler = 4 => 42MHz
+	TIM_TimeBase_InitStructure.TIM_ClockDivision = TIM_CKD_DIV1;
+	TIM_TimeBase_InitStructure.TIM_CounterMode = TIM_CounterMode_Up;
+	TIM_TimeBase_InitStructure.TIM_Period = 0xffffffff;
+	TIM_TimeBase_InitStructure.TIM_Prescaler = 1;
+	TIM_TimeBaseInit(TIM2, &TIM_TimeBase_InitStructure);
+
+	TIM_Cmd(TIM2, ENABLE);
 
 	//set trigger outs to low
 	trigger_setPin(0,0);
@@ -260,7 +293,6 @@ void trigger_clockTick()
 	}
 
 	trigger_clockCnt++;
-
 }
 //--------------------------------------------------
 void trigger_reset(uint8_t value)
@@ -268,6 +300,27 @@ void trigger_reset(uint8_t value)
 	trigger_setPin(TRIGGER_RESET,value);
 	if(value) {
 		trigger_clockCnt = 0;
+	}
+}
+//--------------------------------------------------
+void trigger_tickPhaseCounter()
+{
+	int i;
+	for(i=0;i<OUTPUT_DMA_SIZE;i++)
+	{
+		//only run one cycle of the phase counter
+		// it is reset by the next incoming master clock pulse
+		if( (trigger_phase + trigger_phaseInc) < trigger_prescalerClockInput)
+		{
+			trigger_phase += trigger_phaseInc;
+		}
+		if(trigger_phase >= trigger_phaseWrapCounter)
+		{
+			trigger_phaseWrapCounter++;
+			// trigger a step
+			// -> set time to next step to immediately (trigger next step)
+			seq_setDeltaT(-1);
+		}
 	}
 }
 //--------------------------------------------------

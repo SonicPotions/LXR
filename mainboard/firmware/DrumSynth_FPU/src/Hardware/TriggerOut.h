@@ -73,6 +73,17 @@ enum
 	NUM_PINS,
 };
 
+// since we have 4 main steps per quarter and 8 sub steps per main step
+// our native resolution is 32ppq
+enum Prescaler
+{
+	PRE_1_PPQ	= 32/1,
+	PRE_4_PPQ	= 32/4,
+	PRE_8_PPQ	= 32/8,
+	PRE_16_PPQ	= 32/16,
+	PRE_32_PPQ	= 32,
+};
+
 extern uint8_t trigger_dividerClock1;
 extern uint8_t trigger_dividerClock2;
 
@@ -81,6 +92,7 @@ void trigger_tick();
 void trigger_triggerVoice(uint8_t voice);
 void trigger_clockTick();
 void trigger_reset(uint8_t value);
+void trigger_tickPhaseCounter();
 
 
 #endif /* TRIGGEROUT_H_ */

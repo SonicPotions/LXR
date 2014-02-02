@@ -58,8 +58,8 @@
 #define STEP_ACTIVE_MASK 0x80
 #define STEP_VOLUME_MASK 0x7f
 
-#define PATTERN_END_MASK 0x7f
-#define PATTERN_END 0x80
+//#define PATTERN_END_MASK 0x7f
+//#define PATTERN_END 0x80
 
 #define SEQ_NEXT_RANDOM 		0x08
 #define SEQ_NEXT_RANDOM_PREV 	0x09
@@ -94,6 +94,7 @@ typedef struct PatternSettingsStruct
 {
 	uint8_t 	changeBar;		// change on every Nth bar to the next pattern
 	uint8_t  	nextPattern;	// [0:9] (0-7) are the 8 patterns, (8) is random previous, (9) is random all
+
 }PatternSetting;
 
 typedef struct PatternSetStruct
@@ -101,6 +102,7 @@ typedef struct PatternSetStruct
 	Step seq_subStepPattern[NUM_PATTERN][NUM_TRACKS][NUM_STEPS];
 	uint16_t seq_mainSteps[NUM_PATTERN][NUM_TRACKS];
 	PatternSetting seq_patternSettings[NUM_PATTERN];
+	uint8_t	patternLength[NUM_PATTERN][NUM_TRACKS];	// length of the pattern in main steps [0:16]
 }PatternSet;
 
 typedef struct TempPatternStruct
@@ -108,6 +110,7 @@ typedef struct TempPatternStruct
 	Step seq_subStepPattern[NUM_TRACKS][NUM_STEPS];
 	uint16_t seq_mainSteps[NUM_TRACKS];
 	PatternSetting seq_patternSettings;
+	uint8_t	patternLength[NUM_TRACKS];
 }TempPattern;
 
 extern uint8_t seq_activePattern;
@@ -141,6 +144,8 @@ void seq_armAutomationStep(uint8_t stepNr, uint8_t track,uint8_t isArmed);
 void seq_resetDeltaAndTick();
 //------------------------------------------------------------------------------
 void seq_setDeltaT(float delta);
+//------------------------------------------------------------------------------
+void seq_triggerNextMasterStep(uint8_t stepSize);
 //------------------------------------------------------------------------------
 void seq_setBpm(uint16_t bpm);
 //------------------------------------------------------------------------------

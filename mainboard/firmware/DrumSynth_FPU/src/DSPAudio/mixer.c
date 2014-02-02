@@ -314,6 +314,9 @@ void mixer_calcNextSampleBlock(int16_t* output,int16_t* output2)
 	Cymbal_calcAsync();
 	HiHat_calcAsync();
 
+	//calculate trigger io phase
+	trigger_tickPhaseCounter();
+
 	//an array to store intermediate voice samples
 	//befor output distribution
 	int16_t sampleData[OUTPUT_DMA_SIZE];

@@ -204,15 +204,13 @@ void euklid_transferPattern(uint8_t trackNr, uint8_t patternNr)
 	int i;
 	seq_patternSet.seq_mainSteps[patternNr][trackNr] = euklid_patternBuffer;
 
-	for(i=0;i<128;i++)
+
+
+	if(euklid_length[trackNr] <17)
 	{
-		if(seq_patternSet.seq_subStepPattern[patternNr][trackNr][i].note & PATTERN_END)
-		{
-			seq_patternSet.seq_subStepPattern[patternNr][trackNr][i].note &= ~PATTERN_END;
-		}
-	}
-	if(euklid_length[trackNr] <16)
+		seq_patternSet.patternLength[patternNr][trackNr] = euklid_length[trackNr];
+	} else
 	{
-		seq_patternSet.seq_subStepPattern[patternNr][trackNr][euklid_length[trackNr]*8].note |= PATTERN_END;
+		seq_patternSet.patternLength[patternNr][trackNr] = 16;
 	}
 }

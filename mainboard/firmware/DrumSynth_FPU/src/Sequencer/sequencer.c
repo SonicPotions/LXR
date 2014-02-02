@@ -72,11 +72,11 @@ static float	seq_deltaT;					/**< time in [ms] until the next step
  	 	 	 	 	 	 	 	 	 	 	 1000ms = 1 sec
  	 	 	 	 	 	 	 	 	 	 	 1 min = 60 sec*/
 uint8_t seq_activeAutomTrack=0;
-
 uint8_t seq_delayedSyncStepFlag = 0;		//normally sync steps will only be advanced by external midi clocks in ext. sync mode
 											//if the shuffle needs a delayed sync step, it is indicated here.
 
 uint8_t seq_isSyncExternal = 0;
+uint8_t seq_lastMasterStep[NUM_TRACKS];		//keeps track of the last triggered master sync step of each track
 
 float seq_shuffle = 0;
 
@@ -152,9 +152,13 @@ void seq_init()
 	for(i=0;i<NUM_TRACKS;i++) {
 		autoNode_init(&seq_automationNodes[i][0]);
 		autoNode_init(&seq_automationNodes[i][1]);
+
+
 	}
 
 	memset(seq_stepIndex,0,NUM_TRACKS);
+	memset(seq_lastMasterStep,0,NUM_TRACKS);
+
 
 
 	for(i=0;i<NUM_PATTERN;i++)
@@ -164,6 +168,8 @@ void seq_init()
 
 		for(j=0;j<NUM_TRACKS;j++)
 		{
+			seq_patternSet.patternLength[i][j] = 16;
+
 			for(k=0;k<128;k++)
 			{
 				seq_patternSet.seq_subStepPattern[i][j][k].note 		= SEQ_DEFAULT_NOTE;
@@ -201,35 +207,18 @@ void seq_setShuffle(float shuffle)
 //------------------------------------------------------------------------------
 void seq_setTrackLength(uint8_t trackNr, uint8_t length)
 {
-	int i;
-	for(i=0;i<128;i++)
+	if(length < 17)
 	{
-		//clear all end markers
-		if(seq_patternSet.seq_subStepPattern[seq_activePattern][trackNr][i].note & PATTERN_END)
-		{
-			seq_patternSet.seq_subStepPattern[seq_activePattern][trackNr][i].note &= ~PATTERN_END;
-		}
-	}
-	//set new end marker
-	if(length < 16)
+		seq_patternSet.patternLength[seq_activePattern][trackNr] = length;
+	} else
 	{
-		seq_patternSet.seq_subStepPattern[seq_activePattern][trackNr][length*8].note |= PATTERN_END;
+		seq_patternSet.patternLength[seq_activePattern][trackNr] = 16;
 	}
 }
 //------------------------------------------------------------------------------
 uint8_t seq_getTrackLength(uint8_t trackNr)
 {
-	int i;
-	for(i=0;i<128;i++)
-	{
-		//clear all end markers
-		if(seq_patternSet.seq_subStepPattern[seq_activePattern][trackNr][i].note & PATTERN_END)
-		{
-			return i/8;
-		}
-	}
-
-	return 16;
+	return seq_patternSet.patternLength[seq_activePattern][trackNr];
 }
 //------------------------------------------------------------------------------
 void seq_calcDeltaT(uint16_t bpm)
@@ -377,10 +366,9 @@ void seq_nextStep()
 	trigger_clockTick();
 	seq_masterStepCnt++;
 
-	//---- calc master step position. max value is 127. also take in regard the pattern end bit from the note value -----
+	//---- calc master step position. max value is 127. also take in regard the pattern length -----
 	uint8_t masterStepPos;
-	//if( (((seq_stepIndex[0]+1) &0x7f) == 0) || (((seq_patternSet.seq_subStepPattern[seq_activePattern][0][seq_stepIndex[0]+1]).note & PATTERN_END_MASK)>=PATTERN_END_MASK) )
-	if( (((seq_stepIndex[0]+1) &0x7f) == 0) || (((seq_patternSet.seq_subStepPattern[seq_activePattern][0][seq_stepIndex[0]+1]).note & PATTERN_END)) )
+	if( (((seq_stepIndex[0]+1) &0x7f) == 0) || (seq_stepIndex[0]+1 >= (seq_patternSet.patternLength[seq_activePattern][0]*8) ) )
 	{
 		masterStepPos = 0;
 		//a bar has passed
@@ -463,7 +451,7 @@ void seq_nextStep()
 		uart_sendFrontpanelByte(0);
 	}
 
-	//--------- Now its time to process the single tracks -------------------------
+	//--------- Time to process the single tracks -------------------------
 
 	int i;
 	for(i=0;i<NUM_TRACKS;i++)
@@ -471,7 +459,7 @@ void seq_nextStep()
 		//increment the step index
 		seq_stepIndex[i]++;
 		//check if track end is reached
-		if(((seq_patternSet.seq_subStepPattern[seq_activePattern][i][seq_stepIndex[i]].note & PATTERN_END)) || ((seq_stepIndex[i] & 0x7f) == 0))
+		if( (seq_stepIndex[i] >= (seq_patternSet.patternLength[seq_activePattern][i]*8) ) || ((seq_stepIndex[i] & 0x7f) == 0) )
 		{
 			//if end is reached reset track to step 0
 			seq_stepIndex[i] = 0;
@@ -567,6 +555,34 @@ void seq_armAutomationStep(uint8_t stepNr, uint8_t track,uint8_t isArmed)
 void seq_setDeltaT(float delta)
 {
 	seq_deltaT = delta;
+}
+//------------------------------------------------------------------------------
+void seq_setNextStep(uint8_t stepNr, uint8_t trackNr)
+{
+	seq_stepIndex[trackNr] = stepNr;
+}
+//------------------------------------------------------------------------------
+
+//master steps are used to keep the sync with the external clocks
+// spacing is defined by the prescaler value
+//with 32ppq every step is a master step
+//with 4ppq only every 8th step is a master step
+void seq_triggerNextMasterStep(uint8_t stepSize)
+{
+	int i;
+	for(i=0;i<NUM_TRACKS;i++)
+	{
+		seq_setNextStep(seq_lastMasterStep[i]>0?seq_lastMasterStep[i]-1:(seq_patternSet.patternLength[seq_activePattern][i]*8)-1, i);
+
+		seq_lastMasterStep[i] += stepSize;
+		if(seq_lastMasterStep[i] >= seq_patternSet.patternLength[seq_activePattern][i]*8)
+		{
+			seq_lastMasterStep[i] -= seq_patternSet.patternLength[seq_activePattern][i]*8;
+		}
+
+		//set time to next step to zero
+		seq_setDeltaT(-1);
+	}
 }
 //------------------------------------------------------------------------------
 void seq_resetDeltaAndTick()
@@ -731,7 +747,10 @@ void seq_setRunning(uint8_t isRunning)
 		uint8_t i;
 		for(i=0;i<NUM_TRACKS;i++) {
 			seq_stepIndex[i] = -1;
+			seq_lastMasterStep[i] = 0;
 		}
+		//reset master sync steps
+		//memset(seq_lastMasterStep,0,NUM_TRACKS);
 
 		//reset song position bar counter
 		seq_lastShuffle = 0;
@@ -740,6 +759,8 @@ void seq_setRunning(uint8_t isRunning)
 		//so the next seq_tick call will trigger the next step immediately
 		seq_deltaT = 0;
 		seq_sendRealtime(MIDI_STOP);
+
+
 
 		//--AS send notes off on all channels that have notes playing and reset our bitmap to reflect that
 		seq_midiNoteOff(0xFF);
