@@ -1333,11 +1333,12 @@ void menu_handleLoadSaveMenu(int8_t inc, uint8_t btnClicked)
 
 /* given a value for PAR_VOICE_LFO* will fix PAR_TARGET_LFO* parameter to point to a proper index in modTargets
  * that relates to that target voice, and also return the new value.
- * voiceNr - 0 based voice we are trying to fix
+ * PAR_TAGET_LFO* will only be modified if it was set to a voice specific target (there are 2 non voice specific targets)
+ * lfoNr - 0 based LFO that we are dealing with
  * targetVoice - 1 based voice that represents PAR_VOICE_LFO* value
  * returns index into modTargets that represents the new value for PAR_TARGET_LFO
  */
-static uint8_t fixLfoTargetForVoice(uint8_t voiceNr, uint8_t targetVoice)
+static uint8_t fixLfoTargetForVoice(uint8_t lfoNr, uint8_t targetVoice)
 {
 	// the voiceNr will dictate the range within modTargets that we are interested in. this means
 	// that changing targetVoice will change PAR_TARGET_LFO* since that parameter
@@ -1349,14 +1350,16 @@ static uint8_t fixLfoTargetForVoice(uint8_t voiceNr, uint8_t targetVoice)
 	const uint8_t newMax=(uint8_t)(modTargetVoiceOffsets[targetVoice-1].end - newStartPos);
 
 	// associated target parameter (ie the lfo target on the drum we are editing)
-	uint8_t * const targValue = &parameter_values[PAR_TARGET_LFO1 + voiceNr];
+	uint8_t * const targValue = &parameter_values[PAR_TARGET_LFO1 + lfoNr];
 
 	// the value of that parameter
 	uint8_t modtargval = *targValue;
 
-	// as that parameter is right now it's associated with a voice. which voice
+	// as that parameter is right now it's associated with a voice. which voice (this is 1 based result!)
 	const uint8_t oldVoice = voiceFromModTargValue(modtargval);
-	const uint8_t oldStartPos=modTargetVoiceOffsets[oldVoice].start;
+	if(!oldVoice) // not voice specific, leave as is
+		goto end;
+	const uint8_t oldStartPos=modTargetVoiceOffsets[oldVoice-1].start;
 
 	// TODO check this. only the 4th voice has one less mod param than the others
 	// some voices may have more available parameters. ensure that it's still valid for the voice
@@ -1367,7 +1370,7 @@ static uint8_t fixLfoTargetForVoice(uint8_t voiceNr, uint8_t targetVoice)
 	// this is potentially modifying a PAR_TARGET_LFO* parameter
 	*targValue = (uint8_t)(newStartPos + (modtargval-oldStartPos));
 
-
+end:
 
 	return *targValue;
 }
@@ -1609,6 +1612,7 @@ static void menu_encoderChangeParameter(int8_t inc)
 	case DTYPE_TARGET_SELECTION_LFO://parameter_dtypes[paramNr] & 0x0F
 	{
 		//**LFO - limit encoder start and end to range for the voice
+		// this is a value from 1 to 6, so we adjust to be 0 based
 		uint8_t voiceNr =  (uint8_t)(parameter_values[PAR_VOICE_LFO1+(paramNr - PAR_TARGET_LFO1)]-1);
 		if(*paramValue < pgm_read_byte(&modTargetVoiceOffsets[voiceNr].start)) {
 			if(inc < 0) // going down, allow 0
