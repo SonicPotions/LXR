@@ -407,8 +407,25 @@ void buttonHandler_handleSelectButton(uint8_t buttonNr) {
 		case SELECT_MODE_LOAD_SAVE:
 			//the currently active button is lit
 			led_setActivePage(buttonNr);
+			break;
 
-			//	menu_switchPage(LFO1_PAGE+buttonNr);
+		case SELECT_MODE_MENU:
+			// a new menu page mode for multiple pages
+			// the trigger IO page is located on the AEG button, the normal (old) menu is on the OSC button
+
+			//change sub page -> osc, filter, mod etc...
+						menu_switchSubPage(buttonNr);
+						//go to 1st parameter on sub page
+						menu_resetActiveParameter();
+						led_setActiveSelectButton(buttonNr);
+						menu_repaintAll();
+
+				/*
+			if(buttonNr< 2)
+			{
+				led_setActivePage(buttonNr);
+			}
+			*/
 			break;
 		}
 	}
@@ -703,18 +720,6 @@ void buttonHandler_setRemoveStep(uint8_t ledNr, uint8_t seqButtonPressed) {
 //--------------------------------------------------------
 void buttonHandler_buttonPressed(uint8_t buttonNr) {
 
-	/*
-	 char text[5];
-	 lcd_setcursor(0,0);
-	 itoa(buttonNr,text,10);
-
-	 lcd_clear();
-	 lcd_string(text);
-
-	 led_toggle(buttonNr);
-	 //led_setValue(0,buttonNr)
-	 return;
-	 */
 	screensaver_touch();
 
 	switch (buttonNr) {
@@ -751,15 +756,11 @@ void buttonHandler_buttonPressed(uint8_t buttonNr) {
 				led_setBlinkLed(LED_PART_SELECT1 + buttonNr - BUT_SELECT1, 1);
 			}
 		} else {
-			//moved to release button
-			//buttonHandler_handleSelectButton(buttonNr-BUT_SELECT1);
-
 			//select sub step when button is held
 			//-> step mode
 			//-> voice mode + shift
 
-			if ( /*(buttonHandler_getMode() == SELECT_MODE_STEP) || */((buttonHandler_getMode()
-					== SELECT_MODE_VOICE) && buttonHandler_getShift())) {
+			if ( ((buttonHandler_getMode() == SELECT_MODE_VOICE) && buttonHandler_getShift())) {
 				//TODO hier muss selektiert werden!
 				uint8_t selectButtonNr = (uint8_t) (buttonNr - BUT_SELECT1);
 				uint8_t buttonNr = (uint8_t) (buttonHandler_selectedStep * 8

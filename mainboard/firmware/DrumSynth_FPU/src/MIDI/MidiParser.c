@@ -50,6 +50,7 @@
 #include "frontPanelParser.h"
 #include "usb_manager.h"
 
+
 static uint16_t midiParser_activeNrpnNumber = 0;
 
 uint8_t midiParser_originalCcValues[0xff];
@@ -1027,6 +1028,8 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 				// that the note will always play with that note
 				midi_NoteOverride[msg.data1-CC2_MIDI_NOTE1] = msg.data2;
 				break;
+
+
 
 			case CC2_MUTE_1:
 			case CC2_MUTE_2:

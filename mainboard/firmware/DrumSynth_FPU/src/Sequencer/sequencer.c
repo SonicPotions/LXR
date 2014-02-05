@@ -363,7 +363,6 @@ void seq_nextStep()
 	if(!seq_running)
 		return;
 
-	trigger_clockTick();
 	seq_masterStepCnt++;
 
 	//---- calc master step position. max value is 127. also take in regard the pattern length -----
@@ -378,6 +377,7 @@ void seq_nextStep()
 	{
 		masterStepPos = seq_stepIndex[0]+1;
 	}
+
 
 	//-------- check if the master track has ended and check if a pattern switch is necessary --------
 	if(masterStepPos == 0)
@@ -452,7 +452,7 @@ void seq_nextStep()
 	}
 
 	//--------- Time to process the single tracks -------------------------
-
+	trigger_clockTick(seq_stepIndex[0]+1);
 	int i;
 	for(i=0;i<NUM_TRACKS;i++)
 	{
@@ -765,14 +765,14 @@ void seq_setRunning(uint8_t isRunning)
 		//--AS send notes off on all channels that have notes playing and reset our bitmap to reflect that
 		seq_midiNoteOff(0xFF);
 
-		trigger_reset(1);
+		trigger_reset(0);
 
 		// --AS if mtc was doing it's thing, tell it to stop it.
 		midiParser_checkMtc();
 	} else {
 		seq_prescaleCounter = 0;
 		seq_sendRealtime(MIDI_START);
-		trigger_reset(0);
+		trigger_reset(1);
 	}
 }
 //------------------------------------------------------------------------------

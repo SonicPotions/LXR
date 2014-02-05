@@ -375,6 +375,8 @@ enum
 	CC2_MIDI_NOTE6,
 	CC2_MIDI_NOTE7, // s/b 111 i think
 
+
+
 	//Mute Button NRPN messages
 	CC2_MUTE_1 = 200,
 	CC2_MUTE_2,
@@ -465,6 +467,9 @@ enum
 #define FRONT_SEQ_MIDI_ROUTING			0x2f	// midi routing
 #define FRONT_SEQ_MIDI_TX_FILTER		0x30    // tx filtering
 #define FRONT_SEQ_MIDI_RX_FILTER		0x31    // rx filtering
+#define FRONT_SEQ_TRIGGER_IN_PPQ		0x32
+#define FRONT_SEQ_TRIGGER_OUT1_PPQ 		0x33
+#define FRONT_SEQ_TRIGGER_OUT2_PPQ 		0x34
 
 //codec control messages
 #define EQ_ON_OFF						0x01

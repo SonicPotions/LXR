@@ -181,6 +181,9 @@ enum NamesEnum
 	TEXT_MIDI_ROUTING,
 	TEXT_MIDI_FILT_TX,
 	TEXT_MIDI_FILT_RX,
+	TEXT_TRIGGER_IN_PPQ,
+	TEXT_TRIGGER_OUT1_PPQ,
+	TEXT_TRIGGER_OUT2_PPQ,
 	NUM_NAMES
 };
 //-----------------------------------------------------------------
@@ -264,7 +267,10 @@ enum shortNamesEnum
 	SHORT_MIDI,
 	SHORT_MIDI_ROUTING,
 	SHORT_MIDI_FILT_TX,
-	SHORT_MIDI_FILT_RX
+	SHORT_MIDI_FILT_RX,
+	SHORT_TRIGGER_IN,
+	SHORT_TRIGGER_OUT1,
+	SHORT_TRIGGER_OUT2,
 
 
 	
@@ -299,7 +305,8 @@ enum catNamesEnum
 	CAT_PARAMETER,
 	CAT_SEQUENCER,
 	CAT_GENERATOR,
-	CAT_MIDI
+	CAT_MIDI,
+	CAT_TRIGGER
 };
 //-----------------------------------------------------------------
 // these must correspond with longNames in MenuText.h
@@ -368,7 +375,10 @@ enum longNamesEnum
 	LONG_GAIN2,
 	LONG_MIDI_ROUTING,
 	LONG_MIDI_FILT_TX,
-	LONG_MIDI_FILT_RX
+	LONG_MIDI_FILT_RX,
+	LONG_TRIGGER_IN,
+	LONG_TRIGGER_OUT1,
+	LONG_TRIGGER_OUT2,
 	
 };
 //-----------------------------------------------------------------

@@ -297,6 +297,8 @@ enum ParamEnums
 	PAR_MIDI_NOTE6,
 	PAR_MIDI_NOTE7,
 
+
+
 	//#########################################
 	//######## End of sound Parameters ########
 	//#########################################
@@ -304,10 +306,10 @@ enum ParamEnums
 	//all parameters in this section are only there to be referenced from the menu
 	//they are not saved anywhere
 	END_OF_SOUND_PARAMETERS,
-	PAR_ROLL= END_OF_SOUND_PARAMETERS, //228
+	PAR_ROLL= END_OF_SOUND_PARAMETERS,
 	PAR_MORPH,
 
-	PAR_ACTIVE_STEP, 					/*230*/
+	PAR_ACTIVE_STEP,
 	PAR_STEP_VOLUME,
 	PAR_STEP_PROB,
 	PAR_STEP_NOTE,
@@ -318,11 +320,11 @@ enum ParamEnums
 	PAR_AUTOM_TRACK,
 	
 	// --AS these are now indices into modTargets
-	PAR_P1_DEST,
+	PAR_P1_DEST,/*240*/
 	PAR_P2_DEST,
 	
 	PAR_P1_VAL,
-	PAR_P2_VAL,							/*240*/
+	PAR_P2_VAL,
 	
 	PAR_SHUFFLE,
 
@@ -333,8 +335,10 @@ enum ParamEnums
 	
 	PAR_POS_X,
 	PAR_POS_Y,
-	PAR_FLUX,
+	PAR_FLUX,/*250*/
 	PAR_SOM_FREQ,
+
+
 
 	
 	//#########################################
@@ -346,7 +350,7 @@ enum ParamEnums
 	
 
 	
-	PAR_MIDI_CHAN_1,					/*250*/
+	PAR_MIDI_CHAN_1,
 	PAR_MIDI_CHAN_2,
 	PAR_MIDI_CHAN_3,
 	PAR_MIDI_CHAN_4,
@@ -354,17 +358,22 @@ enum ParamEnums
 	PAR_MIDI_CHAN_6,
 
 	PAR_FETCH,
-	PAR_FOLLOW,
+	PAR_FOLLOW, /*260*/
 	
 	
 	PAR_QUANTISATION,
 	
 	PAR_SCREENSAVER_ON_OFF,
-	PAR_MIDI_MODE,						/*260*/ //--AS unused now
+	PAR_MIDI_MODE,						 //--AS unused now
 	PAR_MIDI_CHAN_7,
 	PAR_MIDI_ROUTING,
 	PAR_MIDI_FILT_TX,
-	PAR_MIDI_FILT_RX,
+	PAR_MIDI_FILT_RX, /*267*/
+
+	//prescaler control for trigger IO extension
+	PAR_PRESCALER_CLOCK_IN,
+	PAR_PRESCALER_CLOCK_OUT1,
+	PAR_PRESCALER_CLOCK_OUT2, /*230*/
 
 	NUM_PARAMS	
 };

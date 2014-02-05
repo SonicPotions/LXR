@@ -81,18 +81,20 @@ enum Prescaler
 	PRE_4_PPQ	= 32/4,
 	PRE_8_PPQ	= 32/8,
 	PRE_16_PPQ	= 32/16,
-	PRE_32_PPQ	= 32,
+	PRE_32_PPQ	= 1,
 };
 
-extern uint8_t trigger_dividerClock1;
-extern uint8_t trigger_dividerClock2;
+extern uint8_t trigger_dividerClockOut1;
+extern uint8_t trigger_dividerClockOut2;
+extern uint8_t trigger_prescalerClockInput;
 
 void trigger_init();
 void trigger_tick();
 void trigger_triggerVoice(uint8_t voice);
-void trigger_clockTick();
+void trigger_clockTick(uint8_t pos);//the sequencer calls this function whenever a step is played to generate corresponding trigger out clocks
 void trigger_reset(uint8_t value);
 void trigger_tickPhaseCounter();
+
 
 
 #endif /* TRIGGEROUT_H_ */

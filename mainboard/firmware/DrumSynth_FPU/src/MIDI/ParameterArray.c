@@ -649,6 +649,8 @@ void parameterArray_init()
 	parameterArray[PAR_MIDI_NOTE6].type 	= TYPE_UINT8;
 	parameterArray[PAR_MIDI_NOTE7].ptr 		= &midi_NoteOverride[6];
 	parameterArray[PAR_MIDI_NOTE7].type 	= TYPE_UINT8;
+
+
 	//#########################################
 	//######## End of sound Parameters ########
 	//#########################################

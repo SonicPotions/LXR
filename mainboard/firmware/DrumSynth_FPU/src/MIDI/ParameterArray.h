@@ -358,24 +358,7 @@ enum ParamEnums
 	PAR_TRACK_LENGTH,
 
 
-	//#########################################
-	//######## Global Parameters ##############
-	//#########################################
-	PAR_BEGINNING_OF_GLOBALS, //a placeholder to mark the beginning of the global var space not present in morph and not needed in the seq
-	//global params
-	PAR_BPM = PAR_BEGINNING_OF_GLOBALS,
 
-	PAR_MIDI_CHAN_1,
-	PAR_MIDI_CHAN_2,
-	PAR_MIDI_CHAN_3,
-	PAR_MIDI_CHAN_4,
-	PAR_MIDI_CHAN_5,
-	PAR_MIDI_CHAN_6,
-
-	PAR_FETCH,
-	PAR_FOLLOW,
-
-	PAR_QUANTISATION,
 
 	NUM_PARAMS
 };
