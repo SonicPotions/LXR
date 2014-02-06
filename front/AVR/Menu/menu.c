@@ -1345,9 +1345,9 @@ static uint8_t fixLfoTargetForVoice(uint8_t lfoNr, uint8_t targetVoice)
 	// is an offset into modTargets which includes parameters for all voices
 
 	// where the desired target voice starts in modTargets
-	const uint8_t newStartPos=modTargetVoiceOffsets[targetVoice-1].start;
+	const uint8_t newStartPos=pgm_read_byte(&modTargetVoiceOffsets[targetVoice-1].start);
 	// how many targets are there for that voice
-	const uint8_t newMax=(uint8_t)(modTargetVoiceOffsets[targetVoice-1].end - newStartPos);
+	const uint8_t newMax=(uint8_t)(pgm_read_byte(&modTargetVoiceOffsets[targetVoice-1].end) - newStartPos);
 
 	// associated target parameter (ie the lfo target on the drum we are editing)
 	uint8_t * const targValue = &parameter_values[PAR_TARGET_LFO1 + lfoNr];
@@ -1359,7 +1359,7 @@ static uint8_t fixLfoTargetForVoice(uint8_t lfoNr, uint8_t targetVoice)
 	const uint8_t oldVoice = voiceFromModTargValue(modtargval);
 	if(!oldVoice) // not voice specific, leave as is
 		goto end;
-	const uint8_t oldStartPos=modTargetVoiceOffsets[oldVoice-1].start;
+	const uint8_t oldStartPos=pgm_read_byte(&modTargetVoiceOffsets[oldVoice-1].start);
 
 	// TODO check this. only the 4th voice has one less mod param than the others
 	// some voices may have more available parameters. ensure that it's still valid for the voice

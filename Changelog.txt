@@ -1,3 +1,6 @@
+Firmware v0.28
+---------------------------
+- fixed sine OSC offset bug (start is now on zero crossing)
 
 Firmware v0.27
 ---------------------------
@@ -5,7 +8,7 @@ Firmware v0.27
 - detail view exit on sub page change
 - detail view exit when knob is moved
 - added step position reset to zero on pattern change
-
+- fixed pitch EG mod value influencing final OSC pitch
 
 Firmware v0.26
 ---------------------------

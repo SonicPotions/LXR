@@ -90,11 +90,11 @@ uint8_t midiParser_selectedLfoVoice[NUM_LFO] = {0,0,0,0,0,0};
 
 #if 0
 // -- AS for debugging
-static void midiDebugSend(uint8_t b1, uint8_t b2)
+void midiDebugSend(uint8_t b1, uint8_t b2)
 {
-//	uart_sendMidiByte(0xF2);
-//	uart_sendMidiByte(b1&0x7F);
-//	uart_sendMidiByte(b2&0x7F);
+	uart_sendMidiByte(0xF2);
+	uart_sendMidiByte(b1&0x7F);
+	uart_sendMidiByte(b2&0x7F);
 }
 #endif
 
