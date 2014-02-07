@@ -316,9 +316,42 @@ const ModTargetVoiceOffset modTargetVoiceOffsets[6] PROGMEM = {
 	/*voice 6*/ { 181, 216 }, //35
 };
 
+// These values are generated in the excel spreadsheet mod_targ_lineup.xls
+// Will need to be regenerated if modTargets array changes above
+const uint8_t modTargetGapMap[] PROGMEM = {
+		0x3F,		0x3F,		0x4,		0x4,		0x3F,		0x3F,		0x3F,		0x1,		0x6,		0x3F,
+		0x3C,		0x3C,		0x3C,		0x3F,		0x3F,		0x3F,		0x3,		0x3,		0x3,		0x3,
+		0x38,		0x38,		0x3B,		0x3,		0x38,		0x3F,		0x3F,		0x3F,		0x3F,		0x3F,
+		0x3F,		0x3F,		0x3F,		0x3F,		0x3F,		0x3F,		0x3F,		0x3F,		0x3F,		0x3F,
+		0x3F,		0x3F,		0x3F,		0x3F,		0x3F,
+};
+
+#define NUM_TOT_TARGETS sizeof(modTargetGapMap)
+
 //**AUTOM paramToModTarget definition
 // see menu.h for more info
 uint8_t paramToModTarget[END_OF_SOUND_PARAMETERS] ={};
+
+// given a voice (0 to 5) and an index into modTargets (offset by modTargetVoiceOffsets)
+// will return an index into modTargetGapMap
+uint8_t getModTargetGapIndex(uint8_t voice, uint8_t modTargetIdx)
+{
+	// there are 6 voices. Each bit in the value of the modTargetGapMap element represents whether there is a gap at that
+	// location (0) or a value (1). See the excel spreadsheet.
+	uint8_t i, val, ctr=0;
+	voice=5-voice; // invert
+	for(i=0;i<NUM_TOT_TARGETS;i++) {
+		val=pgm_read_byte(modTargetGapMap+i);
+		if((val >> voice) & 0x01) {
+			ctr++;
+			if(ctr==modTargetIdx+1) {
+				return i;
+			}
+		}
+	}
+
+	return 0xff; // problems
+}
 
 //**AUTOM getNumModTargets() definition
 uint8_t getNumModTargets()
