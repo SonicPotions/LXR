@@ -323,7 +323,7 @@ const uint8_t modTargetGapMap[] PROGMEM = {
 		0x3C,		0x3C,		0x3C,		0x3F,		0x3F,		0x3F,		0x3,		0x3,		0x3,		0x3,
 		0x38,		0x38,		0x3B,		0x3,		0x38,		0x3F,		0x3F,		0x3F,		0x3F,		0x3F,
 		0x3F,		0x3F,		0x3F,		0x3F,		0x3F,		0x3F,		0x3F,		0x3F,		0x3F,		0x3F,
-		0x3F,		0x3F,		0x3F,		0x3F,		0x3F,
+		0x3F,		0x3F,		0x3F,		0x3F,		0x3F
 };
 
 #define NUM_TOT_TARGETS sizeof(modTargetGapMap)
@@ -332,25 +332,69 @@ const uint8_t modTargetGapMap[] PROGMEM = {
 // see menu.h for more info
 uint8_t paramToModTarget[END_OF_SOUND_PARAMETERS] ={};
 
-// given a voice (0 to 5) and an index into modTargets (offset by modTargetVoiceOffsets)
-// will return an index into modTargetGapMap
-uint8_t getModTargetGapIndex(uint8_t voice, uint8_t modTargetIdx)
+// **LFOTARGFIX given an index into modTargets
+// will return an index into modTargetGapMap.
+// This functionality is to ensure that when the LFO voice target is changed that the mod target
+// remains the same logical value (where possible) for the new voice.
+uint8_t getModTargetGapIndex(uint8_t modTargetIdx)
 {
+	// determine which voice is being targeted (1 based)
+	uint8_t voice=voiceFromModTargValue(modTargetIdx);
+	if(!voice)
+		return 0xFF; // off
+	// rebase to offset from 0
+	modTargetIdx = (uint8_t)(modTargetIdx - pgm_read_byte(&modTargetVoiceOffsets[(uint8_t)(voice-1)].start));
+
 	// there are 6 voices. Each bit in the value of the modTargetGapMap element represents whether there is a gap at that
 	// location (0) or a value (1). See the excel spreadsheet.
+	// get the bit offset
+	voice=(uint8_t)(6-voice);
+
 	uint8_t i, val, ctr=0;
-	voice=5-voice; // invert
 	for(i=0;i<NUM_TOT_TARGETS;i++) {
 		val=pgm_read_byte(modTargetGapMap+i);
 		if((val >> voice) & 0x01) {
-			ctr++;
-			if(ctr==modTargetIdx+1) {
+			if(ctr==modTargetIdx) {
 				return i;
 			}
+			ctr++;
 		}
 	}
 
 	return 0xff; // problems
+}
+
+// **LFOTARGFIX
+// given a target voice (0 based), and an index into modTargetGapMap
+// calculate an index into modTargets, and return it
+/*- When changing a LFO target voice, if this index is non zero (0 is "off") we use it to calculate
+  the location in modTargets of the desired item for that voice as follows
+  - For the new voice NV, if the bit in the bitmap for the current index for that voice is 0, the mod target is turned off
+  - If not, count how many bits above it for the voice are turned on and that becomes the target (adding the modTarget start)
+*/
+uint8_t getModTargetIdxFromGapIdx(uint8_t v, uint8_t gapidx)
+{
+	uint8_t i, val, bitoffset, ctr=0;
+	if(gapidx==0xFF)
+		return 0; // off
+
+	// voice is 0 based. calculate the bit column
+	bitoffset=(uint8_t)(5-v);
+
+	val=pgm_read_byte(modTargetGapMap+gapidx);
+	if(!((val >> bitoffset) & 0x01))
+		return 0; // bit 0 at that location for the given voice
+
+	for(i=0;i<gapidx;i++){
+		val=pgm_read_byte(modTargetGapMap+i);
+		if((val >> bitoffset) & 0x01) {
+			ctr++;
+		}
+	}
+
+	// calc index into modTargets using input voice and calculated value above
+	return (uint8_t)(pgm_read_byte(&modTargetVoiceOffsets[v].start) + ctr);
+
 }
 
 //**AUTOM getNumModTargets() definition
@@ -361,6 +405,7 @@ uint8_t getNumModTargets()
 
 
 //**AUTOM paramToModTargetInit()
+// --AS TODO move this to progmem - precalculate the values
 void paramToModTargetInit()
 {
 	// populate this array with indices into modTargets so we can do reverse lookup

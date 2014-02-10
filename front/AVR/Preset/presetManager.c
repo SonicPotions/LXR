@@ -167,7 +167,6 @@ void preset_loadGlobals()
 	preset_readGlobalData();
 	f_close((FIL*)&preset_File);
 	menu_sendAllGlobals();
-	menu_repaintAll();
 	
 #endif	
 }
