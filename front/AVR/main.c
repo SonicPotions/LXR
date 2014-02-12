@@ -152,18 +152,6 @@ sei();
 	}
 #endif		
 
-	//--AS moved this here so that it's called after the drumset
-	// has been loaded
-	//set voice 1 active
-	menu_switchPage(0);
-	frontPanel_sendData(SEQ_CC,SEQ_SET_ACTIVE_TRACK,0);
-	//the currently active button is lit
-	led_setActiveVoice(0);
-
-	//display start menu page
-	menu_repaintAll();
-
-
 	//initialize empty pattern
 	copyClear_clearCurrentPattern();
 	

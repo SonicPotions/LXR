@@ -550,6 +550,20 @@ void menu_init()
 	//frontPanel_sendData(SEQ_CC,SEQ_ROLL_RATE,8); //value is initialized in cortex firmware
 
 	parameter_values[PAR_BPM] = 120;
+
+	// --AS todo I tried to move everything below here to main.c before the call
+	// to copyClear_clearCurrentPattern (see 7b0932f20b948ff29037bf6c2b1ecb7eba8bb89e)
+	// but then the global data loaded from glo.cfg seemed like it was not being sent to the back.
+	// need to figure out why as it's likely to crop up again at some point.
+
+	//set voice 1 active
+	menu_switchPage(0);
+	frontPanel_sendData(SEQ_CC,SEQ_SET_ACTIVE_TRACK,0);
+	//the currently active button is lit
+	led_setActiveVoice(0);
+
+	//display start menu page
+	menu_repaintAll();
 }
 //-----------------------------------------------------------------
 /** compare the currentDisplayBuffer with the editDisplayBuffer and send all differences to the display*/
