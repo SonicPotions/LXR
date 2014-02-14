@@ -78,7 +78,7 @@ enum Seq_QuantisationEnum
 typedef struct StepStruct
 {
 	uint8_t 	volume;		// 0-127 volume -> 0x7f => lower 7 bit, upper bit => active
-	uint8_t  	prob;		//step probability
+	uint8_t  	prob;		//step probability (--AS todo we have one free bit here)
 	uint8_t		note;		//midi note value 0-127 -> 0x7f, upper bit signals pattern end
 
 	//parameter automation
@@ -101,6 +101,7 @@ typedef struct PatternSetStruct
 	Step seq_subStepPattern[NUM_PATTERN][NUM_TRACKS][NUM_STEPS];
 	uint16_t seq_mainSteps[NUM_PATTERN][NUM_TRACKS];
 	PatternSetting seq_patternSettings[NUM_PATTERN];
+	uint8_t seq_PatternRotate[NUM_PATTERN][NUM_TRACKS]; // --AS *PATROT how many main steps a pattern is rotated. 0 means not rotated, 15 is max
 }PatternSet;
 
 typedef struct TempPatternStruct

@@ -59,7 +59,7 @@
 #define MIDI_PRESCALER_MASK	0x04
 static uint8_t seq_prescaleCounter = 0;
 
-uint8_t seq_masterStepCnt=0;				/** keeps track of the played steps between 0 and 127 indipendend from the track counters*/
+uint8_t seq_masterStepCnt=0;				/** keeps track of the played steps between 0 and 127 independent from the track counters*/
 uint8_t seq_rollRate = 0x08;				//start with roll rate = 1/16
 uint8_t seq_rollState = 0;					/**< each bit represents a voice. if bit is set, roll is active*/
 
@@ -154,6 +154,7 @@ static uint8_t seq_isNextStepSyncStep();
 static uint8_t seq_intIsStepActive(uint8_t voice, uint8_t stepNr, uint8_t patternNr);
 static uint8_t seq_intIsMainStepActive(uint8_t voice, uint8_t mainStepNr, uint8_t pattern);
 static void seq_resetNote(Step *step);
+static void seq_setStepIndexToStart();
 //------------------------------------------------------------------------------
 void seq_init()
 {
@@ -185,6 +186,8 @@ void seq_init()
 			}
 			//all 16 main steps off
 			seq_patternSet.seq_mainSteps[i][j] = 0;
+			// all pattern rotations off
+			seq_patternSet.seq_PatternRotate[i][j]=0;
 
 		}
 	}
@@ -368,9 +371,11 @@ static void seq_nextStep()
 	seq_masterStepCnt++;
 
 	//---- calc master step position. max value is 127. also take in regard the pattern end bit from the note value -----
+	// track 0 determines the master step position
 	uint8_t masterStepPos;
 	//if( (((seq_stepIndex[0]+1) &0x7f) == 0) || (((seq_patternSet.seq_subStepPattern[seq_activePattern][0][seq_stepIndex[0]+1]).note & PATTERN_END_MASK)>=PATTERN_END_MASK) )
-	if( (((seq_stepIndex[0]+1) &0x7f) == 0) || (((seq_patternSet.seq_subStepPattern[seq_activePattern][0][seq_stepIndex[0]+1]).note & PATTERN_END)) )
+	if( (((seq_stepIndex[0]+1) &0x7f) == 0) ||
+			(((seq_patternSet.seq_subStepPattern[seq_activePattern][0][seq_stepIndex[0]+1]).note & PATTERN_END)) )
 	{
 		masterStepPos = 0;
 		//a bar has passed
@@ -417,8 +422,8 @@ static void seq_nextStep()
 
 			seq_activePattern = seq_pendingPattern;
 
-			//reset pattern position to zero
-			memset(seq_stepIndex,-1,NUM_TRACKS);
+			//reset pattern position to pattern rotate starting position for the active pattern --AS *PATROT
+			seq_setStepIndexToStart();
 
 			//send the ack message to tell the front that a new pattern starts playing
 			uart_sendFrontpanelByte(FRONT_SEQ_CC);
@@ -724,6 +729,7 @@ static void seq_setMainStep(uint8_t patternNr, uint8_t voice, uint8_t stepNr, ui
 uint8_t seq_isRunning() {
 	return seq_running;
 }
+
 //------------------------------------------------------------------------------
 void seq_setRunning(uint8_t isRunning)
 {
@@ -731,10 +737,7 @@ void seq_setRunning(uint8_t isRunning)
 	//jump to 1st step if sequencer is stopped
 	if(!seq_running)
 	{
-		uint8_t i;
-		for(i=0;i<NUM_TRACKS;i++) {
-			seq_stepIndex[i] = -1;
-		}
+		seq_setStepIndexToStart();
 
 		//reset song position bar counter
 		seq_lastShuffle = 0;
@@ -1359,4 +1362,23 @@ static void seq_sendProgChg(const uint8_t ptn)
 	msg.data1=ptn;
 	msg.bits.length=1;
 	seq_sendMidi(msg);
+}
+
+/* *PATROT set the step starting index to the position where the pattern rotation would have it start.
+ *  A pattern rotation of 0 means start at the beginning of the pattern. max value is 15.
+ *  Each value represents a main step interval (which contains 8 substeps)
+ */
+static void seq_setStepIndexToStart()
+{
+	// -- AS TODO we need to look for PATTERN_END and if the rotated value would be past that, we need to subtract
+	// that value from the rotated value until it's not past that. pattern_end is a bit tied to the first substep
+	// after the substeps of the main step in question. it would be better to store pattern_end as a value from 0 - 15
+	// where 0 = length 16 and 15 = length 15. so we could combine it with patternRotate
+	// if rot > length, rot = rot % len
+	uint8_t i;
+	for(i=0;i<NUM_TRACKS;i++) {
+		// -1 here because we increment it first thing when we start
+		seq_stepIndex[i] = ( 8 * seq_patternSet.seq_PatternRotate[seq_activePattern][i]) - 1;
+	}
+
 }
