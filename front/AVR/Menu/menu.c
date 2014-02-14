@@ -478,6 +478,8 @@ the upper bits indicate the active page no.
  */
 static uint8_t menuIndex = 0;
 
+static uint8_t menu_TargetVoiceGapIndex = 0xFF;
+
 uint8_t menu_numSamples = 0;
 
 //preset vars
@@ -549,6 +551,11 @@ void menu_init()
 
 	parameter_values[PAR_BPM] = 120;
 
+	// --AS todo I tried to move everything below here to main.c before the call
+	// to copyClear_clearCurrentPattern (see 7b0932f20b948ff29037bf6c2b1ecb7eba8bb89e)
+	// but then the global data loaded from glo.cfg seemed like it was not being sent to the back.
+	// need to figure out why as it's likely to crop up again at some point.
+
 	//set voice 1 active
 	menu_switchPage(0);
 	frontPanel_sendData(SEQ_CC,SEQ_SET_ACTIVE_TRACK,0);
@@ -557,7 +564,6 @@ void menu_init()
 
 	//display start menu page
 	menu_repaintAll();
-
 }
 //-----------------------------------------------------------------
 /** compare the currentDisplayBuffer with the editDisplayBuffer and send all differences to the display*/
@@ -1265,6 +1271,8 @@ void menu_handleLoadSaveMenu(int8_t inc, uint8_t btnClicked)
 					switch(menu_saveOptions.what) {
 					case SAVE_TYPE_KIT:
 						preset_loadDrumset(menu_currentPresetNr[menu_saveOptions.what],0);
+						// **LFOTARGFIX - save the gap index
+						menu_TargetVoiceGapIndex = getModTargetGapIndex(parameter_values[PAR_TARGET_LFO1 + menu_activeVoice]);
 						break;
 					case SAVE_TYPE_MORPH:
 						//load to morph buffer
@@ -1329,50 +1337,6 @@ void menu_handleLoadSaveMenu(int8_t inc, uint8_t btnClicked)
 			}
 		} // inc<0
 	} //editModeActive
-}
-
-/* given a value for PAR_VOICE_LFO* will fix PAR_TARGET_LFO* parameter to point to a proper index in modTargets
- * that relates to that target voice, and also return the new value.
- * PAR_TAGET_LFO* will only be modified if it was set to a voice specific target (there are 2 non voice specific targets)
- * lfoNr - 0 based LFO that we are dealing with
- * targetVoice - 1 based voice that represents PAR_VOICE_LFO* value
- * returns index into modTargets that represents the new value for PAR_TARGET_LFO
- */
-static uint8_t fixLfoTargetForVoice(uint8_t lfoNr, uint8_t targetVoice)
-{
-	// the voiceNr will dictate the range within modTargets that we are interested in. this means
-	// that changing targetVoice will change PAR_TARGET_LFO* since that parameter
-	// is an offset into modTargets which includes parameters for all voices
-
-	// where the desired target voice starts in modTargets
-	const uint8_t newStartPos=pgm_read_byte(&modTargetVoiceOffsets[targetVoice-1].start);
-	// how many targets are there for that voice
-	const uint8_t newMax=(uint8_t)(pgm_read_byte(&modTargetVoiceOffsets[targetVoice-1].end) - newStartPos);
-
-	// associated target parameter (ie the lfo target on the drum we are editing)
-	uint8_t * const targValue = &parameter_values[PAR_TARGET_LFO1 + lfoNr];
-
-	// the value of that parameter
-	uint8_t modtargval = *targValue;
-
-	// as that parameter is right now it's associated with a voice. which voice (this is 1 based result!)
-	const uint8_t oldVoice = voiceFromModTargValue(modtargval);
-	if(!oldVoice) // not voice specific, leave as is
-		goto end;
-	const uint8_t oldStartPos=pgm_read_byte(&modTargetVoiceOffsets[oldVoice-1].start);
-
-	// TODO check this. only the 4th voice has one less mod param than the others
-	// some voices may have more available parameters. ensure that it's still valid for the voice
-	if(modtargval-oldStartPos >= newMax)
-		modtargval=oldStartPos; // it's not valid for the new voice, set it to 0 effectively
-
-	// ensure that the parameter is associated with our selected voice target
-	// this is potentially modifying a PAR_TARGET_LFO* parameter
-	*targValue = (uint8_t)(newStartPos + (modtargval-oldStartPos));
-
-end:
-
-	return *targValue;
 }
 
 // given a menu id returns the number of entries
@@ -1592,8 +1556,11 @@ static void menu_encoderChangeParameter(int8_t inc)
 		else if(*paramValue > 6)
 			*paramValue = 6;
 
-		// rectify PAR_TARGET_LFO parameter and get new value
-		const uint8_t newTargVal=fixLfoTargetForVoice((uint8_t)(paramNr - PAR_VOICE_LFO1), *paramValue);
+		// **LFOTARGFIX - ensure that the lfo mod target is pointing to the same type of modulation
+		// on the new voice
+		const uint8_t newTargVal=getModTargetIdxFromGapIdx((uint8_t)(*paramValue-1),menu_TargetVoiceGapIndex);
+		// update the lfo mod target
+		parameter_values[PAR_TARGET_LFO1 + (paramNr - PAR_VOICE_LFO1)] = newTargVal;
 
 		// determine the real param value given the index into modTargets
 		uint8_t value =  (uint8_t)pgm_read_word(&modTargets[newTargVal].param);
@@ -1622,6 +1589,9 @@ static void menu_encoderChangeParameter(int8_t inc)
 		} else if (*paramValue > pgm_read_byte(&modTargetVoiceOffsets[voiceNr].end)) {
 			*paramValue = pgm_read_byte(&modTargetVoiceOffsets[voiceNr].end);
 		}
+
+		// **LFOTARGFIX - save the gap index
+		menu_TargetVoiceGapIndex = getModTargetGapIndex(*paramValue);
 
 		uint8_t value =  (uint8_t)pgm_read_word(&modTargets[*paramValue].param);
 		uint8_t upper,lower;
@@ -2358,9 +2328,12 @@ void menu_parseKnobValue(uint8_t potNr, uint8_t potValue)
 
 	case DTYPE_VOICE_LFO:
 	{
-		// **LFO since the lfo voice may be changing, we might need to update the lfo target to point
-		// to a different location in modTargets (a location valid for the new voice)
-		const uint8_t newTargVal=fixLfoTargetForVoice((uint8_t)(paramNr - PAR_VOICE_LFO1), dtypeValue);
+		// **LFOTARGFIX - ensure that the lfo mod target is pointing to the same type of modulation
+		// on the new voice
+		const uint8_t newTargVal=getModTargetIdxFromGapIdx((uint8_t)(dtypeValue-1),menu_TargetVoiceGapIndex);
+
+		// update the lfo mod target if applicable
+		parameter_values[PAR_TARGET_LFO1 + (paramNr - PAR_VOICE_LFO1)] = newTargVal;
 
 		// determine the real param value given the index into modTargets
 		const uint8_t value =  (uint8_t)pgm_read_word(&modTargets[newTargVal].param);
@@ -2373,8 +2346,11 @@ void menu_parseKnobValue(uint8_t potNr, uint8_t potValue)
 		break;
 	case DTYPE_TARGET_SELECTION_LFO:
 	{
-		//**LFO convert to param value and send
 
+		// **LFOTARGFIX - save the gap index
+		menu_TargetVoiceGapIndex = getModTargetGapIndex(dtypeValue);
+
+		//**LFO convert to param value and send
 		// determine the real param value given the index into modTargets
 		const uint8_t value = (uint8_t)pgm_read_word(&modTargets[dtypeValue].param);
 		uint8_t upper,lower;
@@ -2435,6 +2411,8 @@ uint8_t menu_getActiveVoice()
 //----------------------------------------------------------------
 void menu_setActiveVoice(uint8_t voiceNr)
 {
+	// **LFOTARGFIX - save the gap index
+	menu_TargetVoiceGapIndex = getModTargetGapIndex(parameter_values[PAR_TARGET_LFO1+voiceNr]);
 	menu_activeVoice = voiceNr;
 };
 //----------------------------------------------------------------

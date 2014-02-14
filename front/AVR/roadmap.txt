@@ -1,4 +1,6 @@
-___modulation stuff___
+Rudeog (Andrew) notes for custom firmware are in this file
+
+===modulation stuff
 There are 3 types of modulation
 
 Velocity__
@@ -46,15 +48,13 @@ Strategy for automation target fix: (search for **AUTOM in the code)
 - any time we send the value to cortex we translate it to a param number
 - frontParser_stepData doesn't need to change because it's only used for transferring data between file and sequencer and vice versa
 
-
-___fixes in progress (QA test list)___
 - Added midi note off when switching patterns
 - Added midi note off when changing midi channel
 - Added midi note off when muting voice
 - Move midi note off into function (affects sequencer playing, should still send note off, and stop sequencer should send all off)
 - front parset set p1 dest optimize (autom targets 1 and 2 should still default to off)
 
-mtc stuff
+===mtc stuff
 - rearrange some code in midi parser for readability
 - add code in front to recognize start/stop from back and toggle sequncer play stop (the led is meaningless as it flashes)
 - play will start when mtc 0:0:0:0 received and stop when mtc stops
@@ -62,7 +62,7 @@ mtc stuff
 - prog change is sent to MIDI port when a pattern changes
 - fix midiparser to properly recognize channel messages
 
-routing stuff
+===routing stuff
 - MidiStruct is modified to store more info for routing
 - code rearranged so that parseMidiMessage handles all messages and does routing midi and usb
 - add menu item for midi routing which can be in 1 of 6 states
@@ -76,7 +76,7 @@ still need work in usb reception of sysex data bytes (how many bytes will be set
 need to properly interpret note-on messages according to the setting of midi note for each voice
 check the program change as it relates to channels
 
-filtering stuff:
+===filtering stuff:
 - added function to set filter byte
 - added code in midi parsing to ignore messages if they are filtered
 - added code in sequencer to not send out messages if they are filtered
@@ -85,7 +85,7 @@ filtering stuff:
 - back end code to receive filter settings and set bits
 - prog change code will now send on the channel associated with voice 1
 
-global menu expansion:
+===global menu expansion:
 This allows the global menu to have more than 8 items. Code might be designated with GMENU.
 - button handling code refactoring. This was done to make the code easier to read and maintain
   + designate functions as static to aid inlining
@@ -103,7 +103,7 @@ This allows the global menu to have more than 8 items. Code might be designated 
 - break out menu_moveToMenuItem and menu_encoderChangeParameter for readability/maintainability
 - menu_moveToMenuItem - this was made simpler, also fixed to handle the global menu page switches. also allow up to 3 skip items
 
-midi note handling:
+===midi note handling:
 This functionality allows midi notes received on channels to be handled in a way that is consistent with how the 
 midi note setting is set for each voice. If a voice's midi note setting is set to "any" and a note is received on the
 channel designated for that voice, the drum sound is triggered with that note value. If the setting is a specific note, then
@@ -118,11 +118,11 @@ only that note will cause the drum sound to trigger (with the default note value
 - todo check shift button release when in perf mode. should it do anything with mute led's on voices? (code might have a bug)
 - todo check that shift voice in perf mode unmutes all up to clicked voice
 
-bar reset switch:
+===bar reset switch:
 - This allows you to reset the bar to 1 when a pattern change is requested. It avoid the bar counting which causes patterns to
   fit a certain way (as described on p24 of manual). search for seq_resetBarOnPatternChange
   
-Global midi channel:
+===Global midi channel:
 - added a global midi channel setting. This affects
   + prog change - pc will only respond on this channel (used to be channel assoc with voice 0)
   + ctrl change - cc will only respond on this channel (used to be channel assoc with voice 0)
@@ -133,7 +133,7 @@ Global midi channel:
   on their respective channels). This makes more sense for live recording on one keyboard.
 - when playing notes on global channel from ext keyboard, they will be echoed to channel assigned to that voice
 
-Erase mode and record fix (**RECORD)
+===Erase mode and record fix (**RECORD)
 This allows you to hold shift-clear while record is active and sequencer is playing to erase notes as they are 
 encountered. If a main step is encountered while this mode is on, that main step and all substeps are erased. Only
 the active flags are set (velocity, automation, note value remain untouched). Should they be zeroed out?
@@ -150,7 +150,7 @@ at position 0.
 - seq_addNote will check to see whether a note should end up on a different pattern
 - consolidate step clearing code. reduce code size by using ptrs instead of a lot of indexing (shaved 300 bytes!)
 
-Save all and performance (**SAVEALL):
+===Save all and performance (**SAVEALL):
 Will allow you to save all data in one file for selection and loading (settings, kit, pattern). Will allow you to save
 performance data in one file for selection and loading (kit, pattern). There will be two new load and save options:
 "All", "Perform". When loading All, or perform data, the sequencer must be stopped (can figure out that one later).
@@ -174,6 +174,31 @@ Pattern data is last since it's easier to anticipate new kit settings and pad th
 - menu_repaintLoadSavePage - this was refactored to reduce code footprint and also add new types
 - menu_handleLoadSaveMenu - Add hooks to call load and save for perf and all
 - preset_loadName - consolidate for loading the name of any preset type
+
+===LFO Mod Target lineup fix (mod-targ-lineup)(**LFOTARGFIX)
+mod_targ_lineup.xls contains a grid of all mod targets for each voice lined up with gaps so they are
+mapped correctly across voices. The modTargetGapMap array is derived from this. This allows us to switch voices
+and have the mod target stay the same (mostly) across voices. for targets that exist on one voice but not on
+another, the target will switch to "off" for that voice, and back to it's original value if moving back to the
+first voice, or to a voice that supports that target. 
+- modTargetGapMap contains the max number of values in the sparse array in the spreadsheet. An index into this array
+  will always refer to exactly one type of mod target (for at least one voice. some might be blank)
+- The index into modTargetGapMap is calculated as follows
+  - each element in modTargetGapMap is a bit map where the 3rd bit is voice 0, and the right most bit is voice 5  etc.
+  - for a given target voice V and mod target T (index into modTargets for that voice), scan down this array
+  - if the bit for that voice is 1, increment a counter
+  - when the counter reaches T+1, we take the current index into modTargetGapMap as the index to be calculated
+- Calculate this index when switching drum voices
+- Calculate this index when loading a voice
+- Calculate this index when altering the LFO mod target
+- When changing a LFO target voice, if this index is non zero (0 is "off") we use it to calculate 
+  the location in modTargets of the desired item for that voice as follows
+  - For the new voice NV, if the bit in the bitmap for the current index for that voice is 0, the mod target is turned off
+  - If not, count how many bits above it for the voice are turned on and that becomes the target (adding the modTarget start)
+
+- Code was added in cc2text that calculates all the above
+- Calls were made from when loading a kit, switching active voice, switching lfo target voice and switching lfo mod target
+- main.c was touched to ensure that active voice is switched only after loading the initial kit
 
 QA
 check repainting of load save page thoroughly
