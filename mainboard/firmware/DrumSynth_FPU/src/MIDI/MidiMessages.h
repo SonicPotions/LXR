@@ -468,6 +468,7 @@ enum
 #define FRONT_SEQ_MIDI_RX_FILTER		0x31    // rx filtering
 #define FRONT_SEQ_BAR_RESET_MODE		0x32	// --AS reset bar on manual pattern change (0 is default - to not reset)
 #define FRONT_SEQ_ERASE_ON_OFF			0x33    // --AS turn erase mode on/off
+#define FRONT_SEQ_TRACK_ROTATION		0x34	// --AS rotate a track's start position 0 to 15
 
 //codec control messages
 #define EQ_ON_OFF						0x01

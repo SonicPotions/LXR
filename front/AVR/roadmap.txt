@@ -200,6 +200,18 @@ first voice, or to a voice that supports that target.
 - Calls were made from when loading a kit, switching active voice, switching lfo target voice and switching lfo mod target
 - main.c was touched to ensure that active voice is switched only after loading the initial kit
 
+=== Pattern rotation (**PATROT)
+- fixed bugs in parameterArray (some copy and paste errors look like they existed there for a while)
+- Eliminate PATTERN_END bit. Some added efficiency.
+
+Status (todo):
+- trying to eliminate extraneous elements from parameterArray
+- wondering why PAR_VOICE_LFO* and PAR_TARGET_LFO* are not initialized in parameterArray
+- wondering whether gaps in parameterArray can cause problems (since ptrs are used)
+- should PAR_FREQ_LFO* really point to lfo->Freq? figure this out
+- hook in rotation parameter into back
+- add rotation parameter to front
+
 QA
 check repainting of load save page thoroughly
 

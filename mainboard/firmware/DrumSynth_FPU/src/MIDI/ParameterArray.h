@@ -44,7 +44,6 @@
 #define TYPE_SPECIAL_P			4
 #define TYPE_SPECIAL_FILTER_F	5
 
-
 enum ParamEnums
 {
 

@@ -24,7 +24,7 @@
 #define PAGE_SHIFT 3
 //-----------------------------------------------------------------
 
-#define PATTERN_END_MARKER 127
+//#define PATTERN_END_MARKER 127
 //the currently shown page from the LCD
 extern uint8_t menu_activePage;
 extern uint8_t menu_activeVoice;

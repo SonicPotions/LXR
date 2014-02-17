@@ -695,10 +695,12 @@ static void frontParser_handleSeqCC()
 		}
 		break;
 
-
-
 	case FRONT_SEQ_TRACK_LENGTH:
 		seq_setTrackLength(frontParser_activeTrack,frontParser_midiMsg.data2);
+		break;
+
+	case FRONT_SEQ_TRACK_ROTATION:
+		seq_setTrackRotation(frontParser_activeTrack,frontParser_midiMsg.data2);
 		break;
 
 	case FRONT_SEQ_SHUFFLE:
