@@ -44,12 +44,13 @@
 #include "mixer.h"
 
 
- Parameter parameterArray[NUM_PARAMS];
+ Parameter parameterArray[END_OF_SOUND_PARAMETERS];
 //the parameter numbers from the AVR/Frontpanel
 //####################################################################
 void paramArray_setParameter(uint16_t idx, ptrValue newValue)
 {
-	if(idx>=NUM_PARAMS) return;
+	// --AS **PATROT we don't want to set any that have a null ptr
+	if(idx>=END_OF_SOUND_PARAMETERS || parameterArray[idx].ptr==0) return;
 
 	switch(parameterArray[idx].type)
 	{

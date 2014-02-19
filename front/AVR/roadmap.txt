@@ -211,6 +211,16 @@ Status (todo):
 - should PAR_FREQ_LFO* really point to lfo->Freq? figure this out
 - hook in rotation parameter into back
 - add rotation parameter to front
+- Pan modulation on voices 4, 5 and 6 doesn't appear to be hooked in
+
+
+Whats up with the differing behavior for reseting original values in these 2 fn's:
+modNode_setDestination
+	case TYPE_SPECIAL_F: set float to constant 1
+	case TYPE_SPECIAL_P: do nothing
+modNode_setOriginalValueChanged
+	case TYPE_SPECIAL_F: do nothing
+	case TYPE_SPECIAL_P: set to float
 
 QA
 check repainting of load save page thoroughly

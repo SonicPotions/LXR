@@ -52,16 +52,19 @@ void modNode_init(ModulationNode* vm)
 	modNode_setDestination(vm,0);
 }
 //-----------------------------------------------------------------------
-void modNode_setOriginalValueChanged(ModulationNode* vm, uint16_t idx)
+static void modNode_setOriginalValueChanged(ModulationNode* vm, uint16_t idx)
 {
-	if(vm->destination == idx)
-		{
-			//parameter is active in this modulator
+	// --AS TODO this code is repeated (approximately. not exactly) inside modNode_setDestination. can we combine?
+
+
+	if(vm->destination == idx) { //parameter is active in this modulator
+		const Parameter const *p=&parameterArray[idx];
+
 			//update orig value
-			switch(parameterArray[idx].type)
+			switch(p->type)
 			{
 				case TYPE_UINT8:
-					vm->originalValue.itg = *((uint8_t*)parameterArray[vm->destination].ptr);
+					vm->originalValue.itg = *((uint8_t*)p->ptr);
 					break;
 
 				case TYPE_SPECIAL_F:
@@ -70,11 +73,11 @@ void modNode_setOriginalValueChanged(ModulationNode* vm, uint16_t idx)
 				case TYPE_SPECIAL_P:
 				case TYPE_SPECIAL_FILTER_F:
 				case TYPE_FLT:
-					vm->originalValue.flt = *((float*)parameterArray[vm->destination].ptr);
+					vm->originalValue.flt = *((float*)p->ptr);
 					break;
 
 				case TYPE_UINT32:
-					vm->originalValue.itg = *((uint32_t*)parameterArray[vm->destination].ptr);
+					vm->originalValue.itg = *((uint32_t*)p->ptr);
 					break;
 
 				default:
@@ -83,6 +86,9 @@ void modNode_setOriginalValueChanged(ModulationNode* vm, uint16_t idx)
 		}
 }
 //-----------------------------------------------------------------------
+// This is called when a user changes a parameter value on the front. It saves
+// the new value as originalValue. Since the value changes as modulation happens,
+// we need to restore to the original value from time to time
 void modNode_originalValueChanged(uint16_t idx)
 {
 	uint8_t i;
@@ -126,75 +132,83 @@ void modNode_reassignVeloMod()
 	}
 }
 //-----------------------------------------------------------------------
+// set a modulation destination to one of the sound parameters.
+// This is called when the mod target changes or is initialized.
+// The target's actual value needs to be preserved because it will be modulated.
 void modNode_setDestination(ModulationNode* vm, uint16_t dest)
 {
 	//TODO check if this interrupts other modulations too much
 	//is needed to really get the original value
 	modNode_resetTargets();
 
-	//restore old value to original
+	//restore old value to original --AS TODO isn't this already being done above for all nodes?
 	paramArray_setParameter(vm->destination,vm->originalValue);
+
 	//update dest param
 	vm->destination = dest;
+
+	const Parameter const *p = &parameterArray[vm->destination];
+
+	//--AS **PATROT we want to avoid reading from invalid memory
+	if(!p->ptr)
+		return;
+
 	//get new original parameter value
-	switch(parameterArray[vm->destination].type)
+	switch(p->type)
 	{
 		case TYPE_UINT8:
-			vm->originalValue.itg = *((uint8_t*)parameterArray[vm->destination].ptr);
+			vm->originalValue.itg = *((uint8_t*)p->ptr);
 			break;
-		case TYPE_SPECIAL_F:
+		case TYPE_SPECIAL_F: // --AS TODO whats up with this???
 			vm->originalValue.flt = 1;//*((float*)parameterArray[vm->destination].ptr);
 			break;
 
 		case TYPE_SPECIAL_FILTER_F:
 		case TYPE_FLT:
-			vm->originalValue.flt = *((float*)parameterArray[vm->destination].ptr);
+			vm->originalValue.flt = *((float*)p->ptr);
 			break;
 
 		case TYPE_UINT32:
-			vm->originalValue.itg = *((uint32_t*)parameterArray[vm->destination].ptr);
+			vm->originalValue.itg = *((uint32_t*)p->ptr);
 			break;
 
 		case TYPE_SPECIAL_P:
-
-			break;
-
 		default:
 			break;
 	}
 }
 //-----------------------------------------------------------------------
+// This is called to actually modulate the value for a modulation node
 void modNode_updateValue(ModulationNode* vm, float val)
 {
+	Parameter const *p = &parameterArray[vm->destination];
+
 	vm->lastVal = val;
-	switch(parameterArray[vm->destination].type)
+
+	// --AS **PATROT avoid setting this if it's not set to something good
+	if(!p->ptr)
+		return;
+
+	switch(p->type)
 	{
 	case TYPE_UINT8:
-		(*((uint8_t*)parameterArray[vm->destination].ptr)) = (*((uint8_t*)parameterArray[vm->destination].ptr)) * vm->amount * val + (1.f-vm->amount) * (*((uint8_t*)parameterArray[vm->destination].ptr));
+		(*((uint8_t*)p->ptr)) = (*((uint8_t*)p->ptr)) * vm->amount * val + (1.f-vm->amount) * (*((uint8_t*)p->ptr));
 		break;
 
 	case TYPE_UINT32:
-			(*((uint32_t*)parameterArray[vm->destination].ptr)) = (*((uint32_t*)parameterArray[vm->destination].ptr)) * vm->amount * val + (1.f-vm->amount) * (*((uint32_t*)parameterArray[vm->destination].ptr));
-			break;
-
-	case TYPE_SPECIAL_FILTER_F:
-		{
-
-		}
+		(*((uint32_t*)p->ptr)) = (*((uint32_t*)p->ptr)) * vm->amount * val + (1.f-vm->amount) * (*((uint32_t*)p->ptr));
 		break;
 
 	case TYPE_FLT:
-		(*((float*)parameterArray[vm->destination].ptr)) = (*((float*)parameterArray[vm->destination].ptr)) * vm->amount * val + (1.f-vm->amount) * (*((float*)parameterArray[vm->destination].ptr));
+		(*((float*)p->ptr)) = (*((float*)p->ptr)) * vm->amount * val + (1.f-vm->amount) * (*((float*)p->ptr));
 		break;
 
 	case TYPE_SPECIAL_F:
-		(*((float*)parameterArray[vm->destination].ptr)) = (*((float*)parameterArray[vm->destination].ptr)) * vm->amount * val + (1.f-vm->amount) * (*((float*)parameterArray[vm->destination].ptr));
+		(*((float*)p->ptr)) = (*((float*)p->ptr)) * vm->amount * val + (1.f-vm->amount) * (*((float*)p->ptr));
 		break;
 
 	case TYPE_SPECIAL_P:
-
-		break;
-
+	case TYPE_SPECIAL_FILTER_F:
 	default:
 		break;
 

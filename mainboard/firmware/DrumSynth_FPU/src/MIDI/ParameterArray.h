@@ -44,6 +44,8 @@
 #define TYPE_SPECIAL_P			4
 #define TYPE_SPECIAL_FILTER_F	5
 
+// --AS **PATROT this list needs to correspond exactly with the sound parameters in the AVR side because
+// modulation targets are sent across and they have to match in this list
 enum ParamEnums
 {
 
@@ -322,15 +324,15 @@ enum ParamEnums
 	PAR_MIDI_NOTE4,
 	PAR_MIDI_NOTE5,
 	PAR_MIDI_NOTE6,
-	PAR_MIDI_NOTE7, //110 - beware going over 127
-
+	PAR_MIDI_NOTE7, //110 - beware going over 127, can't fit into midi data, will need another msg
+	END_OF_SOUND_PARAMETERS,
 	//#########################################
 	//######## End of sound Parameters ########
 	//#########################################
-
+/*
 	//all parameters in this section are only there to be referenced from the menu
 	//they are not saved anywhere
-	END_OF_SOUND_PARAMETERS,
+
 	PAR_ROLL= END_OF_SOUND_PARAMETERS,
 	PAR_MORPH,
 
@@ -377,6 +379,7 @@ enum ParamEnums
 	PAR_QUANTISATION,
 
 	NUM_PARAMS
+*/
 };
 
 #include "stm32f4xx.h"
@@ -394,7 +397,7 @@ typedef struct ParameterStruct
 
 } Parameter;
 
-extern Parameter parameterArray[NUM_PARAMS];
+extern Parameter parameterArray[END_OF_SOUND_PARAMETERS];
 void paramArray_setParameter(uint16_t idx, ptrValue newValue);
 void parameterArray_init();
 
