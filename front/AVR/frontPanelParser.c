@@ -326,18 +326,23 @@ void frontPanel_parseData(uint8_t data)
 						
 						case SEQ_TRACK_LENGTH:
 							parameter_values[PAR_TRACK_LENGTH] = frontParser_midiMsg.data2;
-						menu_repaint();
-						break;
+							menu_repaint();
+							break;
+						// **PATROT - receive rotation value from back for active track
+						case SEQ_TRACK_ROTATION:
+							parameter_values[PAR_TRACK_ROTATION] = frontParser_midiMsg.data2;
+							menu_repaint(); // --AS TODO we might not need this
+							break;
 						
 						case SEQ_EUKLID_LENGTH:
 							parameter_values[PAR_EUKLID_LENGTH] = frontParser_midiMsg.data2;
-						menu_repaint();
-						break;
+							menu_repaint();
+							break;
 						
 						case SEQ_EUKLID_STEPS:
 							parameter_values[PAR_EUKLID_STEPS] = frontParser_midiMsg.data2;
-						menu_repaint();
-						break;
+							menu_repaint();
+							break;
 						
 						case SEQ_VOLUME:
 							parameter_values[PAR_STEP_VOLUME] = frontParser_midiMsg.data2;

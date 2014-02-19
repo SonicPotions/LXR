@@ -551,6 +551,12 @@ static void frontParser_handleMidiMessage()
 				uart_sendFrontpanelByte(FRONT_SEQ_CC);
 				uart_sendFrontpanelByte(FRONT_SEQ_TRACK_LENGTH);
 				uart_sendFrontpanelByte(seq_getTrackLength(trackNr));
+
+				// **PATROT send track rotation value back
+				uart_sendFrontpanelByte(FRONT_SEQ_CC);
+				uart_sendFrontpanelByte(FRONT_SEQ_TRACK_ROTATION);
+				uart_sendFrontpanelByte(seq_getTrackRotation(trackNr));
+
 			}
 			break;
 

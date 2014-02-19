@@ -37,12 +37,12 @@
 #ifndef PARAMETERARRAY_H_
 #define PARAMETERARRAY_H_
 
-#define TYPE_UINT8 				0
-#define TYPE_FLT 				1
-#define TYPE_SPECIAL_F			2
-#define TYPE_UINT32				3
-#define TYPE_SPECIAL_P			4
-#define TYPE_SPECIAL_FILTER_F	5
+#define TYPE_UINT8 				0	// byte
+#define TYPE_FLT 				1	// float
+#define TYPE_SPECIAL_F			2	// float value targeting modNodeValue (as opposed to actual parameter)
+#define TYPE_UINT32				3	// 32 bit int
+#define TYPE_SPECIAL_P			4	// pan
+#define TYPE_SPECIAL_FILTER_F	5	// not used apparently
 
 // --AS **PATROT this list needs to correspond exactly with the sound parameters in the AVR side because
 // modulation targets are sent across and they have to match in this list

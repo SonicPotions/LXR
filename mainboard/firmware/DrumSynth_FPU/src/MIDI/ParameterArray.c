@@ -401,7 +401,6 @@ void parameterArray_init()
 	parameterArray[PAR_VOICE_DECIMATION_ALL].ptr= &mixer_decimation_rate[6];
 	parameterArray[PAR_VOICE_DECIMATION_ALL].type 	= TYPE_FLT;
 
-	// --AS **PATROT TODO shouldn't these point to lfo.freq???
 	parameterArray[PAR_FREQ_LFO1].ptr 		= &voiceArray[0].lfo.modNodeValue;
 	parameterArray[PAR_FREQ_LFO1].type 		= TYPE_SPECIAL_F;//TYPE_FLT;
 	parameterArray[PAR_FREQ_LFO2].ptr 		= &voiceArray[1].lfo.modNodeValue;
@@ -417,11 +416,11 @@ void parameterArray_init()
 
 	parameterArray[PAR_AMOUNT_LFO1].ptr 	= &voiceArray[0].lfo.modTarget.amount;
 	parameterArray[PAR_AMOUNT_LFO1].type 	= TYPE_FLT;
-	parameterArray[PAR_AMOUNT_LFO2].ptr 	= &voiceArray[1].lfo.modTarget.amount;;
+	parameterArray[PAR_AMOUNT_LFO2].ptr 	= &voiceArray[1].lfo.modTarget.amount;
 	parameterArray[PAR_AMOUNT_LFO2].type 	= TYPE_FLT;
-	parameterArray[PAR_AMOUNT_LFO3].ptr 	= &voiceArray[2].lfo.modTarget.amount;;
+	parameterArray[PAR_AMOUNT_LFO3].ptr 	= &voiceArray[2].lfo.modTarget.amount;
 	parameterArray[PAR_AMOUNT_LFO3].type 	= TYPE_FLT;
-	parameterArray[PAR_AMOUNT_LFO4].ptr 	= &snareVoice.lfo.modTarget.amount;;
+	parameterArray[PAR_AMOUNT_LFO4].ptr 	= &snareVoice.lfo.modTarget.amount;
 	parameterArray[PAR_AMOUNT_LFO4].type 	= TYPE_FLT;
 	parameterArray[PAR_AMOUNT_LFO5].ptr 	= &cymbalVoice.lfo.modTarget.amount;
 	parameterArray[PAR_AMOUNT_LFO5].type 	= TYPE_FLT;

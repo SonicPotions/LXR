@@ -142,7 +142,9 @@ void seq_setTrackLength(uint8_t trackNr, uint8_t length);
 //------------------------------------------------------------------------------
 uint8_t seq_getTrackLength(uint8_t trackNr);
 //------------------------------------------------------------------------------
-void seq_setTrackRotation(uint8_t trackNr, uint8_t rot);
+void seq_setTrackRotation(uint8_t trackNr, const uint8_t rot);
+//------------------------------------------------------------------------------
+uint8_t seq_getTrackRotation(uint8_t trackNr);
 //------------------------------------------------------------------------------
 //void seq_activateTmpPattern();
 //------------------------------------------------------------------------------

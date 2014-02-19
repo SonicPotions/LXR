@@ -211,24 +211,63 @@ void seq_setTrackLength(uint8_t trackNr, uint8_t length)
 	//set new end marker
 	if(length == 16)
 		length=0;
-	seq_patternSet.seq_patternLengthRotate[seq_activePattern][trackNr].length=length;
-
-}
-
-void seq_setTrackRotation(uint8_t trackNr, uint8_t rot)
-{
-	//set new rotation
-	seq_patternSet.seq_patternLengthRotate[seq_activePattern][trackNr].rotate=rot;
+	// --AS TODO should this be seq_activePattern or frontParser_shownPattern?
+	seq_patternSet.seq_patternLengthRotate[frontParser_shownPattern][trackNr].length=length;
 
 }
 
 //------------------------------------------------------------------------------
 uint8_t seq_getTrackLength(uint8_t trackNr)
 {
+	// --AS TODO should this be seq_activePattern or frontParser_shownPattern?
 	uint8_t r=seq_patternSet.seq_patternLengthRotate[seq_activePattern][trackNr].length;
 	if(r==0)
 		return 16;
 	return r;
+}
+//------------------------------------------------------------------------------
+void seq_setTrackRotation(uint8_t trackNr, const uint8_t newRot)
+{
+	// --AS TODO should this be seq_activePattern or frontParser_shownPattern?
+
+	// --AS TODO check to see if we need to worry about activePattern vs edited pattern (might not be same
+	// when seq is running
+	// frontParser_shownPattern contains the pattern that is shown on the front at the time this is called
+	// seq_activePattern is the pattern that is now playing
+	LengthRotate *lr=&seq_patternSet.seq_patternLengthRotate[frontParser_shownPattern][trackNr];
+
+	if(newRot == lr->rotate)
+		return;
+
+	// if sequencer is running, move the current step position to compensate for the rotation
+	if(seq_running) {
+		int8_t len = lr->length;
+		if(len==0)
+			len=16;
+
+		// this is how many main steps we need to move in one direction, negative means
+		// move back positive is move forward
+		int8_t offset=(((int8_t)newRot) % len) - (((int8_t)lr->rotate) % len);
+
+        // if adding the offset to si would push it over the edge either way we need to wrap it
+		// offset will always be less than len
+        int16_t si = seq_stepIndex[trackNr] + (offset*8);
+        if(si < 0 )
+            si += (len*8);
+        else if(si >= (len*8))
+            si -= (len*8);
+        seq_stepIndex[trackNr]=(int8_t)si;
+	}
+
+	//set new rotation value
+	lr->rotate=newRot;
+
+}
+//------------------------------------------------------------------------------
+uint8_t seq_getTrackRotation(uint8_t trackNr)
+{
+	// --AS TODO should this be seq_activePattern or frontParser_shownPattern?
+	return seq_patternSet.seq_patternLengthRotate[seq_activePattern][trackNr].rotate;
 }
 //------------------------------------------------------------------------------
 static void seq_calcDeltaT(uint16_t bpm)
@@ -412,6 +451,9 @@ static void seq_nextStep()
 			// above is a bit broken.
 			if(/*seq_loadPendigFlag &&*/ seq_resetBarOnPatternChange)
 				seq_barCounter=0;
+			// --AS TODO we need to also reset barCounter to 0 when the end of a repetition set of a pattern plays
+			// EVEN IF the pattern is set to play itself again, this will facilitate having the bits that play
+			// certain steps only on certain intervals of bar counter
 
 			seq_loadPendigFlag = 0;
 			//first check if 2 new pattern is available

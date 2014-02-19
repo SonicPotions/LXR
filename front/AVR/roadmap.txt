@@ -208,7 +208,6 @@ Status (todo):
 - trying to eliminate extraneous elements from parameterArray
 - wondering why PAR_VOICE_LFO* and PAR_TARGET_LFO* are not initialized in parameterArray
 - wondering whether gaps in parameterArray can cause problems (since ptrs are used)
-- should PAR_FREQ_LFO* really point to lfo->Freq? figure this out
 - hook in rotation parameter into back
 - add rotation parameter to front
 - Pan modulation on voices 4, 5 and 6 doesn't appear to be hooked in
