@@ -211,7 +211,7 @@ void seq_setTrackLength(uint8_t trackNr, uint8_t length)
 	//set new end marker
 	if(length == 16)
 		length=0;
-	// --AS TODO should this be seq_activePattern or frontParser_shownPattern?
+	// --AS **PATROT this was changed from setting length on seq_activePattern to shown (or edited) pattern
 	seq_patternSet.seq_patternLengthRotate[frontParser_shownPattern][trackNr].length=length;
 
 }
@@ -219,20 +219,17 @@ void seq_setTrackLength(uint8_t trackNr, uint8_t length)
 //------------------------------------------------------------------------------
 uint8_t seq_getTrackLength(uint8_t trackNr)
 {
-	// --AS TODO should this be seq_activePattern or frontParser_shownPattern?
-	uint8_t r=seq_patternSet.seq_patternLengthRotate[seq_activePattern][trackNr].length;
+	// --AS **PATROT this was changed from getting seq_activePattern to shown (or edited) pattern
+	uint8_t r=seq_patternSet.seq_patternLengthRotate[frontParser_shownPattern][trackNr].length;
 	if(r==0)
 		return 16;
 	return r;
 }
 //------------------------------------------------------------------------------
+// **PATROT
 void seq_setTrackRotation(uint8_t trackNr, const uint8_t newRot)
 {
-	// --AS TODO should this be seq_activePattern or frontParser_shownPattern?
-
-	// --AS TODO check to see if we need to worry about activePattern vs edited pattern (might not be same
-	// when seq is running
-	// frontParser_shownPattern contains the pattern that is shown on the front at the time this is called
+	// frontParser_shownPattern contains the pattern that is shown (being edited) on the front at the time this is called
 	// seq_activePattern is the pattern that is now playing
 	LengthRotate *lr=&seq_patternSet.seq_patternLengthRotate[frontParser_shownPattern][trackNr];
 
@@ -264,10 +261,10 @@ void seq_setTrackRotation(uint8_t trackNr, const uint8_t newRot)
 
 }
 //------------------------------------------------------------------------------
+// **PATROT
 uint8_t seq_getTrackRotation(uint8_t trackNr)
 {
-	// --AS TODO should this be seq_activePattern or frontParser_shownPattern?
-	return seq_patternSet.seq_patternLengthRotate[seq_activePattern][trackNr].rotate;
+	return seq_patternSet.seq_patternLengthRotate[frontParser_shownPattern][trackNr].rotate;
 }
 //------------------------------------------------------------------------------
 static void seq_calcDeltaT(uint16_t bpm)
