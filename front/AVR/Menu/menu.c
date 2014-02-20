@@ -1578,7 +1578,7 @@ static void menu_encoderChangeParameter(int8_t inc)
 		break;
 	case DTYPE_TARGET_SELECTION_LFO://parameter_dtypes[paramNr] & 0x0F
 	{
-		//**LFO - limit encoder start and end to range for the voice
+		//**LFO - limit encoder start and end to range for the target voice (not the lfo number)
 		// this is a value from 1 to 6, so we adjust to be 0 based
 		uint8_t voiceNr =  (uint8_t)(parameter_values[PAR_VOICE_LFO1+(paramNr - PAR_TARGET_LFO1)]-1);
 		if(*paramValue < pgm_read_byte(&modTargetVoiceOffsets[voiceNr].start)) {
@@ -2207,8 +2207,10 @@ static uint8_t getDtypeValue(uint8_t value, uint16_t paramNr)
 		uint8_t s, e, rng;
 		if(paramNr >= PAR_VEL_DEST_1 && paramNr <= PAR_VEL_DEST_6 )
 			voiceNr=(uint8_t)(paramNr-PAR_VEL_DEST_1);
-		else if(paramNr >= PAR_TARGET_LFO1 && paramNr <= PAR_TARGET_LFO6)
-			voiceNr=(uint8_t)(paramNr-PAR_TARGET_LFO1);
+		else if(paramNr >= PAR_TARGET_LFO1 && paramNr <= PAR_TARGET_LFO6) {
+			// this is the voice being targeted, not the lfo number
+			voiceNr=(uint8_t)(parameter_values[PAR_VOICE_LFO1+(paramNr - PAR_TARGET_LFO1)]-1);
+		}
 		s=pgm_read_byte(&modTargetVoiceOffsets[voiceNr].start);
 		e=pgm_read_byte(&modTargetVoiceOffsets[voiceNr].end);
 		// start will be a non-zero value. We need to allow setting a value of 0 (off) or
