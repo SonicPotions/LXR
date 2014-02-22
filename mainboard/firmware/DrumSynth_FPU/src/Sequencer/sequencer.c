@@ -187,7 +187,7 @@ void seq_init()
 			}
 			//all 16 main steps off
 			seq_patternSet.seq_mainSteps[i][j] = 0;
-			// all pattern rotations off and all patterns set to length 16
+			//**PATROT all pattern rotations off and all patterns set to length 16
 			seq_patternSet.seq_patternLengthRotate[i][j].value=0;
 
 		}

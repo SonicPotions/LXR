@@ -202,7 +202,14 @@ first voice, or to a voice that supports that target.
 
 === Pattern rotation (**PATROT)
 - fixed bugs in parameterArray (some copy and paste errors look like they existed there for a while)
+  - osc wave drum3 type was not set right
+  - lfo 1 - 6 amount type was not set right
+  - lfo 1 - 6 wave type was not set right
 - Eliminate PATTERN_END bit. Some added efficiency.
+- seq_setStepIndexToStart - sets pattern start to correct location based on rotation
+- fixes in modNode_setDestination, modNode_updateValue, paramArray_setParameter to detect bad ptr for mod target
+- parameterArray in backend will now only store num sound params (was wasting space)
+- set track length will operate on the edited track rather than the playing track
 
 Status (todo):
 - trying to eliminate extraneous elements from parameterArray

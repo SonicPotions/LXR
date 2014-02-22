@@ -710,7 +710,7 @@ static void frontParser_handleSeqCC()
 		seq_setTrackLength(frontParser_activeTrack,frontParser_midiMsg.data2);
 		break;
 
-	case FRONT_SEQ_TRACK_ROTATION:
+	case FRONT_SEQ_TRACK_ROTATION: //**PATROT handle incoming track rotation. apply to active track
 		seq_setTrackRotation(frontParser_activeTrack,frontParser_midiMsg.data2);
 		break;
 

@@ -448,8 +448,9 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 	    /*PAR_POS_Y*/ 			DTYPE_0B127,
 	    /*PAR_FLUX*/ 			DTYPE_0B127,
 	    /*PAR_SOM_FREQ*/ 		DTYPE_0B127,
+	    /*PAR_TRACK_ROTATION*/  DTYPE_1B16,  //**PATROT this is not shown in menu, but if it were it would really be 0 to 15
 	    /*PAR_BPM*/ 			DTYPE_0B255,
-	    /*PAR_MIDI_CHAN_1*/ 	DTYPE_1B16,								//250
+	    /*PAR_MIDI_CHAN_1*/ 	DTYPE_1B16,								//251
 	    /*PAR_MIDI_CHAN_2*/ 	DTYPE_1B16,
 	    /*PAR_MIDI_CHAN_3*/ 	DTYPE_1B16,
 	    /*PAR_MIDI_CHAN_4*/ 	DTYPE_1B16,
@@ -459,7 +460,7 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 	    /*PAR_FOLLOW*/ 			DTYPE_ON_OFF,
 	    /*PAR_QUANTISATION*/ 	DTYPE_MENU | (MENU_SEQ_QUANT<<4),
 	    /*PAR_SCREENSAVER_ON_OFF*/ DTYPE_ON_OFF,
-	    /*PAR_MIDI_MODE*/ 		DTYPE_MENU | (MENU_MIDI<<4),			//260  //--AS This is now unused.
+	    /*PAR_MIDI_MODE*/ 		DTYPE_MENU | (MENU_MIDI<<4),			//261  //--AS This is now unused.
 	    /*PAR_MIDI_CHAN_7*/ 	DTYPE_1B16,
 	    /*PAR_MIDI_ROUTING*/	DTYPE_MENU | (MENU_MIDI_ROUTING<<4),
 	    /*PAR_MIDI_FILT_TX*/    DTYPE_MENU | (MENU_MIDI_FILTERING<<4),
