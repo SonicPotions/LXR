@@ -200,6 +200,34 @@ first voice, or to a voice that supports that target.
 - Calls were made from when loading a kit, switching active voice, switching lfo target voice and switching lfo mod target
 - main.c was touched to ensure that active voice is switched only after loading the initial kit
 
+=== Pattern rotation (**PATROT)
+- fixed bugs in parameterArray (some copy and paste errors look like they existed there for a while)
+  - osc wave drum3 type was not set right
+  - lfo 1 - 6 amount type was not set right
+  - lfo 1 - 6 wave type was not set right
+- Eliminate PATTERN_END bit. Some added efficiency.
+- seq_setStepIndexToStart - sets pattern start to correct location based on rotation
+- fixes in modNode_setDestination, modNode_updateValue, paramArray_setParameter to detect bad ptr for mod target
+- parameterArray in backend will now only store num sound params (was wasting space)
+- set track length will operate on the edited track rather than the playing track
+
+Status (todo):
+- trying to eliminate extraneous elements from parameterArray
+- wondering why PAR_VOICE_LFO* and PAR_TARGET_LFO* are not initialized in parameterArray
+- wondering whether gaps in parameterArray can cause problems (since ptrs are used)
+- hook in rotation parameter into back
+- add rotation parameter to front
+- Pan modulation on voices 4, 5 and 6 doesn't appear to be hooked in
+
+
+Whats up with the differing behavior for reseting original values in these 2 fn's:
+modNode_setDestination
+	case TYPE_SPECIAL_F: set float to constant 1
+	case TYPE_SPECIAL_P: do nothing
+modNode_setOriginalValueChanged
+	case TYPE_SPECIAL_F: do nothing
+	case TYPE_SPECIAL_P: set to float
+
 QA
 check repainting of load save page thoroughly
 

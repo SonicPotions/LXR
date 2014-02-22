@@ -456,6 +456,7 @@ const Page menuPages[NUM_PAGES][NUM_SUB_PAGES] PROGMEM =
 		}		
 	},
 	//---------------- pattern settings page ------------------------------
+	// this page is shown when in perf/patgen mode and shift is held
 	{
 		{
 			TEXT_PATTERN_BEAT, TEXT_PATTERN_NEXT,	TEXT_EMPTY,	TEXT_EMPTY, TEXT_EMPTY,TEXT_EMPTY,TEXT_EMPTY,TEXT_EMPTY,

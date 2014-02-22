@@ -44,12 +44,13 @@
 #include "mixer.h"
 
 
- Parameter parameterArray[NUM_PARAMS];
+ Parameter parameterArray[END_OF_SOUND_PARAMETERS];
 //the parameter numbers from the AVR/Frontpanel
 //####################################################################
 void paramArray_setParameter(uint16_t idx, ptrValue newValue)
 {
-	if(idx>=NUM_PARAMS) return;
+	// --AS **PATROT we don't want to set any that have a null ptr
+	if(idx>=END_OF_SOUND_PARAMETERS || parameterArray[idx].ptr==0) return;
 
 	switch(parameterArray[idx].type)
 	{
@@ -158,7 +159,7 @@ void parameterArray_init()
 	parameterArray[PAR_WAVE2_HH].type 		= TYPE_UINT8;
 
 	parameterArray[PAR_WAVE3_HH].ptr 		= &hatVoice.modOsc2.waveform;
-	parameterArray[PAR_OSC_WAVE_DRUM3].type = TYPE_UINT8;
+	parameterArray[PAR_WAVE3_HH].type 		= TYPE_UINT8;
 
 	parameterArray[PAR_NOISE_FREQ1].ptr 	= &snareVoice.noiseOsc.modNodeValue;
 	parameterArray[PAR_NOISE_FREQ1].type 	= TYPE_SPECIAL_F;
@@ -414,17 +415,17 @@ void parameterArray_init()
 	parameterArray[PAR_FREQ_LFO6].type 		= TYPE_SPECIAL_F;//TYPE_FLT;
 
 	parameterArray[PAR_AMOUNT_LFO1].ptr 	= &voiceArray[0].lfo.modTarget.amount;
-	parameterArray[PAR_OSC_WAVE_DRUM3].type = TYPE_FLT;
-	parameterArray[PAR_AMOUNT_LFO2].ptr 	= &voiceArray[1].lfo.modTarget.amount;;
-	parameterArray[PAR_OSC_WAVE_DRUM3].type = TYPE_FLT;
-	parameterArray[PAR_AMOUNT_LFO3].ptr 	= &voiceArray[2].lfo.modTarget.amount;;
-	parameterArray[PAR_OSC_WAVE_DRUM3].type = TYPE_FLT;
-	parameterArray[PAR_AMOUNT_LFO4].ptr 	= &snareVoice.lfo.modTarget.amount;;
-	parameterArray[PAR_OSC_WAVE_DRUM3].type = TYPE_FLT;
+	parameterArray[PAR_AMOUNT_LFO1].type 	= TYPE_FLT;
+	parameterArray[PAR_AMOUNT_LFO2].ptr 	= &voiceArray[1].lfo.modTarget.amount;
+	parameterArray[PAR_AMOUNT_LFO2].type 	= TYPE_FLT;
+	parameterArray[PAR_AMOUNT_LFO3].ptr 	= &voiceArray[2].lfo.modTarget.amount;
+	parameterArray[PAR_AMOUNT_LFO3].type 	= TYPE_FLT;
+	parameterArray[PAR_AMOUNT_LFO4].ptr 	= &snareVoice.lfo.modTarget.amount;
+	parameterArray[PAR_AMOUNT_LFO4].type 	= TYPE_FLT;
 	parameterArray[PAR_AMOUNT_LFO5].ptr 	= &cymbalVoice.lfo.modTarget.amount;
-	parameterArray[PAR_OSC_WAVE_DRUM3].type = TYPE_FLT;
+	parameterArray[PAR_AMOUNT_LFO5].type 	= TYPE_FLT;
 	parameterArray[PAR_AMOUNT_LFO6].ptr 	= &hatVoice.lfo.modTarget.amount;
-	parameterArray[PAR_OSC_WAVE_DRUM3].type = TYPE_FLT;
+	parameterArray[PAR_AMOUNT_LFO6].type 	= TYPE_FLT;
 	//######################################
 	//######## END OF MIDI DATASIZE ########
 	//######## PARAM NR 127 REACHED ########
@@ -514,17 +515,33 @@ void parameterArray_init()
 	parameterArray[PAR_VEL_DEST_6].type 	= TYPE_UINT8;
 
 	parameterArray[PAR_WAVE_LFO1].ptr 		= &voiceArray[0].lfo.waveform;
-	parameterArray[PAR_OSC_WAVE_DRUM3].type = TYPE_UINT8;
+	parameterArray[PAR_WAVE_LFO1].type = TYPE_UINT8;
 	parameterArray[PAR_WAVE_LFO2].ptr 		= &voiceArray[1].lfo.waveform;
-	parameterArray[PAR_OSC_WAVE_DRUM3].type = TYPE_UINT8;
+	parameterArray[PAR_WAVE_LFO2].type = TYPE_UINT8;
 	parameterArray[PAR_WAVE_LFO3].ptr 		= &voiceArray[2].lfo.waveform;
-	parameterArray[PAR_OSC_WAVE_DRUM3].type = TYPE_UINT8;
+	parameterArray[PAR_WAVE_LFO3].type = TYPE_UINT8;
 	parameterArray[PAR_WAVE_LFO4].ptr 		= &snareVoice.lfo.waveform;
-	parameterArray[PAR_OSC_WAVE_DRUM3].type = TYPE_UINT8;
+	parameterArray[PAR_WAVE_LFO4].type = TYPE_UINT8;
 	parameterArray[PAR_WAVE_LFO5].ptr 		= &cymbalVoice.lfo.waveform;
-	parameterArray[PAR_OSC_WAVE_DRUM3].type = TYPE_UINT8;
+	parameterArray[PAR_WAVE_LFO5].type = TYPE_UINT8;
 	parameterArray[PAR_WAVE_LFO6].ptr 		= &hatVoice.lfo.waveform;
-	parameterArray[PAR_OSC_WAVE_DRUM3].type = TYPE_UINT8;
+	parameterArray[PAR_WAVE_LFO6].type = TYPE_UINT8;
+
+	/*
+	PAR_VOICE_LFO1,
+	PAR_VOICE_LFO2,
+	PAR_VOICE_LFO3,
+	PAR_VOICE_LFO4,
+	PAR_VOICE_LFO5,
+	PAR_VOICE_LFO6,
+
+	PAR_TARGET_LFO1,
+	PAR_TARGET_LFO2,
+	PAR_TARGET_LFO3,
+	PAR_TARGET_LFO4,
+	PAR_TARGET_LFO5,
+	PAR_TARGET_LFO6,
+	*/
 
 	parameterArray[PAR_RETRIGGER_LFO1].ptr 	= &voiceArray[0].lfo.retrigger;
 	parameterArray[PAR_RETRIGGER_LFO1].type = TYPE_UINT8;
@@ -633,8 +650,6 @@ void parameterArray_init()
 	parameterArray[PAR_AUDIO_OUT6].ptr 		= &mixer_audioRouting[5];
 	parameterArray[PAR_AUDIO_OUT6].type 	= TYPE_UINT8;
 
-	//--AS - I don't think we really need to set these, because I think these are only used for
-	// values that can be modulated
 	parameterArray[PAR_MIDI_NOTE1].ptr 		= &midi_NoteOverride[0];
 	parameterArray[PAR_MIDI_NOTE1].type 	= TYPE_UINT8;
 	parameterArray[PAR_MIDI_NOTE2].ptr 		= &midi_NoteOverride[1];

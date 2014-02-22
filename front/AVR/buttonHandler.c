@@ -529,6 +529,19 @@ static void buttonHandler_setRemoveStep(uint8_t ledNr, uint8_t seqButtonPressed)
 }
 
 //--------------------------------------------------------
+// **PATROT set track rotation to a value between 0 and 15
+// 0 means not rotated.
+// **PATROT todo need to update seq leds with current rotation for this track
+static void buttonHandler_setTrackRotation(uint8_t seqButtonPressed)
+{
+	parameter_values[PAR_TRACK_ROTATION]=seqButtonPressed;
+	frontPanel_sendData(SEQ_CC, SEQ_TRACK_ROTATION, seqButtonPressed);
+	// update the value right now (this is also updated in the code that handles the shift button press)
+	led_clearAllBlinkLeds();
+	led_setBlinkLed((uint8_t) (LED_STEP1 + seqButtonPressed), 1);
+}
+
+//--------------------------------------------------------
 static void buttonHandler_seqButtonPressed(uint8_t seqButtonPressed)
 {
 	uint8_t ledNr;
@@ -542,6 +555,9 @@ static void buttonHandler_seqButtonPressed(uint8_t seqButtonPressed)
 			break;
 		case SELECT_MODE_STEP: // step edit mode -> adds/removes step because shift is down
 			buttonHandler_setRemoveStep(ledNr, seqButtonPressed);
+			break;
+		case SELECT_MODE_PERF: // **PATROT shift is held while in perf mode and a seq button is pressed
+			buttonHandler_setTrackRotation(seqButtonPressed);
 			break;
 		default:
 			break;
@@ -905,9 +921,18 @@ void buttonHandler_buttonPressed(uint8_t buttonNr) {
 
 			if (buttonHandler_stateMemory.selectButtonMode == SELECT_MODE_PAT_GEN)
 				led_setBlinkLed(LED_MODE2, 1);
+			else {
+				//**PATROT The step led's are repurposed here to have the current track rotation
+				// represented by a blinking led. The leftmost LED blinking means rotation is off (0)
+				// and each one represents a different rotation
+				led_setBlinkLed((uint8_t) (LED_STEP1 + parameter_values[PAR_TRACK_ROTATION]), 1);
+			}
 
+// --AS todo taking the below out while in perf mode so I can see if the above works. Not sure if the below is needed, since
+// at this stage the shift button is held
 			//the pattern change update for the follow mode is not made immediately when the pattern options are active
 			//so we have to do it here
+			if(buttonHandler_stateMemory.selectButtonMode == SELECT_MODE_PAT_GEN) {
 			if (parameter_values[PAR_FOLLOW]) {
 				menu_setShownPattern(menu_shownPattern);
 				led_clearSequencerLeds();
@@ -918,6 +943,7 @@ void buttonHandler_buttonPressed(uint8_t buttonNr) {
 				frontPanel_sendData(LED_CC, LED_QUERY_SEQ_TRACK, value);
 				frontPanel_sendData(SEQ_CC, SEQ_REQUEST_PATTERN_PARAMS,
 						frontParser_midiMsg.data2);
+			}
 			}
 
 			led_setBlinkLed((uint8_t) (LED_PART_SELECT1 + menu_getViewedPattern()),	1);

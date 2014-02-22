@@ -201,18 +201,14 @@ void euklid_setSteps(uint8_t trackNr, uint8_t value, uint8_t patternNr)
 //-----------------------------------------------------
 void euklid_transferPattern(uint8_t trackNr, uint8_t patternNr)
 {
-	int i;
+	uint8_t len=euklid_length[trackNr];
 	seq_patternSet.seq_mainSteps[patternNr][trackNr] = euklid_patternBuffer;
+// **PATROT - pattern end is now stored differently
 
-	for(i=0;i<128;i++)
-	{
-		if(seq_patternSet.seq_subStepPattern[patternNr][trackNr][i].note & PATTERN_END)
-		{
-			seq_patternSet.seq_subStepPattern[patternNr][trackNr][i].note &= ~PATTERN_END;
-		}
-	}
-	if(euklid_length[trackNr] <16)
-	{
-		seq_patternSet.seq_subStepPattern[patternNr][trackNr][euklid_length[trackNr]*8].note |= PATTERN_END;
-	}
+	if(len == 16)
+		len=0;
+	seq_patternSet.seq_patternLengthRotate[patternNr][trackNr].length=len;
+
+
+
 }

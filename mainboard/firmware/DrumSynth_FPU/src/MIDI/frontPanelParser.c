@@ -399,7 +399,10 @@ static void frontParser_handleMidiMessage()
 	{
 		uint8_t upper = frontParser_midiMsg.data1;
 		uint8_t lower = frontParser_midiMsg.data2;
+		// --AS **PATROT note that the only valid values for the following are listed in
+		// the modTargets array in the AVR code
 		uint8_t value = ((upper&0x01)<<7) | lower;
+
 		uint8_t lfoNr = (upper&0xfe)>>1;
 
 		switch(lfoNr)
@@ -506,6 +509,8 @@ static void frontParser_handleMidiMessage()
 		{
 			uint8_t upper = frontParser_midiMsg.data1;
 			uint8_t lower = frontParser_midiMsg.data2;
+			// --AS **PATROT note that the only valid values for the following are listed in
+			// the modTargets array in the AVR code
 			uint8_t value = ((upper&0x01)<<7) | lower;
 			uint8_t velModNr = (upper&0xfe)>>1;
 			modNode_setDestination(&velocityModulators[velModNr], value);
@@ -546,6 +551,12 @@ static void frontParser_handleMidiMessage()
 				uart_sendFrontpanelByte(FRONT_SEQ_CC);
 				uart_sendFrontpanelByte(FRONT_SEQ_TRACK_LENGTH);
 				uart_sendFrontpanelByte(seq_getTrackLength(trackNr));
+
+				// **PATROT send track rotation value back
+				uart_sendFrontpanelByte(FRONT_SEQ_CC);
+				uart_sendFrontpanelByte(FRONT_SEQ_TRACK_ROTATION);
+				uart_sendFrontpanelByte(seq_getTrackRotation(trackNr));
+
 			}
 			break;
 
@@ -695,10 +706,12 @@ static void frontParser_handleSeqCC()
 		}
 		break;
 
-
-
 	case FRONT_SEQ_TRACK_LENGTH:
 		seq_setTrackLength(frontParser_activeTrack,frontParser_midiMsg.data2);
+		break;
+
+	case FRONT_SEQ_TRACK_ROTATION: //**PATROT handle incoming track rotation. apply to active track
+		seq_setTrackRotation(frontParser_activeTrack,frontParser_midiMsg.data2);
 		break;
 
 	case FRONT_SEQ_SHUFFLE:

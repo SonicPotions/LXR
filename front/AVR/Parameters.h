@@ -335,6 +335,7 @@ enum ParamEnums
 	PAR_POS_Y,
 	PAR_FLUX,
 	PAR_SOM_FREQ,
+	PAR_TRACK_ROTATION,				// --AS **PATROT
 
 	
 	//#########################################
@@ -342,11 +343,11 @@ enum ParamEnums
 	//#########################################
 	PAR_BEGINNING_OF_GLOBALS, //a placeholder to mark the beginning of the global var space not present in morph and not needed in the seq
 	//global params
-	PAR_BPM = PAR_BEGINNING_OF_GLOBALS,
+	PAR_BPM = PAR_BEGINNING_OF_GLOBALS,	/*250*/
 	
 
 	
-	PAR_MIDI_CHAN_1,					/*250*/
+	PAR_MIDI_CHAN_1,
 	PAR_MIDI_CHAN_2,
 	PAR_MIDI_CHAN_3,
 	PAR_MIDI_CHAN_4,
@@ -359,8 +360,8 @@ enum ParamEnums
 	
 	PAR_QUANTISATION,
 	
-	PAR_SCREENSAVER_ON_OFF,				// bool
-	PAR_MIDI_MODE,						/*260*/ //--AS unused now
+	PAR_SCREENSAVER_ON_OFF,				// bool /*260*/
+	PAR_MIDI_MODE,						//--AS unused now
 	PAR_MIDI_CHAN_7,
 	PAR_MIDI_ROUTING,
 	PAR_MIDI_FILT_TX,
