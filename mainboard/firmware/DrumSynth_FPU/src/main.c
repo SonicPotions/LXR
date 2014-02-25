@@ -65,6 +65,7 @@
 #include "TriggerOut.h"
 #include <string.h>
 
+
 //----------------------------------------------------------------
 //stub function for newlib
 void _exit(int status)
@@ -174,7 +175,6 @@ void initAudioJackDiscoverPins()
 	GPIO_Init(GPIOC, &GPIO_InitStructure);
 
 }
-
 //---------------------------------------------------------
 inline void calcNextSampleBlock()
 {

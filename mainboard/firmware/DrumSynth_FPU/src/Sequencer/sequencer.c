@@ -199,6 +199,10 @@ void seq_activateTmpPattern()
 	memcpy(&seq_patternSet.seq_mainSteps[seq_activePattern],&seq_tmpPattern.seq_mainSteps,sizeof(uint16_t)*NUM_TRACKS);
 	memcpy(&seq_patternSet.seq_patternSettings[seq_activePattern],&seq_tmpPattern.seq_patternSettings,sizeof(PatternSetting));
 
+	//update track length to include temp pattern changes
+	seq_readAllPatternEndFlags();
+
+
 }
 //------------------------------------------------------------------------------
 void seq_setShuffle(float shuffle)
