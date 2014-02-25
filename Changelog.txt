@@ -1,3 +1,7 @@
+Firmware v0.29
+---------------------------
+- fixed double trigger bug on clock outs
+
 Firmware v0.28
 ---------------------------
 - merged with rudeogs fork
