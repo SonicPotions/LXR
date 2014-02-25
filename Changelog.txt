@@ -1,4 +1,4 @@
-Firmware v0.29
+Firmware v0.28
 ---------------------------
 - merged with rudeogs fork
 
@@ -6,10 +6,8 @@ Firmware v0.29
 - refactoring of internal track length handling -> fixed out of loop/tracklength problem
 - trigger IO clock scalers added
 - fixed start/reset input pin
-
-Firmware v0.28
----------------------------
 - fixed sine OSC offset bug (start is now on zero crossing)
+- ... changelog under construction ... more to come ...
 
 
 Firmware v0.27
