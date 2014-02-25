@@ -470,6 +470,8 @@ enum
 #define FRONT_SEQ_TRIGGER_IN_PPQ		0x32
 #define FRONT_SEQ_TRIGGER_OUT1_PPQ 		0x33
 #define FRONT_SEQ_TRIGGER_OUT2_PPQ 		0x34
+#define FRONT_SEQ_SET_LENGTH_FLAGS 		0x35
+#define FRONT_SEQ_READ_LENGTH_FLAGS 	0x36
 
 //codec control messages
 #define EQ_ON_OFF						0x01

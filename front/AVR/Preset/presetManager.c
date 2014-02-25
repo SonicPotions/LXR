@@ -464,6 +464,10 @@ void preset_savePattern(uint8_t presetNr)
 	lcd_home();
 	lcd_string_F(PSTR("Saving pattern"));
 	
+	//tell mainboard to pack track length data into pattern data
+	//using the PATTERN_END flag
+	frontPanel_sendData(SEQ_CC,SEQ_SET_LENGTH_FLAGS,0);
+
 	
 	//filename in 8.3  format
 	char filename[13];
@@ -701,6 +705,9 @@ uint8_t preset_loadPattern(uint8_t presetNr)
 		//close the file handle
 		f_close((FIL*)&preset_File);
 		
+		//update track length
+		frontPanel_sendData(SEQ_CC,SEQ_READ_LENGTH_FLAGS,0);
+
 	}
 	
 	//force complete repaint

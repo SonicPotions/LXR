@@ -198,6 +198,7 @@ void seq_activateTmpPattern()
 	memcpy(&seq_patternSet.seq_subStepPattern[seq_activePattern],&seq_tmpPattern.seq_subStepPattern,sizeof(Step)*NUM_TRACKS*NUM_STEPS);
 	memcpy(&seq_patternSet.seq_mainSteps[seq_activePattern],&seq_tmpPattern.seq_mainSteps,sizeof(uint16_t)*NUM_TRACKS);
 	memcpy(&seq_patternSet.seq_patternSettings[seq_activePattern],&seq_tmpPattern.seq_patternSettings,sizeof(PatternSetting));
+
 }
 //------------------------------------------------------------------------------
 void seq_setShuffle(float shuffle)
@@ -1129,6 +1130,7 @@ void seq_clearTrack(uint8_t trackNr, uint8_t pattern)
 		}
 
 		seq_patternSet.seq_mainSteps[pattern][trackNr] = 0;
+		seq_patternSet.patternLength[pattern][trackNr] = 16;
 	}
 }
 //------------------------------------------------------------------------------
@@ -1154,6 +1156,7 @@ void seq_clearPattern(uint8_t pattern)
 			}
 
 			seq_patternSet.seq_mainSteps[pattern][i] = 0;
+			seq_patternSet.patternLength[pattern][i] = 16;
 		}
 	}
 }
@@ -1193,6 +1196,7 @@ void seq_copyTrack(uint8_t srcNr, uint8_t dstNr, uint8_t pattern)
 	}
 
 	seq_patternSet.seq_mainSteps[pattern][dstNr] = seq_patternSet.seq_mainSteps[pattern][srcNr];
+	seq_patternSet.patternLength[pattern][dstNr] = seq_patternSet.patternLength[pattern][srcNr];
 }
 //------------------------------------------------------------------------------
 void seq_copyPattern(uint8_t src, uint8_t dst)
@@ -1212,6 +1216,7 @@ void seq_copyPattern(uint8_t src, uint8_t dst)
 		}
 
 		seq_patternSet.seq_mainSteps[dst][j] = seq_patternSet.seq_mainSteps[src][j];
+		seq_patternSet.patternLength[dst][j] = seq_patternSet.patternLength[src][j];
 	}
 }
 //------------------------------------------------------------------------------
@@ -1313,4 +1318,61 @@ static void seq_sendProgChg(const uint8_t ptn)
 	msg.data1=ptn;
 	msg.bits.length=1;
 	seq_sendMidi(msg);
+}
+//------------------------------------------------------------------------------
+void seq_setAllPatternEndFlags()
+{
+	int pat,trk;
+	for(pat=0;pat<NUM_PATTERN;pat++)
+	{
+		for(trk=0;trk<NUM_TRACKS;trk++)
+		{
+			uint8_t length = seq_patternSet.patternLength[pat][trk];
+			if(length<16)
+			{
+				seq_patternSet.seq_subStepPattern[pat][trk][length*8].note |= PATTERN_END;
+			}
+		}
+	}
+}
+//------------------------------------------------------------------------------
+void seq_clearAllPatternEndFlags()
+{
+	int pat,trk,stp;
+	for(pat=0;pat<NUM_PATTERN;pat++)
+	{
+		for(trk=0;trk<NUM_TRACKS;trk++)
+		{
+			for(stp=0;stp<NUM_STEPS;stp++)
+			{
+				//clear all end markers
+				if(seq_patternSet.seq_subStepPattern[pat][trk][stp].note & PATTERN_END)
+				{
+					seq_patternSet.seq_subStepPattern[pat][trk][stp].note &= ~PATTERN_END;
+				}
+			}
+		}
+	}
+}
+//------------------------------------------------------------------------------
+void seq_readAllPatternEndFlags()
+{
+	int pat,trk,stp;
+	for(pat=0;pat<NUM_PATTERN;pat++)
+	{
+		for(trk=0;trk<NUM_TRACKS;trk++)
+		{
+			seq_patternSet.patternLength[pat][trk] = 16;
+			for(stp=0;stp<NUM_STEPS;stp++)
+			{
+				//clear all end markers
+				if(seq_patternSet.seq_subStepPattern[pat][trk][stp].note & PATTERN_END)
+				{
+					seq_patternSet.patternLength[pat][trk] = stp/8;
+					break;
+				}
+			}
+		}
+	}
+
 }

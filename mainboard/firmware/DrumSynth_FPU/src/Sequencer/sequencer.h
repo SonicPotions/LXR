@@ -48,7 +48,7 @@
   * 1 snare/claps
   * 1 cymbal/snare
   * 1 hiHat
-  * track 7 is the open hh... it triggers the highhat voice but with longer decay. it chokes the closed hihat*/
+  * track 7 is the open hh... it triggers the hihhat voice but with longer decay. it chokes the closed hihat*/
 #define NUM_TRACKS 7
 #define NUM_PATTERN 8
 #define NUM_STEPS 128
@@ -58,8 +58,8 @@
 #define STEP_ACTIVE_MASK 0x80
 #define STEP_VOLUME_MASK 0x7f
 
-//#define PATTERN_END_MASK 0x7f
-//#define PATTERN_END 0x80
+#define PATTERN_END_MASK 0x7f
+#define PATTERN_END 0x80
 
 #define SEQ_NEXT_RANDOM 		0x08
 #define SEQ_NEXT_RANDOM_PREV 	0x09
@@ -217,6 +217,11 @@ uint8_t seq_isNextStepSyncStep();
 // send a note off for a channel if there is a note playing on that channel
 // if 0xff is specified, send a note off on all channels that have a note playing
 void seq_midiNoteOff(uint8_t chan);
-
+//------------------------------------------------------------------------------
+void seq_setAllPatternEndFlags();
+//------------------------------------------------------------------------------
+void seq_clearAllPatternEndFlags();
+//------------------------------------------------------------------------------
+void seq_readAllPatternEndFlags();
 
 #endif /* SEQUENCER_H_ */

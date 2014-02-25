@@ -882,6 +882,7 @@ static void frontParser_handleSeqCC()
 		}
 
 		break;
+
 	case FRONT_SEQ_TRIGGER_OUT2_PPQ:
 		switch(frontParser_midiMsg.data2)
 		{
@@ -905,6 +906,16 @@ static void frontParser_handleSeqCC()
 			break;
 		break;
 		}
+		break;
+
+	case FRONT_SEQ_SET_LENGTH_FLAGS:
+		seq_clearAllPatternEndFlags();
+		seq_setAllPatternEndFlags();
+		break;
+
+	case FRONT_SEQ_READ_LENGTH_FLAGS:
+		seq_readAllPatternEndFlags();
+		break;
 
 
 	default:

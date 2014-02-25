@@ -130,6 +130,14 @@ extern uint8_t frontPanel_sysexMode;
 #define SEQ_TRIGGER_OUT1_PPQ 0x33
 #define SEQ_TRIGGER_OUT2_PPQ 0x34
 
+/* on the mainboard the track length is stored in the patternLength[] array.
+ * to save space it is written into the step data using the PATTERN_END flag when saving patterns
+ * this command tells the mainboard to write the info from the patternLength[] array into the step data
+ * before querrying the info for the savefile
+ */
+#define SEQ_SET_LENGTH_FLAGS 0x35
+#define SEQ_READ_LENGTH_FLAGS 0x36
+
 //SysEx
 #define SYSEX_REQUEST_STEP_DATA			0x01
 #define SYSEX_SEND_STEP_DATA			0x02
