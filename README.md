@@ -7,6 +7,7 @@ The custom firmware is <a href="https://github.com/rudeog/LXR/raw/master/firmwar
 
 Here are a list of current changes (differences from Sonic Potions repos):
 --------------------------------------------------------------------------
+- Pattern Rotation - When in performance mode, if you hold shift button and select one of the sequence step buttons you can rotate the pattern for the active voice by a number of steps relative to the other voices.
 - Save/Load performance - this new save option lets you save the current drum patch along with the pattern set and the BPM into one file allowing multiple slots.
 - Save/Load all - this new save option lets you save all the data in the LXR (kit, pattern, settings) into one file allowing multiple slots.
 - Better handling of startup not finding the default drum kit. Will display an error and continue with a patch that needs editing before it will work.
