@@ -293,8 +293,8 @@ void trigger_clockTick(uint8_t pos)
 	{
 		trigger_nextPulseOut1 = 0;
 		trigger_nextPulseOut2 = 0;
-		trigger_setPin(CLOCK_1,0);
-		trigger_setPin(CLOCK_2,0);
+		//trigger_setPin(CLOCK_1,0);
+		//trigger_setPin(CLOCK_2,0);
 	}
 
 	if(pos >= trigger_nextPulseOut1)
