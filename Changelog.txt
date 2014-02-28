@@ -1,3 +1,7 @@
+Firmware v0.30
+---------------------------
+- fixed panning mod problem for snare, cymbal and hihat voice
+
 Firmware v0.29
 ---------------------------
 - fixed double trigger bug on clock outs
