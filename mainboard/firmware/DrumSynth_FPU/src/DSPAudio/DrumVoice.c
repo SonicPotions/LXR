@@ -69,7 +69,7 @@ void initDrumVoice()
 		SnapEg_init(&voiceArray[i].snapEg);
 		setPan(i,0.f);
 		voiceArray[i].vol = 0.8f;
-		voiceArray[i].panModifier = 1.f;
+		//voiceArray[i].panModifier = 1.f;
 		voiceArray[i].fmModAmount = 0.5f;
 		transient_init(&voiceArray[i].transGen);
 #if ENABLE_DRUM_SVF

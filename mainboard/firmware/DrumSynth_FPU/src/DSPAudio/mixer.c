@@ -353,20 +353,20 @@ void mixer_calcNextSampleBlock(int16_t* output,int16_t* output2)
 	//decimate voice
 	mixer_decimateBlock(3,sampleData);
 	//copy to selected dma buffer
-	mixer_addDataToOutput(mixer_audioRouting[3],snareVoice.panL,snareVoice.panR, sampleData,&output[pos],&output[pos+1],&output2[pos],&output2[pos+1]);
+	mixer_addDataToOutput(mixer_audioRouting[3],squareRootLut[127-snareVoice.pan],squareRootLut[snareVoice.pan], sampleData,&output[pos],&output[pos+1],&output2[pos],&output2[pos+1]);
 
 	//calc cymbal
 	Cymbal_calcSyncBlock(sampleData,OUTPUT_DMA_SIZE);
 	//decimate voice
 	mixer_decimateBlock(4,sampleData);
 	//copy to selected dma buffer
-	mixer_addDataToOutput(mixer_audioRouting[4],cymbalVoice.panL,cymbalVoice.panR, sampleData,&output[pos],&output[pos+1],&output2[pos],&output2[pos+1]);
+	mixer_addDataToOutput(mixer_audioRouting[4],squareRootLut[127-cymbalVoice.pan],squareRootLut[cymbalVoice.pan], sampleData,&output[pos],&output[pos+1],&output2[pos],&output2[pos+1]);
 
 	//calc HiHat
 	HiHat_calcSyncBlock(sampleData,OUTPUT_DMA_SIZE);
 	//decimate voice
 	mixer_decimateBlock(5,sampleData);
 	//copy to selected dma buffer
-	mixer_addDataToOutput(mixer_audioRouting[5],hatVoice.panL,hatVoice.panR, sampleData,&output[pos],&output[pos+1],&output2[pos],&output2[pos+1]);
+	mixer_addDataToOutput(mixer_audioRouting[5],squareRootLut[127-hatVoice.pan],squareRootLut[hatVoice.pan], sampleData,&output[pos],&output[pos+1],&output2[pos],&output2[pos+1]);
 
 }
