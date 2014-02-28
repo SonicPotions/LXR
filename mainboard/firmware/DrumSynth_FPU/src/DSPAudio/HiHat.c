@@ -44,18 +44,19 @@ HiHatVoice hatVoice;
 //---------------------------------------------------
 void HiHat_setPan(const uint8_t pan)
 {
-	hatVoice.panL = squareRootLut[127-pan];
-	hatVoice.panR = squareRootLut[pan];
+	//hatVoice.panL = squareRootLut[127-pan];
+	//hatVoice.panR = squareRootLut[pan];
+	hatVoice.pan = pan;
 }
 //---------------------------------------------------
 
 void HiHat_init()
 {
 	SnapEg_init(&hatVoice.snapEg);
-	HiHat_setPan(0.f);
+	HiHat_setPan(0);
 	hatVoice.vol = 0.8f;
 
-	hatVoice.panModifier = 1.f;
+	//hatVoice.panModifier = 1.f;
 
 	transient_init(&hatVoice.transGen);
 

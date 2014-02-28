@@ -45,17 +45,18 @@ SnareVoice snareVoice;
 //---------------------------------------------------
 void Snare_setPan(const uint8_t pan)
 {
-	snareVoice.panL = squareRootLut[127-pan];
-	snareVoice.panR = squareRootLut[pan];
+	//snareVoice.panL = squareRootLut[127-pan];
+	//snareVoice.panR = squareRootLut[pan];
+	snareVoice.pan = pan;
 }
 //---------------------------------------------------
 void Snare_init()
 {
 	SnapEg_init(&snareVoice.snapEg);
-	Snare_setPan(0.f);
+	Snare_setPan(0);
 	snareVoice.vol = 0.8f;
 
-	snareVoice.panModifier = 1.f;
+	//snareVoice.panModifier = 1.f;
 
 	snareVoice.noiseOsc.freq = 440;
 	snareVoice.noiseOsc.waveform = 1;

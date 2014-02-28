@@ -59,9 +59,10 @@ typedef struct SnareStruct
 
 	uint8_t		filterType; // bit 0 = lp, bit 1 = hp, bit 3 = bp on/off
 	float	 	vol;		// volume of the voice
-	float		panL;		// [0:1]
-	float		panR;		// [0:1]
-	float 		panModifier;
+	//float		panL;		// [0:1]
+	//float		panR;		// [0:1]
+	uint8_t pan;
+	//float 		panModifier;
 
 	float   	mix;		// defines the mix between osc and noise [0 = 100% osc: 1 = 100% noise]
 	float 		velo;

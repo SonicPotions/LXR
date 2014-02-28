@@ -59,9 +59,10 @@ typedef struct CymbalStruct
 	float		fmModAmount2;
 
 	float	 	vol;		// volume of the voice
-	float		panL;		// [0:1]
-	float		panR;		// [0:1]
-	float 		panModifier;
+	//float		panL;		// [0:1]
+	//float		panR;		// [0:1]
+	uint8_t pan;
+	//float 		panModifier;
 
 	float 		velo;
 

@@ -42,8 +42,9 @@ CymbalVoice cymbalVoice;
 //---------------------------------------------------
 void Cymbal_setPan(const uint8_t pan)
 {
-	cymbalVoice.panL = squareRootLut[127-pan];
-	cymbalVoice.panR = squareRootLut[pan];
+	//cymbalVoice.panL = squareRootLut[127-pan];
+	//cymbalVoice.panR = squareRootLut[pan];
+	cymbalVoice.pan = pan;
 }
 //---------------------------------------------------
 
@@ -51,10 +52,10 @@ void Cymbal_init()
 {
 
 	SnapEg_init(&cymbalVoice.snapEg);
-	Cymbal_setPan(0.f);
+	Cymbal_setPan(0);
 	cymbalVoice.vol = 0.8f;
 
-	cymbalVoice.panModifier = 1.f;
+	//cymbalVoice.panModifier = 1.f;
 
 	transient_init(&cymbalVoice.transGen);
 
