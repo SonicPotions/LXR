@@ -360,12 +360,12 @@ void parameterArray_init()
 	parameterArray[PAR_PAN2].type 			= TYPE_UINT8;
 	parameterArray[PAR_PAN3].ptr 			= &voiceArray[2].pan;
 	parameterArray[PAR_PAN3].type 			= TYPE_UINT8;
-	parameterArray[PAR_PAN4].ptr 			= 0;//&snareVoice.pan;
-	parameterArray[PAR_PAN4].type 			= TYPE_SPECIAL_P;
-	parameterArray[PAR_PAN5].ptr 			= 0;
-	parameterArray[PAR_PAN5].type 			= TYPE_SPECIAL_P;
-	parameterArray[PAR_PAN6].ptr 			= 0;
-	parameterArray[PAR_PAN6].type 			= TYPE_SPECIAL_P;
+	parameterArray[PAR_PAN4].ptr 			= &snareVoice.pan;
+	parameterArray[PAR_PAN4].type 			= TYPE_UINT8;
+	parameterArray[PAR_PAN5].ptr 			= &cymbalVoice.pan;;
+	parameterArray[PAR_PAN5].type 			= TYPE_UINT8;
+	parameterArray[PAR_PAN6].ptr 			= &hatVoice.pan;;
+	parameterArray[PAR_PAN6].type 			= TYPE_UINT8;
 
 	parameterArray[PAR_DRIVE1].ptr 			= &voiceArray[0].distortion.shape;
 	parameterArray[PAR_DRIVE1].type 		= TYPE_FLT;
