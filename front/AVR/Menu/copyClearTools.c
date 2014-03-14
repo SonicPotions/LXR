@@ -5,7 +5,7 @@
  *  Author: Julian
  */ 
 #include "copyClearTools.h"
-#include "..\frontPanelParser.h"
+#include "../frontPanelParser.h"
 #include <avr/io.h>
 #include "../Hardware/lcd.h"
 #include "../ledHandler.h"

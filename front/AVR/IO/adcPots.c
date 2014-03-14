@@ -6,7 +6,7 @@
  */ 
 #include "adcPots.h"
 #include <string.h>
-#include "..\Menu\menu.h"
+#include "../Menu/menu.h"
 
 #define HYSTERSIS     3
 #define MIN( a, b ) (a < b) ? a : b

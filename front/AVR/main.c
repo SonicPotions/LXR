@@ -1,10 +1,10 @@
 #include "config.h"
 #include <avr/io.h>
-#include "Hardware\lcd.h"
+#include "Hardware/lcd.h"
 #include "encoder.h"
 #include "stdlib.h"
 #include <util/delay.h>
-#include "Menu\menu.h"
+#include "Menu/menu.h"
 #include "IO/din.h"
 #include "IO/dout.h"
 #include <stdio.h>
@@ -12,17 +12,18 @@
 #include "IO/adcPots.h"
 
 #if USE_SD_CARD
-#include "Hardware\SD/SPI_routines.h"
-#include "Hardware\SD/sd_routines.h"
-#include "Hardware\SD/ff.h"
+#include "Hardware/SD/SPI_routines.h"
+#include "Hardware/SD/sd_routines.h"
+#include "Hardware/SD/ff.h"
 #endif
+
 #include <avr/pgmspace.h>
 #include "Preset/PresetManager.h"
-#include "Hardware\timebase.h"
-#include "Menu\screensaver.h"
+#include "Hardware/timebase.h"
+#include "Menu/screensaver.h"
 #include "ledHandler.h"
 #include "buttonHandler.h"
-#include "Menu\copyClearTools.h"
+#include "Menu/copyClearTools.h"
 #include "frontPanelParser.h"
 //-----------------------------------------------
 //defines

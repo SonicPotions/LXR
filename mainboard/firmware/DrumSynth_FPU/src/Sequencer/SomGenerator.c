@@ -36,7 +36,7 @@
 
 #include "SomGenerator.h"
 #include "SomData.h"
-#include "Sequencer.h"
+#include "sequencer.h"
 #include "math.h"
 
 SomGenerator somGenerator;

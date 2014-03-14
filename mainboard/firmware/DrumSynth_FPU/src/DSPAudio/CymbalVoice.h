@@ -41,7 +41,7 @@
 #include "Oscillator.h"
 #include "config.h"
 #include "ResonantFilter.h"
-#include "SlopeEG2.h"
+#include "SlopeEg2.h"
 #include "random.h"
 #include "transientGenerator.h"
 #include "BufferTools.h"

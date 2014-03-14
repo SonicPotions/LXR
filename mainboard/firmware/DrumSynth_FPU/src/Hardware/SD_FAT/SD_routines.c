@@ -18,7 +18,7 @@
 //#include <avr/io.h>
 //#include <avr/pgmspace.h>
 #include "SPI_routines.h"
-#include "SD_routines.h"
+#include "sd_routines.h"
 //#include "UART_routines.h"
 //#include "../encoder.h"
 

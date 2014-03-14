@@ -6,12 +6,12 @@
  */ 
 #include "../config.h"
 #include "PresetManager.h"
-#include "../Hardware\SD/ff.h"
+#include "../Hardware/SD/ff.h"
 #include <stdio.h>
 #include "../Menu/CcNr2Text.h"
-#include "..\Menu\menu.h"
-#include <util\delay.h>
-#include "..\Hardware\lcd.h"
+#include "../Menu/menu.h"
+#include <util/delay.h>
+#include "../Hardware/lcd.h"
 #include <avr/pgmspace.h>
 #include "../frontPanelParser.h"
 #include <stdlib.h>
@@ -20,7 +20,7 @@
 #include "../IO/din.h"
 #include "../IO/dout.h"
 
-#include "../Hardware\timebase.h"
+#include "../Hardware/timebase.h"
 
 FATFS preset_Fatfs;		/* File system object for the logical drive */
 FIL preset_File;		/* place to hold 1 file*/
