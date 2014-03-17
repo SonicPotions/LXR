@@ -1,20 +1,20 @@
 #include "menu.h"
-#include "..\Hardware\lcd.h"
+#include "../Hardware/lcd.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "..\ledHandler.h"
+#include "../ledHandler.h"
 #include <avr/pgmspace.h>
-#include "..\IO/uart.h"
+#include "../IO/uart.h"
 
 
-#include "..\Preset/PresetManager.h"
-#include "..\frontPanelParser.h"
+#include "../Preset/PresetManager.h"
+#include "../frontPanelParser.h"
 //#include <util/delay.h>
 #include <util/delay.h>
 
 #include "menuPages.h"
-#include "menuText.h"
+#include "MenuText.h"
 #include "../Hardware/timebase.h"
 #include "../Hardware/SD/SPI_routines.h"
 #include "screensaver.h"

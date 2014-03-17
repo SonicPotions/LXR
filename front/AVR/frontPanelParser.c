@@ -9,14 +9,14 @@
 #include <stdio.h>
 
 #include "ledHandler.h"
-#include "IO\uart.h"
+#include "IO/uart.h"
 #include "buttonHandler.h"
 #include "front.h"
 //debug
 #include <stdlib.h>
 #include "Hardware/lcd.h"
-#include <util\atomic.h>
-#include "Preset\PresetManager.h"
+#include <util/atomic.h>
+#include "Preset/PresetManager.h"
 //--
 
 static uint8_t frontParser_rxCnt=0;

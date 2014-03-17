@@ -7,8 +7,8 @@
 
 #include "din.h"
 #include <string.h>
-#include <util\delay.h>
-#include "..\buttonHandler.h"
+#include <util/delay.h>
+#include "../buttonHandler.h"
 
 //---------------------------------------------------------------------
 //1 bit for every digital input, so we can store 8 input signals in one uint8_t

@@ -10,8 +10,8 @@
 #include "Hardware/lcd.h"
 #include <stdio.h>
 #include "frontPanelParser.h"
-#include "IO\din.h"
-#include "Menu\screensaver.h"
+#include "IO/din.h"
+#include "Menu/screensaver.h"
 #include "Menu/copyClearTools.h"
 #include "Hardware/timebase.h"
 #include "config.h"
@@ -412,7 +412,7 @@ static void buttonHandler_handleSelectButton(uint8_t buttonNr) {
 			else {
 				/* //moved to voice button
 				 //tell the sequencer the new active track
-				 //TODO muss nicht für button 8 gesendet werden
+				 //TODO muss nicht fï¿½r button 8 gesendet werden
 				 frontPanel_sendData(SEQ_CC,SEQ_SET_ACTIVE_TRACK,buttonNr);
 				 //request the parameters for the new track
 				 frontPanel_sendData(SEQ_CC,SEQ_REQUEST_EUKLID_PARAMS,buttonNr);

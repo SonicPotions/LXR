@@ -10,9 +10,9 @@
 #include "diskio.h"
 #include "ff.h"
 #include "SPI_routines.h"
-#include "..\lcd.h"
+#include "../lcd.h"
 #include "sd_routines.h"
-#include <util\delay.h>
+#include <util/delay.h>
 #include <avr/pgmspace.h>
 
 //-------------------------------------------------------------------------
