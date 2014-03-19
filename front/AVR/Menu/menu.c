@@ -487,6 +487,7 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 		/*PAR_PRESCALER_CLOCK_IN*/		DTYPE_MENU | (MENU_PPQ<<4),
 		/*PAR_PRESCALER_CLOCK_OUT1*/	DTYPE_MENU | (MENU_PPQ<<4),
 		/*PAR_PRESCALER_CLOCK_OUT2*/	DTYPE_MENU | (MENU_PPQ<<4),
+		/*PAR_TRIGGER_GATE_MODE*/	DTYPE_ON_OFF,
 };
 
 
@@ -2399,6 +2400,10 @@ void menu_parseGlobalParam(uint16_t paramNr, uint8_t value)
 			break;
 	case PAR_PRESCALER_CLOCK_OUT2:
 			frontPanel_sendData(SEQ_CC, SEQ_TRIGGER_OUT2_PPQ, value);
+			break;
+
+	case PAR_TRIG_GATE_MODE:
+			frontPanel_sendData(SEQ_CC, SEQ_TRIGGER_GATE_MODE, value);
 			break;
 
 	}

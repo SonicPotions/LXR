@@ -138,6 +138,8 @@ extern uint8_t frontPanel_sysexMode;
 #define SEQ_SET_LENGTH_FLAGS 0x35
 #define SEQ_READ_LENGTH_FLAGS 0x36
 
+#define SEQ_TRIGGER_GATE_MODE 	0x37
+
 //SysEx
 #define SYSEX_REQUEST_STEP_DATA			0x01
 #define SYSEX_SEND_STEP_DATA			0x02
