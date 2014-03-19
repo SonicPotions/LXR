@@ -52,6 +52,7 @@ uint8_t trigger_nextPulseOut2 = 0xff;
 
 uint32_t trigger_pulseTimes[NUM_PINS];
 uint8_t trigger_pulseActive[NUM_PINS];
+uint8_t trigger_gateMode = 0;
 
 
 
@@ -359,5 +360,10 @@ void trigger_tickPhaseCounter()
 //--------------------------------------------------
 uint8_t trigger_isGateModeOn()
 {
-	return 0;
+	return trigger_gateMode;
+}
+//--------------------------------------------------
+void trigger_setGatemode(uint8_t onOff)
+{
+	trigger_gateMode = onOff;
 }
