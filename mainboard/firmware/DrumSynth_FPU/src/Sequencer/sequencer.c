@@ -328,21 +328,13 @@ void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note)
 		HiHat_trigger(vol,voiceNr-5,note);
 	}
 
-	trigger_triggerVoice(voiceNr);
+
 
 	//to flash the LED, the Frontpanel AVR needs to know about note ons
 	uart_sendFrontpanelByte(NOTE_ON);
 	uart_sendFrontpanelByte(voiceNr);
 	uart_sendFrontpanelByte(0);
 
-	/* --AS getting ride of the midi mode
-	if(midi_mode == MIDI_MODE_TRIGGER)
-	{
-		 midiChan = midi_MidiChannels[0];
-		 midiNote=NOTE_VOICE1+voiceNr;
-	}
-	else
-	{*/
 
 	midiChan = midi_MidiChannels[voiceNr];
 
@@ -352,14 +344,27 @@ void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note)
 		midiNote = note;
 	else
 		midiNote = midi_NoteOverride[voiceNr];
-	//}
+
 
 	//--AS if a note is on for that channel send note-off first
 	seq_midiNoteOff(midiChan);
 
+	//if trigger mode is set to gate, turn the trigger off before sending the next note on
+	if(trigger_isGateModeOn())
+	{
+		trigger_triggerVoice(voiceNr, TRIGGER_OFF);
+	}
+
 	//send the new note to midi/usb out
 	seq_sendNoteOn(midiChan, midiNote,
 			seq_patternSet.seq_subStepPattern[seq_activePattern][voiceNr][seq_stepIndex[voiceNr]].volume&STEP_VOLUME_MASK);
+
+	if(trigger_isGateModeOn())
+	{
+		trigger_triggerVoice(voiceNr, TRIGGER_ON);
+	} else {
+		trigger_triggerVoice(voiceNr, TRIGGER_PULSE);
+	}
 
 }
 //------------------------------------------------------------------------------

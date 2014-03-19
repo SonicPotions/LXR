@@ -282,9 +282,23 @@ void trigger_init()
 	}
 }
 //--------------------------------------------------
-void trigger_triggerVoice(uint8_t voice)
+void trigger_triggerVoice(uint8_t voice, triggerMode mode)
 {
-	trigger_pulsePin(TRIGGER_1 + voice);
+	switch(mode)
+	{
+	case TRIGGER_PULSE:
+		trigger_pulsePin(TRIGGER_1 + voice);
+		break;
+
+	case TRIGGER_ON:
+		trigger_setPin(TRIGGER_1 + voice,1);
+		break;
+
+	case TRIGGER_OFF:
+		trigger_setPin(TRIGGER_1 + voice,0);
+		break;
+	}
+
 }
 //--------------------------------------------------
 void trigger_clockTick(uint8_t pos)
@@ -342,4 +356,8 @@ void trigger_tickPhaseCounter()
 		}
 	}
 }
-
+//--------------------------------------------------
+uint8_t trigger_isGateModeOn()
+{
+	return 0;
+}
