@@ -70,6 +70,7 @@ enum
 	CLOCK_1,
 	CLOCK_2,
 	TRIGGER_RESET,
+	TRIGGER_ALL,
 	NUM_PINS,
 };
 
@@ -103,6 +104,7 @@ void trigger_reset(uint8_t value);
 void trigger_tickPhaseCounter();
 uint8_t trigger_isGateModeOn();
 void trigger_setGatemode(uint8_t onOff);	//if gate mode is on, the trigger out will be high until a note off is send
+void trigger_allOff();
 
 
 

@@ -350,14 +350,21 @@ void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note)
 	seq_midiNoteOff(midiChan);
 
 	//if trigger mode is set to gate, turn the trigger off before sending the next note on
-	if(trigger_isGateModeOn())
+	if(voiceNr>=5)
 	{
+		//hihat channels choke each other
+		trigger_triggerVoice(5, TRIGGER_OFF);
+		trigger_triggerVoice(6, TRIGGER_OFF);
+	} else {
 		trigger_triggerVoice(voiceNr, TRIGGER_OFF);
 	}
+
+
 
 	//send the new note to midi/usb out
 	seq_sendNoteOn(midiChan, midiNote,
 			seq_patternSet.seq_subStepPattern[seq_activePattern][voiceNr][seq_stepIndex[voiceNr]].volume&STEP_VOLUME_MASK);
+
 
 	if(trigger_isGateModeOn())
 	{
@@ -366,6 +373,7 @@ void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note)
 	} else {
 		trigger_triggerVoice(voiceNr, TRIGGER_PULSE);
 	}
+
 
 }
 //------------------------------------------------------------------------------
@@ -777,6 +785,7 @@ void seq_setRunning(uint8_t isRunning)
 		seq_midiNoteOff(0xFF);
 
 		trigger_reset(0);
+		trigger_allOff();
 
 		// --AS if mtc was doing it's thing, tell it to stop it.
 		midiParser_checkMtc();

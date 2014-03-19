@@ -42,6 +42,7 @@
 #include "BufferTools.h"
 #include "ParameterArray.h"
 #include "modulationNode.h"
+#include "TriggerOut.h"
 
 
 float ampSmoothValue = 0.1f;
@@ -198,6 +199,13 @@ void calcDrumVoiceAsync(const uint8_t voiceNr)
 	{
 		voiceArray[voiceNr].lastGain = voiceArray[voiceNr].ampFilterInput;
 		voiceArray[voiceNr].ampFilterInput = slopeEg2_calc(&voiceArray[voiceNr].oscVolEg);
+	}
+
+	//turn off trigger signal if trigger gate mode is on and volume == 0
+	if(trigger_isGateModeOn())
+	{
+		if(!voiceArray[voiceNr].ampFilterInput)
+			trigger_triggerVoice(TRIGGER_1 + voiceNr, TRIGGER_OFF);
 	}
 #endif
 

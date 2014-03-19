@@ -38,6 +38,7 @@
 #include "Snare.h"
 #include "squareRootLut.h"
 #include "modulationNode.h"
+#include "TriggerOut.h"
 
 //instance of the snare voice
 SnareVoice snareVoice;
@@ -128,6 +129,14 @@ void Snare_calcAsync()
 
 	//calc the osc  vol eg
 	snareVoice.egValueOscVol = slopeEg2_calc(&snareVoice.oscVolEg);
+
+	//turn off trigger signal if trigger gate mode is on and volume == 0
+	if(trigger_isGateModeOn())
+	{
+		if(!snareVoice.egValueOscVol)
+			trigger_triggerVoice(TRIGGER_4, TRIGGER_OFF);
+
+	}
 
 	//calc snap EG if transient sample 0 is activated
 	if(snareVoice.transGen.waveform == 0)

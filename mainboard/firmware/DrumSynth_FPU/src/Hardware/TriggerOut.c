@@ -149,6 +149,27 @@ void trigger_setPin(uint8_t index, uint8_t isOn)
 		}
 		break;
 
+	case TRIGGER_ALL:
+		if(!isOn)
+		{
+			GPIOD->ODR |= (PIN_TRACK_1) ;
+			GPIOD->ODR |= (PIN_TRACK_1<<1) ;
+			GPIOD->ODR |= (PIN_TRACK_1<<2) ;
+			GPIOD->ODR |= (PIN_TRACK_1<<3) ;
+			GPIOD->ODR |= (PIN_TRACK_1<<4) ;
+			GPIOD->ODR |= (PIN_TRACK_1<<5) ;
+			GPIOD->ODR |= (PIN_TRACK_1<<6) ;
+		} else {
+			GPIOD->ODR &= ~(PIN_TRACK_1) ;
+			GPIOD->ODR &= ~(PIN_TRACK_1<<1) ;
+			GPIOD->ODR &= ~(PIN_TRACK_1<<2) ;
+			GPIOD->ODR &= ~(PIN_TRACK_1<<3) ;
+			GPIOD->ODR &= ~(PIN_TRACK_1<<4) ;
+			GPIOD->ODR &= ~(PIN_TRACK_1<<5) ;
+			GPIOD->ODR &= ~(PIN_TRACK_1<<6) ;
+		}
+		break;
+
 	default:
 		break;
 	}
@@ -366,4 +387,9 @@ uint8_t trigger_isGateModeOn()
 void trigger_setGatemode(uint8_t onOff)
 {
 	trigger_gateMode = onOff;
+}
+//--------------------------------------------------
+void trigger_allOff()
+{
+	trigger_setPin(TRIGGER_ALL, 0);
 }

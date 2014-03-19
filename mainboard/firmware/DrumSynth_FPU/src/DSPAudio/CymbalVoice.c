@@ -37,6 +37,7 @@
 #include "CymbalVoice.h"
 #include "squareRootLut.h"
 #include "modulationNode.h"
+#include "TriggerOut.h"
 
 CymbalVoice cymbalVoice;
 //---------------------------------------------------
@@ -132,6 +133,13 @@ void Cymbal_calcAsync()
 {
 	//calc the osc  vol eg
 	cymbalVoice.egValueOscVol = slopeEg2_calc(&cymbalVoice.oscVolEg);
+
+	//turn off trigger signal if trigger gate mode is on and volume == 0
+	if(trigger_isGateModeOn())
+	{
+		if(!cymbalVoice.egValueOscVol)
+			trigger_triggerVoice(TRIGGER_5, TRIGGER_OFF);
+	}
 
 	//calc snap EG if transient sample 0 is activated
 	if(cymbalVoice.transGen.waveform == 0)
