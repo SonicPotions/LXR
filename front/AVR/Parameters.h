@@ -337,6 +337,7 @@ enum ParamEnums
 	PAR_POS_Y,
 	PAR_FLUX,/*250*/
 	PAR_SOM_FREQ,
+	PAR_TRIG_GATE_MODE,
 
 
 

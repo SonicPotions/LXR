@@ -416,6 +416,7 @@ const char longNames[][16] PROGMEM =
 	{"In PPQ"},
 	{"Out1 PPQ"},
 	{"Out2 PPQ"},
+	{"Gate Mode"},
 };
 
 

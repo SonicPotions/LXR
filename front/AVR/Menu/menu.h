@@ -184,6 +184,7 @@ enum NamesEnum
 	TEXT_TRIGGER_IN_PPQ,
 	TEXT_TRIGGER_OUT1_PPQ,
 	TEXT_TRIGGER_OUT2_PPQ,
+	TEXT_TRIGGER_GATE_MODE,
 	NUM_NAMES
 };
 //-----------------------------------------------------------------
@@ -379,6 +380,7 @@ enum longNamesEnum
 	LONG_TRIGGER_IN,
 	LONG_TRIGGER_OUT1,
 	LONG_TRIGGER_OUT2,
+	LONG_TRIGGER_GATE_MODE,
 	
 };
 //-----------------------------------------------------------------
