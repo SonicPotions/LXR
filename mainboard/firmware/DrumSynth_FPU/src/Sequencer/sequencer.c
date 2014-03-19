@@ -361,7 +361,8 @@ void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note)
 
 	if(trigger_isGateModeOn())
 	{
-		trigger_triggerVoice(voiceNr, TRIGGER_ON);
+		if(vol)
+			trigger_triggerVoice(voiceNr, TRIGGER_ON);
 	} else {
 		trigger_triggerVoice(voiceNr, TRIGGER_PULSE);
 	}
