@@ -50,7 +50,7 @@ uint16_t sync_calcBpm(float timePerPulse)
 	//we have 24 pulses per quarter
 	//120 bpm = 120 quarters per minute
 
-	float quarterDuration = 24 * (timePerPulse*4);
+	float quarterDuration = 24 * (timePerPulse/4);
 	float bpm = (60 * 1000) / quarterDuration;
 
 	return bpm>0?bpm:1;
