@@ -7,6 +7,8 @@ The custom firmware is <a href="https://github.com/rudeog/LXR/raw/master/firmwar
 
 Here are a list of current changes (differences from Sonic Potions repos):
 --------------------------------------------------------------------------
+- Merge TB323's repository which includes a "rot" parameter in the pattern generator allowing you to apply a rotation while generating a pattern.
+- Remove untargetable modulation destinations from menus (LFO mod target, and LFO voice can't themselves be modulated as it doesn't make sense to do so)
 - Pattern Rotation - When in performance mode, if you hold shift button and select one of the sequence step buttons you can rotate the pattern for the active voice by a number of steps relative to the other voices.
 - Save/Load performance - this new save option lets you save the current drum patch along with the pattern set and the BPM into one file allowing multiple slots.
 - Save/Load all - this new save option lets you save all the data in the LXR (kit, pattern, settings) into one file allowing multiple slots.

@@ -144,12 +144,13 @@ enum NamesEnum
 	TEXT_ACTIVE_STEP,
 	TEXT_PAT_LENGTH,
 	TEXT_NUM_STEPS,
+	TEXT_ROTATION,
 	
 	//Global Parameters
 	TEXT_BPM,
 	TEXT_MIDI_CHANNEL,
-	TEXT_AUDIO_OUT,
-	TEXT_SAMPLE_RATE,				//50
+	TEXT_AUDIO_OUT,				 	//50
+	TEXT_SAMPLE_RATE,
 	TEXT_PATTERN_BEAT,
 	TEXT_PATTERN_NEXT,
 	
@@ -162,8 +163,8 @@ enum NamesEnum
 	TEXT_VEL_DEST,
 	TEXT_VEL_AMT,
 	TEXT_VEL_MOD_VOL,
-	TEXT_FETCH,
-	TEXT_FOLLOW,					//60
+	TEXT_FETCH,						//60
+	TEXT_FOLLOW,
 	TEXT_QUANTISATION,
 	TEXT_AUTOMATION_TRACK,
 	TEXT_PARAM_DEST,	
@@ -174,8 +175,8 @@ enum NamesEnum
 	TEXT_SKIP, //spacer to insert if 1st of 2 pages has only 3 parameters
 	
 	TEXT_POS_X,
-	TEXT_POS_Y,
-	TEXT_FLUX,						//70
+	TEXT_POS_Y,						//70
+	TEXT_FLUX,
 	TEXT_SOM_FREQ,
 	TEXT_MIDI_MODE,	//--AS This is now unused
 	TEXT_MIDI_ROUTING,
@@ -243,6 +244,7 @@ enum shortNamesEnum
 	SHORT_PROBABILITY,
 	SHORT_STEP,
 	SHORT_LENGTH,
+	SHORT_ROTATION,
 	
 	SHORT_BPM,
 	SHORT_CHANNEL,
@@ -345,6 +347,7 @@ enum longNamesEnum
 	LONG_NUMBER,
 	LONG_LENGTH,
 	LONG_STEPS,
+	LONG_ROTATION,
 	LONG_TEMPO,
 	LONG_AUDIO_OUT,
 	LONG_MIDI_CHANNEL,
@@ -463,6 +466,7 @@ enum Datatypes
 	DTYPE_AUTOM_TARGET,
 	DTYPE_0b1,
 	DTYPE_NOTE_NAME, // --AS eg C#0, D 1 for note name
+	DTYPE_0B15,		//0-15
 	/*15*/
 	/*16*/
 	// --AS warning, we can only have 16 on this list the way things are laid out

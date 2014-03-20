@@ -130,7 +130,7 @@ extern uint8_t frontPanel_sysexMode;
 #define SEQ_BAR_RESET_MODE  0x32 //--AS
 #define SEQ_ERASE_ON_OFF    0x33 //--AS **RECORD data2=1: erase on data2=0: erase off
 #define SEQ_TRACK_ROTATION	0x34 // --AS **PATROT rotate a track's start position 0 to 15
-
+#define SEQ_EUKLID_ROTATION	0x35
 //SysEx
 #define SYSEX_REQUEST_STEP_DATA			0x01
 #define SYSEX_SEND_STEP_DATA			0x02

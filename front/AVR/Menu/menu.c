@@ -147,13 +147,14 @@ const Name valueNames[NUM_NAMES] PROGMEM =
 
 		{SHORT_LENGTH,CAT_PATTERN,LONG_LENGTH},				//TEXT_PAT_LENGTH,
 		{SHORT_STEP,CAT_EUKLID,LONG_STEPS},					//TEXT_NUM_STEPS,
+		{SHORT_ROTATION, CAT_EUKLID, LONG_ROTATION}, 		//TEXT_ROTATION
 
 		{SHORT_BPM,CAT_GLOBAL,LONG_TEMPO},					//TEXT_BPM
 
 		{SHORT_CHANNEL,CAT_VOICE,LONG_MIDI_CHANNEL},		//TEXT_MIDI_CHANNEL
-		{SHORT_OUT,CAT_VOICE,LONG_AUDIO_OUT},				//TEXT_AUDIO_OUT
+		{SHORT_OUT,CAT_VOICE,LONG_AUDIO_OUT},				//TEXT_AUDIO_OUT				//50
 
-		{SHORT_SR,CAT_VOICE,LONG_SAMPLE_RATE},				//TEXT_SAMPLE_RATE				//50
+		{SHORT_SR,CAT_VOICE,LONG_SAMPLE_RATE},				//TEXT_SAMPLE_RATE
 
 		{SHORT_REPEAT,CAT_PATTERN,LONG_REPEAT_CNT},				//TEXT_PATTERN_REPEAT
 		{SHORT_NXT,CAT_PATTERN,LONG_NEXT_PAT},				//TEXT_PATTERN_NEXT
@@ -167,8 +168,8 @@ const Name valueNames[NUM_NAMES] PROGMEM =
 		{SHORT_FM_AMNT,	CAT_VELOCITY,	LONG_AMOUNT},			//TEXT_VEL_AMT,
 		{SHORT_VOL,CAT_VELOCITY,	LONG_VOLUME_MOD},		//TEXT_VEL_MOD_VOL,
 
-		{SHORT_FETCH,	CAT_PARAMETER,	LONG_FETCH},		//TEXT_FETCH
-		{SHORT_FOLLOW,	CAT_SEQUENCER,	LONG_FOLLOW},		//TEXT_FOLLOW					//60
+		{SHORT_FETCH,	CAT_PARAMETER,	LONG_FETCH},		//TEXT_FETCH					//60
+		{SHORT_FOLLOW,	CAT_SEQUENCER,	LONG_FOLLOW},		//TEXT_FOLLOW
 		{SHORT_QUANT,	CAT_SEQUENCER,	LONG_QUANTISATION},			//TEXT_QUANTISATION
 
 		{SHORT_TRACK,	CAT_SEQUENCER,	LONG_AUTOMATION_TRACK},			//TEXT_AUTOMATION_TRACK
@@ -183,8 +184,8 @@ const Name valueNames[NUM_NAMES] PROGMEM =
 		{SHORT_EMPTY,CAT_EMPTY,LONG_EMPTY},					//SKIP
 
 		{SHORT_X,CAT_GENERATOR,LONG_X},	//TEXT_POS_X,
-		{SHORT_Y,CAT_GENERATOR,LONG_Y},	//TEXT_POS_Y,
-		{SHORT_FLUX,CAT_GENERATOR,LONG_FLUX},	//TEXT_FLUX,								//70
+		{SHORT_Y,CAT_GENERATOR,LONG_Y},	//TEXT_POS_Y,										//70
+		{SHORT_FLUX,CAT_GENERATOR,LONG_FLUX},	//TEXT_FLUX,
 		{SHORT_FREQ,CAT_GENERATOR,LONG_FREQ},	//TEXT_SOM_FREQ,
 		{SHORT_MIDI,CAT_MIDI,LONG_MODE},	//TEXT_MIDI_MODE
 		{SHORT_MIDI_ROUTING, CAT_MIDI, LONG_MIDI_ROUTING}, // TEXT_MIDI_ROUTING
@@ -435,11 +436,12 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 	    /*PAR_STEP_NOTE*/ 		DTYPE_NOTE_NAME,
 	    /*PAR_EUKLID_LENGTH*/ 	DTYPE_1B16,
 	    /*PAR_EUKLID_STEPS*/ 	DTYPE_1B16,
+	    /*PAR_EUKLID_ROTATION*/	DTYPE_0B15,
 	    /*PAR_AUTOM_TRACK*/ 	DTYPE_0b1,
 	    /*PAR_P1_DEST*/ 		DTYPE_AUTOM_TARGET,
 	    /*PAR_P2_DEST*/ 		DTYPE_AUTOM_TARGET,
-	    /*PAR_P1_VAL*/ 			DTYPE_0B127,
-	    /*PAR_P2_VAL*/ 			DTYPE_0B127,							//240
+	    /*PAR_P1_VAL*/ 			DTYPE_0B127,							//240
+	    /*PAR_P2_VAL*/ 			DTYPE_0B127,
 	    /*PAR_SHUFFLE*/ 		DTYPE_0B127,
 	    /*PAR_PATTERN_BEAT*/ 	DTYPE_0B127,
 	    /*PAR_PATTERN_NEXT*/ 	DTYPE_MENU | (MENU_NEXT_PATTERN<<4),
@@ -449,8 +451,8 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 	    /*PAR_FLUX*/ 			DTYPE_0B127,
 	    /*PAR_SOM_FREQ*/ 		DTYPE_0B127,
 	    /*PAR_TRACK_ROTATION*/  DTYPE_1B16,  //**PATROT this is not shown in menu, but if it were it would really be 0 to 15
-	    /*PAR_BPM*/ 			DTYPE_0B255,
-	    /*PAR_MIDI_CHAN_1*/ 	DTYPE_1B16,								//251
+	    /*PAR_BPM*/ 			DTYPE_0B255,							//251
+	    /*PAR_MIDI_CHAN_1*/ 	DTYPE_1B16,
 	    /*PAR_MIDI_CHAN_2*/ 	DTYPE_1B16,
 	    /*PAR_MIDI_CHAN_3*/ 	DTYPE_1B16,
 	    /*PAR_MIDI_CHAN_4*/ 	DTYPE_1B16,
@@ -459,8 +461,8 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 	    /*PAR_FETCH*/ 			DTYPE_ON_OFF,
 	    /*PAR_FOLLOW*/ 			DTYPE_ON_OFF,
 	    /*PAR_QUANTISATION*/ 	DTYPE_MENU | (MENU_SEQ_QUANT<<4),
-	    /*PAR_SCREENSAVER_ON_OFF*/ DTYPE_ON_OFF,
-	    /*PAR_MIDI_MODE*/ 		DTYPE_MENU | (MENU_MIDI<<4),			//261  //--AS This is now unused.
+	    /*PAR_SCREENSAVER_ON_OFF*/ DTYPE_ON_OFF,						//261
+	    /*PAR_MIDI_MODE*/ 		DTYPE_MENU | (MENU_MIDI<<4),			  //--AS This is now unused.
 	    /*PAR_MIDI_CHAN_7*/ 	DTYPE_1B16,
 	    /*PAR_MIDI_ROUTING*/	DTYPE_MENU | (MENU_MIDI_ROUTING<<4),
 	    /*PAR_MIDI_FILT_TX*/    DTYPE_MENU | (MENU_MIDI_FILTERING<<4),
@@ -545,6 +547,7 @@ void menu_init()
 
 	parameter_values[PAR_EUKLID_LENGTH] = 16;
 	parameter_values[PAR_EUKLID_STEPS] = 16;
+	parameter_values[PAR_EUKLID_ROTATION] = 0;
 
 	//initialize the roll value
 	parameter_values[PAR_ROLL] = 8;
@@ -916,6 +919,7 @@ void menu_repaintGeneric()
 			case DTYPE_0B127:
 			case DTYPE_0B255:
 			case DTYPE_1B16:
+			case DTYPE_0B15:
 			case DTYPE_VOICE_LFO:
 				numtostrpu(&editDisplayBuffer[1][13],(uint8_t)(curParmVal),' ');
 				break;
@@ -1015,6 +1019,7 @@ void menu_repaintGeneric()
 				case DTYPE_0B127:
 				case DTYPE_0B255:
 				case DTYPE_1B16:
+				case DTYPE_0B15:
 				case DTYPE_VOICE_LFO:
 					// fallthrough for the rest of the unsigned values
 					numtostrpu(valueAsText,curParmVal,' ');
@@ -1623,6 +1628,10 @@ static void menu_encoderChangeParameter(int8_t inc)
 		else if(*paramValue > 16)
 			*paramValue = 16;
 		break;
+	case DTYPE_0B15:
+		if(*paramValue>15)
+			*paramValue = 15;
+		break;
 	case DTYPE_MIX_FM://parameter_dtypes[paramNr] & 0x0F
 	case DTYPE_ON_OFF:
 	case DTYPE_0b1:
@@ -2133,6 +2142,17 @@ void menu_parseGlobalParam(uint16_t paramNr, uint8_t value)
 		frontPanel_sendData(SEQ_CC,SEQ_EUKLID_STEPS,msg);
 	}
 	break;
+	case PAR_EUKLID_ROTATION:	{
+		uint8_t rotation =(uint8_t)(value); // max 15
+		uint8_t pattern = menu_shownPattern; //max 7
+		uint8_t msg =(uint8_t)( (pattern&0x7) | (rotation<<3));
+
+		//select the track nr
+		frontPanel_sendData(SEQ_CC,SEQ_SET_ACTIVE_TRACK,menu_getActiveVoice());
+
+		frontPanel_sendData(SEQ_CC,SEQ_EUKLID_ROTATION,msg);
+	}
+	break;
 
 	case PAR_PATTERN_BEAT:
 		frontPanel_sendData(SEQ_CC,SEQ_SET_PAT_BEAT,value);
@@ -2185,7 +2205,7 @@ static void menu_processSpecialCaseValues(uint16_t paramNr/*, const uint8_t *val
 
 
 	//To see the generated pattern we have to update the step view
-	else if( (paramNr == PAR_EUKLID_LENGTH) || (paramNr == PAR_EUKLID_STEPS) )
+	else if( (paramNr == PAR_EUKLID_LENGTH) || (paramNr == PAR_EUKLID_STEPS) || (paramNr == PAR_EUKLID_ROTATION) )
 	{
 		//query current sequencer step states and light up the corresponding leds 
 		//frontPanel_sendData(LED_CC,LED_QUERY_SEQ_TRACK,menu_activePage);
@@ -2237,7 +2257,9 @@ static uint8_t getDtypeValue(uint8_t value, uint16_t paramNr)
 	case DTYPE_1B16:
 		return (uint8_t)(1 + 15*frac);
 		break;
-
+	case DTYPE_0B15:
+		return (uint8_t)(15*frac);
+		break;
 		// These are 0 or 1
 	case DTYPE_MIX_FM:
 	case DTYPE_ON_OFF:

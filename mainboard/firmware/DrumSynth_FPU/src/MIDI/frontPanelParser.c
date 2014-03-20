@@ -639,6 +639,17 @@ static void frontParser_handleSeqCC()
 		}
 		break;
 
+	case FRONT_SEQ_EUKLID_ROTATION:
+		{
+			uint8_t rotation = frontParser_midiMsg.data2 >> 3;
+			//rotation += 1;
+			uint8_t pattern = frontParser_midiMsg.data2 & 0x7;
+
+			euklid_setRotation(frontParser_activeTrack,rotation,pattern);
+			frontParser_updateTrackLeds(frontParser_activeTrack, pattern);
+		}
+		break;
+
 	case FRONT_SEQ_CLEAR_TRACK: {
 			seq_clearTrack(frontParser_midiMsg.data2, frontParser_shownPattern);
 		}
@@ -738,6 +749,10 @@ static void frontParser_handleSeqCC()
 		uart_sendFrontpanelByte(FRONT_SEQ_CC);
 		uart_sendFrontpanelByte(FRONT_SEQ_EUKLID_STEPS);
 		uart_sendFrontpanelByte(euklid_getSteps(frontParser_midiMsg.data2));
+
+		uart_sendFrontpanelByte(FRONT_SEQ_CC);
+		uart_sendFrontpanelByte(FRONT_SEQ_EUKLID_ROTATION);
+		uart_sendFrontpanelByte(euklid_getRotation(frontParser_midiMsg.data2));
 		break;
 
 	case FRONT_SEQ_SET_SHOWN_PATTERN:

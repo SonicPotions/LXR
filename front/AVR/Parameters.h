@@ -314,6 +314,7 @@ enum ParamEnums
 	
 	PAR_EUKLID_LENGTH,
 	PAR_EUKLID_STEPS,
+	PAR_EUKLID_ROTATION,
 	
 	PAR_AUTOM_TRACK,
 	
@@ -321,8 +322,8 @@ enum ParamEnums
 	PAR_P1_DEST,
 	PAR_P2_DEST,
 	
-	PAR_P1_VAL,
-	PAR_P2_VAL,							/*240*/
+	PAR_P1_VAL,							/*240*/
+	PAR_P2_VAL,
 	
 	PAR_SHUFFLE,
 

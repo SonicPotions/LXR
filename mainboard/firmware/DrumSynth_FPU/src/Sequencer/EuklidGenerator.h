@@ -42,7 +42,10 @@
 void euklid_init();
 uint8_t euklid_getLength(uint8_t trackNr);
 uint8_t euklid_getSteps(uint8_t trackNr);
+uint8_t euklid_getRotation(uint8_t trackNr);
 void euklid_setLength(uint8_t trackNr, uint8_t value, uint8_t patternNr);
 void euklid_setSteps(uint8_t trackNr, uint8_t value, uint8_t patternNr);
+void euklid_setRotation(uint8_t trackNr, uint8_t value, uint8_t patternNr);
+void euklid_rotatePattern(uint8_t length, uint8_t amount);
 void euklid_transferPattern(uint8_t trackNr, uint8_t patternNr);
 #endif /* EUKLIDGENERATOR_H_ */
