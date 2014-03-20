@@ -1,3 +1,11 @@
+Firmware v0.32
+---------------------------
+- fixed LFO sync in MIDI slave mode
+
+Firmware v0.31
+---------------------------
+- Added 'gate mode' for trigger IO
+
 Firmware v0.30
 ---------------------------
 - fixed panning mod problem for snare, cymbal and hihat voice
