@@ -38,6 +38,7 @@
 #include "HiHat.h"
 #include "squareRootLut.h"
 #include "modulationNode.h"
+#include "TriggerOut.h"
 
 HiHatVoice hatVoice;
 
@@ -118,6 +119,7 @@ void HiHat_trigger( uint8_t vel, uint8_t isOpen, const uint8_t note)
 	osc_setBaseNote(&hatVoice.modOsc,note);
 	osc_setBaseNote(&hatVoice.modOsc2,note);
 
+	hatVoice.isOpen = isOpen;
 	hatVoice.oscVolEg.decay = isOpen?hatVoice.decayOpen:hatVoice.decayClosed;
 
 	slopeEg2_trigger(&hatVoice.oscVolEg);
@@ -131,6 +133,20 @@ void HiHat_calcAsync( )
 {
 	//calc the osc  vol eg
 	hatVoice.egValueOscVol = slopeEg2_calc(&hatVoice.oscVolEg);
+
+	//turn off trigger signal if trigger gate mode is on and volume == 0
+	if(trigger_isGateModeOn())
+	{
+		if(!hatVoice.egValueOscVol)
+		{
+			if(hatVoice.isOpen)
+			{
+				trigger_triggerVoice(TRIGGER_7, TRIGGER_OFF);
+			} else {
+				trigger_triggerVoice(TRIGGER_6, TRIGGER_OFF);
+			}
+		}
+	}
 
 	//calc snap EG if transient sample 0 is activated
 	if(hatVoice.transGen.waveform == 0)

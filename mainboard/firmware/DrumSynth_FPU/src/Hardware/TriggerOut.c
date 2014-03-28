@@ -38,16 +38,31 @@
 #include "TriggerOut.h"
 #include "string.h"
 #include "sequencer.h"
+#include "limits.h"
+#include "config.h"
+#include "../DSPAudio/medianFilter.h"
 
-uint8_t trigger_dividerClock1 = 8;
-uint8_t trigger_dividerClock2 = 8;
-uint8_t trigger_dividerClock_Input = 1;
+uint8_t trigger_dividerClockOut1 = PRE_4_PPQ;
+uint8_t trigger_dividerClockOut2 = PRE_4_PPQ;
+uint8_t trigger_prescalerClockInput = PRE_4_PPQ;
 
-uint8_t trigger_clockCnt = 0;
-uint8_t trigger_clockCnt_Input = 0;
+uint8_t trigger_nextPulseOut1 = 0xff;
+uint8_t trigger_nextPulseOut2 = 0xff;
+
 
 uint32_t trigger_pulseTimes[NUM_PINS];
 uint8_t trigger_pulseActive[NUM_PINS];
+uint8_t trigger_gateMode = 0;
+
+
+
+
+volatile float trigger_phase = 0;
+volatile float trigger_phaseInc = 0;
+static uint8_t trigger_phaseWrapCounter = 1;	// count how many times the phase increased by 1.0
+												// with a preascaler of 8 (4ppq) 1 clock pulse
+												// has to increment the sequencer by 8 steps
+#define COUNTER_DURATION (1.0f/42000000l)
 
 //--------------------------------------------------
 void EXTI9_5_IRQHandler()
@@ -55,34 +70,50 @@ void EXTI9_5_IRQHandler()
 	//reset in
 	if(EXTI_GetITStatus(EXTI_Line8) != RESET)
 	{
-		const uint8_t pinState = (GPIOA->IDR & GPIO_Pin_8);
-		if(pinState)
+		if(seq_getExtSync())
 		{
-			//reset pin is high -> stop and reset sequencer
-			seq_setRunning(0);
-		} else {
-			//reset pin is low -> start sequencer
-			seq_setRunning(1);
+			const uint16_t pinState = (GPIOA->IDR & GPIO_Pin_8);
+			if(!pinState)
+			{
+				//reset pin is high -> stop and reset sequencer
+				seq_setRunning(0);
+			} else {
+				//reset pin is low -> start sequencer
+				seq_setRunning(1);
+			}
 		}
 
 		EXTI_ClearITPendingBit(EXTI_Line8);
 	}
-	//clock in
+	//clock in falling edge (inverted due to input transistor)
 	else if(EXTI_GetITStatus(EXTI_Line9) != RESET)
     {
-        //Handle the interrupt
-		if(trigger_clockCnt_Input % trigger_dividerClock_Input == 0)
+		if(seq_getExtSync())
 		{
-			if(seq_isRunning()!=0)
-			{
-				seq_setDeltaT(-1);
-			}
-		}
-		trigger_clockCnt_Input++;
+			uint32_t counter = medianFilter(TIM_GetCounter(TIM2));
 
+			//time for a 128th substep
+			float t =  (counter) * COUNTER_DURATION / (trigger_prescalerClockInput);
+			const float f = (1.f/t);
+			trigger_phaseInc = (1/(REAL_FS/f)) ;
+
+			//divide incoming clocks with prescaler
+			//if(trigger_prescaleCounterClockInput % trigger_prescalerClockInput == 0)
+			{
+				if(seq_isRunning()!=0)
+				{
+					seq_triggerNextMasterStep(trigger_prescalerClockInput);
+					//reset phase counter
+					trigger_phase = 0;
+					trigger_phaseWrapCounter = 1;
+
+				}
+			}
+			//reset measurement timer
+		}
+		TIM_SetCounter(TIM2,0);
         EXTI_ClearITPendingBit(EXTI_Line9);
     }
-
 }
 //--------------------------------------------------
 void trigger_setPin(uint8_t index, uint8_t isOn)
@@ -107,6 +138,7 @@ void trigger_setPin(uint8_t index, uint8_t isOn)
 
 		break;
 
+
 	case CLOCK_2:
 	case TRIGGER_RESET:
 		if(!isOn)
@@ -114,6 +146,27 @@ void trigger_setPin(uint8_t index, uint8_t isOn)
 			GPIOA->ODR |= (PIN_CLOCK_2<<(index-CLOCK_2)) ;
 		} else {
 			GPIOA->ODR &= ~(PIN_CLOCK_2<<(index-CLOCK_2)) ;
+		}
+		break;
+
+	case TRIGGER_ALL:
+		if(!isOn)
+		{
+			GPIOD->ODR |= (PIN_TRACK_1) ;
+			GPIOD->ODR |= (PIN_TRACK_1<<1) ;
+			GPIOD->ODR |= (PIN_TRACK_1<<2) ;
+			GPIOD->ODR |= (PIN_TRACK_1<<3) ;
+			GPIOD->ODR |= (PIN_TRACK_1<<4) ;
+			GPIOD->ODR |= (PIN_TRACK_1<<5) ;
+			GPIOD->ODR |= (PIN_TRACK_1<<6) ;
+		} else {
+			GPIOD->ODR &= ~(PIN_TRACK_1) ;
+			GPIOD->ODR &= ~(PIN_TRACK_1<<1) ;
+			GPIOD->ODR &= ~(PIN_TRACK_1<<2) ;
+			GPIOD->ODR &= ~(PIN_TRACK_1<<3) ;
+			GPIOD->ODR &= ~(PIN_TRACK_1<<4) ;
+			GPIOD->ODR &= ~(PIN_TRACK_1<<5) ;
+			GPIOD->ODR &= ~(PIN_TRACK_1<<6) ;
 		}
 		break;
 
@@ -197,13 +250,12 @@ void trigger_init()
 	EXTI_Init(&EXTI_InitStructure);
 
 	/* Enable and set EXTI Line8 Interrupt to the lowest priority */
-	/*//same irq as below
 	NVIC_InitStructure.NVIC_IRQChannel = EXTI9_5_IRQn;
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x0F;
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x0F;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
-	*/
+
 
 
 	//---- Clock In (PC9)------------------------------------------------------
@@ -223,51 +275,122 @@ void trigger_init()
 	EXTI_InitStructure.EXTI_LineCmd = ENABLE;
 	EXTI_Init(&EXTI_InitStructure);
 
-	/* Enable and set EXTI Line9 Interrupt to the lowest priority */
+	/* Enable and set EXTI Line9 Interrupt  */
 	NVIC_InitStructure.NVIC_IRQChannel = EXTI9_5_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x0F;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x00;
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x0F;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
 
+	//---- Timer 2 ------------------------------------------------------
+	//Timer 2 (32-bit) for time measuring of external clock pulses (trigger IO)
+	TIM_TimeBaseInitTypeDef TIM_TimeBase_InitStructure;
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
+
+	//HSE 168MHz, APB1 Prescaler = 4 => 42MHz
+	TIM_TimeBase_InitStructure.TIM_ClockDivision = TIM_CKD_DIV1;
+	TIM_TimeBase_InitStructure.TIM_CounterMode = TIM_CounterMode_Up;
+	TIM_TimeBase_InitStructure.TIM_Period = 0xffffffff;
+	TIM_TimeBase_InitStructure.TIM_Prescaler = 1;
+	TIM_TimeBaseInit(TIM2, &TIM_TimeBase_InitStructure);
+
+	TIM_Cmd(TIM2, ENABLE);
 
 	//set trigger outs to low
-	trigger_setPin(0,0);
-	trigger_setPin(1,0);
-	trigger_setPin(2,0);
-	trigger_setPin(3,0);
-	trigger_setPin(4,0);
-	trigger_setPin(5,0);
-	trigger_setPin(6,0);
+	int i;
+	for(i=0;i<NUM_PINS;i++)
+	{
+		trigger_setPin(i,0);
+	}
+}
+//--------------------------------------------------
+void trigger_triggerVoice(uint8_t voice, triggerMode mode)
+{
+	switch(mode)
+	{
+	case TRIGGER_PULSE:
+		trigger_pulsePin(TRIGGER_1 + voice);
+		break;
+
+	case TRIGGER_ON:
+		trigger_setPin(TRIGGER_1 + voice,1);
+		break;
+
+	case TRIGGER_OFF:
+		trigger_setPin(TRIGGER_1 + voice,0);
+		break;
+	}
 
 }
 //--------------------------------------------------
-void trigger_triggerVoice(uint8_t voice)
+void trigger_clockTick(uint8_t pos)
 {
-	trigger_pulsePin(TRIGGER_1 + voice);
-}
-//--------------------------------------------------
-void trigger_clockTick()
-{
-	if(trigger_clockCnt % trigger_dividerClock1 == 0)
+	if(pos==1)
 	{
-		trigger_pulsePin(CLOCK_1);
+		trigger_nextPulseOut1 = 0;
+		trigger_nextPulseOut2 = 0;
+		//trigger_setPin(CLOCK_1,0);
+		//trigger_setPin(CLOCK_2,0);
 	}
 
-	if(trigger_clockCnt % trigger_dividerClock2 == 0)
+	if(pos >= trigger_nextPulseOut1)
 	{
-		trigger_pulsePin(CLOCK_2);
-	}
+		//trigger_pulsePin(CLOCK_1);
+		trigger_setPin(CLOCK_1,1);
+		trigger_nextPulseOut1 += trigger_dividerClockOut1;
+	} else trigger_setPin(CLOCK_1,0);
 
-	trigger_clockCnt++;
+	if(pos >= trigger_nextPulseOut2)
+	{
+		trigger_setPin(CLOCK_2,1);
+		trigger_nextPulseOut2 += trigger_dividerClockOut2;
+	}else trigger_setPin(CLOCK_2,0);
 
 }
 //--------------------------------------------------
 void trigger_reset(uint8_t value)
 {
-	trigger_setPin(TRIGGER_RESET,value);
+	trigger_setPin(TRIGGER_RESET,1-value);
+
 	if(value) {
-		trigger_clockCnt = 0;
+		trigger_nextPulseOut1 = 0;
+		trigger_nextPulseOut2 = 0;
 	}
 }
 //--------------------------------------------------
+void trigger_tickPhaseCounter()
+{
+	int i;
+	for(i=0;i<OUTPUT_DMA_SIZE;i++)
+	{
+		//only run one cycle of the phase counter
+		// it is reset by the next incoming master clock pulse
+		if( (trigger_phase + trigger_phaseInc) < trigger_prescalerClockInput)
+		{
+			trigger_phase += trigger_phaseInc;
+		}
+		if(trigger_phase >= trigger_phaseWrapCounter)
+		{
+			trigger_phaseWrapCounter++;
+			// trigger a step
+			// -> set time to next step to immediately (trigger next step)
+			seq_setDeltaT(-1);
+		}
+	}
+}
+//--------------------------------------------------
+uint8_t trigger_isGateModeOn()
+{
+	return trigger_gateMode;
+}
+//--------------------------------------------------
+void trigger_setGatemode(uint8_t onOff)
+{
+	trigger_gateMode = onOff;
+}
+//--------------------------------------------------
+void trigger_allOff()
+{
+	trigger_setPin(TRIGGER_ALL, 0);
+}
+

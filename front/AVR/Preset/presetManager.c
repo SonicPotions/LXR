@@ -478,6 +478,10 @@ static void preset_writePatternData()
 	//write the preset data
 	//initiate the sysex mode
 	
+	// --AS TODO need to get track length data (and rotate data) and save them with the pattern
+	// try to do so in a way that breaks the least shit
+	// also need to make sure it reads it when opening a pattern
+
 	while( (frontParser_midiMsg.status != SYSEX_START))
 	{
 		frontPanel_sendByte(SYSEX_START);

@@ -1,6 +1,30 @@
+Firmware v0.32
+---------------------------
+- fixed LFO sync in MIDI slave mode
+
+Firmware v0.31
+---------------------------
+- Added 'gate mode' for trigger IO
+
+Firmware v0.30
+---------------------------
+- fixed panning mod problem for snare, cymbal and hihat voice
+
+Firmware v0.29
+---------------------------
+- fixed double trigger bug on clock outs
+
 Firmware v0.28
 ---------------------------
+- merged with rudeogs fork
+
+
+- refactoring of internal track length handling -> fixed out of loop/tracklength problem
+- trigger IO clock scalers added
+- fixed start/reset input pin
 - fixed sine OSC offset bug (start is now on zero crossing)
+- ... changelog under construction ... more to come ...
+
 
 Firmware v0.27
 ---------------------------

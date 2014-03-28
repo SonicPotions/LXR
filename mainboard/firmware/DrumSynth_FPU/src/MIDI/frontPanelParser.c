@@ -50,7 +50,7 @@
 #include "HiHat.h"
 #include "Snare.h"
 #include "SomGenerator.h"
-
+#include "TriggerOut.h"
 
 static void frontParser_handleMidiMessage();
 static void frontParser_handleSysexData(unsigned char data);
@@ -869,6 +869,83 @@ static void frontParser_handleSeqCC()
 		// to reset the bar counter when a manual pattern change occurs
 		seq_resetBarOnPatternChange = frontParser_midiMsg.data2;
 		break;
+	case FRONT_SEQ_TRIGGER_IN_PPQ:
+		switch(frontParser_midiMsg.data2)
+		{
+		case 0:
+			trigger_prescalerClockInput = PRE_1_PPQ;
+			break;
+
+		default:
+		case 1:
+			trigger_prescalerClockInput = PRE_4_PPQ;
+			break;
+
+		case 2:
+			trigger_prescalerClockInput = PRE_8_PPQ;
+			break;
+		case 3:
+			trigger_prescalerClockInput = PRE_16_PPQ;
+			break;
+		case 4:
+			trigger_prescalerClockInput = PRE_32_PPQ;
+			break;
+		}
+		break;
+	case FRONT_SEQ_TRIGGER_OUT1_PPQ:
+		switch(frontParser_midiMsg.data2)
+		{
+		case 0:
+			trigger_dividerClockOut1 = PRE_1_PPQ;
+			break;
+
+		default:
+		case 1:
+			trigger_dividerClockOut1 = PRE_4_PPQ;
+			break;
+
+		case 2:
+			trigger_dividerClockOut1 = PRE_8_PPQ;
+			break;
+		case 3:
+			trigger_dividerClockOut1 = PRE_16_PPQ;
+			break;
+		case 4:
+			trigger_dividerClockOut1 = PRE_32_PPQ;
+			break;
+		}
+
+		break;
+
+	case FRONT_SEQ_TRIGGER_OUT2_PPQ:
+		switch(frontParser_midiMsg.data2)
+		{
+		case 0:
+			trigger_dividerClockOut2 = PRE_1_PPQ;
+			break;
+
+		default:
+		case 1:
+			trigger_dividerClockOut2 = PRE_4_PPQ;
+			break;
+
+		case 2:
+			trigger_dividerClockOut2 = PRE_8_PPQ;
+			break;
+		case 3:
+			trigger_dividerClockOut2 = PRE_16_PPQ;
+			break;
+		case 4:
+			trigger_dividerClockOut2 = PRE_32_PPQ;
+			break;
+		break;
+		}
+		break;
+
+	case FRONT_SEQ_TRIGGER_GATE_MODE:
+		trigger_setGatemode(frontParser_midiMsg.data2);
+		break;
+
 	default:
 		break;
 	}

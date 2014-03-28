@@ -191,6 +191,10 @@ const Name valueNames[NUM_NAMES] PROGMEM =
 		{SHORT_MIDI_ROUTING, CAT_MIDI, LONG_MIDI_ROUTING}, // TEXT_MIDI_ROUTING
 		{SHORT_MIDI_FILT_TX, CAT_MIDI, LONG_MIDI_FILT_TX}, // TEXT_MIDI_FILT_TX
 		{SHORT_MIDI_FILT_RX, CAT_MIDI, LONG_MIDI_FILT_RX}, // TEXT_MIDI_FILT_RX
+		{SHORT_TRIGGER_IN, CAT_TRIGGER, LONG_TRIGGER_IN}, // TEXT_TRIGGER_IN_PPQ
+		{SHORT_TRIGGER_OUT1, CAT_TRIGGER, LONG_TRIGGER_OUT1}, // TEXT_TRIGGER_OUT1_PPQ
+		{SHORT_TRIGGER_OUT2, CAT_TRIGGER, LONG_TRIGGER_OUT2}, // TEXT_TRIGGER_OUT2_PPQ
+		{SHORT_MODE, CAT_TRIGGER, LONG_TRIGGER_GATE_MODE}, //TEXT_TRIGGER_GATE_MODE
 		{SHORT_BAR_RESET_MODE, CAT_SEQUENCER, LONG_BAR_RESET_MODE}, // TEXT_BAR_RESET_MODE
 		{SHORT_CHANNEL, CAT_MIDI, LONG_MIDI_CHANNEL}, // TEXT_MIDI_CHAN_GLOBAL
 
@@ -467,6 +471,10 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 	    /*PAR_MIDI_ROUTING*/	DTYPE_MENU | (MENU_MIDI_ROUTING<<4),
 	    /*PAR_MIDI_FILT_TX*/    DTYPE_MENU | (MENU_MIDI_FILTERING<<4),
 	    /*PAR_MIDI_FILT_RX*/    DTYPE_MENU | (MENU_MIDI_FILTERING<<4),
+		/*PAR_PRESCALER_CLOCK_IN*/		DTYPE_MENU | (MENU_PPQ<<4),
+		/*PAR_PRESCALER_CLOCK_OUT1*/	DTYPE_MENU | (MENU_PPQ<<4),
+		/*PAR_PRESCALER_CLOCK_OUT2*/	DTYPE_MENU | (MENU_PPQ<<4),
+		/*PAR_TRIGGER_GATE_MODE*/	DTYPE_ON_OFF,
 	    /*PAR_BAR_RESET_MODE*/  DTYPE_ON_OFF,
 	    /*PAR_MIDI_CHAN_GLOBAL*/DTYPE_1B16,		//--AS global midi channel
 };
@@ -728,7 +736,7 @@ static uint8_t has2ndPage(uint8_t menuPage)
 //-----------------------------------------------------------------
 static uint8_t checkScrollSign(uint8_t activePage, uint8_t activeParameter)
 {
-	const uint8_t is2ndPage = (activeParameter>3);
+	const uint8_t is2ndPage = (uint8_t)(activeParameter>3);
 
 	//**GMENU show '*' when both left and right movement are possible in the global settings menu
 	// show > or < as appropriate
@@ -1376,6 +1384,8 @@ static uint8_t getMaxEntriesForMenu(uint8_t menuId)
 		return midiRoutingNames[0][0];
 	case MENU_MIDI_FILTERING:
 		return midiFilterNames[0][0];
+	case MENU_PPQ:
+		return ppqNames[0][0];
 	default:
 		return 0;
 	}
@@ -1434,6 +1444,9 @@ static void getMenuItemNameForValue(const uint8_t menuId, const uint8_t curParmV
 		break;
 	case MENU_MIDI_FILTERING:
 		p=midiFilterNames[curParmVal+1];
+		break;
+	case MENU_PPQ:
+		p=ppqNames[curParmVal+1];
 		break;
 	default:
 		p=menuText_dash;
@@ -2188,6 +2201,18 @@ void menu_parseGlobalParam(uint16_t paramNr, uint8_t value)
 	case PAR_MIDI_FILT_RX:
 		frontPanel_sendData(SEQ_CC, SEQ_MIDI_FILT_RX, value);
 		break;
+	case PAR_PRESCALER_CLOCK_IN:
+			frontPanel_sendData(SEQ_CC, SEQ_TRIGGER_IN_PPQ, value);
+			break;
+	case PAR_PRESCALER_CLOCK_OUT1:
+			frontPanel_sendData(SEQ_CC, SEQ_TRIGGER_OUT1_PPQ, value);
+			break;
+	case PAR_PRESCALER_CLOCK_OUT2:
+			frontPanel_sendData(SEQ_CC, SEQ_TRIGGER_OUT2_PPQ, value);
+			break;
+	case PAR_TRIG_GATE_MODE:
+			frontPanel_sendData(SEQ_CC, SEQ_TRIGGER_GATE_MODE, value);
+			break;
 	case PAR_BAR_RESET_MODE:
 		frontPanel_sendData(SEQ_CC, SEQ_BAR_RESET_MODE, value);
 		break;
@@ -2284,7 +2309,9 @@ static uint8_t getDtypeValue(uint8_t value, uint16_t paramNr)
 		return (uint8_t)(127*frac);
 		break;
 	}	
-};
+	return 0;
+}
+
 //-----------------------------------------------------------------
 void menu_parseKnobValue(uint8_t potNr, uint8_t potValue)
 {
@@ -2455,7 +2482,7 @@ void setNoteName(uint8_t num, char *buf)
 	// B is at the end, so only E presents a hurdle
 	buf[0]=(char)((n>8 ? 60 : 67) + ((n+(n>4))/2));
 	// determine natural or sharp (# if the note is 1, 3, 6, 8, 10)
-	buf[1]=(n < 5 && n&1) || (n > 5 && !(n&1)) ? '#' : ' ';
+	buf[1]=(n < 5 && (n&1)) || (n > 5 && !(n&1)) ? '#' : ' ';
 	// determine the octave 0=48
 	buf[2]=(char)(48+(num / 12));
 }

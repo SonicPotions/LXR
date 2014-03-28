@@ -59,6 +59,7 @@ void voiceControl_noteOn(uint8_t voice, uint8_t note, uint8_t vel)
 	else
 		HiHat_trigger(vel,voice-5,note);
 
+	// --AS this is removed from sp master, but we are sharing this fn now
 	// drum triggers
 	trigger_triggerVoice(voice);
 

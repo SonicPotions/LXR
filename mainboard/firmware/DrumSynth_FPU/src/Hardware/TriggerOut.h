@@ -70,17 +70,43 @@ enum
 	CLOCK_1,
 	CLOCK_2,
 	TRIGGER_RESET,
+	TRIGGER_ALL,
 	NUM_PINS,
 };
 
-extern uint8_t trigger_dividerClock1;
-extern uint8_t trigger_dividerClock2;
+// since we have 4 main steps per quarter and 8 sub steps per main step
+// our native resolution is 32ppq
+enum Prescaler
+{
+	PRE_1_PPQ	= 32/1,
+	PRE_4_PPQ	= 32/4,
+	PRE_8_PPQ	= 32/8,
+	PRE_16_PPQ	= 32/16,
+	PRE_32_PPQ	= 1,
+};
+
+typedef enum TriggerModes
+{
+	TRIGGER_ON,
+	TRIGGER_OFF,
+	TRIGGER_PULSE
+} triggerMode;
+
+extern uint8_t trigger_dividerClockOut1;
+extern uint8_t trigger_dividerClockOut2;
+extern uint8_t trigger_prescalerClockInput;
 
 void trigger_init();
 void trigger_tick();
-void trigger_triggerVoice(uint8_t voice);
-void trigger_clockTick();
+void trigger_triggerVoice(uint8_t voice, triggerMode mode);
+void trigger_clockTick(uint8_t pos);//the sequencer calls this function whenever a step is played to generate corresponding trigger out clocks
 void trigger_reset(uint8_t value);
+void trigger_tickPhaseCounter();
+uint8_t trigger_isGateModeOn();
+void trigger_setGatemode(uint8_t onOff);	//if gate mode is on, the trigger out will be high until a note off is send
+void trigger_allOff();
+
 
 
 #endif /* TRIGGEROUT_H_ */
+

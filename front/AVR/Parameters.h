@@ -367,7 +367,13 @@ enum ParamEnums
 	PAR_MIDI_ROUTING,
 	PAR_MIDI_FILT_TX,
 	PAR_MIDI_FILT_RX,
-	PAR_BAR_RESET_MODE,					// bool --AS 0 or 1
+	//prescaler control for trigger IO extension
+	PAR_PRESCALER_CLOCK_IN,
+	PAR_PRESCALER_CLOCK_OUT1,
+	PAR_PRESCALER_CLOCK_OUT2,
+	PAR_TRIG_GATE_MODE,
+
+	PAR_BAR_RESET_MODE,					// bool --AS 0 or 1   /*270*/
 	PAR_MIDI_CHAN_GLOBAL,				// --AS global midi channel
 	NUM_PARAMS	
 };

@@ -78,6 +78,8 @@ uint8_t seq_delayedSyncStepFlag = 0;		//normally sync steps will only be advance
 											//if the shuffle needs a delayed sync step, it is indicated here.
 
 uint8_t seq_isSyncExternal = 0;
+uint8_t seq_lastMasterStep[NUM_TRACKS];		//keeps track of the last triggered master sync step of each track
+
 
 float seq_shuffle = 0;
 
@@ -167,6 +169,8 @@ void seq_init()
 	}
 
 	memset(seq_stepIndex,0,NUM_TRACKS);
+	memset(seq_lastMasterStep,0,NUM_TRACKS);
+
 
 	for(i=0;i<NUM_PATTERN;i++)
 	{
@@ -199,6 +203,9 @@ static void seq_activateTmpPattern()
 	memcpy(&seq_patternSet.seq_subStepPattern[seq_activePattern],&seq_tmpPattern.seq_subStepPattern,sizeof(Step)*NUM_TRACKS*NUM_STEPS);
 	memcpy(&seq_patternSet.seq_mainSteps[seq_activePattern],&seq_tmpPattern.seq_mainSteps,sizeof(uint16_t)*NUM_TRACKS);
 	memcpy(&seq_patternSet.seq_patternSettings[seq_activePattern],&seq_tmpPattern.seq_patternSettings,sizeof(PatternSetting));
+
+	// --AS TODO once we save pattern length, it needs to be added to tmp pattern so that we get it when it's loaded,
+	// and needs to be transferred to active pattern here
 }
 //------------------------------------------------------------------------------
 void seq_setShuffle(float shuffle)
@@ -352,16 +359,10 @@ void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note)
 
 	seq_parseAutomationNodes(voiceNr, &seq_patternSet.seq_subStepPattern[seq_activePattern][voiceNr][seq_stepIndex[voiceNr]]);
 
+	//--AS this line needs to not be called in the following fn when called from here
+	//trigger_triggerVoice(voiceNr);
 	voiceControl_noteOn(voiceNr, note, vol);
 
-	/* --AS getting ride of the midi mode
-	//if(midi_mode == MIDI_MODE_TRIGGER)
-	{
-		// midiChan = midi_MidiChannels[0];
-		 //midiNote=NOTE_VOICE1+voiceNr;
-	}
-	else
-	{*/
 
 	midiChan = midi_MidiChannels[voiceNr];
 
@@ -371,14 +372,33 @@ void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note)
 		midiNote = note;
 	else
 		midiNote = midi_NoteOverride[voiceNr];
-	//}
 
 	//--AS if a note is on for that channel send note-off first
 	seq_midiNoteOff(midiChan);
 
+	//if trigger mode is set to gate, turn the trigger off before sending the next note on
+	if(voiceNr>=5)
+	{
+		//hihat channels choke each other
+		trigger_triggerVoice(5, TRIGGER_OFF);
+		trigger_triggerVoice(6, TRIGGER_OFF);
+	} else {
+		trigger_triggerVoice(voiceNr, TRIGGER_OFF);
+	}
+
+
 	//send the new note to midi/usb out
 	seq_sendMidiNoteOn(midiChan, midiNote,
 			seq_patternSet.seq_subStepPattern[seq_activePattern][voiceNr][seq_stepIndex[voiceNr]].volume&STEP_VOLUME_MASK);
+
+	if(trigger_isGateModeOn())
+	{
+		if(vol)
+			trigger_triggerVoice(voiceNr, TRIGGER_ON);
+	} else {
+		trigger_triggerVoice(voiceNr, TRIGGER_PULSE);
+	}
+
 
 }
 //------------------------------------------------------------------------------
@@ -397,7 +417,6 @@ static void seq_nextStep()
 	if(!seq_running)
 		return;
 
-	trigger_clockTick();
 	seq_masterStepCnt++;
 
 	//---- calc master step position. max value is 127. also take in regard the pattern length -----
@@ -498,7 +517,8 @@ static void seq_nextStep()
 		uart_sendFrontpanelByte(0);
 	}
 
-	//--------- Now its time to process the single tracks -------------------------
+	//--------- Time to process the single tracks -------------------------
+	trigger_clockTick(seq_stepIndex[0]+1);
 
 	int i;
 	for(i=0;i<NUM_TRACKS;i++)
@@ -512,8 +532,7 @@ static void seq_nextStep()
 		if(!seqlen)
 			seqlen=16;
 
-		if((seq_stepIndex[i] / 8) == seqlen //((seq_patternSet.seq_subStepPattern[seq_activePattern][i][seq_stepIndex[i]].note & PATTERN_END))
-				|| (seq_stepIndex[i] & 0x7f) == 0)
+		if((seq_stepIndex[i] / 8) == seqlen || (seq_stepIndex[i] & 0x7f) == 0)
 		{
 			//if end is reached reset track to step 0
 			seq_stepIndex[i] = 0;
@@ -620,6 +639,35 @@ void seq_armAutomationStep(uint8_t stepNr, uint8_t track,uint8_t isArmed)
 void seq_setDeltaT(float delta)
 {
 	seq_deltaT = delta;
+}
+//------------------------------------------------------------------------------
+void seq_setNextStep(uint8_t stepNr, uint8_t trackNr)
+{
+	seq_stepIndex[trackNr] = stepNr;
+}
+//------------------------------------------------------------------------------
+
+//master steps are used to keep the sync with the external clocks
+// spacing is defined by the prescaler value
+//with 32ppq every step is a master step
+//with 4ppq only every 8th step is a master step
+void seq_triggerNextMasterStep(uint8_t stepSize)
+{
+	int i;
+	//--AS todo fix this to use lengthrotate
+	for(i=0;i<NUM_TRACKS;i++)
+	{
+		seq_setNextStep(seq_lastMasterStep[i]>0?seq_lastMasterStep[i]-1:(seq_patternSet.patternLength[seq_activePattern][i]*8)-1, i);
+
+		seq_lastMasterStep[i] += stepSize;
+		if(seq_lastMasterStep[i] >= seq_patternSet.patternLength[seq_activePattern][i]*8)
+		{
+			seq_lastMasterStep[i] -= seq_patternSet.patternLength[seq_activePattern][i]*8;
+		}
+
+		//set time to next step to zero
+		seq_setDeltaT(-1);
+	}
 }
 //------------------------------------------------------------------------------
 void seq_resetDeltaAndTick()
@@ -785,6 +833,10 @@ void seq_setRunning(uint8_t isRunning)
 	{
 		seq_setStepIndexToStart();
 
+		//reset master sync steps
+		// --AS is this right? We need to figure out how this relates to rotate value now
+		memset(seq_lastMasterStep,0,NUM_TRACKS);
+
 		//reset song position bar counter
 		seq_lastShuffle = 0;
 		seq_barCounter = 0;
@@ -796,14 +848,16 @@ void seq_setRunning(uint8_t isRunning)
 		//--AS send notes off on all channels that have notes playing and reset our bitmap to reflect that
 		seq_midiNoteOff(0xFF);
 
-		trigger_reset(1);
+		trigger_reset(0);
+		trigger_allOff();
+
 
 		// --AS if mtc was doing it's thing, tell it to stop it.
 		midiParser_checkMtc();
 	} else {
 		seq_prescaleCounter = 0;
 		seq_sendRealtime(MIDI_START);
-		trigger_reset(0);
+		trigger_reset(1);
 	}
 }
 //------------------------------------------------------------------------------
@@ -1224,6 +1278,9 @@ void seq_clearTrack(uint8_t trackNr, uint8_t pattern)
 		}
 
 		seq_patternSet.seq_mainSteps[pattern][trackNr] = 0;
+
+		// --AS todo this was added in sp code, should we also reset our lenght/rot here?
+		//seq_patternSet.patternLength[pattern][trackNr] = 16
 	}
 }
 //------------------------------------------------------------------------------
@@ -1243,6 +1300,8 @@ void seq_clearPattern(uint8_t pattern)
 			}
 
 			seq_patternSet.seq_mainSteps[pattern][i] = 0;
+			// --AS todo this was added in sp, should we clear our len/rot here?
+			//seq_patternSet.patternLength[pattern][i] = 16;
 		}
 	}
 }
@@ -1285,6 +1344,10 @@ void seq_copyTrack(uint8_t srcNr, uint8_t dstNr, uint8_t pattern)
 	}
 
 	seq_patternSet.seq_mainSteps[pattern][dstNr] = seq_patternSet.seq_mainSteps[pattern][srcNr];
+	// --AS todo this was added in sp
+	//seq_patternSet.patternLength[pattern][dstNr] = seq_patternSet.patternLength[pattern][srcNr];
+
+
 }
 //------------------------------------------------------------------------------
 void seq_copyPattern(uint8_t src, uint8_t dst)
@@ -1307,6 +1370,9 @@ void seq_copyPattern(uint8_t src, uint8_t dst)
 		}
 
 		seq_patternSet.seq_mainSteps[dst][j] = seq_patternSet.seq_mainSteps[src][j];
+		// --AS todo this was added in sp
+		//seq_patternSet.patternLength[dst][j] = seq_patternSet.patternLength[src][j];
+
 	}
 }
 //------------------------------------------------------------------------------

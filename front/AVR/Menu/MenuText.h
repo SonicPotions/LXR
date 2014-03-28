@@ -23,6 +23,7 @@
 #define MENU_MIDI			11
 #define MENU_MIDI_ROUTING	12
 #define MENU_MIDI_FILTERING 13
+#define MENU_PPQ		 	14
 
 //-----------------------------------------------------------------
 // Shared texts. Reduce mem usage by pooling common text
@@ -35,7 +36,17 @@ const char menuText_fm[] PROGMEM = 	"fm ";
 const char menuText_dash[] PROGMEM ="---";
 const char menuText_blank[] PROGMEM="   ";
 const char menuText_any[] PROGMEM = "any";
+//-----------------------------------------------------------------
+const char ppqNames[][4] PROGMEM  =
+{
+	{5},		//number of entries
+	{"1"},
+	{"4"},
+	{"8"},
+	{"16"},
+	{"32"},
 
+};
 //-----------------------------------------------------------------
 const char midiModes[][4] PROGMEM  =
 {
@@ -296,6 +307,9 @@ const char shortNames[][4] PROGMEM  =
 	{"mrt"}, // midi routing
 	{"txf"}, // midi tx filter
 	{"rxf"},  // midi rx filter
+	{"cki"},  // trigger clock in ppq
+	{"co1"},  // trigger clock out1 ppq
+	{"co2"},  // trigger clock out2 ppq
 	{"pcr"}, // pattern change resets bar counter
 };
 //-----------------------------------------------------------------
@@ -330,6 +344,7 @@ const char catNames[][16] PROGMEM =
 	{"Sequencr"},
 	{"Generatr"},
 	{"MIDI"},
+	{"Trigger"},
 };
 //-----------------------------------------------------------------
 // these must correspond to longNamesEnum
@@ -401,6 +416,10 @@ const char longNames[][16] PROGMEM =
 	{"Routing"}, // midi routing
 	{"TxFilter"}, // midi tx filtering
 	{"RxFilter"}, // midi rx filtering
+	{"In PPQ"},
+	{"Out1 PPQ"},
+	{"Out2 PPQ"},
+	{"Gate Mode"},
 	{"PCReset" }, // reset bar counter on manual pattern change
 };
 
