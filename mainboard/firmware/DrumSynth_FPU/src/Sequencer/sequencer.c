@@ -161,7 +161,7 @@ static void seq_setStepIndexToStart();
 //------------------------------------------------------------------------------
 void seq_init()
 {
-	int i,j,k;
+	int i;
 
 	for(i=0;i<NUM_TRACKS;i++) {
 		autoNode_init(&seq_automationNodes[i][0]);
@@ -176,26 +176,9 @@ void seq_init()
 	{
 		seq_patternSet.seq_patternSettings[i].changeBar 	= 0;	//default setting: zero repeats (play once then change)
 		seq_patternSet.seq_patternSettings[i].nextPattern 	= i;	//default setting: repeat same pattern
-
-		for(j=0;j<NUM_TRACKS;j++)
-		{
-			for(k=0;k<128;k++)
-			{
-				seq_resetNote(&seq_patternSet.seq_subStepPattern[i][j][k]);
-
-				//every 1st step in a substep pattern active
-				if( (k%8) == 0)
-				{
-					seq_patternSet.seq_subStepPattern[i][j][k].volume		|= STEP_ACTIVE_MASK ;
-				}
-			}
-			//all 16 main steps off
-			seq_patternSet.seq_mainSteps[i][j] = 0;
-			//**PATROT all pattern rotations off and all patterns set to length 16
-			seq_patternSet.seq_patternLengthRotate[i][j].value=0;
-
-		}
+		seq_clearPattern(i); // will clear all tracks in the pattern
 	}
+
 }
 //------------------------------------------------------------------------------
 static void seq_activateTmpPattern()
@@ -359,8 +342,6 @@ void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note)
 
 	seq_parseAutomationNodes(voiceNr, &seq_patternSet.seq_subStepPattern[seq_activePattern][voiceNr][seq_stepIndex[voiceNr]]);
 
-	//--AS this line needs to not be called in the following fn when called from here
-	//trigger_triggerVoice(voiceNr);
 	voiceControl_noteOn(voiceNr, note, vol);
 
 
@@ -641,31 +622,39 @@ void seq_setDeltaT(float delta)
 	seq_deltaT = delta;
 }
 //------------------------------------------------------------------------------
-void seq_setNextStep(uint8_t stepNr, uint8_t trackNr)
-{
-	seq_stepIndex[trackNr] = stepNr;
-}
-//------------------------------------------------------------------------------
 
-//master steps are used to keep the sync with the external clocks
-// spacing is defined by the prescaler value
-//with 32ppq every step is a master step
-//with 4ppq only every 8th step is a master step
+/*This is called from IRQ handler when an external clock tick is received
+ * master steps are used to keep the sync with the external clocks
+ * spacing is defined by the prescaler value
+ * - with 32ppq every step is a master step
+ * - with 4ppq only every 8th step is a master step
+ * We set the next step index to a value - 1 because seq_nextStep() will
+ * increment the value itself
+ */
 void seq_triggerNextMasterStep(uint8_t stepSize)
 {
-	int i;
-	//--AS todo fix this to use lengthrotate
-	for(i=0;i<NUM_TRACKS;i++)
-	{
-		seq_setNextStep(seq_lastMasterStep[i]>0?seq_lastMasterStep[i]-1:(seq_patternSet.patternLength[seq_activePattern][i]*8)-1, i);
+	uint8_t i, sn, len;
+	for(i=0;i<NUM_TRACKS;i++) {
+		len = seq_patternSet.seq_patternLengthRotate[seq_activePattern][i].length;
+		if(!len) // length of 0 means length of 16 (since we are using 4 bits)
+			len=16;
+		len *= 8; // need length in steps
 
+		if(seq_lastMasterStep[i] == 0) // need to set it so next step will inc it to 0
+			sn=len-1; // set to last step before wrap around, effectively 0
+		else
+			sn=seq_lastMasterStep[i]-1; // adjust for seq_nextStep
+
+		// establish the next step for this track for the sequencer
+		seq_stepIndex[i] = sn;
+
+		// save the position where we will trigger on the next external clock tick.
+		// wrap around if we would exceed our track length
 		seq_lastMasterStep[i] += stepSize;
-		if(seq_lastMasterStep[i] >= seq_patternSet.patternLength[seq_activePattern][i]*8)
-		{
-			seq_lastMasterStep[i] -= seq_patternSet.patternLength[seq_activePattern][i]*8;
-		}
+		if(seq_lastMasterStep[i] >= len)
+			seq_lastMasterStep[i] -= len;
 
-		//set time to next step to zero
+		//set time to next step to zero, forcing the sequencer to process the next step now
 		seq_setDeltaT(-1);
 	}
 }
@@ -832,10 +821,6 @@ void seq_setRunning(uint8_t isRunning)
 	if(!seq_running)
 	{
 		seq_setStepIndexToStart();
-
-		//reset master sync steps
-		// --AS is this right? We need to figure out how this relates to rotate value now
-		memset(seq_lastMasterStep,0,NUM_TRACKS);
 
 		//reset song position bar counter
 		seq_lastShuffle = 0;
@@ -1273,38 +1258,24 @@ void seq_clearTrack(uint8_t trackNr, uint8_t pattern)
 
 		//every 1st step in a substep pattern active
 		if( (k%8) == 0)
-		{
-			seq_patternSet.seq_subStepPattern[pattern][trackNr][k].volume		|= STEP_ACTIVE_MASK ;
-		}
-
-		seq_patternSet.seq_mainSteps[pattern][trackNr] = 0;
-
-		// --AS todo this was added in sp code, should we also reset our lenght/rot here?
-		//seq_patternSet.patternLength[pattern][trackNr] = 16
+			seq_patternSet.seq_subStepPattern[pattern][trackNr][k].volume |= STEP_ACTIVE_MASK ;
 	}
+
+	// all main steps off for this track
+	seq_patternSet.seq_mainSteps[pattern][trackNr] = 0;
+
+	//**PATROT all pattern rotations off and all patterns set to length 16
+	seq_patternSet.seq_patternLengthRotate[pattern][trackNr].value=0;
+
 }
 //------------------------------------------------------------------------------
 void seq_clearPattern(uint8_t pattern)
 {
 	int k,i;
-	for(k=0;k<128;k++)
-	{
-		for(i=0;i<NUM_TRACKS;i++)
-		{
-			seq_resetNote(&seq_patternSet.seq_subStepPattern[pattern][i][k]);
-
-			//every 1st step in a substep pattern active
-			if( (k%8) == 0)
-			{
-				seq_patternSet.seq_subStepPattern[pattern][i][k].volume		|= STEP_ACTIVE_MASK ;
-			}
-
-			seq_patternSet.seq_mainSteps[pattern][i] = 0;
-			// --AS todo this was added in sp, should we clear our len/rot here?
-			//seq_patternSet.patternLength[pattern][i] = 16;
-		}
-	}
+	for(i=0;i<NUM_TRACKS;i++)
+		seq_clearTrack(i, pattern);
 }
+
 //------------------------------------------------------------------------------
 void seq_clearAutomation(uint8_t trackNr, uint8_t pattern, uint8_t automTrack)
 {
@@ -1328,6 +1299,8 @@ void seq_clearAutomation(uint8_t trackNr, uint8_t pattern, uint8_t automTrack)
 //------------------------------------------------------------------------------
 void seq_copyTrack(uint8_t srcNr, uint8_t dstNr, uint8_t pattern)
 {
+	// --AS todo this fn and the next are very similar. Add a new fn that takes src, dest track and src, dest pat
+	// and then have these two fn's call it instead.
 	int k;
 	Step *src, *dst;
 	for(k=0;k<128;k++)
@@ -1343,9 +1316,12 @@ void seq_copyTrack(uint8_t srcNr, uint8_t dstNr, uint8_t pattern)
 		dst->volume		= src->volume;
 	}
 
+	// copy which main steps are on/off
 	seq_patternSet.seq_mainSteps[pattern][dstNr] = seq_patternSet.seq_mainSteps[pattern][srcNr];
-	// --AS todo this was added in sp
-	//seq_patternSet.patternLength[pattern][dstNr] = seq_patternSet.patternLength[pattern][srcNr];
+
+	// --AS copy length and rotation offset from source track
+	seq_patternSet.seq_patternLengthRotate[pattern][dstNr].value =
+			seq_patternSet.seq_patternLengthRotate[pattern][srcNr].value;
 
 
 }
@@ -1370,8 +1346,10 @@ void seq_copyPattern(uint8_t src, uint8_t dst)
 		}
 
 		seq_patternSet.seq_mainSteps[dst][j] = seq_patternSet.seq_mainSteps[src][j];
-		// --AS todo this was added in sp
-		//seq_patternSet.patternLength[dst][j] = seq_patternSet.patternLength[src][j];
+
+		// --AS copy length and rotation offset from source pattern for the track
+		seq_patternSet.seq_patternLengthRotate[dst][j].value =
+					seq_patternSet.seq_patternLengthRotate[src][j].value;
 
 	}
 }
@@ -1479,6 +1457,8 @@ static void seq_sendProgChg(const uint8_t ptn)
 /* **PATROT set the step starting index to the position where the pattern rotation would have it start.
  *  A pattern rotation of 0 means start at the beginning of the pattern. max value is 15.
  *  Each value represents a main step interval (which contains 8 substeps)
+ *
+ *  This is called when the sequencer starts running, also when a pattern change takes place
  */
 static void seq_setStepIndexToStart()
 {
@@ -1490,8 +1470,13 @@ static void seq_setStepIndexToStart()
 		len=seq_patternSet.seq_patternLengthRotate[seq_activePattern][i].length;
 		if(len && (rot > len))
 			rot = rot % len;
+
+		// this is for external clock sync via trigger expansion kit (the ext tick will adjust this -1)
+		seq_lastMasterStep[i] = (8 * rot);
+
 		// -1 here because we increment it first thing when we start
 		seq_stepIndex[i] = ( 8 * rot) - 1;
+
 	}
 
 }
