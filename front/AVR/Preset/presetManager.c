@@ -437,7 +437,7 @@ void preset_queryPatternInfoFromSeq(uint8_t patternNr, uint8_t* next, uint8_t* r
 	*repeat =  frontParser_stepData.prob;
 }
 //----------------------------------------------------
-void preset_queryMainStepDataFromSeq(uint16_t stepNr, uint16_t *mainStepData)
+void preset_queryMainStepDataFromSeq(uint16_t stepNr, uint16_t *mainStepData, uint8_t *length)
 {
 	frontParser_newSeqDataAvailable = 0;
 
@@ -467,21 +467,21 @@ void preset_queryMainStepDataFromSeq(uint16_t stepNr, uint16_t *mainStepData)
 		}
 	}
 	
+	// we are reusing these members for purposes other than those that were originally intended
 	*mainStepData =(uint16_t) ((frontParser_stepData.volume<<8) | frontParser_stepData.prob);
+	*length=frontParser_stepData.note;
 };
 
 //----------------------------------------------------
 static void preset_writePatternData()
 {
 	uint16_t bytesWritten;
+	uint8_t length;
+
 
 	//write the preset data
 	//initiate the sysex mode
 	
-	// --AS TODO need to get track length data (and rotate data) and save them with the pattern
-	// try to do so in a way that breaks the least shit
-	// also need to make sure it reads it when opening a pattern
-
 	while( (frontParser_midiMsg.status != SYSEX_START))
 	{
 		frontPanel_sendByte(SYSEX_START);
@@ -530,8 +530,8 @@ static void preset_writePatternData()
 	uint16_t mainStepData;
 	for(i=0;i<(NUM_PATTERN*NUM_TRACKS);i++)
 	{
-		//get next data chunk and write it to file
-		preset_queryMainStepDataFromSeq(i, &mainStepData);
+		//get next data chunk and write it to file (length here is ignored)
+		preset_queryMainStepDataFromSeq(i, &mainStepData, &length);
 		f_write((FIL*)&preset_File,(const void*)&mainStepData,sizeof(uint16_t),&bytesWritten);	
 	}
 		
@@ -565,8 +565,32 @@ static void preset_writePatternData()
 	frontParser_midiMsg.status = 0;
 	
 	
-	//now we need to save the shuffle setting
+	//----- shuffle setting ------
 	f_write((FIL*)&preset_File,(const void*)&parameter_values[PAR_SHUFFLE],sizeof(uint8_t),&bytesWritten);
+
+	//----- pattern/track lengths ------
+	// --AS we reuse the same call from above (when saving main step data)
+	// but we only use the length info retrieved. We want to store it at the end
+	// to avoid breaking compatibility with save file
+	while( (frontParser_midiMsg.status != SYSEX_START))
+	{
+		frontPanel_sendByte(SYSEX_START);
+		uart_checkAndParse();
+	}
+	_delay_ms(50);
+	frontPanel_sendByte(SYSEX_REQUEST_MAIN_STEP_DATA);
+	frontPanel_sysexMode = SYSEX_REQUEST_MAIN_STEP_DATA;
+
+	for(i=0;i<(NUM_PATTERN*NUM_TRACKS);i++)
+	{
+		//get next data chunk and write it to file
+		preset_queryMainStepDataFromSeq(i, &mainStepData, &length);
+		f_write((FIL*)&preset_File,(const void*)&length,sizeof(uint8_t),&bytesWritten);
+	}
+
+	//end sysex mode
+	frontPanel_sendByte(SYSEX_END);
+	frontParser_midiMsg.status = 0;
 
 }
 
@@ -607,6 +631,9 @@ void preset_savePattern(uint8_t presetNr)
 // returns 1 on success
 static uint8_t preset_readPatternData()
 {
+	//--AS note that the pattern length data is no longer stored in the same way.
+	// This means that loading old patterns with non-standard length, the length will be
+	// ignored and a standard length used. I think it's acceptable as long as users are aware of this.
 #if USE_SD_CARD
 	UINT bytesRead;
 	uint8_t success=1; // start off succeeding
@@ -715,6 +742,7 @@ static uint8_t preset_readPatternData()
 		frontPanel_sendData(SEQ_CC,SEQ_SET_SHOWN_PATTERN,menu_shownPattern);
 	}
 
+	// ------------ shuffle settings
 	if(success) {
 		//load the shuffle settings
 		f_read((FIL*)&preset_File,(void*)&parameter_values[PAR_SHUFFLE],sizeof(uint8_t),&bytesRead);
@@ -724,6 +752,41 @@ static uint8_t preset_readPatternData()
 		else {
 			success=0;
 		}
+	}
+
+	// ----------- Pattern/track lengths
+	// -- AS this might not exist in the saved data file, we still want success
+	if(success) {
+		frontParser_midiMsg.status = 0;
+		while( (frontParser_midiMsg.status != SYSEX_START))
+		{
+			frontPanel_sendByte(SYSEX_START);
+			uart_checkAndParse();
+		}
+		_delay_ms(50);
+		frontPanel_sendByte(SYSEX_SEND_PAT_LEN_DATA);
+		frontPanel_sysexMode = SYSEX_SEND_PAT_LEN_DATA;
+
+		for(i=0;i<(NUM_PATTERN*NUM_TRACKS);i++)
+		{
+			if(success)
+				f_read((FIL*)&preset_File,(void*)&next,sizeof(uint8_t),&bytesRead);
+			if( bytesRead==0) {
+				next=0; // default to a length of 16 since we didn't read anything
+				success=0;
+			}
+			frontPanel_sendByte(next);
+			//we have to give the cortex some time to cope with all the incoming data
+			//since it is mainly calculating audio it takes a while to process all
+			//incoming uart data
+			//if((i&0x1f) == 0x1f) //every 32 steps
+			_delay_us(200); //todo speed up using ACK possible?
+		}
+
+		//end sysex mode
+		frontPanel_sendByte(SYSEX_END);
+
+		success=1; // just to document that we don't consider this a failure, we just didn't read the bytes for this
 	}
 
 	return success;

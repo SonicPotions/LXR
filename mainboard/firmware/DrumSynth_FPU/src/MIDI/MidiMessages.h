@@ -498,5 +498,6 @@ enum
 #define SYSEX_REQUEST_MAIN_STEP_DATA	0x03
 #define SYSEX_RECEIVE_MAIN_STEP_DATA	0x04
 #define SYSEX_REQUEST_PATTERN_DATA		0x05
+#define SYSEX_RECEIVE_PAT_LEN_DATA		0x06
 #define SYSEX_ACTIVE_MODE_NONE			0x7f	/**< a placeholder message indicating that sysex is active but no mode is selected yet*/
 #endif /* MIDIMESSAGES_H_ */

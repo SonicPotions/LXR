@@ -119,6 +119,7 @@ typedef struct TempPatternStruct
 	Step seq_subStepPattern[NUM_TRACKS][NUM_STEPS];
 	uint16_t seq_mainSteps[NUM_TRACKS];
 	PatternSetting seq_patternSettings;
+	LengthRotate seq_patternLengthRotate[NUM_TRACKS]; // only used for length
 }TempPattern;
 
 extern uint8_t seq_activePattern;

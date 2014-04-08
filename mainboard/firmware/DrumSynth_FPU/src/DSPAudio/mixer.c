@@ -42,6 +42,7 @@
 #include "HiHat.h"
 #include "BufferTools.h"
 #include "squareRootLut.h"
+#include "../Hardware/TriggerOut.h"
 //-----------------------------------------------------------------------
 uint8_t mixer_audioRouting[6];
 //-----------------------------------------------------------------------

@@ -186,9 +186,7 @@ static void seq_activateTmpPattern()
 	memcpy(&seq_patternSet.seq_subStepPattern[seq_activePattern],&seq_tmpPattern.seq_subStepPattern,sizeof(Step)*NUM_TRACKS*NUM_STEPS);
 	memcpy(&seq_patternSet.seq_mainSteps[seq_activePattern],&seq_tmpPattern.seq_mainSteps,sizeof(uint16_t)*NUM_TRACKS);
 	memcpy(&seq_patternSet.seq_patternSettings[seq_activePattern],&seq_tmpPattern.seq_patternSettings,sizeof(PatternSetting));
-
-	// --AS TODO once we save pattern length, it needs to be added to tmp pattern so that we get it when it's loaded,
-	// and needs to be transferred to active pattern here
+	memcpy(&seq_patternSet.seq_patternLengthRotate[seq_activePattern],&seq_tmpPattern.seq_patternLengthRotate,sizeof(LengthRotate)*NUM_TRACKS);
 }
 //------------------------------------------------------------------------------
 void seq_setShuffle(float shuffle)
@@ -897,6 +895,9 @@ uint8_t seq_isTrackMuted(uint8_t trackNr)
 	return 0;
 }
 //------------------------------------------------------------------------------
+// given a pattern and a track:
+// this sends the main step info (which main steps are on/off) in addition
+// to the length of the track
 void seq_sendMainStepInfoToFront(uint16_t stepNr)
 {
 	//the absolute number of patterns
@@ -908,6 +909,10 @@ void seq_sendMainStepInfoToFront(uint16_t stepNr)
 	uart_sendFrontpanelSysExByte(  dataToSend	  & 0x7f); //1st 7 bit
 	uart_sendFrontpanelSysExByte( (dataToSend>>7) & 0x7f); //2nd 7 bit
 	uart_sendFrontpanelSysExByte( (dataToSend>>14)& 0x7f); //last 2 bit
+
+	// send the track length
+	uart_sendFrontpanelSysExByte( seq_patternSet.seq_patternLengthRotate[currentPattern][currentTrack].length);
+
 }
 //--------------------------------------------------------------------
 /** this one is more complicated than the 14 bit upper/lower nibble when transmitting the requested step number via SysEx.
@@ -1271,7 +1276,7 @@ void seq_clearTrack(uint8_t trackNr, uint8_t pattern)
 //------------------------------------------------------------------------------
 void seq_clearPattern(uint8_t pattern)
 {
-	int k,i;
+	int i;
 	for(i=0;i<NUM_TRACKS;i++)
 		seq_clearTrack(i, pattern);
 }

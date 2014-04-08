@@ -261,11 +261,41 @@ static void frontParser_handleSysexData(unsigned char data)
 			frontParser_rxCnt = 0;
 
 			//signal new pattern
-			if( seq_isRunning()) {
+			// -- AS we do this below after receiving pattern length data
+			//if( seq_isRunning()) {
+			//	seq_newPatternAvailable = 1;
+			//}
+		}
+		break;
+	case SYSEX_RECEIVE_PAT_LEN_DATA:
+		// --AS same as above but we are receiving length data for each pattern
+		{
+			//calculate the step pattern and track indices
+			const uint8_t currentPattern	= frontParser_sysexSeqStepNr / 7;
+			const uint8_t currentTrack  	= frontParser_sysexSeqStepNr - currentPattern*7;
+
+			//first load into inactive track
+			PatternSet* patternSet = &seq_patternSet;
+
+			if( (currentPattern == seq_activePattern) && seq_isRunning() )
+			{
+				seq_tmpPattern.seq_patternLengthRotate[currentTrack].length = data;
+			} else {
+				patternSet->seq_patternLengthRotate[currentPattern][currentTrack].length = data;
+			}
+
+
+			//inc the step counter
+			frontParser_sysexSeqStepNr++;
+			frontParser_rxCnt = 0;
+
+			// signal new pattern after receiving all the data
+			if( seq_isRunning() && (frontParser_sysexSeqStepNr == NUM_TRACKS*NUM_PATTERN)) {
 				seq_newPatternAvailable = 1;
 			}
 		}
 		break;
+
 
 	case SYSEX_RECEIVE_STEP_DATA:
 		// we expect a bunch of 8 byte sysex message containing new step data for the sequencer

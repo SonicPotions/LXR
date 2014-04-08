@@ -144,6 +144,7 @@ extern uint8_t frontPanel_sysexMode;
 #define SYSEX_REQUEST_MAIN_STEP_DATA	0x03
 #define SYSEX_SEND_MAIN_STEP_DATA		0x04
 #define SYSEX_REQUEST_PATTERN_DATA		0x05
+#define SYSEX_SEND_PAT_LEN_DATA			0x06
 
 
 /** a struct defining a standard midi message*/
