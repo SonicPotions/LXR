@@ -237,10 +237,12 @@ bugs:
 
 
 merging with sonic potions master on 3/25/14:
-- did not take the changes in save/load pattern where it populates the length data into the pattern. need to still
-  work on saving this length data (in my format) along with rotate data, and maintain backward compat with pattern data
+- did not take the changes in save/load pattern where it populates the length data into the pattern. 
 - did not take changes in buttonHandler.c for adding select mode menu - I already handle this in the global menu
 - master step position (for external trigger sync) was fixed to take track rotation into account
+- now saves length with pattern data, at end of pattern data
+- old length data from old presets will be ignored if it differs from standard length
+- still need to fix rotate so the rotation resets when sequencer is stopped.
 git difftool 6a025a46b20ed767c5d69b20805c201d405f6973 978519d31fcfb43168df41d0b184cc27dae987bf
 This is the diff between his head and his last merge with mine
 
