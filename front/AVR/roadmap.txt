@@ -242,7 +242,7 @@ merging with sonic potions master on 3/25/14:
 - master step position (for external trigger sync) was fixed to take track rotation into account
 - now saves length with pattern data, at end of pattern data
 - old length data from old presets will be ignored if it differs from standard length
-- still need to fix rotate so the rotation resets when sequencer is stopped.
+- fixed rotate so the rotation resets when sequencer is stopped.
 git difftool 6a025a46b20ed767c5d69b20805c201d405f6973 978519d31fcfb43168df41d0b184cc27dae987bf
 This is the diff between his head and his last merge with mine
 

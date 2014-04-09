@@ -818,6 +818,15 @@ void seq_setRunning(uint8_t isRunning)
 	//jump to 1st step if sequencer is stopped
 	if(!seq_running)
 	{
+
+		// --AS reset all track rotations to 0. The reason for this is because I don't want
+		// the user to get confused when they go to program steps and they don't line up with the reality
+		// due to a track rotation being in effect. we are not saving rotated value. it's a performance tool.
+		uint8_t i;
+		for(i=0;i<NUM_TRACKS;i++)
+			seq_patternSet.seq_patternLengthRotate[seq_activePattern][i].rotate=0;
+
+		// set start points back to default
 		seq_setStepIndexToStart();
 
 		//reset song position bar counter
