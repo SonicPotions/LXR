@@ -234,9 +234,10 @@ check repainting of load save page thoroughly
 bugs:
 - need to update led's during erase mode
 - while erasing realtime, a note will play (not the note being recorded, just the same note for each step that is erased)
+  (I think this is fixed now)
 
 
-merging with sonic potions master on 3/25/14:
+=== merging with sonic potions master on 3/25/14:
 - did not take the changes in save/load pattern where it populates the length data into the pattern. 
 - did not take changes in buttonHandler.c for adding select mode menu - I already handle this in the global menu
 - master step position (for external trigger sync) was fixed to take track rotation into account
@@ -246,3 +247,13 @@ merging with sonic potions master on 3/25/14:
 git difftool 6a025a46b20ed767c5d69b20805c201d405f6973 978519d31fcfb43168df41d0b184cc27dae987bf
 This is the diff between his head and his last merge with mine
 
+QA
+- Check the menus under global: trigger in ppq, trigger out1 ppq, trigger out2 ppq, trigger gate mode, bar reset mode.
+  Make sure these are all saved and loaded with global settings also
+- All new trigger stuff needs to be checked when I have the trigger working
+- Make sure that copy pattern and copy track copy pattern length and rotate value
+- clear track/pattern should reset length and rotate
+- save/load pattern/performance/all should save/load the length info for each track in each pattern
+- load old pattern/perf/all should default all lengths to 16
+- load pattern while pattern is running should properly bring the new pattern in with the proper length info
+- rotate value should reset when sequencer stops
