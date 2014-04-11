@@ -257,3 +257,11 @@ QA
 - load old pattern/perf/all should default all lengths to 16
 - load pattern while pattern is running should properly bring the new pattern in with the proper length info
 - rotate value should reset when sequencer stops
+
+bugs:
+- When stopping sequencer it resets the rotate value to 0, but doesn't send this to the front so the panel still reflects
+  the rotated value
+- When stopped and a rotate setting is entered, this is ignored when the sequencer starts
+- Rotate value seems to be negative. That is to say when I set it to 2, instead of starting on the second step it starts
+  on the 16th
+  
