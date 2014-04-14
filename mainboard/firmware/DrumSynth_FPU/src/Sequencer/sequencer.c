@@ -819,15 +819,15 @@ void seq_setRunning(uint8_t isRunning)
 	if(!seq_running)
 	{
 
-		// --AS reset all track rotations to 0. The reason for this is because I don't want
-		// the user to get confused when they go to program steps and they don't line up with the reality
-		// due to a track rotation being in effect. we are not saving rotated value. it's a performance tool.
+		// --AS reset all track rotations to 0. We are not saving rotated value. it's a performance tool.
 		uint8_t i;
-		for(i=0;i<NUM_TRACKS;i++)
+		for(i=0;i<NUM_TRACKS;i++) {
 			seq_patternSet.seq_patternLengthRotate[seq_activePattern][i].rotate=0;
-
-		// set start points back to default
-		seq_setStepIndexToStart();
+			// let the front know this is happening
+			uart_sendFrontpanelByte(FRONT_SEQ_CC);
+			uart_sendFrontpanelByte(FRONT_SEQ_TRACK_ROTATION);
+			uart_sendFrontpanelByte(seq_getTrackRotation(i));
+		}
 
 		//reset song position bar counter
 		seq_lastShuffle = 0;
@@ -851,6 +851,11 @@ void seq_setRunning(uint8_t isRunning)
 		seq_sendRealtime(MIDI_START);
 		trigger_reset(1);
 	}
+
+	// set start points back to default (happens on start and stop. needs to happen on start
+	// in case the user has entered a rotate value while stopped)
+	seq_setStepIndexToStart();
+
 }
 //------------------------------------------------------------------------------
 static uint8_t seq_intIsStepActive(uint8_t voice, uint8_t stepNr, uint8_t patternNr)
@@ -1472,7 +1477,7 @@ static void seq_sendProgChg(const uint8_t ptn)
  *  A pattern rotation of 0 means start at the beginning of the pattern. max value is 15.
  *  Each value represents a main step interval (which contains 8 substeps)
  *
- *  This is called when the sequencer starts running, also when a pattern change takes place
+ *  This is called when the sequencer starts/stops running, also when a pattern change takes place
  */
 static void seq_setStepIndexToStart()
 {
