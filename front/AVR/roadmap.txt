@@ -258,10 +258,6 @@ QA
 - load pattern while pattern is running should properly bring the new pattern in with the proper length info
 - rotate value should reset when sequencer stops
 
-bugs:
-- When stopping sequencer it resets the rotate value to 0, but doesn't send this to the front so the panel still reflects
-  the rotated value (think its fixed)
-- When stopped and a rotate setting is entered, this is ignored when the sequencer starts (this might affect length as well
-  might need to move seq_setStepIndexToStart out of the if block in seq_setRunning) (think its fixed)
+
 
   
