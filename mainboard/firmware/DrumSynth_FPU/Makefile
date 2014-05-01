@@ -99,14 +99,17 @@ INCLUDES += -I"./src/Hardware/USB"
 INCLUDES += -I"./src/MIDI"
 INCLUDES += -I"./src/Sequencer" 
 
+ARCHFLAGS = -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16
+
 CFLAGS += $(DEFINES) $(INCLUDES)
-CFLAGS += -O$(OPTIMIZE) -ffunction-sections -fdata-sections -ffast-math -freciprocal-math -fsingle-precision-constant -fmessage-length=0 -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16
+CFLAGS += $(ARCHFLAGS)
+CFLAGS += -O$(OPTIMIZE) -ffunction-sections -fdata-sections -ffast-math -freciprocal-math -fsingle-precision-constant -fmessage-length=0
 CFLAGS += -Wall -Wextra -c 
 CFLAGS += -Wl,--gc-sections
 CXXFLAGS += $(CFLAGS) -fno-rtti -fno-exceptions
 
-ASFLAGS += -ahls -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16
-LDFLAGS += -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -gc-sections --specs=nano.specs
+ASFLAGS += -ahls $(ARCHFLAGS)
+LDFLAGS += $(ARCHFLAGS) -Wl,--gc-sections --specs=nano.specs
 LDFLAGS += -T./stm32_flash.ld
 
 ###############################################################################

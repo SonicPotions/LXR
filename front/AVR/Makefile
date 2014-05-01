@@ -83,7 +83,7 @@ CFLAGS += $(DEFINES) $(INCLUDES)
 CFLAGS += -O$(OPTIMIZE)
 CFLAGS += -Wall -Wextra -Wconversion -c -funsigned-char -funsigned-bitfields -ffast-math -freciprocal-math -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -Wall
 CFLAGS += -mmcu=atmega644 -std=gnu99 -MD -MP
-LDFLAGS += -Wl,-Map=$(MAP) -Wl,--start-group -Wl,-lm  -Wl,--end-group -gc-sections -mmcu=atmega644
+LDFLAGS += -Wl,-Map=$(MAP) -Wl,--start-group -Wl,-lm  -Wl,--end-group -Wl,-gc-sections -mmcu=atmega644
 
 ###############################################################################
 # TARGETS
