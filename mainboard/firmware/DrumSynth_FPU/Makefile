@@ -1,8 +1,19 @@
-# Makefile for LXR ARM firmware
+###############################################################################
 #
+# Makefile for LXR Cortex firmware
+# Author: Patrick Dowling
+#
+# Requires either
+# * arm compiler (arm-none-eabi-gcc et al) in path, or
+# * ARM_TOOLKIT_ROOT set to installation directory
+#
+###############################################################################
 
 ###############################################################################
 # OPTIONS
+
+FIRMWARE?=DrumSynthCortex.bin
+
 ifeq ($(DEBUG),1)
 DEFINES += -DDEBUG
 else
@@ -11,31 +22,38 @@ endif
 
 ifndef OPTIMIZE
 OPTIMIZE=3
+OPTIMIZE=fast
 endif
 
 # if VERBOSE is defined, spam output
 ifdef VERBOSE
 AT :=
 ECHO := @true
+LDFLAGS += -v
 else
 AT := @
 ECHO := @echo
 endif
 
-CC  = arm-none-eabi-gcc
-CXX = arm-none-eabi-c++
-LD  = arm-none-eabi-ld -v
-CP  = arm-none-eabi-objcopy
-OD  = arm-none-eabi-objdump
-AS  = arm-none-eabi-as
+ifneq (($ARM_TOOLKIT_ROOT),"")
+BINPATH=$(ARM_TOOLKIT_ROOT)/bin/
+else
+BINPATH=""
+endif
+
+CC  =$(addprefix $(BINPATH),arm-none-eabi-gcc)
+CXX =$(addprefix $(BINPATH),arm-none-eabi-c++)
+LD  =$(addprefix $(BINPATH),arm-none-eabi-ld)
+CP  =$(addprefix $(BINPATH),arm-none-eabi-objcopy)
+OD  =$(addprefix $(BINPATH),arm-none-eabi-objdump)
+AS  =$(addprefix $(BINPATH),arm-none-eabi-as)
 
 ###############################################################################
 # SOURCE FILES
 SRCDIR=.
-
-CCSRCFILES  = $(shell find . -type f -name *.c)
-CXXSRCFILES = $(shell find . -type f -name *.cpp)
-ASSRCFILES  = $(shell find . -type f -name *.S)
+CCSRCFILES  = $(shell find $(SRCDIR) -type f -name "*.c")
+CXXSRCFILES = $(shell find $(SRCDIR) -type f -name "*.cpp")
+ASSRCFILES  = $(shell find $(SRCDIR) -type f -name "*.S")
 
 vpath %.c ./Libraries/STM32_USB_Device_Library/Core/src
 vpath %.c ./Libraries/STM32_USB_OTG_Driver/src
@@ -53,8 +71,6 @@ vpath %.c ./src/Sequencer
 
 ###############################################################################
 # SETUP
-
-FIRMWARE=DrumSynth_FPU
 
 # Build object files from source...
 OBJDIR=./build/
@@ -103,13 +119,28 @@ all:
 .PHONY: clean
 clean:
 	@$(RM) $(FIRMWARE)
-	@$(RM) $(OBJDIR)/*.o
+	@$(RM) $(OBJDIR)*.o
+
+.PHONY: printenv
+printenv:
+	@echo "AVR_TOOLKIT_ROOT='$(AVR_TOOLKIT_ROOT)'"
+	@echo "CC  = $(CC)"
+	@echo "CXX = $(CXX)"
+	@echo "AS  = $(AS)"
 
 .PHONY: printfiles
 printfiles:
+	@echo "** C FILES **"
 	@echo "$(CCSRCFILES)"
+	@echo ""
+
+	@echo "** CXX FILES **"
 	@echo "$(CXXSRCFILES)"
+	@echo ""
+
+	@echo "** S FILES **"
 	@echo "$(ASSRCFILES)"
+	@echo ""
 
 .PHONY: lxr
 lxr: $(FIRMWARE)
@@ -122,8 +153,9 @@ $(OBJFILES) : | $(OBJDIR)
 
 ###############################################################################
 # BUILD RULES
+
 $(OBJDIR):
-	mkdir -p $(OBJDIR)
+	@mkdir -p $(OBJDIR)
 
 $(OBJDIR)%.o: %.c
 	$(ECHO) "Compiling $<..."
