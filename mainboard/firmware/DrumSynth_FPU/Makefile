@@ -12,7 +12,7 @@
 ###############################################################################
 # OPTIONS
 
-FIRMWARE?=DrumSynthCortex.bin
+BINARY?=DrumSynthCortex.bin
 
 ifeq ($(DEBUG),1)
 DEFINES += -DDEBUG
@@ -72,8 +72,11 @@ vpath %.c ./src/Sequencer
 ###############################################################################
 # SETUP
 
-# Build object files from source...
 OBJDIR=./build/
+
+ELF=$(OBJDIR)/DrumSynth_FPU.elf
+
+# Build object files from source...
 OBJFILES = $(addprefix $(OBJDIR),$(notdir $(CCSRCFILES:.c=.o)))
 OBJFILES+= $(addprefix $(OBJDIR),$(notdir $(CXXSRCFILES:.cpp=.o)))
 OBJFILES+= $(addprefix $(OBJDIR),$(notdir $(ASSRCFILES:.S=.o)))
@@ -107,18 +110,17 @@ LDFLAGS += -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -gc-sectio
 LDFLAGS += -T./stm32_flash.ld
 
 ###############################################################################
-# Targets
+# TARGETS
 
+.PHONY: all
 all:
 	@echo "Valid targets are"
 	@echo " clean : clean build directory"
 	@echo " lxr   : build LXR cortex firmware"
 
-
-# Clean up temporary files
 .PHONY: clean
 clean:
-	@$(RM) $(FIRMWARE)
+	@$(RM) $(BINARY)
 	@$(RM) $(OBJDIR)*.o
 
 .PHONY: printenv
@@ -142,12 +144,16 @@ printfiles:
 	@echo "$(ASSRCFILES)"
 	@echo ""
 
-.PHONY: lxr
-lxr: $(FIRMWARE)
+.PHONY: cortex
+cortex: $(BINARY)
 
-$(FIRMWARE): $(OBJFILES)
+$(ELF): $(OBJFILES)
 	$(ECHO) "Linking $@..."
 	$(AT)$(CXX) $(LDFLAGS) $^ -o $@
+
+$(BINARY): $(ELF)
+	$(ECHO) "Creating binary $@..."
+	$(AT)$(CP) -O binary $(ELF) $(BINARY)
 
 $(OBJFILES) : | $(OBJDIR)
 

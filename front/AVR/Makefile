@@ -12,8 +12,8 @@
 ###############################################################################
 # OPTIONS
 
-FIRMWARE ?= DrumSynthFront.bin
-MAP ?= $(addprefix $(dir $(FIRMWARE)), DrumSynthFront.map)
+BINARY ?= DrumSynthFront.bin
+MAP ?= $(addprefix $(dir $(BINARY)), DrumSynthFront.map)
 
 ifeq ($(DEBUG),1)
 DEFINES += -DDEBUG
@@ -62,10 +62,11 @@ vpath %.c ./Preset
 ###############################################################################
 # SETUP
 
+OBJDIR=./build/
+
 ELF=$(OBJDIR)AVR.elf
 
 # Build object files from source...
-OBJDIR=./build/
 OBJFILES = $(addprefix $(OBJDIR),$(notdir $(CCSRCFILES:.c=.o)))
 
 # Project defines
@@ -82,12 +83,13 @@ CFLAGS += $(DEFINES) $(INCLUDES)
 CFLAGS += -O$(OPTIMIZE)
 CFLAGS += -Wall -Wextra -Wconversion -c -funsigned-char -funsigned-bitfields -ffast-math -freciprocal-math -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -Wall
 CFLAGS += -mmcu=atmega644 -std=gnu99 -MD -MP
-LDFLAGS += -Wl,-Map=$(MAP) -Wl,--start-group -Wl,-lm  -Wl,--end-group -Wl,--gc-sections -mmcu=atmega644
+LDFLAGS += -Wl,-Map=$(MAP) -Wl,--start-group -Wl,-lm  -Wl,--end-group -gc-sections -mmcu=atmega644
 
 ###############################################################################
-# Targets
+# TARGETS
 
 # Require explicit target
+.PHONY: all
 all:
 	@echo "Valid targets are"
 	@echo " avr : build AVR firmware"
@@ -95,10 +97,9 @@ all:
 	@echo " printenv : print some debug variables"
 	@echo " printfiles : print list of files that would be compiled"
 
-# Clean up temporary files
 .PHONY: clean
 clean:
-	@$(RM) $(FIRMWARE)
+	@$(RM) $(BINARY)
 	@$(RM) $(ELF)
 	@$(RM) $(OBJDIR)/*.o
 
@@ -124,14 +125,14 @@ printfiles:
 	@echo ""
 
 .PHONY: avr
-avr: $(FIRMWARE)
+avr: $(BINARY)
 
 $(ELF): $(OBJFILES)
 	$(ECHO) "Linking $@..."
 	$(AT)$(CC) $(LDFLAGS) $^ -o $@
 
-$(FIRMWARE): $(ELF)
-	$(ECHO) "Creating $@..."
+$(BINARY): $(ELF)
+	$(ECHO) "Creating binary $@..."
 	$(AT)$(CP) -O binary -R .eeprom -R .fuse -R .lock -R .signature $^ $@
 
 $(OBJFILES) : | $(OBJDIR)
