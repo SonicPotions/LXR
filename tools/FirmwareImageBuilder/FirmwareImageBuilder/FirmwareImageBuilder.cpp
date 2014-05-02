@@ -1,6 +1,7 @@
 // FirmwareImageBuilder.cpp : Defines the entry point for the console application.
 //
 
+#include <cstring>
 #include <iostream>
 #include <fstream>
 #include <math.h>
