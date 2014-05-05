@@ -35,7 +35,7 @@ AT := @
 ECHO := @echo
 endif
 
-ifneq (($AVR_TOOLKIT_ROOT),"")
+ifdef AVR_TOOLKIT_ROOT
 BINPATH=$(AVR_TOOLKIT_ROOT)/bin/
 else
 BINPATH=""
