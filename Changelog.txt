@@ -1,3 +1,26 @@
+Firmware v0.33
+---------------------------
+- change in pattern data structure. Pattern lenghts of old patterns is ignored on load. you have to re-set them and re-save the pattern to store it in the new format (once)
+- LFO target fix (thanks rudeog)
+- fixed include path names in source (all '\' are now '/', propper upper and lower cases used)
+- fixed modulation target osc 3 waveform in HH voice
+- fixed mod target for LFO amounts and waveforms
+- added makefiles from Patrick Dowling
+
+- Merged in the latest changes from rudeogs repository:
+  - Merge TB323's repository which includes a "rot" parameter in the pattern generator allowing you to apply a rotation while generating a pattern.
+  - Remove untargetable modulation destinations from menus (LFO mod target, and LFO voice can't themselves be modulated as it doesn't make sense to do so)
+  - Pattern Rotation - When in performance mode, if you hold shift button and select one of the sequence step buttons you can rotate the pattern for the active voice by a number of steps relative to the other voices.
+  - Save/Load performance - this new save option lets you save the current drum patch along with the pattern set and the BPM into one file allowing multiple slots.
+  - Save/Load all - this new save option lets you save all the data in the LXR (kit, pattern, settings) into one file allowing multiple slots.
+  - Better handling of startup not finding the default drum kit. Will display an error and continue with a patch that needs editing before it will work.
+  - Realtime erase - This is useful, I've found, when recording sequences on a keyboard that are multiple bars (measures) in length. Hold down shift and copy(clear) button. While these are held, the notes on the active voice are erased. You must be in record mode, and the sequencer must be playing. So you could erase a few bad notes as you listen to your sequence, or erase multiple bars as they switch without having to mess around with selecting patterns.
+  - Recording quantization enhancement - When recording a sequence that spans multiple bars, if you are quantizing, and you hit a note right before the next bar starts (such that the note should quantize to the next bar's first step) it will now do so.
+  - Global menu can now hold more than 8 items and will scroll to page 3 (and beyond) when toggling pages or moving encoder right
+  - Pattern change reset mode. This is a new global setting that, when turned on, will cause song counter to start from 0 whenever a pattern changes. This prevents the behavior of not playing the displayed number of repetitions for a pattern (when in certain song positions. see the LXR manual). 
+  - Global midi channel setting. Affects recording notes from external gear, program change, and control change messages.
+  - Active voice control and recording. When a voice is active and notes are received on the global midi channel, they will be sent to the active voice, possibly recorded on the active voice, and echoed on the active voice's configured channel (all of this regardless of what channel the active voice is set to)
+
 Firmware v0.32
 ---------------------------
 - fixed LFO sync in MIDI slave mode
