@@ -1,0 +1,52 @@
+This file gives a short overview of the required compiler packages to build the LXR sourcecode on linux with the included makefiles. You will need the ARM GCC compiler and the AVR GCC compiler as well as the AVR libc.
+
+
+ 
+GNU Tools for ARM Embedded Processors 
+-------------------------------------
+https://launchpad.net/gcc-arm-embedded
+
+
+For Ubuntu 10.04/12.04/13.04 32/64-bit user, PPA is available at https://launchpad.net/~terry.guo/+archive/gcc-arm-embedded.
+
+otherwise you can download the 32bit binaries here
+https://launchpad.net/gcc-arm-embedded/4.8/4.8-2014-q1-update/+download/gcc-arm-none-eabi-4_8-2014q1-20140314-linux.tar.bz2
+
+
+--- Installing the ARM GCC binaries ----
+
+download the binary package:
+wget https://launchpad.net/gcc-arm-embedded/4.8/4.8-2014-q1-update/+download/gcc-arm-none-eabi-4_8-2014q1-20140314-linux.tar.bz2
+
+extract it:
+tar xvjf gcc-arm-none-eabi-4_8-2014q1-20140314-linux.tar.bz2 
+
+move it to /opt/ARM:
+sudo mv gcc-arm-none-eabi-4_8-2014q1 /opt/ARM
+
+include it permanently in your PATH variable
+echo "PATH=$PATH:/opt/ARM/bin" >> ~/.bashrc
+
+IMPORTANT!
+for x64 systems you have to install the 32-bit version of libc6 or you will get an 'arm-none-eabi-gcc: not found' error:
+sudo apt-get install libc6-dev-i386
+
+
+
+AVR GCC
+--------------------------------------
+sudo apt-get install gcc-avr avr-libc
+
+
+Now you should be ready to go.
+to build the firmware, go to the LXR folder containing this file and type:
+make firmware
+
+you should now find a new FIRMWARE.BIN file in the 'firmware image' subfolder
+
+
+Thanks a lot to Patrick Dowling and Andrew Shakinovsky for their code contributions!
+
+
+
+
