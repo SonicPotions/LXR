@@ -375,8 +375,6 @@ enum
 	CC2_MIDI_NOTE6,
 	CC2_MIDI_NOTE7, // s/b 111 i think
 
-
-
 	//Mute Button NRPN messages
 	CC2_MUTE_1 = 200,
 	CC2_MUTE_2,
@@ -420,7 +418,8 @@ enum
 #define FRONT_LED_PULSE_BEAT			0x04	/**< pulse the beat indicator LED*/
 #define FRONT_LED_SEQ_SUB_STEP			0x05
 
-#define VOICE_MIDI_CHAN					0x02
+//--AS appears unused
+//#define VOICE_MIDI_CHAN					0x02
 
 //Sequencer commands
 #define FRONT_SEQ_RUN_STOP				0x01
@@ -462,17 +461,20 @@ enum
 #define FRONT_SEQ_POSY					0x2a
 #define FRONT_SEQ_FLUX					0x2b
 #define FRONT_SEQ_SOM_FREQ				0x2c
-#define FRONT_SEQ_MIDI_CHAN				0x2d	//voiceNr (0xf0) + channel (0x0f)
+#define FRONT_SEQ_MIDI_CHAN				0x2d	//voiceNr (0xf0) + channel (0x0f). --AS voice 7=global channel
 #define FRONT_SEQ_MIDI_MODE				0x2e //--AS not used anymore
 #define FRONT_SEQ_MIDI_ROUTING			0x2f	// midi routing
 #define FRONT_SEQ_MIDI_TX_FILTER		0x30    // tx filtering
 #define FRONT_SEQ_MIDI_RX_FILTER		0x31    // rx filtering
-#define FRONT_SEQ_TRIGGER_IN_PPQ		0x32
-#define FRONT_SEQ_TRIGGER_OUT1_PPQ 		0x33
-#define FRONT_SEQ_TRIGGER_OUT2_PPQ 		0x34
-#define FRONT_SEQ_SET_LENGTH_FLAGS 		0x35
-#define FRONT_SEQ_READ_LENGTH_FLAGS 	0x36
-#define FRONT_SEQ_TRIGGER_GATE_MODE 	0x37
+#define FRONT_SEQ_BAR_RESET_MODE		0x32	// --AS reset bar on manual pattern change (0 is default - to not reset)
+#define FRONT_SEQ_ERASE_ON_OFF			0x33    // --AS turn erase mode on/off
+#define FRONT_SEQ_TRACK_ROTATION		0x34	// --AS rotate a track's start position 0 to 15
+#define FRONT_SEQ_EUKLID_ROTATION		0x35
+
+#define FRONT_SEQ_TRIGGER_IN_PPQ		0x36
+#define FRONT_SEQ_TRIGGER_OUT1_PPQ 		0x37
+#define FRONT_SEQ_TRIGGER_OUT2_PPQ 		0x38
+#define FRONT_SEQ_TRIGGER_GATE_MODE 	0x39
 
 //codec control messages
 #define EQ_ON_OFF						0x01
@@ -496,5 +498,6 @@ enum
 #define SYSEX_REQUEST_MAIN_STEP_DATA	0x03
 #define SYSEX_RECEIVE_MAIN_STEP_DATA	0x04
 #define SYSEX_REQUEST_PATTERN_DATA		0x05
+#define SYSEX_RECEIVE_PAT_LEN_DATA		0x06
 #define SYSEX_ACTIVE_MODE_NONE			0x7f	/**< a placeholder message indicating that sysex is active but no mode is selected yet*/
 #endif /* MIDIMESSAGES_H_ */

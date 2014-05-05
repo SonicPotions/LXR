@@ -50,6 +50,10 @@ float midiParser_calcDetune(uint8_t value);
 // check mtc status, might stop the sequencer
 void midiParser_checkMtc();
 
+#if 0
+void midiDebugSend(uint8_t b1, uint8_t b2);
+#endif
+
 // 0 - Off - nothing to nothing
 // 1 - U2M - usb in to midi out
 // 2 - M2M - midi in to midi out
@@ -71,7 +75,7 @@ void midiParser_setFilter(uint8_t is_tx, uint8_t value);
 extern uint8_t midiParser_originalCcValues[0xff];
 
 
-extern uint8_t midi_MidiChannels[7];
+extern uint8_t midi_MidiChannels[8]; // last element is global channel
 extern uint8_t midi_NoteOverride[7];
 //extern uint8_t midi_mode; --AS not used anymore
 

@@ -393,3 +393,4 @@ void trigger_allOff()
 {
 	trigger_setPin(TRIGGER_ALL, 0);
 }
+

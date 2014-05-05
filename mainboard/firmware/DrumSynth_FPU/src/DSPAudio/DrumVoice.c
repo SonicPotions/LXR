@@ -140,7 +140,6 @@ void Drum_trigger(const uint8_t voiceNr, const uint8_t vol, const uint8_t note)
 			setOnePoleCoef(&voiceArray[voiceNr].ampFilter,ampSmoothValue);
 #endif
 		}
-
 		if(voiceArray[voiceNr].osc.waveform == SINE)
 			voiceArray[voiceNr].osc.phase = 1024 + ( (0x3ff<<20) - 1024)*offset;//voiceArray[voiceNr].osc.startPhase ;
 		else if(voiceArray[voiceNr].osc.waveform > SINE && voiceArray[voiceNr].osc.waveform <= REC)
@@ -190,10 +189,9 @@ void calcDrumVoiceAsync(const uint8_t voiceNr)
 	//check if in attack phase
 	if( (voiceArray[voiceNr].oscVolEg.attack == 1 ) && ((voiceArray[voiceNr].oscVolEg.state == EG_A) || (voiceArray[voiceNr].oscVolEg.state == EG_REPEAT)) )
 	{
-		//if attack is set to 0 -> no interpolation
+			//if attack is set to 0 -> no interpolation
 		voiceArray[voiceNr].ampFilterInput = slopeEg2_calc(&voiceArray[voiceNr].oscVolEg);
 		voiceArray[voiceNr].lastGain = voiceArray[voiceNr].ampFilterInput;
-
 	}
 	else
 	{

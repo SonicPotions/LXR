@@ -105,3 +105,4 @@ uint32_t medianFilter(uint32_t datum)
 }
 
 #endif /* MEDIANFILTER_H_ */
+

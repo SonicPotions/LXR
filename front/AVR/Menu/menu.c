@@ -1,20 +1,20 @@
 #include "menu.h"
-#include "..\Hardware\lcd.h"
+#include "../Hardware/lcd.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "..\ledHandler.h"
+#include "../ledHandler.h"
 #include <avr/pgmspace.h>
-#include "..\IO/uart.h"
+#include "../IO/uart.h"
 
 
-#include "..\Preset/PresetManager.h"
-#include "..\frontPanelParser.h"
+#include "../Preset/PresetManager.h"
+#include "../frontPanelParser.h"
 //#include <util/delay.h>
 #include <util/delay.h>
 
 #include "menuPages.h"
-#include "menuText.h"
+#include "MenuText.h"
 #include "../Hardware/timebase.h"
 #include "../Hardware/SD/SPI_routines.h"
 #include "screensaver.h"
@@ -24,15 +24,6 @@
 #include <ctype.h>
 #include "../front.h"
 
-/* fill up to 3 bytes of a buffer with string representation of a number */
-// space padded unsigned
-static void numtostrpu(char *buf, uint8_t num);
-// space padded signed
-static void numtostrps(char *buf, int8_t num);
-// non space padded unsigned
-static void numtostru(char *buf, uint8_t num);
-// non space padded signed
-static void numtostrs(char *buf, int8_t num);
 // uppercase 3 letters in buf
 static void upr_three(char *buf);
 // given a menuid and a param value fill buf with the short menu item value. will not exceed 3 chars
@@ -42,22 +33,15 @@ static uint8_t getMaxEntriesForMenu(uint8_t menuId);
 // given a number, convert it to a note name
 static void setNoteName(uint8_t num, char *buf);
 
-#define ARROW_SIGN '>'
+static void menu_moveToMenuItem(int8_t inc);
+static void menu_encoderChangeParameter(int8_t inc);
 
-//enum for the save what parameter
-enum loadSaveEnum
-{
-	SAVE_TYPE_KIT = 0,
-	SAVE_TYPE_PATTERN,
-	SAVE_TYPE_MORPH,
-	SAVE_TYPE_GLO,
-	SAVE_TYPE_SAMPLES,
-};
+#define ARROW_SIGN '>'
 
 enum saveStateEnum
 {
-	SAVE_STATE_EDIT_TYPE,
-	SAVE_STATE_EDIT_PRESET_NR,
+	SAVE_STATE_EDIT_TYPE,			// select one of the types of data to load/save (kit, pattern etc)
+	SAVE_STATE_EDIT_PRESET_NR,		// editing the preset number slot
 	SAVE_STATE_EDIT_NAME1,
 	SAVE_STATE_EDIT_NAME2,
 	SAVE_STATE_EDIT_NAME3,
@@ -66,12 +50,12 @@ enum saveStateEnum
 	SAVE_STATE_EDIT_NAME6,
 	SAVE_STATE_EDIT_NAME7,
 	SAVE_STATE_EDIT_NAME8,
-	SAVE_STATE_OK,
+	SAVE_STATE_OK					// confirmation is active
 };
 
 /** a struct for some save page parameters.*/
 static volatile struct {
-	unsigned what:3;		/**< 0= save kit, 1 = save pattern, 2 = morph sound */
+	unsigned what:3;		/**< 0= save kit, 1 = save pattern, 2 = morph sound, etc */
 	unsigned state:4;		/**< 0=edit kit/pat, 1=edit preset nr, 2-9 = edit name, 10=ok*/
 
 } menu_saveOptions;
@@ -163,13 +147,14 @@ const Name valueNames[NUM_NAMES] PROGMEM =
 
 		{SHORT_LENGTH,CAT_PATTERN,LONG_LENGTH},				//TEXT_PAT_LENGTH,
 		{SHORT_STEP,CAT_EUKLID,LONG_STEPS},					//TEXT_NUM_STEPS,
+		{SHORT_ROTATION, CAT_EUKLID, LONG_ROTATION}, 		//TEXT_ROTATION
 
 		{SHORT_BPM,CAT_GLOBAL,LONG_TEMPO},					//TEXT_BPM
 
 		{SHORT_CHANNEL,CAT_VOICE,LONG_MIDI_CHANNEL},		//TEXT_MIDI_CHANNEL
-		{SHORT_OUT,CAT_VOICE,LONG_AUDIO_OUT},				//TEXT_AUDIO_OUT
+		{SHORT_OUT,CAT_VOICE,LONG_AUDIO_OUT},				//TEXT_AUDIO_OUT				//50
 
-		{SHORT_SR,CAT_VOICE,LONG_SAMPLE_RATE},				//TEXT_SAMPLE_RATE				//50
+		{SHORT_SR,CAT_VOICE,LONG_SAMPLE_RATE},				//TEXT_SAMPLE_RATE
 
 		{SHORT_REPEAT,CAT_PATTERN,LONG_REPEAT_CNT},				//TEXT_PATTERN_REPEAT
 		{SHORT_NXT,CAT_PATTERN,LONG_NEXT_PAT},				//TEXT_PATTERN_NEXT
@@ -183,8 +168,8 @@ const Name valueNames[NUM_NAMES] PROGMEM =
 		{SHORT_FM_AMNT,	CAT_VELOCITY,	LONG_AMOUNT},			//TEXT_VEL_AMT,
 		{SHORT_VOL,CAT_VELOCITY,	LONG_VOLUME_MOD},		//TEXT_VEL_MOD_VOL,
 
-		{SHORT_FETCH,	CAT_PARAMETER,	LONG_FETCH},		//TEXT_FETCH
-		{SHORT_FOLLOW,	CAT_SEQUENCER,	LONG_FOLLOW},		//TEXT_FOLLOW					//60
+		{SHORT_FETCH,	CAT_PARAMETER,	LONG_FETCH},		//TEXT_FETCH					//60
+		{SHORT_FOLLOW,	CAT_SEQUENCER,	LONG_FOLLOW},		//TEXT_FOLLOW
 		{SHORT_QUANT,	CAT_SEQUENCER,	LONG_QUANTISATION},			//TEXT_QUANTISATION
 
 		{SHORT_TRACK,	CAT_SEQUENCER,	LONG_AUTOMATION_TRACK},			//TEXT_AUTOMATION_TRACK
@@ -199,18 +184,19 @@ const Name valueNames[NUM_NAMES] PROGMEM =
 		{SHORT_EMPTY,CAT_EMPTY,LONG_EMPTY},					//SKIP
 
 		{SHORT_X,CAT_GENERATOR,LONG_X},	//TEXT_POS_X,
-		{SHORT_Y,CAT_GENERATOR,LONG_Y},	//TEXT_POS_Y,
-		{SHORT_FLUX,CAT_GENERATOR,LONG_FLUX},	//TEXT_FLUX,								//70
+		{SHORT_Y,CAT_GENERATOR,LONG_Y},	//TEXT_POS_Y,										//70
+		{SHORT_FLUX,CAT_GENERATOR,LONG_FLUX},	//TEXT_FLUX,
 		{SHORT_FREQ,CAT_GENERATOR,LONG_FREQ},	//TEXT_SOM_FREQ,
 		{SHORT_MIDI,CAT_MIDI,LONG_MODE},	//TEXT_MIDI_MODE
 		{SHORT_MIDI_ROUTING, CAT_MIDI, LONG_MIDI_ROUTING}, // TEXT_MIDI_ROUTING
 		{SHORT_MIDI_FILT_TX, CAT_MIDI, LONG_MIDI_FILT_TX}, // TEXT_MIDI_FILT_TX
 		{SHORT_MIDI_FILT_RX, CAT_MIDI, LONG_MIDI_FILT_RX}, // TEXT_MIDI_FILT_RX
-
 		{SHORT_TRIGGER_IN, CAT_TRIGGER, LONG_TRIGGER_IN}, // TEXT_TRIGGER_IN_PPQ
 		{SHORT_TRIGGER_OUT1, CAT_TRIGGER, LONG_TRIGGER_OUT1}, // TEXT_TRIGGER_OUT1_PPQ
 		{SHORT_TRIGGER_OUT2, CAT_TRIGGER, LONG_TRIGGER_OUT2}, // TEXT_TRIGGER_OUT2_PPQ
 		{SHORT_MODE, CAT_TRIGGER, LONG_TRIGGER_GATE_MODE}, //TEXT_TRIGGER_GATE_MODE
+		{SHORT_BAR_RESET_MODE, CAT_SEQUENCER, LONG_BAR_RESET_MODE}, // TEXT_BAR_RESET_MODE
+		{SHORT_CHANNEL, CAT_MIDI, LONG_MIDI_CHANNEL}, // TEXT_MIDI_CHAN_GLOBAL
 
 };
 
@@ -446,20 +432,20 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 	    /*PAR_MIDI_NOTE5*/		DTYPE_NOTE_NAME,
 	    /*PAR_MIDI_NOTE6*/		DTYPE_NOTE_NAME,
 	    /*PAR_MIDI_NOTE7*/		DTYPE_NOTE_NAME,
-
 	    /*PAR_ROLL*/ 			DTYPE_MENU | (MENU_ROLL_RATES<<4),
 	    /*PAR_MORPH*/ 			DTYPE_0B255,
-	    /*PAR_ACTIVE_STEP */ 	DTYPE_0B127, //230
+	    /*PAR_ACTIVE_STEP */ 	DTYPE_0B127,							//230
 	    /*PAR_STEP_VOLUME*/ 	DTYPE_0B127,
 	    /*PAR_STEP_PROB*/ 		DTYPE_0B127,
 	    /*PAR_STEP_NOTE*/ 		DTYPE_NOTE_NAME,
 	    /*PAR_EUKLID_LENGTH*/ 	DTYPE_1B16,
 	    /*PAR_EUKLID_STEPS*/ 	DTYPE_1B16,
+	    /*PAR_EUKLID_ROTATION*/	DTYPE_0B15,
 	    /*PAR_AUTOM_TRACK*/ 	DTYPE_0b1,
 	    /*PAR_P1_DEST*/ 		DTYPE_AUTOM_TARGET,
 	    /*PAR_P2_DEST*/ 		DTYPE_AUTOM_TARGET,
-	    /*PAR_P1_VAL*/ 			DTYPE_0B127,
-	    /*PAR_P2_VAL*/ 			DTYPE_0B127, //240
+	    /*PAR_P1_VAL*/ 			DTYPE_0B127,							//240
+	    /*PAR_P2_VAL*/ 			DTYPE_0B127,
 	    /*PAR_SHUFFLE*/ 		DTYPE_0B127,
 	    /*PAR_PATTERN_BEAT*/ 	DTYPE_0B127,
 	    /*PAR_PATTERN_NEXT*/ 	DTYPE_MENU | (MENU_NEXT_PATTERN<<4),
@@ -468,8 +454,9 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 	    /*PAR_POS_Y*/ 			DTYPE_0B127,
 	    /*PAR_FLUX*/ 			DTYPE_0B127,
 	    /*PAR_SOM_FREQ*/ 		DTYPE_0B127,
-	    /*PAR_BPM*/ 			DTYPE_0B255,
-	    /*PAR_MIDI_CHAN_1*/ 	DTYPE_1B16,//250
+	    /*PAR_TRACK_ROTATION*/  DTYPE_1B16,  //**PATROT this is not shown in menu, but if it were it would really be 0 to 15
+	    /*PAR_BPM*/ 			DTYPE_0B255,							//251
+	    /*PAR_MIDI_CHAN_1*/ 	DTYPE_1B16,
 	    /*PAR_MIDI_CHAN_2*/ 	DTYPE_1B16,
 	    /*PAR_MIDI_CHAN_3*/ 	DTYPE_1B16,
 	    /*PAR_MIDI_CHAN_4*/ 	DTYPE_1B16,
@@ -478,8 +465,8 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 	    /*PAR_FETCH*/ 			DTYPE_ON_OFF,
 	    /*PAR_FOLLOW*/ 			DTYPE_ON_OFF,
 	    /*PAR_QUANTISATION*/ 	DTYPE_MENU | (MENU_SEQ_QUANT<<4),
-	    /*PAR_SCREENSAVER_ON_OFF*/ DTYPE_ON_OFF,
-	    /*PAR_MIDI_MODE*/ 		DTYPE_MENU | (MENU_MIDI<<4),			  //--AS This is now unused. //260
+	    /*PAR_SCREENSAVER_ON_OFF*/ DTYPE_ON_OFF,						//261
+	    /*PAR_MIDI_MODE*/ 		DTYPE_MENU | (MENU_MIDI<<4),			  //--AS This is now unused.
 	    /*PAR_MIDI_CHAN_7*/ 	DTYPE_1B16,
 	    /*PAR_MIDI_ROUTING*/	DTYPE_MENU | (MENU_MIDI_ROUTING<<4),
 	    /*PAR_MIDI_FILT_TX*/    DTYPE_MENU | (MENU_MIDI_FILTERING<<4),
@@ -488,6 +475,8 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 		/*PAR_PRESCALER_CLOCK_OUT1*/	DTYPE_MENU | (MENU_PPQ<<4),
 		/*PAR_PRESCALER_CLOCK_OUT2*/	DTYPE_MENU | (MENU_PPQ<<4),
 		/*PAR_TRIGGER_GATE_MODE*/	DTYPE_ON_OFF,
+	    /*PAR_BAR_RESET_MODE*/  DTYPE_ON_OFF,
+	    /*PAR_MIDI_CHAN_GLOBAL*/DTYPE_1B16,		//--AS global midi channel
 };
 
 
@@ -500,10 +489,12 @@ the upper bits indicate the active page no.
  */
 static uint8_t menuIndex = 0;
 
+static uint8_t menu_TargetVoiceGapIndex = 0xFF;
+
 uint8_t menu_numSamples = 0;
 
 //preset vars
-#define NUM_PRESET_LOCATIONS 3 //kit, pattern, morph sound
+#define NUM_PRESET_LOCATIONS 5 //kit, pattern, morph sound, performance, all
 static uint8_t menu_currentPresetNr[NUM_PRESET_LOCATIONS];
 
 uint8_t menu_shownPattern = 0;
@@ -564,12 +555,18 @@ void menu_init()
 
 	parameter_values[PAR_EUKLID_LENGTH] = 16;
 	parameter_values[PAR_EUKLID_STEPS] = 16;
+	parameter_values[PAR_EUKLID_ROTATION] = 0;
 
 	//initialize the roll value
 	parameter_values[PAR_ROLL] = 8;
 	//frontPanel_sendData(SEQ_CC,SEQ_ROLL_RATE,8); //value is initialized in cortex firmware
 
 	parameter_values[PAR_BPM] = 120;
+
+	// --AS todo I tried to move everything below here to main.c before the call
+	// to copyClear_clearCurrentPattern (see 7b0932f20b948ff29037bf6c2b1ecb7eba8bb89e)
+	// but then the global data loaded from glo.cfg seemed like it was not being sent to the back.
+	// need to figure out why as it's likely to crop up again at some point.
 
 	//set voice 1 active
 	menu_switchPage(0);
@@ -579,7 +576,6 @@ void menu_init()
 
 	//display start menu page
 	menu_repaintAll();
-
 }
 //-----------------------------------------------------------------
 /** compare the currentDisplayBuffer with the editDisplayBuffer and send all differences to the display*/
@@ -630,269 +626,90 @@ void menu_repaintAll()
 		menu_repaint();
 	}		
 }
+
 //-----------------------------------------------------------------
 static void menu_repaintLoadSavePage()
 {
+	const char *toptxt=0;
+	//Top row
+	strcpy_P(&editDisplayBuffer[0][0],
+			menu_activePage == SAVE_PAGE ?
+					PSTR("Save:") :
+					PSTR("Load:"));
 
+	switch(menu_saveOptions.what) {
+	case SAVE_TYPE_KIT:			toptxt=PSTR("Kit     "); break;
+	case SAVE_TYPE_PATTERN:		toptxt=PSTR("Pattern "); break;
+	case SAVE_TYPE_MORPH:		toptxt=PSTR("MorphKit"); break;
+	case SAVE_TYPE_GLO:			toptxt=PSTR("Settings"); break;
+	case SAVE_TYPE_PERFORMANCE:	toptxt=PSTR("Perform "); break;
+	case SAVE_TYPE_ALL:			toptxt=PSTR("All     "); break;
+	case SAVE_TYPE_SAMPLES:     toptxt=PSTR("Samples "); break;
+	}
 
-	if(menu_activePage == SAVE_PAGE)
-	{
-		//Top row 
-		strcpy_P(&editDisplayBuffer[0][0],PSTR("Save:"));
+	strcpy_P(&editDisplayBuffer[0][6],toptxt);
+	if(menu_saveOptions.state == SAVE_STATE_EDIT_TYPE) {
+		if(editModeActive) {
+			editDisplayBuffer[0][5]='[';
+			editDisplayBuffer[0][14]=']';
+		} else {
+			//arrow before parameter
+			editDisplayBuffer[0][5]= ARROW_SIGN;
+		}
+	}
 
-		switch(menu_saveOptions.what)
+	//Bottom row - name and number if applicable
+	if( menu_saveOptions.what < SAVE_TYPE_GLO) { //no name and number for global settings or samples
+		//the preset number
+		numtostrpu(&editDisplayBuffer[1][1], menu_currentPresetNr[menu_saveOptions.what],' ');
+
+		if(menu_saveOptions.state == SAVE_STATE_EDIT_PRESET_NR)
 		{
-		case SAVE_TYPE_KIT:
-			strcpy_P(&editDisplayBuffer[0][6],PSTR("Kit     "));
-			if(menu_saveOptions.state == SAVE_STATE_EDIT_TYPE) {
-				if(editModeActive) {
-					editDisplayBuffer[0][5]='[';
-					editDisplayBuffer[0][11]=']';
-				} else {
-					//arrow before parameter
-					editDisplayBuffer[0][5]= ARROW_SIGN;
-					//visibleCursor = VIS_CURS(0,6,1);
-				}
-			}	
-			break;
-
-		case SAVE_TYPE_PATTERN:
-		{
-			strcpy_P(&editDisplayBuffer[0][6],PSTR("Pattern "));
-			if(menu_saveOptions.state == SAVE_STATE_EDIT_TYPE) {
-				if(editModeActive) {
-					editDisplayBuffer[0][5]='[';
-					editDisplayBuffer[0][13]=']';
-				} else {
-					//arrow before parameter
-					editDisplayBuffer[0][5]= ARROW_SIGN;
-					//visibleCursor = VIS_CURS(0,6,1);
-				}
+			if(editModeActive) {
+				editDisplayBuffer[1][0]='[';
+				editDisplayBuffer[1][4]=']';
+			} else {
+				//arrow before parameter
+				editDisplayBuffer[1][0]= ARROW_SIGN;
+				//visibleCursor = VIS_CURS(1,1,1);
 			}
 		}
-		break;
+		// write the full preset name
+		memcpy(&editDisplayBuffer[1][5],(const void*)preset_currentName,8);
+	}
 
-		case SAVE_TYPE_MORPH:
+	// bottom row - for save page, we show editing box or underline cursor as applicable
+	if(menu_activePage == SAVE_PAGE){
+		//the preset number
+		if( menu_saveOptions.what < SAVE_TYPE_GLO) //not saving global settings, so print name and number
 		{
-			strcpy_P(&editDisplayBuffer[0][6],PSTR("MorphKit"));
-			if(menu_saveOptions.state == SAVE_STATE_EDIT_TYPE)
-			{
-				if(editModeActive) {
-					editDisplayBuffer[0][5]='[';
-					editDisplayBuffer[0][14]=']';
-				} else {
-					//arrow before parameter
-					editDisplayBuffer[0][5]= ARROW_SIGN;
-					//visibleCursor = VIS_CURS(0,6,1);
-				}
-			}
-		}
-		break;
-
-		case SAVE_TYPE_GLO:
-		{
-			strcpy_P(&editDisplayBuffer[0][6],PSTR("Settings"));
-			if(menu_saveOptions.state == SAVE_STATE_EDIT_TYPE)
-			{
-				if(editModeActive) {
-					editDisplayBuffer[0][5]='[';
-					editDisplayBuffer[0][14]=']';
-				} else {
-					//arrow before parameter
-					editDisplayBuffer[0][5]= ARROW_SIGN;
-					//visibleCursor = VIS_CURS(0,6,1);
-				}
-			}
-		}
-		break;
-		} // switch(menu_saveOptions.what)
-
-		//Bottom row 
-
-		if( menu_saveOptions.what < SAVE_TYPE_GLO) //no name and number for global settings
-		{
-			//the preset number
-			numtostrpu(&editDisplayBuffer[1][1],menu_currentPresetNr[menu_saveOptions.what]);
-
-			if(menu_saveOptions.state == SAVE_STATE_EDIT_PRESET_NR)
-			{
-				if(editModeActive) {
-					editDisplayBuffer[1][0]='[';
-					editDisplayBuffer[1][4]=']';
-				} else {
-					//arrow before parameter
-					editDisplayBuffer[1][0]= ARROW_SIGN;
-					//visibleCursor = VIS_CURS(1,1,1);
-				}
-			}
-
+			// if we are editing the name
 			if( (menu_saveOptions.state >= SAVE_STATE_EDIT_NAME1) && (menu_saveOptions.state <= SAVE_STATE_EDIT_NAME8) )
 			{			
-				//write name up to active char
-				memcpy(&editDisplayBuffer[1][5],(const void*)preset_currentName,8);
-				if(editModeActive) {
+				if(editModeActive) { // draw a box around active character (encoder changes value)
 					editDisplayBuffer[1][4+menu_saveOptions.state-SAVE_STATE_EDIT_NAME1]='[';
 					editDisplayBuffer[1][6+menu_saveOptions.state-SAVE_STATE_EDIT_NAME1]=']';	
-				} else {
-					//arrow before parameter
-					//editDisplayBuffer[1][4+menu_saveOptions.state-SAVE_STATE_EDIT_NAME1]= ARROW_SIGN;
+				} else { // using encoder to move left and right, using knob to change letter
+					//underline under current char
 					visibleCursor =(uint8_t)( VIS_CURS(1,5+menu_saveOptions.state-SAVE_STATE_EDIT_NAME1,1));
 				}
 			}
-			else
-			{
-				memcpy(&editDisplayBuffer[1][5],(const void*)preset_currentName,8);
-			}
-		}			
+		} // not saving global settings
 
-		//ok button
+		//ok button - shown in all cases
 		memcpy_P(&editDisplayBuffer[1][14],menuText_ok,2);
 		if((menu_saveOptions.state==SAVE_STATE_OK) ||
 				(menu_saveOptions.what >= SAVE_TYPE_GLO && menu_saveOptions.state > SAVE_STATE_EDIT_TYPE))
 		{	
-			{
-				//arrow before parameter
-				editDisplayBuffer[1][13]= ARROW_SIGN;
-				//visibleCursor = VIS_CURS(1,14,1);
-			}
+			//arrow before parameter
+			editDisplayBuffer[1][13]= ARROW_SIGN;
+			//visibleCursor = VIS_CURS(1,14,1);
 		}	
-
-
-	}
-	//-------------- Load Page ----------------------------------------
-	else
-	{
-		//Top row 
-		strcpy_P(&editDisplayBuffer[0][0],PSTR("Load:"));
-
-		switch(menu_saveOptions.what) {
-		case SAVE_TYPE_PATTERN:
-		{
-			strcpy_P(&editDisplayBuffer[0][6],PSTR("Pattern"));
-			if(menu_saveOptions.state == SAVE_STATE_EDIT_TYPE)
-			{
-				if(editModeActive)
-				{
-					editDisplayBuffer[0][5]='[';
-					editDisplayBuffer[0][13]=']';
-				}
-				else
-				{
-					//arrow before parameter
-					editDisplayBuffer[0][5]= ARROW_SIGN;
-					//visibleCursor = VIS_CURS(0,6,1);
-				}
-
-			}
-		}
-			break;
-
-		case SAVE_TYPE_KIT:
-		{
-			strcpy_P(&editDisplayBuffer[0][6],PSTR("Kit    "));
-			if(menu_saveOptions.state == SAVE_STATE_EDIT_TYPE)
-			{
-				if(editModeActive)
-				{
-					editDisplayBuffer[0][5]='[';
-					editDisplayBuffer[0][11]=']';
-				}
-				else
-				{
-					//arrow before parameter
-					editDisplayBuffer[0][5]= ARROW_SIGN;
-					//visibleCursor = VIS_CURS(0,6,1);
-				}
-			}
-		}
-			break;
-
-		case SAVE_TYPE_MORPH:
-		{
-			strcpy_P(&editDisplayBuffer[0][6],PSTR("MorphKit"));
-			if(menu_saveOptions.state == SAVE_STATE_EDIT_TYPE)
-			{
-				if(editModeActive)
-				{
-					editDisplayBuffer[0][5]='[';
-					editDisplayBuffer[0][14]=']';
-				}
-				else
-				{
-					//arrow before parameter
-					editDisplayBuffer[0][5]= ARROW_SIGN;
-					//visibleCursor = VIS_CURS(0,6,1);
-				}
-
-			}
-		}
-			break;
-
-		case SAVE_TYPE_GLO:
-		{
-			strcpy_P(&editDisplayBuffer[0][6],PSTR("Settings"));
-			if(menu_saveOptions.state == SAVE_STATE_EDIT_TYPE)
-			{
-				if(editModeActive) {
-					editDisplayBuffer[0][5]='[';
-					editDisplayBuffer[0][14]=']';
-				} else {
-					//arrow before parameter
-					editDisplayBuffer[0][5]= ARROW_SIGN;
-					//visibleCursor = VIS_CURS(0,6,1);
-				}
-			}
-		}
-			break;
-		case SAVE_TYPE_SAMPLES:
-		{
-			strcpy_P(&editDisplayBuffer[0][6],PSTR("Samples"));
-			if(menu_saveOptions.state == SAVE_STATE_EDIT_TYPE)
-			{
-				if(editModeActive) {
-					editDisplayBuffer[0][5]='[';
-					editDisplayBuffer[0][13]=']';
-				} else {
-					//arrow before parameter
-					editDisplayBuffer[0][5]= ARROW_SIGN;
-					//visibleCursor = VIS_CURS(0,6,1);
-				}
-			}
-		}
-			break;
-		} //switch(menu_saveOptions.what)
-
-		//############ Bottom row  ############
-		//the preset number
-
-		if( menu_saveOptions.what < SAVE_TYPE_GLO) //no mane and number for global settings
-		{
-			numtostrpu(&editDisplayBuffer[1][1], menu_currentPresetNr[menu_saveOptions.what]);
-
-			if(menu_saveOptions.state == SAVE_STATE_EDIT_PRESET_NR)
-			{
-				if(editModeActive)
-				{
-					editDisplayBuffer[1][0]='[';
-					editDisplayBuffer[1][4]=']';
-				}
-				else
-				{
-					//arrow before parameter
-					editDisplayBuffer[1][0]= ARROW_SIGN;
-					//visibleCursor = VIS_CURS(1,1,1);
-				}
-			}
-
-			//the preset name
-			memcpy(&editDisplayBuffer[1][5],(const void*)preset_currentName,8);
-		}		
-
-
-
-		//ok button for pattern page
-		if(menu_saveOptions.what == SAVE_TYPE_PATTERN || menu_saveOptions.what >= SAVE_TYPE_GLO) {
+	} else { // bottom row - Load page is active
+		//ok button shown for loading everything except kit and morph - which are loaded instantaneously
+		if(menu_saveOptions.what != SAVE_TYPE_KIT && menu_saveOptions.what != SAVE_TYPE_MORPH) {
 			memcpy_P(&editDisplayBuffer[1][14],menuText_ok,2);
+
 			if((menu_saveOptions.state==SAVE_STATE_OK) ||
 					(menu_saveOptions.what >= SAVE_TYPE_GLO && menu_saveOptions.state > SAVE_STATE_EDIT_TYPE)) {
 				//arrow before parameter
@@ -920,11 +737,37 @@ static uint8_t has2ndPage(uint8_t menuPage)
 static uint8_t checkScrollSign(uint8_t activePage, uint8_t activeParameter)
 {
 	const uint8_t is2ndPage = (uint8_t)(activeParameter>3);
-	if(has2ndPage(activePage))
-	{
-		return is2ndPage?'<':'>';
+
+	//**GMENU show '*' when both left and right movement are possible in the global settings menu
+	// show > or < as appropriate
+	if(menu_activePage==MENU_MIDI_PAGE) {
+		if(is2ndPage) {
+			//if we are on 2nd screen, and there are more sub-pages after this show "*" to signify both ways are available
+			if((activePage < NUM_SUB_PAGES-1) && (pgm_read_byte(&menuPages[MENU_MIDI_PAGE][activePage+1].top1) != TEXT_EMPTY))
+				return '*';
+			else // on 2nd screen, no sub-pages after this
+				return '<';
+		} else { // on 1st screen
+			if(has2ndPage(activePage)) { // have a second screen
+				if(activePage > 0)  // on first screen and there are sub-pages before this and a second screen after
+					return '*';
+				else
+					return '>';
+			} else { // don't have a second screen
+				if(activePage > 0) // on first screen and have sub-pages before this but not second screen after
+					return '<';
+				else // on first screen, no sub-pages before... would not happen
+					return 0;
+			}
+		}
 	}
-	else return 0;	
+
+	// normal handling for other menus
+	if(has2ndPage(activePage))
+		return is2ndPage?'<':'>';
+	else
+		return 0;
+
 }
 //-----------------------------------------------------------------
 void menu_setNumSamples(uint8_t num)
@@ -1077,15 +920,16 @@ void menu_repaintGeneric()
 				break;
 
 			case DTYPE_0b1: //--AS the only 0/1 is automation track, make it look 1 based
-				numtostrpu(&editDisplayBuffer[1][13],(uint8_t)(curParmVal+1));
+				numtostrpu(&editDisplayBuffer[1][13],(uint8_t)(curParmVal+1),' ');
 				break;
 			default: //switch(parameters_dtypes[parNr] & 0x0F)
 				// unsigned numeric value: just print the value
 			case DTYPE_0B127:
 			case DTYPE_0B255:
 			case DTYPE_1B16:
+			case DTYPE_0B15:
 			case DTYPE_VOICE_LFO:
-				numtostrpu(&editDisplayBuffer[1][13],(uint8_t)(curParmVal));
+				numtostrpu(&editDisplayBuffer[1][13],(uint8_t)(curParmVal),' ');
 				break;
 			} //switch(parameters_dtypes[parNr] & 0x0F) end
 
@@ -1177,15 +1021,16 @@ void menu_repaintGeneric()
 
 				case DTYPE_0b1: // switch(parameters[parNr].dtype&0x0F)
 					//automation track 0/1 value, make it look 1 based
-					numtostrpu(valueAsText,(uint8_t)(curParmVal+1));
+					numtostrpu(valueAsText,(uint8_t)(curParmVal+1),' ');
 					break;
 				default: //switch(parameters[parNr].dtype&0x0F)
 				case DTYPE_0B127:
 				case DTYPE_0B255:
 				case DTYPE_1B16:
+				case DTYPE_0B15:
 				case DTYPE_VOICE_LFO:
 					// fallthrough for the rest of the unsigned values
-					numtostrpu(valueAsText,curParmVal);
+					numtostrpu(valueAsText,curParmVal,' ');
 					break;
 				} //switch(parameters[parNr].dtype&0x0F) end
 
@@ -1222,74 +1067,28 @@ void menu_handleSaveScreenKnobValue(uint8_t potNr, uint8_t value)
 
 	if(menu_saveOptions.state >=SAVE_STATE_EDIT_TYPE && menu_saveOptions.state <=SAVE_STATE_EDIT_PRESET_NR)
 	{
-		switch(potNr)
-		{
-		// change type
-		case 0:
-			x = value/(255/5); //0-5 // --AS TODO - this really only has 4 values, why are we ranging to 5?
+		if(potNr==0) {
+			// change type  to be loaded/saved
+			x = value/(255/NUM_SAVE_TYPES);
 			if(menu_activePage == SAVE_PAGE) {
-				if(x>3) x=3;
+				// can't save samples
+				if(x>SAVE_TYPE_GLO) x=SAVE_TYPE_GLO;
 			} else {
-				if(x>4) x=4;
+				if(x>SAVE_TYPE_SAMPLES) x=SAVE_TYPE_SAMPLES;
 			}
 
 			menu_saveOptions.what = (uint8_t)(x & 0x07); // avoid compiler warning
-			switch(menu_saveOptions.what)
-			{
 
-			case SAVE_TYPE_PATTERN: {
-				preset_getPatternName(menu_currentPresetNr[menu_saveOptions.what]);
+			// load preset name for applicable types
+			if(menu_saveOptions.what < SAVE_TYPE_GLO) {
+				preset_loadName(menu_currentPresetNr[menu_saveOptions.what], menu_saveOptions.what);
 			}
-			break;
 
-			case SAVE_TYPE_MORPH:
-			case SAVE_TYPE_KIT: {
-				preset_getDrumsetName(menu_currentPresetNr[menu_saveOptions.what]);
-			}
-			break;
-			}
 			//force complete repaint
 			menu_repaintAll();
-			break;
-
-			// change preset nr
-			/*
-			case 1:
-				x = value/(256/127); //0-127
-				menu_currentPresetNr[menu_saveOptions.what] = x;
-				switch(menu_saveOptions.what)
-				{
-
-					case SAVE_TYPE_PATTERN: {
-						preset_getPatternName(menu_currentPresetNr[menu_saveOptions.what]);
-					}
-					break;
-
-					case SAVE_TYPE_SOUND: {
-						preset_loadDrumset(menu_currentPresetNr[menu_saveOptions.what],0);
-						preset_getDrumsetName(menu_currentPresetNr[menu_saveOptions.what]);
-					}				
-					break;
-
-					case SAVE_TYPE_MORPH: {
-						//load to morph buffer
-						preset_loadDrumset(menu_currentPresetNr[menu_saveOptions.what],1);
-						preset_getDrumsetName(menu_currentPresetNr[menu_saveOptions.what]);								
-					}	
-					break;
-				}
-
-				menu_repaintAll();
-
-			break;
-			 */
-
-			default:
-				break;
 		}			
-
 	}
-	else if(menu_saveOptions.state >=2 && menu_saveOptions.state <=9)
+	else if(menu_saveOptions.state >=SAVE_STATE_EDIT_NAME1 && menu_saveOptions.state <=SAVE_STATE_EDIT_NAME8)
 	{
 		switch(potNr) {
 		// move cursor
@@ -1346,7 +1145,7 @@ void menu_handleLoadSaveMenu(int8_t inc, uint8_t btnClicked)
 
 	//---- handle the button ----
 	if(btnClicked) {
-		//if the ok button is active, save/load the preset on click
+		//if the ok button is active or we are in global save and ok is active, save/load the preset on click
 		if( (editModeActive && menu_saveOptions.state == SAVE_STATE_OK) ||
 			(menu_saveOptions.what >= SAVE_TYPE_GLO && menu_saveOptions.state > SAVE_STATE_EDIT_TYPE) ) {
 
@@ -1368,6 +1167,14 @@ void menu_handleLoadSaveMenu(int8_t inc, uint8_t btnClicked)
 				case SAVE_TYPE_GLO:
 					preset_saveGlobals();
 					break;
+
+				case SAVE_TYPE_PERFORMANCE:
+					preset_saveAll(menu_currentPresetNr[SAVE_TYPE_PERFORMANCE],0);
+					break;
+
+				case SAVE_TYPE_ALL:
+					preset_saveAll(menu_currentPresetNr[SAVE_TYPE_ALL],1);
+					break;
 				}
 				menu_resetSaveParameters();						
 
@@ -1380,10 +1187,21 @@ void menu_handleLoadSaveMenu(int8_t inc, uint8_t btnClicked)
 						menu_resetSaveParameters();
 					break;
 
+				case SAVE_TYPE_PERFORMANCE:
+					preset_loadAll(menu_currentPresetNr[SAVE_TYPE_PERFORMANCE],0);
+					menu_resetSaveParameters();
+					break;
+
+				case SAVE_TYPE_ALL:
+					preset_loadAll(menu_currentPresetNr[SAVE_TYPE_ALL],1);
+					menu_resetSaveParameters();
+					break;
+
 				case SAVE_TYPE_GLO:
 					preset_loadGlobals();
 					menu_resetSaveParameters();						
 					break;
+
 				case SAVE_TYPE_SAMPLES:
 					spi_deInit();
 					//send load sample command to mainboard
@@ -1439,19 +1257,7 @@ void menu_handleLoadSaveMenu(int8_t inc, uint8_t btnClicked)
 				}
 			}
 
-			switch(menu_saveOptions.what) {
-			case SAVE_TYPE_PATTERN:
-				preset_getPatternName(menu_currentPresetNr[SAVE_TYPE_PATTERN]);
-				break;
-			case SAVE_TYPE_KIT:
-				preset_getDrumsetName(menu_currentPresetNr[SAVE_TYPE_KIT]);
-				break;
-			case SAVE_TYPE_MORPH:
-				preset_getDrumsetName(menu_currentPresetNr[SAVE_TYPE_MORPH]);
-				break;
-			default:
-				break;
-			}
+			preset_loadName(menu_currentPresetNr[menu_saveOptions.what],menu_saveOptions.what);
 			break;
 
 		case 1: //switch(menu_saveOptions.state) - edit preset nr
@@ -1470,23 +1276,23 @@ void menu_handleLoadSaveMenu(int8_t inc, uint8_t btnClicked)
 			}
 			//if on load page, load the new preset when the preset number is changed
 			if((inc!=0)) {
+
+				// always load the name regardless of what else
+				preset_loadName(menu_currentPresetNr[menu_saveOptions.what], menu_saveOptions.what);
+
 				if(menu_activePage == LOAD_PAGE) {
+					// if loading and type is kit and morph do an insta-load
 					switch(menu_saveOptions.what) {
-					case SAVE_TYPE_PATTERN:
-						preset_getPatternName(menu_currentPresetNr[menu_saveOptions.what]);
-						break;
 					case SAVE_TYPE_KIT:
 						preset_loadDrumset(menu_currentPresetNr[menu_saveOptions.what],0);
-						preset_getDrumsetName(menu_currentPresetNr[menu_saveOptions.what]);
+						// **LFOTARGFIX - save the gap index
+						menu_TargetVoiceGapIndex = getModTargetGapIndex(parameter_values[PAR_TARGET_LFO1 + menu_activeVoice]);
 						break;
 					case SAVE_TYPE_MORPH:
 						//load to morph buffer
 						preset_loadDrumset(menu_currentPresetNr[menu_saveOptions.what],1);
-						preset_getDrumsetName(menu_currentPresetNr[menu_saveOptions.what]);
 						break;
 					}
-				} else { //save page -> always load name
-					preset_loadName(menu_currentPresetNr[menu_saveOptions.what], menu_saveOptions.what);
 				}
 			}
 			break; //switch(menu_saveOptions.state) - edit preset nr
@@ -1528,57 +1334,23 @@ void menu_handleLoadSaveMenu(int8_t inc, uint8_t btnClicked)
 					if(menu_saveOptions.state >= SAVE_STATE_EDIT_NAME1 ) {
 						menu_saveOptions.state = SAVE_STATE_OK;
 					}
-					//ok button only for load pattern
-					if( (menu_saveOptions.what != SAVE_TYPE_PATTERN) &&
-						(menu_saveOptions.what >= SAVE_TYPE_GLO)  &&
-						 menu_saveOptions.state == SAVE_STATE_OK ) {
-						menu_saveOptions.state = SAVE_STATE_EDIT_PRESET_NR;
+
+					// ok button doesnt exist on kit and morph
+					if(menu_saveOptions.state == SAVE_STATE_OK ) {
+						if(menu_saveOptions.what == SAVE_TYPE_KIT ||
+							menu_saveOptions.what == SAVE_TYPE_MORPH)
+							menu_saveOptions.state = SAVE_STATE_EDIT_PRESET_NR;
 					}
+
+					//ok button only for load pattern
+					//if( (menu_saveOptions.what != SAVE_TYPE_PATTERN) &&
+					//	(menu_saveOptions.what >= SAVE_TYPE_GLO)  && menu_saveOptions.state == SAVE_STATE_OK ) {
+					//	menu_saveOptions.state = SAVE_STATE_EDIT_PRESET_NR;
+					//}
 				}
 			}
 		} // inc<0
 	} //editModeActive
-}
-
-/* given a value for PAR_VOICE_LFO* will fix PAR_TARGET_LFO* parameter to point to a proper index in modTargets
- * that relates to that target voice, and also return the new value.
- * voiceNr - 0 based voice we are trying to fix
- * targetVoice - 1 based voice that represents PAR_VOICE_LFO* value
- * returns index into modTargets that represents the new value for PAR_TARGET_LFO
- */
-static uint8_t fixLfoTargetForVoice(uint8_t voiceNr, uint8_t targetVoice)
-{
-	// the voiceNr will dictate the range within modTargets that we are interested in. this means
-	// that changing targetVoice will change PAR_TARGET_LFO* since that parameter
-	// is an offset into modTargets which includes parameters for all voices
-
-	// where the desired target voice starts in modTargets
-	const uint8_t newStartPos=modTargetVoiceOffsets[targetVoice-1].start;
-	// how many targets are there for that voice
-	const uint8_t newMax=(uint8_t)(modTargetVoiceOffsets[targetVoice-1].end - newStartPos);
-
-	// associated target parameter (ie the lfo target on the drum we are editing)
-	uint8_t * const targValue = &parameter_values[PAR_TARGET_LFO1 + voiceNr];
-
-	// the value of that parameter
-	uint8_t modtargval = *targValue;
-
-	// as that parameter is right now it's associated with a voice. which voice
-	const uint8_t oldVoice = voiceFromModTargValue(modtargval);
-	const uint8_t oldStartPos=modTargetVoiceOffsets[oldVoice].start;
-
-	// TODO check this. only the 4th voice has one less mod param than the others
-	// some voices may have more available parameters. ensure that it's still valid for the voice
-	if(modtargval-oldStartPos >= newMax)
-		modtargval=oldStartPos; // it's not valid for the new voice, set it to 0 effectively
-
-	// ensure that the parameter is associated with our selected voice target
-	// this is potentially modifying a PAR_TARGET_LFO* parameter
-	*targValue = (uint8_t)(newStartPos + (modtargval-oldStartPos));
-
-
-
-	return *targValue;
 }
 
 // given a menu id returns the number of entries
@@ -1683,13 +1455,13 @@ static void getMenuItemNameForValue(const uint8_t menuId, const uint8_t curParmV
 	memcpy_P(buf,p,3);
 
 }
+
 //-----------------------------------------------------------------
+// called when either the encoder is rotated, or the encoder button is clicked
+// inc - the number of clicks the encoder has moved
+// button - 1 if the button is depressed, 0 if its not
 void menu_parseEncoder(int8_t inc, uint8_t button)
 {
-	// inc - the number of clicks the encoder has moved
-	// button - 1 if the button is depressed, 0 if its not
-
-
 	uint8_t btnClicked=0;
 	// handle the button being clicked or released
 	if(button != lastEncoderButton) { // was the button clicked?
@@ -1703,14 +1475,11 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 	screensaver_touch();
 
 	inc = (int8_t)(inc * -1);
-	//limit to +/- 1
-	//	inc = inc>0?1:-1;
-
 
 	if(menu_activePage == LOAD_PAGE || menu_activePage == SAVE_PAGE) {
 		menu_handleLoadSaveMenu(inc, btnClicked);
-	} else if(inc != 0) {
-		//============================= handle encoder ==============================
+	} else if(inc!=0) {
+		//============================= handle encoder change ==============================
 		if(copyClear_isClearModeActive()) {
 			//encoder selects clear target
 			uint8_t target = copyClear_getClearTarget();
@@ -1726,262 +1495,278 @@ void menu_parseEncoder(int8_t inc, uint8_t button)
 			copyClear_setClearTarget(target);
 			return;
 
-		} // copyClear_isClearModeActive()
-		else if(editModeActive) {
-			//we are in edit mode
-			//encoder controls parameter value
-			const uint8_t activeParameter	= menuIndex & MASK_PARAMETER;
-			const uint8_t activePage		= (menuIndex&MASK_PAGE)>>PAGE_SHIFT;
+		} else if(editModeActive) {
+			// edit mode is active so change the value of the current parameter
+			menu_encoderChangeParameter(inc);
+		} else {
+			//edit mode not active so encoder selects active parameter
+			menu_moveToMenuItem(inc);
+		}
 
-			//get address from top1-8 from activeParameter (base adress top1 + offset)
-			uint16_t paramNr		= pgm_read_word(&menuPages[menu_activePage][activePage].bot1 + activeParameter);
-			uint8_t *paramValue = &parameter_values[paramNr];
-
-			//increase parameter value
-			if(inc>0) //positive increase
-			{
-				if(*paramValue != 255) //omit wrap for 0B255 dtypes
-					*paramValue = (uint8_t)(*paramValue + inc);
-			}
-			else if (inc<0) //neg increase
-			{
-				if(*paramValue >= abs(inc)) //omit negative wrap. inc can also be -2 or -3 depending on turn speed!
-				{
-					DISABLE_CONV_WARNING
-					*paramValue += inc;
-					END_DISABLE_CONV_WARNING
-				}
-			}
-
-			switch(pgm_read_byte(&parameter_dtypes[paramNr]) & 0x0F)
-			{
-			case DTYPE_TARGET_SELECTION_VELO: //parameter_dtypes[paramNr] & 0x0F
-			{
-				//**VELO encoder value limit to start and end of range for this voice
-				// get voice, and figure valid range, translate to param number before sending
-				uint8_t voiceNr=(uint8_t)(paramNr - PAR_VEL_DEST_1);
-				if(*paramValue < pgm_read_byte(&modTargetVoiceOffsets[voiceNr].start)) {
-					if(inc < 0) // going down, allow 0
-						*paramValue=0;
-					else // going up fix to start
-						*paramValue = pgm_read_byte(&modTargetVoiceOffsets[voiceNr].start);
-				} else if (*paramValue > pgm_read_byte(&modTargetVoiceOffsets[voiceNr].end)) {
-					*paramValue = pgm_read_byte(&modTargetVoiceOffsets[voiceNr].end);
-				}
-
-				// determine the parameter id to send across
-				uint8_t value = (uint8_t)pgm_read_word(&modTargets[*paramValue].param);
-				uint8_t upper,lower;
-				/*
-				 *  upper: rightmost bit is 1 if the parameter we are targeting is in the "above 127" range
-				 *         next 6 bits are the voice number (0 to 5) of which voice is being dealt with here
-				 *  lower: the (0-127) value representing which parameter is being modulated
-				 */
-				upper = (uint8_t)( (uint8_t)((value&0x80)>>7) | ((voiceNr&0x3f)<<1) );
-				lower = value&0x7f;
-				frontPanel_sendData(CC_VELO_TARGET,upper,lower);
-				//return;
-			}
-				break;
-
-			case DTYPE_VOICE_LFO://parameter_dtypes[paramNr] & 0x0F
-			{
-				//**LFO - limit voice number to 1-6 range. determine target selection so we can send it with voice #
-				if(*paramValue < 1)
-					*paramValue = 1;
-				else if(*paramValue > 6)
-					*paramValue = 6;
-
-				// rectify PAR_TARGET_LFO parameter and get new value
-				const uint8_t newTargVal=fixLfoTargetForVoice((uint8_t)(paramNr - PAR_VOICE_LFO1), *paramValue);
-
-				// determine the real param value given the index into modTargets
-				uint8_t value =  (uint8_t)pgm_read_word(&modTargets[newTargVal].param);
-
-				/*  upper: rightmost bit is 1 if the parameter we are targeting is in the "above 127" range
-				 *         next 6 bits are the voice number (0 to 5) of which voice is being dealt with here
-				 *  lower: the (0-127) value representing which parameter is being modulated
-				 */
-				uint8_t upper,lower;
-				upper = (uint8_t)(((value&0x80)>>7) | ((((uint8_t)(paramNr - PAR_VOICE_LFO1))&0x3f)<<1));
-				lower = value&0x7f;
-				frontPanel_sendData(CC_LFO_TARGET,upper,lower);
-				//return;
-			}
-				break;
-			case DTYPE_TARGET_SELECTION_LFO://parameter_dtypes[paramNr] & 0x0F
-			{
-				//**LFO - limit encoder start and end to range for the voice
-				uint8_t voiceNr =  (uint8_t)(parameter_values[PAR_VOICE_LFO1+(paramNr - PAR_TARGET_LFO1)]-1);
-				if(*paramValue < pgm_read_byte(&modTargetVoiceOffsets[voiceNr].start)) {
-					if(inc < 0) // going down, allow 0
-						*paramValue=0;
-					else // going up fix to start
-						*paramValue = pgm_read_byte(&modTargetVoiceOffsets[voiceNr].start);
-				} else if (*paramValue > pgm_read_byte(&modTargetVoiceOffsets[voiceNr].end)) {
-					*paramValue = pgm_read_byte(&modTargetVoiceOffsets[voiceNr].end);
-				}
-
-				uint8_t value =  (uint8_t)pgm_read_word(&modTargets[*paramValue].param);
-				uint8_t upper,lower;
-				upper = (uint8_t)((uint8_t)((value&0x80)>>7) | (((paramNr - PAR_TARGET_LFO1)&0x3f)<<1));
-				lower = value&0x7f;
-				frontPanel_sendData(CC_LFO_TARGET,upper,lower);
-				//--AS fall thru to update display
-			}
-				break;
-
-			case DTYPE_AUTOM_TARGET: {//parameter_dtypes[paramNr] & 0x0F
-				const uint8_t nmt=getNumModTargets();
-				//**AUTOM - limit to valid range for encoder
-				if(*paramValue >= nmt)
-					*paramValue = (uint8_t)(nmt-1);
-				break;
-			}
-
-			case DTYPE_0B255:
-				//if(*paramValue > 255)
-				//	*paramValue = 255;
-				break;
-
-
-			case DTYPE_1B16://parameter_dtypes[paramNr] & 0x0F
-				if(*paramValue < 1)
-					*paramValue = 1;
-				else if(*paramValue > 16)
-					*paramValue = 16;
-				break;
-			case DTYPE_MIX_FM://parameter_dtypes[paramNr] & 0x0F
-			case DTYPE_ON_OFF:
-			case DTYPE_0b1:
-				if(*paramValue > 1)
-					*paramValue = 1;
-				break;
-
-
-
-			case DTYPE_MENU://parameter_dtypes[paramNr] & 0x0F
-			{
-				//get the used menu (upper 4 bit)
-				const uint8_t menuId = pgm_read_byte(&parameter_dtypes[paramNr]) >> 4;
-				//get the number of entries
-				uint8_t numEntries = getMaxEntriesForMenu(menuId);
-				if(*paramValue >= numEntries)
-					*paramValue = (uint8_t)(numEntries-1);
-
-			} // parameter_dtypes[paramNr] & 0x0F case DTYPE_MENU
-				break;
-
-			default://parameter_dtypes[paramNr] & 0x0F
-			case DTYPE_0B127:
-				if(*paramValue > 127)
-					*paramValue = 127;
-				break;
-			} //parameter_dtypes[paramNr] & 0x0F
-
-
-			// --AS TODO this will also send MIDI_CC or CC_2 for the above items that have already been sent. is this desired?
-			//send parameter change to uart tx
-			if(paramNr < 128) // => Sound Parameter
-				frontPanel_sendData(MIDI_CC,(uint8_t)paramNr,*paramValue);
-			else if(paramNr > 127 && (paramNr < END_OF_SOUND_PARAMETERS)) // => Sound Parameter above 127
-				frontPanel_sendData(CC_2,(uint8_t)(paramNr-128),*paramValue);
-			else // non sound parameters (ie current step data, etc)
-				menu_parseGlobalParam(paramNr,parameter_values[paramNr]);
-
-			//frontPanel_sendData(0xb0,paramNr,*paramValue);
-		} //editModeActive
-
-		else //-------- not in edit mode --------
-		{
-			//encoder selects active parameter
-
-			//check if next parameter is not empty
-			//if inc is negative avoid to integer underflow (don't decrement 0)
-			uint8_t activeParameter	= (menuIndex+inc) & MASK_PARAMETER;
-			uint8_t activePage		= (uint8_t)(((menuIndex+inc)&MASK_PAGE)>>PAGE_SHIFT);
-
-			uint8_t param = pgm_read_byte(&menuPages[menu_activePage][activePage].top1 + activeParameter);
-
-			if(inc>0) {
-				if((param == TEXT_SKIP) && (activeParameter!=0) )
-				{
-					//skip entry
-					inc++;
-					activeParameter	= (menuIndex+inc) & MASK_PARAMETER;
-					activePage		= (uint8_t)(((menuIndex+inc)&MASK_PAGE)>>PAGE_SHIFT);
-					param = pgm_read_byte(&menuPages[menu_activePage][activePage].top1 + activeParameter);
-
-				}
-				if((param != TEXT_EMPTY) && (activeParameter!=0) )
-				{
-					if(parameterFetch & PARAMETER_LOCK_ACTIVE)
-					{
-						//check if parameter lock for fetch is needed
-						const uint8_t currentActiveParameter	= (menuIndex) & MASK_PARAMETER;
-						if( (currentActiveParameter<=3) && (activeParameter>3) )
-							//if( (((menuIndex+inc)&MASK_PAGE)>>PAGE_SHIFT) != activePage)
-						{
-							//lock all parameters
-							lockPotentiometerFetch();
-						}
-					}
-
-					//switch menu
-					DISABLE_CONV_WARNING
-					menuIndex += inc;
-					END_DISABLE_CONV_WARNING
-				}
-			} else { // inc is implicitly < 0
-
-				if((param == TEXT_SKIP) && (activeParameter!=0) )
-				{
-					//skip entry
-					inc--;
-					activeParameter	= (menuIndex+inc) & MASK_PARAMETER;
-					activePage		= (uint8_t)(((menuIndex+inc)&MASK_PAGE)>>PAGE_SHIFT);
-					param = pgm_read_byte(&menuPages[menu_activePage][activePage].top1 + activeParameter);
-
-				}
-
-				if( (menuIndex!=0) && (activeParameter != MASK_PARAMETER) )
-				{
-					//check if parameter lock for fetch is needed
-					if(parameterFetch & PARAMETER_LOCK_ACTIVE)
-					{
-						const uint8_t currentActiveParameter	= (menuIndex) & MASK_PARAMETER;
-						//if( (((menuIndex+inc)&MASK_PAGE)>>PAGE_SHIFT) != activePage)
-						if( (currentActiveParameter>3) && (activeParameter<=3) )
-						{
-							//lock all parameters
-							lockPotentiometerFetch();
-						}
-					}
-
-					//switch menu
-					DISABLE_CONV_WARNING
-					menuIndex += inc;
-					END_DISABLE_CONV_WARNING
-				}
-			} // if(inc>0)
-		} //not in edit mode
-	} // if in load/save mode / inc !=0
-
+	}
 	menu_repaintAll();
+}
 
-};
 //-----------------------------------------------------------------
+// called when edit mode is active
+// encoder controls parameter value
+// given a delta, will apply that to the current parameter
+static void menu_encoderChangeParameter(int8_t inc)
+{
+	const uint8_t activeParameter	= menuIndex & MASK_PARAMETER;
+	const uint8_t activePage		= (menuIndex&MASK_PAGE)>>PAGE_SHIFT;
+
+	//get address from top1-8 from activeParameter (base adress top1 + offset)
+	uint16_t paramNr		= pgm_read_word(&menuPages[menu_activePage][activePage].bot1 + activeParameter);
+	uint8_t *paramValue = &parameter_values[paramNr];
+
+	//increase parameter value
+	if(inc>0) //positive increase
+	{
+		if(*paramValue != 255) //omit wrap for 0B255 dtypes
+			*paramValue = (uint8_t)(*paramValue + inc);
+	}
+	else if (inc<0) //neg increase
+	{
+		if(*paramValue >= abs(inc)) //omit negative wrap. inc can also be -2 or -3 depending on turn speed!
+		{
+			DISABLE_CONV_WARNING
+			*paramValue += inc;
+			END_DISABLE_CONV_WARNING
+		}
+	}
+
+	switch(pgm_read_byte(&parameter_dtypes[paramNr]) & 0x0F)
+	{
+	case DTYPE_TARGET_SELECTION_VELO: //parameter_dtypes[paramNr] & 0x0F
+	{
+		//**VELO encoder value limit to start and end of range for this voice
+		// get voice, and figure valid range, translate to param number before sending
+		uint8_t voiceNr=(uint8_t)(paramNr - PAR_VEL_DEST_1);
+		if(*paramValue < pgm_read_byte(&modTargetVoiceOffsets[voiceNr].start)) {
+			if(inc < 0) // going down, allow 0
+				*paramValue=0;
+			else // going up fix to start
+				*paramValue = pgm_read_byte(&modTargetVoiceOffsets[voiceNr].start);
+		} else if (*paramValue > pgm_read_byte(&modTargetVoiceOffsets[voiceNr].end)) {
+			*paramValue = pgm_read_byte(&modTargetVoiceOffsets[voiceNr].end);
+		}
+
+		// determine the parameter id to send across
+		uint8_t value = (uint8_t)pgm_read_word(&modTargets[*paramValue].param);
+		uint8_t upper,lower;
+		/*
+		 *  upper: rightmost bit is 1 if the parameter we are targeting is in the "above 127" range
+		 *         next 6 bits are the voice number (0 to 5) of which voice is being dealt with here
+		 *  lower: the (0-127) value representing which parameter is being modulated
+		 */
+		upper = (uint8_t)( (uint8_t)((value&0x80)>>7) | ((voiceNr&0x3f)<<1) );
+		lower = value&0x7f;
+		frontPanel_sendData(CC_VELO_TARGET,upper,lower);
+		//return;
+	}
+		break;
+
+	case DTYPE_VOICE_LFO://parameter_dtypes[paramNr] & 0x0F
+	{
+		//**LFO - limit voice number to 1-6 range. determine target selection so we can send it with voice #
+		if(*paramValue < 1)
+			*paramValue = 1;
+		else if(*paramValue > 6)
+			*paramValue = 6;
+
+		// **LFOTARGFIX - ensure that the lfo mod target is pointing to the same type of modulation
+		// on the new voice
+		const uint8_t newTargVal=getModTargetIdxFromGapIdx((uint8_t)(*paramValue-1),menu_TargetVoiceGapIndex);
+		// update the lfo mod target
+		parameter_values[PAR_TARGET_LFO1 + (paramNr - PAR_VOICE_LFO1)] = newTargVal;
+
+		// determine the real param value given the index into modTargets
+		uint8_t value =  (uint8_t)pgm_read_word(&modTargets[newTargVal].param);
+
+		/*  upper: rightmost bit is 1 if the parameter we are targeting is in the "above 127" range
+		 *         next 6 bits are the voice number (0 to 5) of which voice is being dealt with here
+		 *  lower: the (0-127) value representing which parameter is being modulated
+		 */
+		uint8_t upper,lower;
+		upper = (uint8_t)(((value&0x80)>>7) | ((((uint8_t)(paramNr - PAR_VOICE_LFO1))&0x3f)<<1));
+		lower = value&0x7f;
+		frontPanel_sendData(CC_LFO_TARGET,upper,lower);
+		//return;
+	}
+		break;
+	case DTYPE_TARGET_SELECTION_LFO://parameter_dtypes[paramNr] & 0x0F
+	{
+		//**LFO - limit encoder start and end to range for the target voice (not the lfo number)
+		// this is a value from 1 to 6, so we adjust to be 0 based
+		uint8_t voiceNr =  (uint8_t)(parameter_values[PAR_VOICE_LFO1+(paramNr - PAR_TARGET_LFO1)]-1);
+		if(*paramValue < pgm_read_byte(&modTargetVoiceOffsets[voiceNr].start)) {
+			if(inc < 0) // going down, allow 0
+				*paramValue=0;
+			else // going up fix to start
+				*paramValue = pgm_read_byte(&modTargetVoiceOffsets[voiceNr].start);
+		} else if (*paramValue > pgm_read_byte(&modTargetVoiceOffsets[voiceNr].end)) {
+			*paramValue = pgm_read_byte(&modTargetVoiceOffsets[voiceNr].end);
+		}
+
+		// **LFOTARGFIX - save the gap index
+		menu_TargetVoiceGapIndex = getModTargetGapIndex(*paramValue);
+
+		uint8_t value =  (uint8_t)pgm_read_word(&modTargets[*paramValue].param);
+		uint8_t upper,lower;
+		upper = (uint8_t)((uint8_t)((value&0x80)>>7) | (((paramNr - PAR_TARGET_LFO1)&0x3f)<<1));
+		lower = value&0x7f;
+		frontPanel_sendData(CC_LFO_TARGET,upper,lower);
+		//--AS fall thru to update display
+	}
+		break;
+
+	case DTYPE_AUTOM_TARGET: {//parameter_dtypes[paramNr] & 0x0F
+		const uint8_t nmt=getNumModTargets();
+		//**AUTOM - limit to valid range for encoder
+		if(*paramValue >= nmt)
+			*paramValue = (uint8_t)(nmt-1);
+		break;
+	}
+
+	case DTYPE_0B255:
+		//if(*paramValue > 255)
+		//	*paramValue = 255;
+		break;
+
+
+	case DTYPE_1B16://parameter_dtypes[paramNr] & 0x0F
+		if(*paramValue < 1)
+			*paramValue = 1;
+		else if(*paramValue > 16)
+			*paramValue = 16;
+		break;
+	case DTYPE_0B15:
+		if(*paramValue>15)
+			*paramValue = 15;
+		break;
+	case DTYPE_MIX_FM://parameter_dtypes[paramNr] & 0x0F
+	case DTYPE_ON_OFF:
+	case DTYPE_0b1:
+		if(*paramValue > 1)
+			*paramValue = 1;
+		break;
+
+
+
+	case DTYPE_MENU://parameter_dtypes[paramNr] & 0x0F
+	{
+		//get the used menu (upper 4 bit)
+		const uint8_t menuId = pgm_read_byte(&parameter_dtypes[paramNr]) >> 4;
+		//get the number of entries
+		uint8_t numEntries = getMaxEntriesForMenu(menuId);
+		if(*paramValue >= numEntries)
+			*paramValue = (uint8_t)(numEntries-1);
+
+	} // parameter_dtypes[paramNr] & 0x0F case DTYPE_MENU
+		break;
+
+	default://parameter_dtypes[paramNr] & 0x0F
+	case DTYPE_0B127:
+		if(*paramValue > 127)
+			*paramValue = 127;
+		break;
+	} //parameter_dtypes[paramNr] & 0x0F
+
+
+	// --AS TODO this will also send MIDI_CC or CC_2 for the above items that have already been sent. is this desired?
+	//send parameter change to uart tx
+	if(paramNr < 128) // => Sound Parameter
+		frontPanel_sendData(MIDI_CC,(uint8_t)paramNr,*paramValue);
+	else if(paramNr > 127 && (paramNr < END_OF_SOUND_PARAMETERS)) // => Sound Parameter above 127
+		frontPanel_sendData(CC_2,(uint8_t)(paramNr-128),*paramValue);
+	else // non sound parameters (ie current step data, etc)
+		menu_parseGlobalParam(paramNr,parameter_values[paramNr]);
+
+	//frontPanel_sendData(0xb0,paramNr,*paramValue);
+}
+
+//-----------------------------------------------------------------
+// given an encoder wheel change, will set the menu item to the correct new one
+// or not change it if boundaries are reached
+static void menu_moveToMenuItem(int8_t inc)
+{
+
+	int8_t activeParameter	= menuIndex & MASK_PARAMETER; // will be 0 to 7
+	int8_t activePage		= (int8_t)(menuIndex >> PAGE_SHIFT); // will be 0 to 31
+	uint8_t needLock=0;
+	uint8_t param;
+	uint8_t allowedSkips	=3; //how many skip items do we allow in a row
+
+	// clamp encoder to +/- 1 to make logic simpler
+	inc = inc>0?1:-1;
+
+checkvalid:
+	DISABLE_CONV_WARNING
+	activeParameter+=inc; // set new desired active parameter value
+	END_DISABLE_CONV_WARNING
+	if(inc > 0) {
+		if(activeParameter == 4) { // move to 2nd section of sub-page
+			needLock=1;
+		} else if(activeParameter == 8) { // moved past end of 2nd sub-page
+			if(menu_activePage==MENU_MIDI_PAGE) { // in global menu, we can move to next sub-page
+				needLock=1;
+				activeParameter=0; // set to par 0 of next sub page
+				activePage++; // and change page
+				if(activePage >=NUM_SUB_PAGES)
+					activePage=0; // wrap around to 1st (would only happen if we fill all 8. unlikely)
+			} else
+				return; // moved past last param on section 2. not allowed in most modes
+		}
+	} else { // inc == -1
+		if(activeParameter == 3) { // move to first section of sub-page
+			needLock=1;
+		} else if(activeParameter==-1) { // if we went past 0
+			if(menu_activePage==MENU_MIDI_PAGE) { // in global menu, we can move to previous sub-page
+				needLock=1;
+				activeParameter=7; // put us on the last param of the previous sub-page
+				activePage--; // and change page
+				if(activePage < 0)
+					activePage=NUM_SUB_PAGES-1; //wrap around to last page (would only happen if we fill all 8. unlikely)
+			} else
+				return; // move past first param on section 1. not allowed in most modes
+		}
+	}
+
+	// read the new param
+	param = pgm_read_byte(&menuPages[menu_activePage][activePage].top1 + activeParameter);
+	if(param == TEXT_SKIP) {
+		if(allowedSkips--) // skip this one and check the next
+			goto checkvalid;
+		else
+			return; // would never happen unless we have > 3 skips in a row
+	}
+
+	if(param == TEXT_EMPTY) // disallow the change
+		return;
+
+	// set the change
+	menuIndex = (uint8_t)( (activePage << PAGE_SHIFT) | activeParameter);
+	if(needLock)
+		lockPotentiometerFetch();
+}
+
+//-----------------------------------------------------------------
+// this is called when we need to reset the load/save page to it's default
+// state
 void menu_resetSaveParameters()
 {
 
 	//reset save params
-	if(menu_saveOptions.what >= SAVE_TYPE_GLO)
+	if(menu_saveOptions.what >= SAVE_TYPE_GLO) // global and samples only have one choice - hit ok.
 	{
+		// return to the load/save kit page with "type" selected
 		menu_saveOptions.state = SAVE_STATE_EDIT_TYPE;
 		menu_saveOptions.what = SAVE_TYPE_KIT;
 	}
 	else
 	{
+		// return to the state where preset number is selected
 		editModeActive = 1;
 		menu_saveOptions.state	= SAVE_STATE_EDIT_PRESET_NR;//SAVE_STATE_EDIT_TYPE;
 	}		
@@ -1990,6 +1775,9 @@ void menu_resetSaveParameters()
 
 }
 //-----------------------------------------------------------------
+// switches us to a different menu sub page. If that page is already active
+// and has multiple screens, will toggle to the other screen
+// if its the global menu, and there are multiple pages will toggle to the next page
 void menu_switchSubPage(uint8_t subPageNr)
 {
 	//lock all parameters
@@ -2002,43 +1790,41 @@ void menu_switchSubPage(uint8_t subPageNr)
 	uint8_t activeParameter	= menuIndex & MASK_PARAMETER;
 	uint8_t activePage		= (menuIndex&MASK_PAGE)>>PAGE_SHIFT;
 
-	if( has2ndPage(subPageNr) &&(subPageNr == activePage))
-	{
-		//toggle between 1st and 2nd page
-		DISABLE_CONV_WARNING
-		if(activeParameter>=4)
-		{
-			activeParameter -= 4;	
-		} else {
-			activeParameter +=4;
-		}
-
-
-		menuIndex &= ~(MASK_PARAMETER);
-		menuIndex |= (activeParameter&MASK_PARAMETER);
-		END_DISABLE_CONV_WARNING
-	} else
-	{		
-		//prevent empty pages
-		if(!has2ndPage(subPageNr)) 
-		{
-			DISABLE_CONV_WARNING
-			if(activeParameter>=4)
-			{
-				activeParameter -= 4;	
+	if(subPageNr == activePage) { // toggle only
+		// we are toggling to next screen, or back to first
+		if(activeParameter < 4) {
+			// toggle to next if possible
+			if(has2ndPage(activePage))
+				activeParameter=4;
+			else if(menu_activePage==MENU_MIDI_PAGE) { // special case for global - wrap around to first
+				activePage=0;
+				activeParameter=0;
 			}
-			menuIndex &= ~(MASK_PARAMETER);
-			menuIndex |= (activeParameter&MASK_PARAMETER);
-			END_DISABLE_CONV_WARNING
+		} else { // we are on 2nd screen
 
+			if(menu_activePage==MENU_MIDI_PAGE){
+				// in global mode, we move to next page if possible (or wrap to first)
+				if(activePage < NUM_SUB_PAGES-1 &&
+				   pgm_read_byte(&menuPages[menu_activePage][activePage+1].top1) != TEXT_EMPTY) {
+					activePage++;
+				} else {
+					activePage=0;
+				}
+			}
+			activeParameter=0;
 		}
-		//got to selected sub page
-		DISABLE_CONV_WARNING
-		menuIndex &= ~(MASK_PAGE);
-		menuIndex |= (subPageNr)<<PAGE_SHIFT;
-		END_DISABLE_CONV_WARNING
-	}		
-};
+	} else { // move to different sub page
+		// we are moving to a different (specific) subpage
+		activePage=subPageNr;
+		if(activeParameter > 3 && has2ndPage(activePage))
+			activeParameter = 4;
+		else
+			activeParameter = 0;
+	}
+
+	menuIndex = (uint8_t)( (activePage << PAGE_SHIFT) | activeParameter);
+}
+
 //-----------------------------------------------------------------
 void menu_resetActiveParameter()
 {
@@ -2058,14 +1844,24 @@ uint8_t menu_getSubPage()
 //-----------------------------------------------------------------
 void menu_switchPage(uint8_t pageNr)
 {
-
-
 	//clear all sequencer buttons
 	led_clearSequencerLeds();
 
+	switch(pageNr) {
+	case MENU_MIDI_PAGE: { // global settings page
+		uint8_t toggle = (menu_activePage == MENU_MIDI_PAGE);
+		menu_activePage=MENU_MIDI_PAGE;
+		// leave edit mode if active
+		editModeActive = 0;
+		//activate the parameter lock
+		lockPotentiometerFetch();
 
-	switch(pageNr)
-	{
+		// **GMENU TODO do we need to clear any leds?
+		if (toggle) // if we are on the settings page already, toggle between all pages
+			menu_switchSubPage(menu_getSubPage());
+
+		}
+		break;
 
 	case PERFORMANCE_PAGE:
 	case PATTERN_SETTINGS_PAGE:
@@ -2090,23 +1886,22 @@ void menu_switchPage(uint8_t pageNr)
 			//menu_saveOptions.what	= SAVE_TYPE_SOUND;
 		}
 
-		//if we are already on the load/save page, toggle between load/save
+		//if we are already on the load page, toggle to save page
+		// otherwise go to load page (because we were somewhere else or we were on the save page)
 		if(menu_activePage == LOAD_PAGE)
-		{
 			menu_activePage = SAVE_PAGE;
-		}
 		else
-		{
 			menu_activePage = LOAD_PAGE;
-		}
 
 		//leave edit mode if active
 		//editModeActive = 0;
+
+		// load the name of the current preset from disk
 		preset_loadName(menu_currentPresetNr[menu_saveOptions.what], menu_saveOptions.what);
 	}
-	break;
+		break;
 
-	default: //voice pages
+	default: //voice pages etc
 	{
 		menu_activePage = pageNr;
 		if(pageNr<7) {
@@ -2114,7 +1909,6 @@ void menu_switchPage(uint8_t pageNr)
 		}
 		//leave edit mode if active
 		editModeActive = 0;
-
 
 		//activate the parameter lock
 		lockPotentiometerFetch();
@@ -2124,8 +1918,8 @@ void menu_switchPage(uint8_t pageNr)
 		uint8_t patternNr = menu_shownPattern; //max 7 => 0x07 = 0b111
 		uint8_t value = (uint8_t)((trackNr<<4) | (patternNr&0x7));
 		frontPanel_sendData(LED_CC,LED_QUERY_SEQ_TRACK,value);
-	}
-	break;
+		}
+		break;
 	}		
 
 
@@ -2176,13 +1970,18 @@ void menu_parseGlobalParam(uint16_t paramNr, uint8_t value)
 	case PAR_MIDI_CHAN_4:
 	case PAR_MIDI_CHAN_5:
 	case PAR_MIDI_CHAN_6:
-
+	case PAR_MIDI_CHAN_GLOBAL:
 	{
-		uint8_t voice = (uint8_t)(paramNr - PAR_MIDI_CHAN_1);
+		uint8_t voice;
 		uint8_t channel = (uint8_t)(value-1);
+		if(paramNr==PAR_MIDI_CHAN_GLOBAL)
+			voice= 7; // will be 7 for global channel
+		else
+			voice=(uint8_t)(paramNr - PAR_MIDI_CHAN_1); // will be 0-6 for voice channels
 		frontPanel_sendData(SEQ_CC,SEQ_MIDI_CHAN,(uint8_t)((voice<<4) | channel ));
 	}
 	break;
+
 
 	case PAR_POS_X:
 		frontPanel_sendData(SEQ_CC,SEQ_SET_ACTIVE_TRACK,menu_getActiveVoice());
@@ -2356,6 +2155,17 @@ void menu_parseGlobalParam(uint16_t paramNr, uint8_t value)
 		frontPanel_sendData(SEQ_CC,SEQ_EUKLID_STEPS,msg);
 	}
 	break;
+	case PAR_EUKLID_ROTATION:	{
+		uint8_t rotation =(uint8_t)(value); // max 15
+		uint8_t pattern = menu_shownPattern; //max 7
+		uint8_t msg =(uint8_t)( (pattern&0x7) | (rotation<<3));
+
+		//select the track nr
+		frontPanel_sendData(SEQ_CC,SEQ_SET_ACTIVE_TRACK,menu_getActiveVoice());
+
+		frontPanel_sendData(SEQ_CC,SEQ_EUKLID_ROTATION,msg);
+	}
+	break;
 
 	case PAR_PATTERN_BEAT:
 		frontPanel_sendData(SEQ_CC,SEQ_SET_PAT_BEAT,value);
@@ -2389,9 +2199,8 @@ void menu_parseGlobalParam(uint16_t paramNr, uint8_t value)
 		frontPanel_sendData(SEQ_CC, SEQ_MIDI_FILT_TX, value);
 		break;
 	case PAR_MIDI_FILT_RX:
-			frontPanel_sendData(SEQ_CC, SEQ_MIDI_FILT_RX, value);
-			break;
-
+		frontPanel_sendData(SEQ_CC, SEQ_MIDI_FILT_RX, value);
+		break;
 	case PAR_PRESCALER_CLOCK_IN:
 			frontPanel_sendData(SEQ_CC, SEQ_TRIGGER_IN_PPQ, value);
 			break;
@@ -2401,10 +2210,12 @@ void menu_parseGlobalParam(uint16_t paramNr, uint8_t value)
 	case PAR_PRESCALER_CLOCK_OUT2:
 			frontPanel_sendData(SEQ_CC, SEQ_TRIGGER_OUT2_PPQ, value);
 			break;
-
 	case PAR_TRIG_GATE_MODE:
 			frontPanel_sendData(SEQ_CC, SEQ_TRIGGER_GATE_MODE, value);
 			break;
+	case PAR_BAR_RESET_MODE:
+		frontPanel_sendData(SEQ_CC, SEQ_BAR_RESET_MODE, value);
+		break;
 
 	}
 }
@@ -2419,7 +2230,7 @@ static void menu_processSpecialCaseValues(uint16_t paramNr/*, const uint8_t *val
 
 
 	//To see the generated pattern we have to update the step view
-	else if( (paramNr == PAR_EUKLID_LENGTH) || (paramNr == PAR_EUKLID_STEPS) )
+	else if( (paramNr == PAR_EUKLID_LENGTH) || (paramNr == PAR_EUKLID_STEPS) || (paramNr == PAR_EUKLID_ROTATION) )
 	{
 		//query current sequencer step states and light up the corresponding leds 
 		//frontPanel_sendData(LED_CC,LED_QUERY_SEQ_TRACK,menu_activePage);
@@ -2442,8 +2253,10 @@ static uint8_t getDtypeValue(uint8_t value, uint16_t paramNr)
 		uint8_t s, e, rng;
 		if(paramNr >= PAR_VEL_DEST_1 && paramNr <= PAR_VEL_DEST_6 )
 			voiceNr=(uint8_t)(paramNr-PAR_VEL_DEST_1);
-		else if(paramNr >= PAR_TARGET_LFO1 && paramNr <= PAR_TARGET_LFO6)
-			voiceNr=(uint8_t)(paramNr-PAR_TARGET_LFO1);
+		else if(paramNr >= PAR_TARGET_LFO1 && paramNr <= PAR_TARGET_LFO6) {
+			// this is the voice being targeted, not the lfo number
+			voiceNr=(uint8_t)(parameter_values[PAR_VOICE_LFO1+(paramNr - PAR_TARGET_LFO1)]-1);
+		}
 		s=pgm_read_byte(&modTargetVoiceOffsets[voiceNr].start);
 		e=pgm_read_byte(&modTargetVoiceOffsets[voiceNr].end);
 		// start will be a non-zero value. We need to allow setting a value of 0 (off) or
@@ -2469,7 +2282,9 @@ static uint8_t getDtypeValue(uint8_t value, uint16_t paramNr)
 	case DTYPE_1B16:
 		return (uint8_t)(1 + 15*frac);
 		break;
-
+	case DTYPE_0B15:
+		return (uint8_t)(15*frac);
+		break;
 		// These are 0 or 1
 	case DTYPE_MIX_FM:
 	case DTYPE_ON_OFF:
@@ -2495,7 +2310,8 @@ static uint8_t getDtypeValue(uint8_t value, uint16_t paramNr)
 		break;
 	}	
 	return 0;
-};
+}
+
 //-----------------------------------------------------------------
 void menu_parseKnobValue(uint8_t potNr, uint8_t potValue)
 {
@@ -2564,9 +2380,12 @@ void menu_parseKnobValue(uint8_t potNr, uint8_t potValue)
 
 	case DTYPE_VOICE_LFO:
 	{
-		// **LFO since the lfo voice may be changing, we might need to update the lfo target to point
-		// to a different location in modTargets (a location valid for the new voice)
-		const uint8_t newTargVal=fixLfoTargetForVoice((uint8_t)(paramNr - PAR_VOICE_LFO1), dtypeValue);
+		// **LFOTARGFIX - ensure that the lfo mod target is pointing to the same type of modulation
+		// on the new voice
+		const uint8_t newTargVal=getModTargetIdxFromGapIdx((uint8_t)(dtypeValue-1),menu_TargetVoiceGapIndex);
+
+		// update the lfo mod target if applicable
+		parameter_values[PAR_TARGET_LFO1 + (paramNr - PAR_VOICE_LFO1)] = newTargVal;
 
 		// determine the real param value given the index into modTargets
 		const uint8_t value =  (uint8_t)pgm_read_word(&modTargets[newTargVal].param);
@@ -2579,8 +2398,11 @@ void menu_parseKnobValue(uint8_t potNr, uint8_t potValue)
 		break;
 	case DTYPE_TARGET_SELECTION_LFO:
 	{
-		//**LFO convert to param value and send
 
+		// **LFOTARGFIX - save the gap index
+		menu_TargetVoiceGapIndex = getModTargetGapIndex(dtypeValue);
+
+		//**LFO convert to param value and send
 		// determine the real param value given the index into modTargets
 		const uint8_t value = (uint8_t)pgm_read_word(&modTargets[dtypeValue].param);
 		uint8_t upper,lower;
@@ -2641,6 +2463,8 @@ uint8_t menu_getActiveVoice()
 //----------------------------------------------------------------
 void menu_setActiveVoice(uint8_t voiceNr)
 {
+	// **LFOTARGFIX - save the gap index
+	menu_TargetVoiceGapIndex = getModTargetGapIndex(parameter_values[PAR_TARGET_LFO1+voiceNr]);
 	menu_activeVoice = voiceNr;
 };
 //----------------------------------------------------------------
@@ -2666,19 +2490,19 @@ void setNoteName(uint8_t num, char *buf)
 
 /* fill up to 3 bytes of a buffer with string representation of a number */
 // space padded unsigned
-void numtostrpu(char *buf, uint8_t num)
+void numtostrpu(char *buf, uint8_t num, char pad)
 {
     if(num > 99) {
         buf[0]=(char)('0'+(num / 100));
         num %= 100;
     } else {
-        buf[0]=' ';
+        buf[0]=pad;
     }
     if(num > 9) {
         buf[1]=(char)('0'+(num / 10));
         num %=10;
-    } else if(buf[0]==' ') {
-        buf[1]=' ';
+    } else if(buf[0]==pad) {
+        buf[1]=pad;
     } else
         buf[1]='0';
     buf[2]=(char)('0'+num);
@@ -2727,6 +2551,7 @@ void numtostru(char *buf, uint8_t num)
 }
 
 // non space padded signed
+#if 0
 void numtostrs(char *buf, int8_t num)
 {
     uint8_t b=0;
@@ -2746,6 +2571,7 @@ void numtostrs(char *buf, int8_t num)
     }
     buf[b]=(char)('0'+num);
 }
+#endif
 
 // make 1st 3 letters of buffer uppercase
 void upr_three(char *buf)

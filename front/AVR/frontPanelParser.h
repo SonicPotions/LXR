@@ -75,7 +75,8 @@ extern uint8_t frontPanel_sysexMode;
 
 //VOICE_CC
 //#define VOICE_AUDIO_OUT		0x01
-#define VOICE_MIDI_CHAN		0x02
+// --AS appears unused
+//#define VOICE_MIDI_CHAN		0x02
 #define VOICE_DECIMATION	0x03
 
 //TODO in hex werten... nicht dezimal als hex
@@ -101,7 +102,7 @@ extern uint8_t frontPanel_sysexMode;
 #define SEQ_REQUEST_EUKLID_PARAMS 0x19
 #define SEQ_SET_SHOWN_PATTERN	0x1A
 
-#define SEQ_REC_ON_OFF		0x1B	/**< start(data2=1) or stop(data2=0) recording mode */
+#define SEQ_REC_ON_OFF		0x1B		/**< start(data2=1) or stop(data2=0) recording mode */
 #define SEQ_REQUEST_PATTERN_PARAMS 0x1C /**< the sequencer sends back the data of the active pattern */
 #define SEQ_SET_PAT_BEAT	0x1D		/**< on every Nth bar the pattern will change to the next pattern*/
 #define SEQ_SET_PAT_NEXT	0x1E		/**< the next pattern that will be played when the current finishes*/
@@ -121,24 +122,21 @@ extern uint8_t frontPanel_sysexMode;
 #define SEQ_POSY			0x2a
 #define SEQ_FLUX			0x2b
 #define SEQ_SOM_FREQ		0x2c
-#define SEQ_MIDI_CHAN		0x2d	//voiceNr (0xf0) + channel (0x0f)
+#define SEQ_MIDI_CHAN		0x2d	//voiceNr (0xf0) + channel (0x0f). --AS voice 7=global channel
 #define SEQ_MIDI_MODE		0x2e //--AS unused now
 #define SEQ_MIDI_ROUTING    0x2f
 #define SEQ_MIDI_FILT_TX	0x30
 #define SEQ_MIDI_FILT_RX	0x31
-#define SEQ_TRIGGER_IN_PPQ	0x32
-#define SEQ_TRIGGER_OUT1_PPQ 0x33
-#define SEQ_TRIGGER_OUT2_PPQ 0x34
 
-/* on the mainboard the track length is stored in the patternLength[] array.
- * to save space it is written into the step data using the PATTERN_END flag when saving patterns
- * this command tells the mainboard to write the info from the patternLength[] array into the step data
- * before querrying the info for the savefile
- */
-#define SEQ_SET_LENGTH_FLAGS 0x35
-#define SEQ_READ_LENGTH_FLAGS 0x36
+#define SEQ_BAR_RESET_MODE  0x32 //--AS
+#define SEQ_ERASE_ON_OFF    0x33 //--AS **RECORD data2=1: erase on data2=0: erase off
+#define SEQ_TRACK_ROTATION	0x34 // --AS **PATROT rotate a track's start position 0 to 15
+#define SEQ_EUKLID_ROTATION	0x35
 
-#define SEQ_TRIGGER_GATE_MODE 	0x37
+#define SEQ_TRIGGER_IN_PPQ	  0x36
+#define SEQ_TRIGGER_OUT1_PPQ  0x37
+#define SEQ_TRIGGER_OUT2_PPQ  0x38
+#define SEQ_TRIGGER_GATE_MODE 0x39
 
 //SysEx
 #define SYSEX_REQUEST_STEP_DATA			0x01
@@ -146,6 +144,7 @@ extern uint8_t frontPanel_sysexMode;
 #define SYSEX_REQUEST_MAIN_STEP_DATA	0x03
 #define SYSEX_SEND_MAIN_STEP_DATA		0x04
 #define SYSEX_REQUEST_PATTERN_DATA		0x05
+#define SYSEX_SEND_PAT_LEN_DATA			0x06
 
 
 /** a struct defining a standard midi message*/

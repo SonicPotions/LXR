@@ -86,7 +86,6 @@ typedef struct HiHatStruct
 	Lfo 		lfo;
 	SnapEg snapEg;
 	uint8_t volumeMod;	//modulate volume by midi velocity if 1
-
 	uint8_t isOpen;		//is 1 if urrent playing voice is open hihat, 0 for closed
 
 } HiHatVoice;

@@ -26,17 +26,17 @@ uint8_t preset_loadDrumset(uint8_t presetNr, uint8_t isMorph);
 void preset_saveGlobals();
 void preset_loadGlobals();
 
-char* preset_getDrumsetName(uint8_t presetNr);
+void preset_saveAll(uint8_t presetNr, uint8_t isAll);
+void preset_loadAll(uint8_t presetNr, uint8_t isAll);
 
 char* preset_loadName(uint8_t presetNr, uint8_t what);
 
 /** save a pattern set to the sd card */
 void preset_savePattern(uint8_t presetNr);
 uint8_t preset_loadPattern(uint8_t presetNr);
-char* preset_getPatternName(uint8_t presetNr);
 /** morph pattern linear to üpattern buffer 2*/
 void preset_morph(uint8_t morph);
 uint8_t preset_getMorphValue(uint16_t index, uint8_t morph);
-
+void preset_sendDrumsetParameters();
 
 #endif /* PRESETMANAGER_H_ */

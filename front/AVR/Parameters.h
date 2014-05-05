@@ -297,8 +297,6 @@ enum ParamEnums
 	PAR_MIDI_NOTE6,
 	PAR_MIDI_NOTE7,
 
-
-
 	//#########################################
 	//######## End of sound Parameters ########
 	//#########################################
@@ -306,24 +304,25 @@ enum ParamEnums
 	//all parameters in this section are only there to be referenced from the menu
 	//they are not saved anywhere
 	END_OF_SOUND_PARAMETERS,
-	PAR_ROLL= END_OF_SOUND_PARAMETERS,
+	PAR_ROLL= END_OF_SOUND_PARAMETERS, //228
 	PAR_MORPH,
 
-	PAR_ACTIVE_STEP,
+	PAR_ACTIVE_STEP, 					/*230*/
 	PAR_STEP_VOLUME,
 	PAR_STEP_PROB,
 	PAR_STEP_NOTE,
 	
 	PAR_EUKLID_LENGTH,
 	PAR_EUKLID_STEPS,
+	PAR_EUKLID_ROTATION,
 	
 	PAR_AUTOM_TRACK,
 	
 	// --AS these are now indices into modTargets
-	PAR_P1_DEST,/*240*/
+	PAR_P1_DEST,
 	PAR_P2_DEST,
 	
-	PAR_P1_VAL,
+	PAR_P1_VAL,							/*240*/
 	PAR_P2_VAL,
 	
 	PAR_SHUFFLE,
@@ -335,11 +334,9 @@ enum ParamEnums
 	
 	PAR_POS_X,
 	PAR_POS_Y,
-	PAR_FLUX,/*250*/
+	PAR_FLUX,
 	PAR_SOM_FREQ,
-
-
-
+	PAR_TRACK_ROTATION,				// --AS **PATROT
 
 	
 	//#########################################
@@ -347,7 +344,7 @@ enum ParamEnums
 	//#########################################
 	PAR_BEGINNING_OF_GLOBALS, //a placeholder to mark the beginning of the global var space not present in morph and not needed in the seq
 	//global params
-	PAR_BPM = PAR_BEGINNING_OF_GLOBALS,
+	PAR_BPM = PAR_BEGINNING_OF_GLOBALS,	/*250*/
 	
 
 	
@@ -358,25 +355,26 @@ enum ParamEnums
 	PAR_MIDI_CHAN_5,
 	PAR_MIDI_CHAN_6,
 
-	PAR_FETCH,
-	PAR_FOLLOW, /*260*/
+	PAR_FETCH,							// bool
+	PAR_FOLLOW,							// bool
 	
 	
 	PAR_QUANTISATION,
 	
-	PAR_SCREENSAVER_ON_OFF,
-	PAR_MIDI_MODE,						 //--AS unused now
+	PAR_SCREENSAVER_ON_OFF,				// bool /*260*/
+	PAR_MIDI_MODE,						//--AS unused now
 	PAR_MIDI_CHAN_7,
 	PAR_MIDI_ROUTING,
 	PAR_MIDI_FILT_TX,
-	PAR_MIDI_FILT_RX, /*267*/
-
+	PAR_MIDI_FILT_RX,
 	//prescaler control for trigger IO extension
 	PAR_PRESCALER_CLOCK_IN,
 	PAR_PRESCALER_CLOCK_OUT1,
-	PAR_PRESCALER_CLOCK_OUT2, /*230*/
+	PAR_PRESCALER_CLOCK_OUT2,
 	PAR_TRIG_GATE_MODE,
 
+	PAR_BAR_RESET_MODE,					// bool --AS 0 or 1   /*270*/
+	PAR_MIDI_CHAN_GLOBAL,				// --AS global midi channel
 	NUM_PARAMS	
 };
 

@@ -9,14 +9,14 @@
 #include <stdio.h>
 
 #include "ledHandler.h"
-#include "IO\uart.h"
+#include "IO/uart.h"
 #include "buttonHandler.h"
 #include "front.h"
 //debug
 #include <stdlib.h>
 #include "Hardware/lcd.h"
-#include <util\atomic.h>
-#include "Preset\PresetManager.h"
+#include <util/atomic.h>
+#include "Preset/PresetManager.h"
 //--
 
 static uint8_t frontParser_rxCnt=0;
@@ -221,20 +221,21 @@ void frontPanel_parseData(uint8_t data)
 			}
 			else if(frontPanel_sysexMode == SYSEX_REQUEST_MAIN_STEP_DATA)
 			{
-				if(frontParser_rxCnt<2)
+				if(frontParser_rxCnt<3)
 				{
-					//1st 2 nibbles
+					//1st 2 nibbles + last 2 bit
 					frontParser_sysexBuffer[frontParser_rxCnt++] = data;
 				} else {
-					//last 2 bit
+					// length information
 					frontParser_sysexBuffer[frontParser_rxCnt++] = data;
 					
 					uint16_t mainStepData = frontParser_sysexBuffer[0] |
 							(uint16_t)(frontParser_sysexBuffer[1]<<7) |
 							(uint16_t)(frontParser_sysexBuffer[2]<<14);
-					//we abuse the stepData struct to store the main step data
+					//we abuse the stepData struct to store the main step data and the length
 					frontParser_stepData.volume = (uint8_t)(mainStepData>>8);
 					frontParser_stepData.prob = (uint8_t)(mainStepData&0xff);
+					frontParser_stepData.note = frontParser_sysexBuffer[3];
 					
 					//signal that a new data chunk is available
 					frontParser_newSeqDataAvailable = 1;
@@ -326,19 +327,29 @@ void frontPanel_parseData(uint8_t data)
 						
 						case SEQ_TRACK_LENGTH:
 							parameter_values[PAR_TRACK_LENGTH] = frontParser_midiMsg.data2;
-						menu_repaint();
-						break;
+							menu_repaint();
+							break;
+						// **PATROT - receive rotation value from back for active track
+						case SEQ_TRACK_ROTATION:
+							parameter_values[PAR_TRACK_ROTATION] = frontParser_midiMsg.data2;
+							menu_repaint(); // --AS TODO we might not need this
+							break;
 						
 						case SEQ_EUKLID_LENGTH:
 							parameter_values[PAR_EUKLID_LENGTH] = frontParser_midiMsg.data2;
-						menu_repaint();
-						break;
+							menu_repaint();
+							break;
 						
 						case SEQ_EUKLID_STEPS:
 							parameter_values[PAR_EUKLID_STEPS] = frontParser_midiMsg.data2;
-						menu_repaint();
-						break;
+							menu_repaint();
+							break;
 						
+						case SEQ_EUKLID_ROTATION:
+							parameter_values[PAR_EUKLID_ROTATION] = frontParser_midiMsg.data2;
+							menu_repaint();
+						break;
+
 						case SEQ_VOLUME:
 							parameter_values[PAR_STEP_VOLUME] = frontParser_midiMsg.data2;
 						menu_repaintAll();

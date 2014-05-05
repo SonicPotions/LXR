@@ -285,6 +285,7 @@ const char shortNames[][4] PROGMEM  =
 	{"prb"},
 	{"stp"},
 	{"len"},
+	{"rot"},
 	{"bpm"},
 	{"ch"},
 	{"out"},
@@ -308,7 +309,8 @@ const char shortNames[][4] PROGMEM  =
 	{"rxf"},  // midi rx filter
 	{"cki"},  // trigger clock in ppq
 	{"co1"},  // trigger clock out1 ppq
-	{"co2"}  // trigger clock out2 ppq
+	{"co2"},  // trigger clock out2 ppq
+	{"pcr"}, // pattern change resets bar counter
 };
 //-----------------------------------------------------------------
 // These correspond with the catNamesEnum in menu.h
@@ -386,9 +388,10 @@ const char longNames[][16] PROGMEM =
 	{"Number"},
 	{"Length"},
 	{"Steps"},
+	{"Rotation"},
 	{"Tempo"},
 	{"AudioOut"},
-	{"MIDIChan"},
+	{"Channel"},
 	{"SampleRt"},
 	{"NextPatt"},
 	{"Phase"},
@@ -417,6 +420,7 @@ const char longNames[][16] PROGMEM =
 	{"Out1 PPQ"},
 	{"Out2 PPQ"},
 	{"Gate Mode"},
+	{"PCReset" }, // reset bar counter on manual pattern change
 };
 
 

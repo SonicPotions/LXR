@@ -52,7 +52,6 @@
 #include "SomGenerator.h"
 #include "TriggerOut.h"
 
-
 static void frontParser_handleMidiMessage();
 static void frontParser_handleSysexData(unsigned char data);
 static void frontParser_handleSeqCC();
@@ -122,7 +121,7 @@ void frontParser_parseUartData(unsigned char data)
 	//TODO der ganze sysex kram kann sicher noch optimiert werden
 	//das das nicht andauernd abgefragt werden muss
 
-	// if high byte set a new message starts
+	// if high bit is set, a new message starts
 	if(data&0x80)
 	{
 		//reset the byte counter
@@ -262,11 +261,41 @@ static void frontParser_handleSysexData(unsigned char data)
 			frontParser_rxCnt = 0;
 
 			//signal new pattern
-			if( seq_isRunning()) {
+			// -- AS we do this below after receiving pattern length data
+			//if( seq_isRunning()) {
+			//	seq_newPatternAvailable = 1;
+			//}
+		}
+		break;
+	case SYSEX_RECEIVE_PAT_LEN_DATA:
+		// --AS same as above but we are receiving length data for each pattern
+		{
+			//calculate the step pattern and track indices
+			const uint8_t currentPattern	= frontParser_sysexSeqStepNr / 7;
+			const uint8_t currentTrack  	= frontParser_sysexSeqStepNr - currentPattern*7;
+
+			//first load into inactive track
+			PatternSet* patternSet = &seq_patternSet;
+
+			if( (currentPattern == seq_activePattern) && seq_isRunning() )
+			{
+				seq_tmpPattern.seq_patternLengthRotate[currentTrack].length = data;
+			} else {
+				patternSet->seq_patternLengthRotate[currentPattern][currentTrack].length = data;
+			}
+
+
+			//inc the step counter
+			frontParser_sysexSeqStepNr++;
+			frontParser_rxCnt = 0;
+
+			// signal new pattern after receiving all the data
+			if( seq_isRunning() && (frontParser_sysexSeqStepNr == NUM_TRACKS*NUM_PATTERN)) {
 				seq_newPatternAvailable = 1;
 			}
 		}
 		break;
+
 
 	case SYSEX_RECEIVE_STEP_DATA:
 		// we expect a bunch of 8 byte sysex message containing new step data for the sequencer
@@ -325,7 +354,7 @@ static void frontParser_handleSysexData(unsigned char data)
 
 	default:
 	case SYSEX_ACTIVE_MODE_NONE:
-		//we received a mode message -> set mode
+		//we received a mode message -> set the active mode
 		frontParser_sysexActive = data;
 		frontParser_sysexSeqStepNr = 0;
 		frontParser_rxCnt = 0;
@@ -400,7 +429,10 @@ static void frontParser_handleMidiMessage()
 	{
 		uint8_t upper = frontParser_midiMsg.data1;
 		uint8_t lower = frontParser_midiMsg.data2;
+		// --AS **PATROT note that the only valid values for the following are listed in
+		// the modTargets array in the AVR code
 		uint8_t value = ((upper&0x01)<<7) | lower;
+
 		uint8_t lfoNr = (upper&0xfe)>>1;
 
 		switch(lfoNr)
@@ -507,6 +539,8 @@ static void frontParser_handleMidiMessage()
 		{
 			uint8_t upper = frontParser_midiMsg.data1;
 			uint8_t lower = frontParser_midiMsg.data2;
+			// --AS **PATROT note that the only valid values for the following are listed in
+			// the modTargets array in the AVR code
 			uint8_t value = ((upper&0x01)<<7) | lower;
 			uint8_t velModNr = (upper&0xfe)>>1;
 			modNode_setDestination(&velocityModulators[velModNr], value);
@@ -547,6 +581,12 @@ static void frontParser_handleMidiMessage()
 				uart_sendFrontpanelByte(FRONT_SEQ_CC);
 				uart_sendFrontpanelByte(FRONT_SEQ_TRACK_LENGTH);
 				uart_sendFrontpanelByte(seq_getTrackLength(trackNr));
+
+				// **PATROT send track rotation value back
+				uart_sendFrontpanelByte(FRONT_SEQ_CC);
+				uart_sendFrontpanelByte(FRONT_SEQ_TRACK_ROTATION);
+				uart_sendFrontpanelByte(seq_getTrackRotation(trackNr));
+
 			}
 			break;
 
@@ -588,6 +628,9 @@ static void frontParser_handleSeqCC()
 		seq_setRecordingMode(frontParser_midiMsg.data2);
 		break;
 
+	case FRONT_SEQ_ERASE_ON_OFF:
+		seq_setErasingMode(frontParser_midiMsg.data2);
+		break;
 
 	case FRONT_SEQ_NOTE:
 		seq_patternSet.seq_subStepPattern[frontParser_shownPattern][frontParser_activeTrack][frontParser_activeStep].note = frontParser_midiMsg.data2;
@@ -626,6 +669,17 @@ static void frontParser_handleSeqCC()
 		}
 		break;
 
+	case FRONT_SEQ_EUKLID_ROTATION:
+		{
+			uint8_t rotation = frontParser_midiMsg.data2 >> 3;
+			//rotation += 1;
+			uint8_t pattern = frontParser_midiMsg.data2 & 0x7;
+
+			euklid_setRotation(frontParser_activeTrack,rotation,pattern);
+			frontParser_updateTrackLeds(frontParser_activeTrack, pattern);
+		}
+		break;
+
 	case FRONT_SEQ_CLEAR_TRACK: {
 			seq_clearTrack(frontParser_midiMsg.data2, frontParser_shownPattern);
 		}
@@ -656,7 +710,7 @@ static void frontParser_handleSeqCC()
 		uint8_t voice = frontParser_midiMsg.data2 >> 4;
 		uint8_t channel = frontParser_midiMsg.data2 & 0x0f;
 		// --AS if midi channel changed, and a note was playing on old channel, turn it off
-		if(midi_MidiChannels[voice] != channel)
+		if(voice < 7 && midi_MidiChannels[voice] != channel)
 			seq_midiNoteOff(midi_MidiChannels[voice]);
 		midi_MidiChannels[voice] = channel;
 	}
@@ -693,10 +747,12 @@ static void frontParser_handleSeqCC()
 		}
 		break;
 
-
-
 	case FRONT_SEQ_TRACK_LENGTH:
 		seq_setTrackLength(frontParser_activeTrack,frontParser_midiMsg.data2);
+		break;
+
+	case FRONT_SEQ_TRACK_ROTATION: //**PATROT handle incoming track rotation. apply to active track
+		seq_setTrackRotation(frontParser_activeTrack,frontParser_midiMsg.data2);
 		break;
 
 	case FRONT_SEQ_SHUFFLE:
@@ -723,6 +779,10 @@ static void frontParser_handleSeqCC()
 		uart_sendFrontpanelByte(FRONT_SEQ_CC);
 		uart_sendFrontpanelByte(FRONT_SEQ_EUKLID_STEPS);
 		uart_sendFrontpanelByte(euklid_getSteps(frontParser_midiMsg.data2));
+
+		uart_sendFrontpanelByte(FRONT_SEQ_CC);
+		uart_sendFrontpanelByte(FRONT_SEQ_EUKLID_ROTATION);
+		uart_sendFrontpanelByte(euklid_getRotation(frontParser_midiMsg.data2));
 		break;
 
 	case FRONT_SEQ_SET_SHOWN_PATTERN:
@@ -834,7 +894,11 @@ static void frontParser_handleSeqCC()
 	case FRONT_SEQ_MIDI_RX_FILTER:
 		midiParser_setFilter(frontParser_midiMsg.data1==FRONT_SEQ_MIDI_TX_FILTER, frontParser_midiMsg.data2);
 		break;
-
+	case FRONT_SEQ_BAR_RESET_MODE:
+		// --AS a setting of 0 is default (keep track of bars in song), a setting of 1 is
+		// to reset the bar counter when a manual pattern change occurs
+		seq_resetBarOnPatternChange = frontParser_midiMsg.data2;
+		break;
 	case FRONT_SEQ_TRIGGER_IN_PPQ:
 		switch(frontParser_midiMsg.data2)
 		{
@@ -908,19 +972,9 @@ static void frontParser_handleSeqCC()
 		}
 		break;
 
-	case FRONT_SEQ_SET_LENGTH_FLAGS:
-		seq_clearAllPatternEndFlags();
-		seq_setAllPatternEndFlags();
-		break;
-
-	case FRONT_SEQ_READ_LENGTH_FLAGS:
-		seq_readAllPatternEndFlags();
-		break;
-
 	case FRONT_SEQ_TRIGGER_GATE_MODE:
 		trigger_setGatemode(frontParser_midiMsg.data2);
 		break;
-
 
 	default:
 		break;

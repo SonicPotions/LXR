@@ -40,6 +40,7 @@
 #include "modulationNode.h"
 #include "TriggerOut.h"
 
+
 //instance of the snare voice
 SnareVoice snareVoice;
 

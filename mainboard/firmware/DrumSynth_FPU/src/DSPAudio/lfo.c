@@ -34,7 +34,7 @@
  */
 
 //-------------------------------------------------------------
-#include "Lfo.h"
+#include "lfo.h"
 #include "random.h"
 #include <math.h>
 
