@@ -119,11 +119,9 @@ LDFLAGS += -T./stm32_flash.ld
 all:
 	@echo "Valid targets are"
 	@echo " clean : clean build directory"
-	@echo " lxr   : build LXR cortex firmware"
-	@echo "BINPATH='$(BINPATH)'"
-	@echo "CC='$(CC)'"
-	
-	
+	@echo " cortex: build LXR cortex firmware"
+
+
 .PHONY: clean
 clean:
 	@$(RM) $(BINARY)
