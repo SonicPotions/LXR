@@ -50,7 +50,7 @@ AS  =$(addprefix $(BINPATH),avr-as)
 ###############################################################################
 # SOURCE FILES
 SRCDIR=.
-CCSRCFILES  = $(shell find $(SRCDIR) -type f -name "*.c")
+CCSRCFILES  = $(shell find $(SRCDIR) -type f -name "*.c" | grep -v '/\.')
 
 vpath %.c ./
 vpath %.c ./Hardware

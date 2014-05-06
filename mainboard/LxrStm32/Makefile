@@ -51,9 +51,9 @@ AS  =$(addprefix $(BINPATH),arm-none-eabi-as)
 ###############################################################################
 # SOURCE FILES
 SRCDIR=.
-CCSRCFILES  = $(shell find $(SRCDIR) -type f -name "*.c")
-CXXSRCFILES = $(shell find $(SRCDIR) -type f -name "*.cpp")
-ASSRCFILES  = $(shell find $(SRCDIR) -type f -name "*.S")
+CCSRCFILES  = $(shell find $(SRCDIR) -type f -name "*.c" | grep -v '/\.')
+CXXSRCFILES = $(shell find $(SRCDIR) -type f -name "*.cpp" | grep -v '/\.')
+ASSRCFILES  = $(shell find $(SRCDIR) -type f -name "*.S" | grep -v '/\.')
 
 vpath %.c ./Libraries/STM32_USB_Device_Library/Core/src
 vpath %.c ./Libraries/STM32_USB_OTG_Driver/src
