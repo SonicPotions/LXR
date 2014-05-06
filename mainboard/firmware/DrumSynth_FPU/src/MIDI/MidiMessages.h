@@ -374,8 +374,15 @@ enum
 	CC2_MIDI_NOTE5,
 	CC2_MIDI_NOTE6,
 	CC2_MIDI_NOTE7, // s/b 111 i think
+	
+	//<<insert new parameters here>>
+	
+	
+	
 
 	//Mute Button NRPN messages
+	//these have to stay at the end of the CC2 list.
+	//They are a special case to enable control of the channel muting via external NRPN messages
 	CC2_MUTE_1 = 200,
 	CC2_MUTE_2,
 	CC2_MUTE_3,
