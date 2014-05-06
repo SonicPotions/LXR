@@ -27,13 +27,13 @@ else
 AT := @
 endif
 
-ARM_PATH=./mainboard/firmware/DrumSynth_FPU/
-AVR_PATH=./front/AVR/
+ARM_PATH=./mainboard/LxrStm32/
+AVR_PATH=./front/LxrAvr/
 BINPATH=./tools/bin/
 DESTDIR?="./firmware\ image"/
 
-ARM_BINARY=$(ARM_PATH)DrumSynthCortex.bin
-AVR_BINARY=$(AVR_PATH)DrumSynthFront.bin
+ARM_BINARY=$(ARM_PATH)LxrStm32.bin
+AVR_BINARY=$(AVR_PATH)LxrAvr.bin
 FIB=$(BINPATH)FirmwareImageBuilder
 FIRMWARE?=FIRMWARE.BIN
 IMAGE?="$(DESTDIR)$(FIRMWARE)"
@@ -50,6 +50,7 @@ clean:
 	$(AT)make -C tools/FirmwareImageBuilder clean
 	$(AT)make -C $(AVR_PATH) clean
 	$(AT)make -C $(ARM_PATH) clean
+	$(AT)rm $(IMAGE)
 
 .PHONY: firmware
 firmware: $(IMAGE)
@@ -68,4 +69,4 @@ $(AVR_BINARY):
 
 $(ARM_BINARY):
 	@echo "** Building $@..."
-	$(AT)make $(JOBS) -C $(ARM_PATH) cortex
+	$(AT)make $(JOBS) -C $(ARM_PATH) stm32

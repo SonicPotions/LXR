@@ -12,7 +12,7 @@
 ###############################################################################
 # OPTIONS
 
-BINARY?=DrumSynthCortex.bin
+BINARY?=LxrStm32.bin
 
 ifeq ($(DEBUG),1)
 DEFINES += -DDEBUG
@@ -74,7 +74,7 @@ vpath %.c ./src/Sequencer
 
 OBJDIR=./build/
 
-ELF=$(OBJDIR)/DrumSynth_FPU.elf
+ELF=$(OBJDIR)/LxrStm32.elf
 
 # Build object files from source...
 OBJFILES = $(addprefix $(OBJDIR),$(notdir $(CCSRCFILES:.c=.o)))
@@ -119,7 +119,7 @@ LDFLAGS += -T./stm32_flash.ld
 all:
 	@echo "Valid targets are"
 	@echo " clean : clean build directory"
-	@echo " cortex: build LXR cortex firmware"
+	@echo " stm32: build LXR STM32 firmware"
 
 
 .PHONY: clean
@@ -148,8 +148,8 @@ printfiles:
 	@echo "$(ASSRCFILES)"
 	@echo ""
 
-.PHONY: cortex
-cortex: $(BINARY)
+.PHONY: stm32
+stm32: $(BINARY)
 
 $(ELF): $(OBJFILES)
 	$(ECHO) "Linking $@..."

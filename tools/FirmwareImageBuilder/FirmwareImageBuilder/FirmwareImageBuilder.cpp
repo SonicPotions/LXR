@@ -10,10 +10,10 @@ using namespace std;
 #pragma pack(1)
 struct InfoHeader
 {
-	char			headerId[4];	// should be SPFI (Sonic Potions Firmware Image)
+	char		headerId[4];	// should be SPFI (Sonic Potions Firmware Image)
 	unsigned short	avrCodeSize;	// in byte
 	unsigned int	cortexCodeSize;	//in byte
-	char			dummy[512-10];
+	char		dummy[512-10];
 };
 
 int main(int argc, char* argv[])

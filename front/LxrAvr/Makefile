@@ -12,8 +12,8 @@
 ###############################################################################
 # OPTIONS
 
-BINARY ?= DrumSynthFront.bin
-MAP ?= $(addprefix $(dir $(BINARY)), DrumSynthFront.map)
+BINARY ?= LxrAvr.bin
+MAP ?= $(addprefix $(dir $(BINARY)), LxrAvr.map)
 
 ifeq ($(DEBUG),1)
 DEFINES += -DDEBUG
@@ -64,7 +64,7 @@ vpath %.c ./Preset
 
 OBJDIR=./build/
 
-ELF=$(OBJDIR)AVR.elf
+ELF=$(OBJDIR)LxrAvr.elf
 
 # Build object files from source...
 OBJFILES = $(addprefix $(OBJDIR),$(notdir $(CCSRCFILES:.c=.o)))
