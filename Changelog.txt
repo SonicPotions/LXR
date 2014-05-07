@@ -1,5 +1,7 @@
 Firmware v0.33
 ---------------------------
+- USB interrupt bug fixed (PLD)
+- OSX USB MIDI fixed (PLD)
 - Trigger IO will now send tigger signals on incoming MIDI notes
 - MIDI Note Off is send when amplitude envelope reaches zero
 - change in pattern data structure. Pattern lenghts of old patterns is ignored on load. you have to re-set them and re-save the pattern to store it in the new format (once)
