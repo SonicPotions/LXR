@@ -58,6 +58,15 @@ void voiceControl_noteOn(uint8_t voice, uint8_t note, uint8_t vel)
 		Cymbal_trigger(vel, note);
 	else
 		HiHat_trigger(vel,voice-5,note);
+	
+	//Send trigger out signal	
+	if(trigger_isGateModeOn())
+	{
+		if(vel)
+			trigger_triggerVoice(voice, TRIGGER_ON);
+	} else {
+		trigger_triggerVoice(voice, TRIGGER_PULSE);
+	}
 
 	// Send to front panel so it can pulse the LED
 	uart_sendFrontpanelByte(NOTE_ON);

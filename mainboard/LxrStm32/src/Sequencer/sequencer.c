@@ -340,6 +340,18 @@ void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note)
 
 	seq_parseAutomationNodes(voiceNr, &seq_patternSet.seq_subStepPattern[seq_activePattern][voiceNr][seq_stepIndex[voiceNr]]);
 
+
+	//turn the trigger off before sending the next one
+	if(voiceNr>=5)
+	{
+		//hihat channels choke each other
+		trigger_triggerVoice(5, TRIGGER_OFF);
+		trigger_triggerVoice(6, TRIGGER_OFF);
+	} else {
+		trigger_triggerVoice(voiceNr, TRIGGER_OFF);
+	}
+	
+	//Trigger internal synth voice
 	voiceControl_noteOn(voiceNr, note, vol);
 
 
@@ -355,30 +367,9 @@ void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note)
 	//--AS if a note is on for that channel send note-off first
 	seq_midiNoteOff(midiChan);
 
-	//turn the trigger off before sending the next note on
-	if(voiceNr>=5)
-	{
-		//hihat channels choke each other
-		trigger_triggerVoice(5, TRIGGER_OFF);
-		trigger_triggerVoice(6, TRIGGER_OFF);
-	} else {
-		trigger_triggerVoice(voiceNr, TRIGGER_OFF);
-	}
-
-
 	//send the new note to midi/usb out
 	seq_sendMidiNoteOn(midiChan, midiNote,
 			seq_patternSet.seq_subStepPattern[seq_activePattern][voiceNr][seq_stepIndex[voiceNr]].volume&STEP_VOLUME_MASK);
-
-	if(trigger_isGateModeOn())
-	{
-		if(vol)
-			trigger_triggerVoice(voiceNr, TRIGGER_ON);
-	} else {
-		trigger_triggerVoice(voiceNr, TRIGGER_PULSE);
-	}
-
-
 }
 //------------------------------------------------------------------------------
 static uint8_t seq_determineNextPattern()
