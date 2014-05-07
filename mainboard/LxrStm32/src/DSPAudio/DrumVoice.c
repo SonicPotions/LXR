@@ -204,6 +204,7 @@ void calcDrumVoiceAsync(const uint8_t voiceNr)
 	{
 		if(!voiceArray[voiceNr].ampFilterInput)
 			trigger_triggerVoice(TRIGGER_1 + voiceNr, TRIGGER_OFF);
+			seq_midiNoteOff(midi_MidiChannels[TRIGGER_1 + voiceNr]);	
 	}
 #endif
 

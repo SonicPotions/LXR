@@ -139,6 +139,7 @@ void Cymbal_calcAsync()
 	{
 		if(!cymbalVoice.egValueOscVol)
 			trigger_triggerVoice(TRIGGER_5, TRIGGER_OFF);
+			seq_midiNoteOff(midi_MidiChannels[TRIGGER_5]);	
 	}
 
 	//calc snap EG if transient sample 0 is activated

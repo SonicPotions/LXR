@@ -46,7 +46,7 @@
 //#include "LCD_driver.h"
 
 //static uint8_t c = 0;
-//------------------------------------------------------
+//----------------------------------------------------------------
 // this fn assumes a valid voice is sent
 void voiceControl_noteOn(uint8_t voice, uint8_t note, uint8_t vel)
 {
@@ -64,9 +64,4 @@ void voiceControl_noteOn(uint8_t voice, uint8_t note, uint8_t vel)
 	uart_sendFrontpanelByte(voice);
 	uart_sendFrontpanelByte(0);
 }
-//------------------------------------------------------
-//void voiceControl_noteOff(uint8_t voice, uint8_t note, uint8_t vel)
-//{
-//
-//}
-//------------------------------------------------------
+

@@ -142,8 +142,10 @@ void HiHat_calcAsync( )
 			if(hatVoice.isOpen)
 			{
 				trigger_triggerVoice(TRIGGER_7, TRIGGER_OFF);
+				seq_midiNoteOff(midi_MidiChannels[TRIGGER_7]);				
 			} else {
 				trigger_triggerVoice(TRIGGER_6, TRIGGER_OFF);
+				seq_midiNoteOff(midi_MidiChannels[TRIGGER_6]);				
 			}
 		}
 	}

@@ -136,7 +136,7 @@ void Snare_calcAsync()
 	{
 		if(!snareVoice.egValueOscVol)
 			trigger_triggerVoice(TRIGGER_4, TRIGGER_OFF);
-
+			seq_midiNoteOff(midi_MidiChannels[TRIGGER_4]);	
 	}
 
 	//calc snap EG if transient sample 0 is activated

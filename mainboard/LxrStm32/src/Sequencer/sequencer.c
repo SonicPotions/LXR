@@ -355,7 +355,7 @@ void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note)
 	//--AS if a note is on for that channel send note-off first
 	seq_midiNoteOff(midiChan);
 
-	//if trigger mode is set to gate, turn the trigger off before sending the next note on
+	//turn the trigger off before sending the next note on
 	if(voiceNr>=5)
 	{
 		//hihat channels choke each other
