@@ -190,7 +190,7 @@ uint8_t euklid_getSteps(uint8_t trackNr)
 };
 
 //-----------------------------------------------------
-void euklid_setLength(uint8_t trackNr, uint8_t value, uint8_t patternNr)
+void euklid_setLength(uint8_t trackNr, uint8_t value)
 {
 	if(value<=0)value=1;
 	euklid_length[trackNr] = value;
@@ -213,7 +213,6 @@ uint8_t euklid_getRotation(uint8_t trackNr)
 //-----------------------------------------------------
 void euklid_setRotation(uint8_t trackNr, uint8_t value, uint8_t patternNr)
 {
-	if(value<0) value=0;
 	if(value>euklid_length[trackNr]) value = euklid_rotation[trackNr];
 
 	euklid_rotation[trackNr] = value;

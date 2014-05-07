@@ -39,7 +39,7 @@
 //-------------------------------------------------------------------------
 void fifo_init(Fifo* fifo)
 {
-	memset(fifo->data,0,BUFFER_SIZE);
+	memset((void*)fifo->data,0,BUFFER_SIZE);
 	fifo->read = 0;
 	fifo->write = 0;
 }
@@ -70,7 +70,7 @@ void fifo_clear(Fifo* fifo)
 //-------------------------------------------------------------------------
 void fifoBig_init(FifoBig* fifo)
 {
-	memset(fifo->data,0,BUFFER_SIZE_BIG);
+	memset((void*)fifo->data,0,BUFFER_SIZE_BIG);
 	fifo->read = 0;
 	fifo->write = 0;
 }

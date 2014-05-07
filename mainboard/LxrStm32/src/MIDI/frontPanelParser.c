@@ -650,11 +650,7 @@ static void frontParser_handleSeqCC()
 		{
 			uint8_t length 	= frontParser_midiMsg.data2 >> 3;
 			length += 1;
-			uint8_t pattern = frontParser_midiMsg.data2 & 0x7;
-
-			{
-				euklid_setLength(frontParser_activeTrack, length, pattern);
-			}
+			euklid_setLength(frontParser_activeTrack, length);
 		}
 		break;
 

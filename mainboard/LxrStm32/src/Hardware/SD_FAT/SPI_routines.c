@@ -37,8 +37,6 @@
 //-------------------------------------------------------------------------
 void spi_initInterface()
 {
-
-
 	/* Enable the SPI peripheral clock */
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI1, ENABLE); //APB2 Prescaler 2 = 168000000/2 = 84000000 = 84mHz
 

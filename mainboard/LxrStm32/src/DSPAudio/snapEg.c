@@ -61,9 +61,5 @@ float SnapEg_calc(SnapEg* eg, float time)
 	return ret;
 }
 //-----------------------------------------------------------------------
-void SnapEg_calcBlock(SnapEg* eg,int16_t* buf, const uint8_t size)
-{
 
-}
-//-----------------------------------------------------------------------
 

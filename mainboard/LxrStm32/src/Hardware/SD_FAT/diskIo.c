@@ -28,15 +28,12 @@
 #include "../globals.h"
 #include "ff.h"
 #include "SPI_routines.h"
-//#include "..\lcd.h"
 #include "sd_routines.h"
-//#include <util\delay.h>
-//#include <avr/pgmspace.h>
 
-#pragma GCC push_options
-#pragma GCC optimize ("O0")
+//#pragma GCC push_options
+//#pragma GCC optimize ("O0")
 /** wait for ms*/
-void wait(uint32_t ms)
+__attribute__((optimize("O0"))) void wait(uint32_t ms)
 {
 	const volatile uint32_t startTicks = systick_ticks;
 
@@ -47,7 +44,7 @@ void wait(uint32_t ms)
 
 }
 //restore optimisation level
-#pragma GCC pop_options
+//#pragma GCC pop_options
 
 //-------------------------------------------------------------------------
 static volatile DSTATUS Stat = STA_NOINIT;	/* Disk status */

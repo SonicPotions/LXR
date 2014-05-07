@@ -38,7 +38,15 @@
 #include "stm32f4xx.h"
 
 
-static SPI_InitTypeDef SPI_InitStructure;
+#ifdef __GNUC__
+#define VARIABLE_IS_NOT_USED __attribute__ ((unused))
+#else
+#define VARIABLE_IS_NOT_USED
+#endif
+
+
+static SPI_InitTypeDef VARIABLE_IS_NOT_USED SPI_InitStructure;
+
 
 #define SPI_SD			SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_256;SPI_Init(SPI1, &SPI_InitStructure);
 #define SPI_HIGH_SPEED 	SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_16;SPI_Init(SPI1, &SPI_InitStructure);

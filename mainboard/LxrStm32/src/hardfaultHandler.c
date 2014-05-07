@@ -36,7 +36,7 @@
 
 #include "stm32f4xx.h"
 
-
+#define UNUSED(x) (void)(x)
 
 
 // From Joseph Yiu, minor edits by FVH
@@ -45,6 +45,7 @@
 // called from HardFault_Handler in file hardfault.S
 void hard_fault_handler_c (unsigned int * hardfault_args)
 {
+#if 0
   unsigned int stacked_r0;
   unsigned int stacked_r1;
   unsigned int stacked_r2;
@@ -63,7 +64,9 @@ void hard_fault_handler_c (unsigned int * hardfault_args)
   stacked_lr = ((unsigned long) hardfault_args[5]);
   stacked_pc = ((unsigned long) hardfault_args[6]);
   stacked_psr = ((unsigned long) hardfault_args[7]);
-
+#else
+	UNUSED(hardfault_args);
+#endif
   /*
   printf ("\n\n[Hard fault handler - all numbers in hex]\n");
   printf ("R0 = %x\n", stacked_r0);

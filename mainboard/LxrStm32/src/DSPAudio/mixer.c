@@ -162,7 +162,7 @@ uint8_t mixer_checkOutJackAvailable(uint8_t dest)
 	return dest;
 }
 //-----------------------------------------------------------------------
-inline void mixer_moveDataToOutput(const uint8_t voiceNr,uint8_t dest, const float panL, const float panR, int16_t* data,int16_t* outL,int16_t* outR,int16_t* outL2, int16_t* outR2)
+inline void mixer_moveDataToOutput(uint8_t dest, const float panL, const float panR, int16_t* data,int16_t* outL,int16_t* outR,int16_t* outL2, int16_t* outR2)
 {
 	//check if a cable is in the selected out
 	dest = mixer_checkOutJackAvailable(dest);
