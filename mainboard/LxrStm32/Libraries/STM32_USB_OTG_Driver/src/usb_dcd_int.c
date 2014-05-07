@@ -678,6 +678,16 @@ static uint32_t DCD_WriteEmptyTxFifo(USB_OTG_CORE_HANDLE *pdev, uint32_t epnum)
     ep->xfer_buff  += len;
     ep->xfer_count += len;
 
+    /*/ LXR /*/
+    /* Fix from https://my.st.com/public/STe2ecommunities/mcu/Lists/cortex_mx_stm32/Flat.aspx?RootFolder=https%3a%2f%2fmy%2est%2ecom%2fpublic%2fSTe2ecommunities%2fmcu%2fLists%2fcortex_mx_stm32%2fYet%20another%20STM32F1057%20USB%20OTG%20driver%20issue%20%28VCP%20device%29&FolderCTID=0x01200200770978C69A1141439FE559EB459D7580009C4E14902C3CDE46A77F0FFD06506F5B¤tviews=2308
+     */
+    if( ep->xfer_count >= ep->xfer_len){
+       uint32_t fifoemptymsk = 1 << ep->num;
+       USB_OTG_MODIFY_REG32(&pdev->regs.DREGS->DIEPEMPMSK, fifoemptymsk, 0);
+       break;
+     }
+    /*/ LXR /*/
+
     txstatus.d32 = USB_OTG_READ_REG32(&pdev->regs.INEP_REGS[epnum]->DTXFSTS);
   }
   
