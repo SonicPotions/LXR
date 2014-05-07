@@ -137,9 +137,10 @@ void Cymbal_calcAsync()
 	//turn off trigger signal if trigger gate mode is on and volume == 0
 	if(trigger_isGateModeOn())
 	{
-		if(!cymbalVoice.egValueOscVol)
+		if(!cymbalVoice.egValueOscVol) {
 			trigger_triggerVoice(TRIGGER_5, TRIGGER_OFF);
-			seq_midiNoteOff(midi_MidiChannels[TRIGGER_5]);	
+			voiceControl_noteOff(TRIGGER_5);
+		}
 	}
 
 	//calc snap EG if transient sample 0 is activated

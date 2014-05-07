@@ -134,9 +134,10 @@ void Snare_calcAsync()
 	//turn off trigger signal if trigger gate mode is on and volume == 0
 	if(trigger_isGateModeOn())
 	{
-		if(!snareVoice.egValueOscVol)
+		if(!snareVoice.egValueOscVol) {
 			trigger_triggerVoice(TRIGGER_4, TRIGGER_OFF);
-			seq_midiNoteOff(midi_MidiChannels[TRIGGER_4]);	
+			voiceControl_noteOff(TRIGGER_4);
+		}
 	}
 
 	//calc snap EG if transient sample 0 is activated

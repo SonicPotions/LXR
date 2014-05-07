@@ -45,11 +45,13 @@
 #include "Uart.h"
 //#include "LCD_driver.h"
 
-//static uint8_t c = 0;
+static uint8_t active_voices=0;	// which voices are currently playing a note
 //----------------------------------------------------------------
 // this fn assumes a valid voice is sent
 void voiceControl_noteOn(uint8_t voice, uint8_t note, uint8_t vel)
 {
+	active_voices |= (1<<voice);
+
 	if(voice < 3)
 		Drum_trigger(voice, vel, note);
 	else if(voice < 4)
@@ -73,4 +75,30 @@ void voiceControl_noteOn(uint8_t voice, uint8_t note, uint8_t vel)
 	uart_sendFrontpanelByte(voice);
 	uart_sendFrontpanelByte(0);
 }
+//----------------------------------------------------------------
+void voiceControl_noteOff(uint8_t voice)
+{
+	uint8_t midiChan; // which midi channel to send a note on
 
+	if(voice==0xff)
+	{
+		active_voices = 0;
+		seq_midiNoteOff(0xff);
+		return;
+	}
+
+	//only set voice inactive and send MIDI off when voice is currently playing
+	if(active_voices & (1<<voice))
+	{
+		active_voices &= (~(1<<voice));
+
+		//send midi note off
+		midiChan = midi_MidiChannels[voice];
+		seq_midiNoteOff(midiChan);
+	}
+}
+//----------------------------------------------------------------
+uint8_t voiceControl_isVoicePlaying(uint8_t voice)
+{
+	return (active_voices & (1<<voice));
+}

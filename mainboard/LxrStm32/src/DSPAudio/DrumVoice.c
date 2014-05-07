@@ -202,9 +202,10 @@ void calcDrumVoiceAsync(const uint8_t voiceNr)
 	//turn off trigger signal if trigger gate mode is on and volume == 0
 	if(trigger_isGateModeOn())
 	{
-		if(!voiceArray[voiceNr].ampFilterInput)
+		if(!voiceArray[voiceNr].ampFilterInput) {
 			trigger_triggerVoice(TRIGGER_1 + voiceNr, TRIGGER_OFF);
-			seq_midiNoteOff(midi_MidiChannels[TRIGGER_1 + voiceNr]);	
+			voiceControl_noteOff(TRIGGER_1 + voiceNr);
+		}
 	}
 #endif
 

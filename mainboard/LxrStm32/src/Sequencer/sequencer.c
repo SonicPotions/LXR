@@ -340,7 +340,6 @@ void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note)
 
 	seq_parseAutomationNodes(voiceNr, &seq_patternSet.seq_subStepPattern[seq_activePattern][voiceNr][seq_stepIndex[voiceNr]]);
 
-
 	//turn the trigger off before sending the next one
 	if(voiceNr>=5)
 	{
@@ -350,10 +349,12 @@ void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note)
 	} else {
 		trigger_triggerVoice(voiceNr, TRIGGER_OFF);
 	}
-	
+
+	//--AS if a note is on for that channel send note-off first
+	voiceControl_noteOff(voiceNr);
+
 	//Trigger internal synth voice
 	voiceControl_noteOn(voiceNr, note, vol);
-
 
 	midiChan = midi_MidiChannels[voiceNr];
 
@@ -363,9 +364,6 @@ void seq_triggerVoice(uint8_t voiceNr, uint8_t vol, uint8_t note)
 		midiNote = note;
 	else
 		midiNote = midi_NoteOverride[voiceNr];
-
-	//--AS if a note is on for that channel send note-off first
-	seq_midiNoteOff(midiChan);
 
 	//send the new note to midi/usb out
 	seq_sendMidiNoteOn(midiChan, midiNote,
@@ -464,7 +462,7 @@ static void seq_nextStep()
 
 
 			// --AS all notes off here since we are switching patterns
-			seq_midiNoteOff(0xFF);
+			voiceControl_noteOff(0xFF);
 		}
 	}
 
@@ -829,7 +827,7 @@ void seq_setRunning(uint8_t isRunning)
 		seq_sendRealtime(MIDI_STOP);
 
 		//--AS send notes off on all channels that have notes playing and reset our bitmap to reflect that
-		seq_midiNoteOff(0xFF);
+		voiceControl_noteOff(0xFF);
 
 		trigger_reset(0);
 		trigger_allOff();
@@ -883,7 +881,7 @@ void seq_setMute(uint8_t trackNr, uint8_t isMuted)
 			//mute track
 			seq_mutedTracks |= (1<<trackNr);
 			// --AS turn off the midi note that may be playing on that track
-			seq_midiNoteOff(midi_MidiChannels[trackNr]);
+			voiceControl_noteOff(midi_MidiChannels[trackNr]);
 		} else {
 			//unmute track
 			seq_mutedTracks &= ~(1<<trackNr);

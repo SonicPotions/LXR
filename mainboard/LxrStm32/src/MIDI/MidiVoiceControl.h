@@ -59,6 +59,7 @@ uint8_t voiceStatus[NUM_VOICES];
 //---------------------------------------------------
 //------------- Functions ---------------------------
 void voiceControl_noteOn(uint8_t voice, uint8_t note, uint8_t vel);
-void voiceControl_noteOff(uint8_t voice, uint8_t note, uint8_t vel);
+void voiceControl_noteOff(uint8_t voice);//0xff == all voices
+uint8_t voiceControl_isVoicePlaying(uint8_t voice);
 
 #endif /* MIDIVOICECONTROL_H_ */
