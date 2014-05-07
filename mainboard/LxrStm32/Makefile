@@ -106,6 +106,9 @@ CFLAGS += $(ARCHFLAGS)
 CFLAGS += -O$(OPTIMIZE) -ffunction-sections -fdata-sections -ffast-math -freciprocal-math -fsingle-precision-constant -fmessage-length=0
 CFLAGS += -Wall -Wextra -c 
 CFLAGS += -Wl,--gc-sections
+ifeq ($(PEDANTIC),1)
+CFLAGS += -Werror
+endif
 CXXFLAGS += $(CFLAGS) -fno-rtti -fno-exceptions
 
 ASFLAGS += -ahls $(ARCHFLAGS)
