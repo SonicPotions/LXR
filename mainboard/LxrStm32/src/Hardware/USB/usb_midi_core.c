@@ -427,6 +427,7 @@ static uint8_t  usbd_midi_DataOut (void *pdev, uint8_t epnum)
       usb_MidiOutWrPtr = usb_MidiOutBuff;
     }
 
+    /* PLD is this necessary? Removing it seems to have no negative effect... */
     /* Toggle the frame index */
     ((USB_OTG_CORE_HANDLE*)pdev)->dev.out_ep[epnum].even_odd_frame =
       (((USB_OTG_CORE_HANDLE*)pdev)->dev.out_ep[epnum].even_odd_frame)? 0:1;
@@ -450,6 +451,9 @@ static uint8_t  usbd_midi_DataOut (void *pdev, uint8_t epnum)
     	usbData.status = usb_MidiOutRdPtr[i+1];
     	usbData.data1 = usb_MidiOutRdPtr[i+2];
     	usbData.data2 = usb_MidiOutRdPtr[i+3];
+
+	/* reset data in buffer since it might not be completely overwritten */
+	usb_MidiOutRdPtr[i] = 0;
 
     	uint8_t length=0;
 
@@ -530,14 +534,13 @@ static uint8_t  usbd_midi_DataOut (void *pdev, uint8_t epnum)
     		usb_MidiMessagesWrite &= USB_MIDI_INPUT_BUFFER_MASK;
     	}
  }
-	usb_MidiOutRdPtr += TOTAL_MIDI_BUF_SIZE;
+
+    usb_MidiOutRdPtr += TOTAL_MIDI_BUF_SIZE;
     /* Increment the Buffer pointer or roll it back when all buffers are full */
     if (usb_MidiOutRdPtr >= (usb_MidiOutBuff + (TOTAL_MIDI_BUF_SIZE*NUM_SUB_BUFFERS)))
     {/* All buffers are full: roll back */
     	usb_MidiOutRdPtr = usb_MidiOutBuff;
     }
-
-
 
   }
 
