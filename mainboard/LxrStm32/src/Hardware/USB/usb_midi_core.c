@@ -386,25 +386,9 @@ static uint8_t  usbd_midi_EP0_RxReady (void  *pdev)
   */
 static uint8_t  usbd_midi_DataIn (void *pdev, uint8_t epnum)
 {
-
-	DCD_EP_Flush (pdev,epnum);
-	//DCD_EP_Tx (pdev, MIDI_IN_EP, usb_MidiInBuff, 0x40);
-#if 0
-	if (epnum == 0x02)
-	{
-		const uint8_t len = usb_MidiInWrPtr-usb_MidiInRdPtr;
-		DCD_EP_Tx (pdev, MIDI_IN_EP, usb_MidiInRdPtr, len);
-
-		usb_MidiInRdPtr += TOTAL_MIDI_BUF_SIZE;
-		if(usb_MidiInRdPtr >= (TOTAL_MIDI_BUF_SIZE * NUM_SUB_BUFFERS))
-		{
-			usb_MidiInRdPtr = usb_MidiInBuff;
-		}
-
-		usb_MidiInWrPtr=usb_MidiInRdPtr;
-	}
-#endif
-  return USBD_OK;
+	//DCD_EP_Flush (pdev,epnum);
+	DCD_EP_Flush (pdev,MIDI_IN_EP);
+	return USBD_OK;
 }
 //------------------------------------------------------------------------------------------------
 /**
@@ -556,6 +540,8 @@ static uint8_t  usbd_midi_DataOut (void *pdev, uint8_t epnum)
   */
 static uint8_t  usbd_midi_SOF (void *pdev)
 {
+
+#if 0
 	//TODO was passiert hier?
   /* Check if there are available data in stream buffer.
     In this function, a single variable (PlayFlag) is used to avoid software delays.
@@ -596,6 +582,7 @@ static uint8_t  usbd_midi_SOF (void *pdev)
     }
   }
 
+#endif
   return USBD_OK;
 }
 //------------------------------------------------------------------------------------------------
@@ -605,12 +592,12 @@ static uint8_t  usbd_midi_SOF (void *pdev)
   * @param  pdev: instance
   * @retval status
   */
-/*
+
 static uint8_t  usbd_midi_OUT_Incplt (void  *pdev)
 {
   return USBD_OK;
 }
-*/
+
 //------------------------------------------------------------------------------------------------
 /******************************************************************************
      AUDIO Class requests management

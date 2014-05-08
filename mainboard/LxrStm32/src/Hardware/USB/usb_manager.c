@@ -110,7 +110,7 @@ void usb_start()
 //-------------------------------------------------------------------------------
 void usb_sendByte(uint8_t byte)
 {
-	if(USB_OTG_dev.dev.device_status != USB_OTG_SUSPENDED)
+	//if(USB_OTG_dev.dev.device_status != USB_OTG_SUSPENDED)
 	{
 		*usb_MidiInWrPtr++ = byte;
 		if(usb_MidiInWrPtr >= (usb_MidiInBuff+(TOTAL_MIDI_BUF_SIZE * NUM_SUB_BUFFERS)))
@@ -123,28 +123,35 @@ void usb_sendByte(uint8_t byte)
 void usb_sendMidi(MidiMsg msg)
 {
 
+		//MIDI byte[0] = 4 bits cable number + 4 bits event type code
+		//usb_sendByte(0x09);
+		usb_sendByte(msg.status>>4);
+		
+		//then the 3 midi message bytes
+		//USB MIDI msg has to be ALWAYS 4 bytes long
+		usb_sendByte(msg.status);
+		usb_sendByte(msg.data1);
+		usb_sendByte(msg.data2);
+
 	if(USB_OTG_dev.dev.device_status != USB_OTG_SUSPENDED)
 	{
-		usb_sendByte(0x09);
-		usb_sendByte(msg.status);
-		if(msg.bits.length) {
-			usb_sendByte(msg.data1);
-			if(msg.bits.length > 1)
-				usb_sendByte(msg.data2);
-		}
-
 		DCD_EP_Flush (&USB_OTG_dev,MIDI_IN_EP);
-		//TODO größe auf 4 testen statt 0x40
-		DCD_EP_Tx (&USB_OTG_dev, MIDI_IN_EP, usb_MidiInRdPtr, 0x40);
+		//DCD_EP_Tx (&USB_OTG_dev, MIDI_IN_EP, usb_MidiInRdPtr, 0x40);
+		DCD_EP_Tx (&USB_OTG_dev, MIDI_IN_EP, usb_MidiInRdPtr, 0x4);
+	}		
+		
 
 		usb_MidiInRdPtr += TOTAL_MIDI_BUF_SIZE;
 		if(usb_MidiInRdPtr >= (usb_MidiInBuff+(TOTAL_MIDI_BUF_SIZE * NUM_SUB_BUFFERS)))
 		{
 			usb_MidiInRdPtr = usb_MidiInBuff;
 		}
-
+		usb_MidiInRdPtr[0] = 0;
+		usb_MidiInRdPtr[4] = 0;
+		usb_MidiInRdPtr[8] = 0;
+		usb_MidiInRdPtr[12] = 0;
 		usb_MidiInWrPtr=usb_MidiInRdPtr;
-	}
+
 
 }
 //-------------------------------------------------------------------------------
