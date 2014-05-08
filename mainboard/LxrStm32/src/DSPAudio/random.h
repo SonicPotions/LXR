@@ -41,9 +41,6 @@
 void initRng();
 
 
-__inline uint32_t GetRngValue()
-{
-	return RNG_GetRandomNumber();
-}
+__inline uint32_t GetRngValue();
 
 #endif /* RANDOM_H_ */
