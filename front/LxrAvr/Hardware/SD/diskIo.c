@@ -75,7 +75,7 @@ DSTATUS disk_initialize (BYTE drive)/* Physical drive number */
 
 	}
 	
-	Stat &= ~STA_NOINIT;
+	Stat &= (DSTATUS)~STA_NOINIT;
 	
 	return Stat;
 

@@ -95,6 +95,9 @@
 #include "ff.h"			/* FatFs configurations and declarations */
 #include "diskio.h"		/* Declarations of low level disk I/O functions */
 
+//disable -Wconversion for this file
+#pragma GCC diagnostic ignored "-Wconversion"
+#pragma GCC diagnostic ignored "-Wsign-conversion"
 
 /*--------------------------------------------------------------------------
 
@@ -2419,7 +2422,7 @@ FRESULT f_read (
 			cc = btr / SS(fp->fs);				/* When remaining bytes >= sector size, */
 			if (cc) {							/* Read maximum contiguous sectors directly */
 				if (csect + cc > fp->fs->csize)	/* Clip at cluster boundary */
-					cc = fp->fs->csize - csect;
+					cc = (UINT)(fp->fs->csize - csect);
 				if (disk_read(fp->fs->drv, rbuff, sect, (BYTE)cc) != RES_OK)
 					ABORT(fp->fs, FR_DISK_ERR);
 #if !_FS_READONLY && _FS_MINIMIZE <= 2			/* Replace one of the read sectors with cached data if it contains a dirty sector */
@@ -2449,7 +2452,7 @@ FRESULT f_read (
 #endif
 			fp->dsect = sect;
 		}
-		rcnt = SS(fp->fs) - (fp->fptr % SS(fp->fs));	/* Get partial sector data from sector buffer */
+		rcnt = (UINT) (SS(fp->fs) - (fp->fptr % SS(fp->fs)));	/* Get partial sector data from sector buffer */
 		if (rcnt > btr) rcnt = btr;
 #if _FS_TINY
 		if (move_window(fp->fs, fp->dsect))		/* Move sector window */
@@ -2498,7 +2501,7 @@ FRESULT f_write (
 	for ( ;  btw;							/* Repeat until all data written */
 		wbuff += wcnt, fp->fptr += wcnt, *bw += wcnt, btw -= wcnt) {
 		if ((fp->fptr % SS(fp->fs)) == 0) {	/* On the sector boundary? */
-			csect = (BYTE)(fp->fptr / SS(fp->fs) & (fp->fs->csize - 1));	/* Sector offset in the cluster */
+			csect = (BYTE)  (fp->fptr / SS(fp->fs) & (fp->fs->csize - (DWORD)1));	/* Sector offset in the cluster */
 			if (!csect) {					/* On the cluster boundary? */
 				if (fp->fptr == 0) {		/* On the top of the file? */
 					clst = fp->sclust;		/* Follow from the origin */
@@ -2533,7 +2536,7 @@ FRESULT f_write (
 			cc = btw / SS(fp->fs);			/* When remaining bytes >= sector size, */
 			if (cc) {						/* Write maximum contiguous sectors directly */
 				if (csect + cc > fp->fs->csize)	/* Clip at cluster boundary */
-					cc = fp->fs->csize - csect;
+					cc = (UINT)(fp->fs->csize - csect);
 				if (disk_write(fp->fs->drv, wbuff, sect, (BYTE)cc) != RES_OK)
 					ABORT(fp->fs, FR_DISK_ERR);
 #if _FS_TINY
@@ -2564,7 +2567,7 @@ FRESULT f_write (
 #endif
 			fp->dsect = sect;
 		}
-		wcnt = SS(fp->fs) - (fp->fptr % SS(fp->fs));/* Put partial sector into file I/O buffer */
+		wcnt = (UINT)( SS(fp->fs) - (fp->fptr % SS(fp->fs)));/* Put partial sector into file I/O buffer */
 		if (wcnt > btw) wcnt = btw;
 #if _FS_TINY
 		if (move_window(fp->fs, fp->dsect))	/* Move sector window */
@@ -2618,7 +2621,7 @@ FRESULT f_sync (
 				ST_CLUST(dir, fp->sclust);					/* Update start cluster */
 				tim = get_fattime();						/* Update updated time */
 				ST_DWORD(dir+DIR_WrtTime, tim);
-				fp->flag &= ~FA__WRITTEN;
+				fp->flag &= (BYTE)~FA__WRITTEN;
 				fp->fs->wflag = 1;
 				res = sync(fp->fs);
 			}

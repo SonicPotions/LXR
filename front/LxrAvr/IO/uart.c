@@ -16,8 +16,8 @@
 #if 1
 /* 
   UART-Init: 
-Berechnung des Wertes für das Baudratenregister 
-aus Taktrate und gewünschter Baudrate
+Berechnung des Wertes fï¿½r das Baudratenregister 
+aus Taktrate und gewï¿½nschter Baudrate
 */
  
 #ifndef F_CPU
@@ -26,7 +26,7 @@ aus Taktrate und gewünschter Baudrate
    hier wuerde zu einer Compilerwarnung fuehren. Daher "Schutz" durch
    #ifndef/#endif 
  
-   Dieser "Schutz" kann zu Debugsessions führen, wenn AVRStudio 
+   Dieser "Schutz" kann zu Debugsessions fï¿½hren, wenn AVRStudio 
    verwendet wird und dort eine andere, nicht zur Hardware passende 
    Taktrate eingestellt ist: Dann wird die folgende Definition 
    nicht verwendet, sondern stattdessen der Defaultwert (8 MHz?) 
@@ -50,7 +50,7 @@ aus Taktrate und gewünschter Baudrate
 #define BAUD_ERROR ((BAUD_REAL*1000)/BAUD) // Fehler in Promille, 1000 = kein Fehler.
  
 #if ((BAUD_ERROR<990) || (BAUD_ERROR>1010))
-  #error Systematischer Fehler der Baudrate grösser 1% und damit zu hoch! 
+  #error Systematischer Fehler der Baudrate grï¿½sser 1% und damit zu hoch! 
 #endif 
 
 */
@@ -96,7 +96,7 @@ ISR(USART0_UDRE_vect )
 	{
 		//no data left -> disable the data register empty interrupt
 		//UCSRB &= ~(1<<UDRIE);	
-		UCSR0B &= ~(1<<UDRIE0);	
+		UCSR0B &= (uint8_t)(~(1<<UDRIE0));
 	}
 }
 //----------------------------------------------------
@@ -161,7 +161,7 @@ uint8_t uart_getc(uint8_t *data)
 	return 0;
 }
 //----------------------------------------------------
-int8_t uart_waitAck()
+uint8_t uart_waitAck()
 {
 	//TODO: timeout
 	//UCSR0B &= ~(1<<RXCIE0);  // disable RX Interrupt

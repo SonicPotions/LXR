@@ -29,7 +29,7 @@
 //#define SD_CS_DEASSERT   PORTB |= 0x02
 
 //use following macros if SS (PB4) pin is used for Chip Select of SD
-#define SD_CS_ASSERT     PORTB &= ~(1<<PB4)
+#define SD_CS_ASSERT     PORTB &= (uint8_t)~(1<<PB4)
 #define SD_CS_DEASSERT   PORTB |= (1<<PB4)
 
 #define SD_CARD_DETECT_PORT		PORTD

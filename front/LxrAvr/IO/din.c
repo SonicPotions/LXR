@@ -22,13 +22,13 @@ void din_init()
 	uint8_t inPins  = DIN_INPUT_PIN;
 	
 	//configure as input
-	DIN_DDR &= ~inPins; 
+	DIN_DDR &= (uint8_t)(~inPins);
 	
 	//configure as outputs
 	DIN_DDR |= outPins; 
 	
 	// disable internal pull ups
-	DIN_PORT &= ~inPins;
+	DIN_PORT &= (uint8_t)(~inPins);
 	
 	//set outputs to high
 	DIN_PORT |= outPins;
@@ -41,14 +41,14 @@ void din_init()
 //---------------------------------------------------------------------
 void din_shift()
 {
-	DIN_PORT &= ~DIN_CLK_PIN; //clock low
+	DIN_PORT &= (uint8_t)~DIN_CLK_PIN; //clock low
 	DIN_PORT |= DIN_CLK_PIN;  //clock high
 }
 //---------------------------------------------------------------------
 void din_load()
 {
 	//set load pin LOW to get new data
-	DIN_PORT &= ~DIN_LOAD_PIN;
+	DIN_PORT &= (uint8_t)~DIN_LOAD_PIN;
 	//set load pin HIGH again to enable clock
 	DIN_PORT |= DIN_LOAD_PIN;
 }
@@ -109,8 +109,8 @@ void din_readNextInput()
 		}		
 	
 		//clear bit
-		din_inputData[arrayPos] &= ~(1<<bitPos);
+		din_inputData[arrayPos] &= (uint8_t)(~(1<<bitPos));
 		//set new bit value
-		din_inputData[arrayPos] |= (value << bitPos);
+		din_inputData[arrayPos] |= (uint8_t)(value << bitPos);
 	}		
 };

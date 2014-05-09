@@ -81,7 +81,7 @@ INCLUDES += -I"./Preset"
 
 CFLAGS += $(DEFINES) $(INCLUDES)
 CFLAGS += -O$(OPTIMIZE)
-CFLAGS += -Wall -Wextra -Wconversion -c -funsigned-char -funsigned-bitfields -ffast-math -freciprocal-math -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -Wall
+CFLAGS += -Wall -Wextra -Wconversion -c -funsigned-char -funsigned-bitfields -ffast-math -freciprocal-math -ffunction-sections -fdata-sections -fpack-struct -fshort-enums
 ifeq ($(PEDANTIC),1)
 CFLAGS += -Werror
 endif

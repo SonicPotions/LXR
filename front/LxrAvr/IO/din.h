@@ -15,11 +15,11 @@
 #define NUM_INPUTS 39
 
 //outputs
-#define DIN_LOAD_PIN	(1<<PC5)	//LOW level enables parallel load, disables clock
-#define DIN_CLK_PIN		(1<<PC6)	//shift on transition to HIGH, LOAD pin must be HIGH to enable clocking
+#define DIN_LOAD_PIN	((uint8_t)(1<<PC5))	//LOW level enables parallel load, disables clock
+#define DIN_CLK_PIN		((uint8_t)(1<<PC6))	//shift on transition to HIGH, LOAD pin must be HIGH to enable clocking
 
 //Input
-#define DIN_INPUT_PIN	(1<<PC7)	//the output of the shift register, this is where the data comes into the uC
+#define DIN_INPUT_PIN	((uint8_t)(1<<PC7))	//the output of the shift register, this is where the data comes into the uC
 
 //port
 #define DIN_PORT		PORTC

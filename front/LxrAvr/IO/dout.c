@@ -25,7 +25,7 @@ void dout_init()
 	DOUT_DDR |= outPins; 
 	
 	//set outputs to low
-	DOUT_PORT &= ~outPins;
+	DOUT_PORT &= (uint8_t)(~outPins);
 	
 	//clear the input data array
 	memset(dout_outputData,0,NUM_OUTS/8);
@@ -50,7 +50,7 @@ void dout_updateOutputs()
 	for(int i=0;i<NUM_OUTS;i++)
 	{
 		//clear the output pin
-		DOUT_PORT &= ~DOUT_OUTPUT_PIN;
+		DOUT_PORT &= (uint8_t)(~DOUT_OUTPUT_PIN);
 #if USE_BRIGHTNESS
 		if((dout_brightnessCounter &  dout_ledBrightness[i]) == 0x00)
 		{
@@ -79,12 +79,12 @@ void dout_shift()
 	//clock high
 	DOUT_PORT |= DOUT_CLK_PIN;
 	//clock low
-	DOUT_PORT &= ~DOUT_CLK_PIN;
+	DOUT_PORT &= (uint8_t)(~DOUT_CLK_PIN);
 };
 //---------------------------------------------------------------------------------
 void dout_load()
 {
 	DOUT_PORT |= DOUT_LOAD_PIN;
-	DOUT_PORT &= ~DOUT_LOAD_PIN;
+	DOUT_PORT &= (uint8_t)(~DOUT_LOAD_PIN);
 };
 //---------------------------------------------------------------------------------

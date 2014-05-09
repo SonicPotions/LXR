@@ -30,7 +30,7 @@ void encode_init( void )
                    PIN_B |
 				   PIN_BUTTON;
 				   
-	ENCODER_DDR &= ~pins; //configure as input
+	ENCODER_DDR &= (uint8_t)~pins; //configure as input
 	
 	// enable internal pull ups
 	ECODER_PORT |= pins;
@@ -76,17 +76,17 @@ ISR( TIMER0_COMPA_vect )             // 1ms for manual movement
     new = 3;
   if( PHASE_B )
     new ^= 1;						// convert gray to binary
-  diff = last - new;                // difference last - new
+  diff = (int8_t)(last - new);                // difference last - new
   if( diff & 1 ){					// bit 0 = value (1)
     last = new;						// store new as next last
-    enc_delta += (diff & 2) - 1;    // bit 1 = direction (+/-)
+    enc_delta = (int8_t)(enc_delta + (diff & 2) - 1);    // bit 1 = direction (+/-)
   }
   
   
   //button
   if(ENCODER_BUTTON == lastButton)
   {
-	  buttonValue = lastButton;
+	  buttonValue = (uint8_t)lastButton;
   }
   lastButton = ENCODER_BUTTON;
 }

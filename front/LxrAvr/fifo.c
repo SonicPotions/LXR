@@ -16,7 +16,7 @@ void fifo_init(FifoBuffer* fifo)
 //----------------------------------------------------------------------------
 uint8_t fifo_bufferIn(FifoBuffer* fifo, uint8_t byte)
 {
-  uint8_t next = ((fifo->write + 1) & BUFFER_MASK);
+  uint8_t next = (uint8_t)((fifo->write + 1) & BUFFER_MASK);
   if (fifo->read == next)
     return 0;
   fifo->data[fifo->write] = byte;
@@ -29,7 +29,7 @@ uint8_t fifo_BufferOut(FifoBuffer* fifo, uint8_t *pByte)
   if (fifo->read == fifo->write)
     return 0;
   *pByte = fifo->data[fifo->read];
-  fifo->read = (fifo->read+1) & BUFFER_MASK;
+  fifo->read = (uint8_t)((fifo->read+1) & BUFFER_MASK);
   return 1;
 }
 //----------------------------------------------------------------------------

@@ -31,7 +31,7 @@
 unsigned char SD_init(void)
 {
 	//SPI_CARD_DETECT_DDR;
-	SD_CARD_DETECT_DDR &= ~(SD_CARD_DETECT); //is input
+	SD_CARD_DETECT_DDR &= (uint8_t)(~(SD_CARD_DETECT)); //is input
 	SD_CARD_DETECT_PORT |= SD_CARD_DETECT; //activate pull up
 
 	unsigned char i, response, SD_version;
@@ -150,10 +150,10 @@ unsigned char SD_sendCommand(unsigned char cmd, unsigned long arg)
 	SD_CS_ASSERT;
 
 	SPI_transmit(cmd | 0x40); //send command, first two bits always '01'
-	SPI_transmit(arg>>24);
-	SPI_transmit(arg>>16);
-	SPI_transmit(arg>>8);
-	SPI_transmit(arg);
+	SPI_transmit((uint8_t)(arg>>24));
+	SPI_transmit((uint8_t)(arg>>16));
+	SPI_transmit((uint8_t)(arg>>8));
+	SPI_transmit((uint8_t)(arg));
 
 	if(cmd == SEND_IF_COND)	 //it is compulsory to send correct CRC for CMD8 (CRC=0x87) & CMD0 (CRC=0x95)
 	  SPI_transmit(0x87);    //for remaining commands, CRC is ignored in SPI mode

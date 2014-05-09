@@ -32,7 +32,7 @@ void uart_puts (char *s);
 uint8_t uart_getc(uint8_t *data);
 
 //waits for a ACK message on the uart
-int8_t uart_waitAck();
+uint8_t uart_waitAck();
 //check if there is some data received an parse it
 void uart_checkAndParse();
 

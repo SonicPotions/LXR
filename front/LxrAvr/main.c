@@ -52,8 +52,8 @@ int main(void)
 		
 	//set the CORTEX_RESET line to input
 	DDRB = 0 ;
-	DDRB &= ~(1<<CORTEX_RESET_PIN);
-	PORTB &= ~(1<<CORTEX_RESET_PIN);
+	DDRB &= (uint8_t)~(1<<CORTEX_RESET_PIN);
+	PORTB &= (uint8_t)~(1<<CORTEX_RESET_PIN);
 
 	//init the lcd display
 	lcd_init();

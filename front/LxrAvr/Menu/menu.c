@@ -1215,7 +1215,7 @@ void menu_handleLoadSaveMenu(int8_t inc, uint8_t btnClicked)
 					lcd_string_F(PSTR("Started"));
 					//wait for ack
 					{
-						int8_t ret = uart_waitAck();
+						uint8_t ret = uart_waitAck();
 						if(ret == ACK)
 						{
 

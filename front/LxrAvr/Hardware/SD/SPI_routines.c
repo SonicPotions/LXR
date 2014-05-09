@@ -34,10 +34,10 @@ void spi_init(void)
 void spi_deInit()
 {
 	//disable SPI
-	SPCR &= ~(1<<SPE);
+	SPCR &= (uint8_t)~(1<<SPE);
 	//all SPI ports as input
-	DDRB &= ~((1<<PB5) | (1<<PB4) |(1<<PB7) );
-	PORTB &= ~((1<<PB5) | (1<<PB4) |(1<<PB7) );
+	DDRB &= (uint8_t)~((1<<PB5) | (1<<PB4) |(1<<PB7) );
+	PORTB &= (uint8_t)~((1<<PB5) | (1<<PB4) |(1<<PB7) );
 
 }
 

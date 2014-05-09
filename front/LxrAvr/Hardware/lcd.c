@@ -2,7 +2,7 @@
 // http://www.mikrocontroller.net/articles/HD44780
 // http://www.mikrocontroller.net/articles/AVR-GCC-Tutorial/LCD-Ansteuerung
 //
-// Die Pinbelegung ist über defines in lcd.h einstellbar
+// Pins can be configured in lcd.h
  
 #include <avr/io.h>
 #include "lcd.h"
@@ -14,7 +14,7 @@ static void lcd_enable( void )
 {
     LCD_RSEN_PORT |= (1<<LCD_EN);     // Enable auf 1 setzen
     _delay_us( LCD_ENABLE_US );  // kurze Pause
-    LCD_RSEN_PORT &= ~(1<<LCD_EN);    // Enable auf 0 setzen
+    LCD_RSEN_PORT &= (uint8_t)~(1<<LCD_EN);    // Enable auf 0 setzen
 }
  
 ////////////////////////////////////////////////////////////////////////////////
@@ -23,7 +23,7 @@ static void lcd_out( uint8_t data )
 {
     data &= 0xF0;                       // obere 4 Bit maskieren
  
-    LCD_PORT &= ~(0xF0>>(4-LCD_DB));    // Maske löschen
+    LCD_PORT &= (uint8_t)~(0xF0>>(4-LCD_DB));    // Maske lï¿½schen
     LCD_PORT |= (data>>(4-LCD_DB));     // Bits setzen
     lcd_enable();
 }
@@ -41,10 +41,10 @@ void lcd_init( void )
 	
 	LCD_RSEN_DDR |= rsen_pins;
  
-    // initial alle Ausgänge auf Null
-    LCD_PORT &= ~pins;
+    // initial alle Ausgï¿½nge auf Null
+    LCD_PORT &= (uint8_t)~pins;
 	
-	LCD_RSEN_PORT &= ~rsen_pins;
+	LCD_RSEN_PORT &= (uint8_t)~rsen_pins;
  
     // warten auf die Bereitschaft des LCD
     _delay_ms( LCD_BOOTUP_MS );
@@ -93,7 +93,7 @@ void lcd_data( uint8_t data )
     LCD_RSEN_PORT |= (1<<LCD_RS);    // RS auf 1 setzen
  
     lcd_out( data );            // zuerst die oberen, 
-    lcd_out( data<<4 );         // dann die unteren 4 Bit senden
+    lcd_out( (uint8_t)(data<<4) );         // dann die unteren 4 Bit senden
  
     _delay_us( LCD_WRITEDATA_US );
 }
@@ -102,10 +102,10 @@ void lcd_data( uint8_t data )
 // Sendet einen Befehl an das LCD
 void lcd_command( uint8_t data )
 {
-    LCD_RSEN_PORT &= ~(1<<LCD_RS);    // RS auf 0 setzen
+    LCD_RSEN_PORT &= (uint8_t)~(1<<LCD_RS);    // RS auf 0 setzen
  
     lcd_out( data );             // zuerst die oberen, 
-    lcd_out( data<<4 );           // dann die unteren 4 Bit senden
+    lcd_out( (uint8_t)(data<<4) );           // dann die unteren 4 Bit senden
  
     _delay_us( LCD_COMMAND_US );
 }
@@ -114,14 +114,14 @@ void lcd_turnOn(uint8_t isOn, uint8_t cursorOn)
 {
 	
 	    // Display ein / Cursor aus / Blinken aus
-    lcd_command( LCD_SET_DISPLAY |
+    lcd_command( (uint8_t)(LCD_SET_DISPLAY |
                  (LCD_DISPLAY_ON * isOn) |
                  LCD_CURSOR_ON * cursorOn |
-                 LCD_BLINKING_OFF); 
+                 LCD_BLINKING_OFF));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Sendet den Befehl zur Löschung des Displays
+// Sendet den Befehl zur Lï¿½schung des Displays
 void lcd_clear( void )
 {
     lcd_command( LCD_CLEAR_DISPLAY );
@@ -146,23 +146,23 @@ void lcd_setcursor( uint8_t x, uint8_t y )
     switch (y)
     {
         case 1:    // 1. Zeile
-            data = LCD_SET_DDADR + LCD_DDADR_LINE1 + x;
+            data = (uint8_t)(LCD_SET_DDADR + LCD_DDADR_LINE1 + x);
             break;
  
         case 2:    // 2. Zeile
-            data = LCD_SET_DDADR + LCD_DDADR_LINE2 + x;
+            data = (uint8_t)(LCD_SET_DDADR + LCD_DDADR_LINE2 + x);
             break;
  
         case 3:    // 3. Zeile
-            data = LCD_SET_DDADR + LCD_DDADR_LINE3 + x;
+            data = (uint8_t)(LCD_SET_DDADR + LCD_DDADR_LINE3 + x);
             break;
  
         case 4:    // 4. Zeile
-            data = LCD_SET_DDADR + LCD_DDADR_LINE4 + x;
+            data = (uint8_t)(LCD_SET_DDADR + LCD_DDADR_LINE4 + x);
             break;
  
         default:
-            return;                                   // für den Fall einer falschen Zeile
+            return;                                   // fï¿½r den Fall einer falschen Zeile
     }
  
     lcd_command( data );
@@ -190,9 +190,9 @@ void lcd_string_F( const char *data )
 void lcd_generatechar( uint8_t code, const uint8_t *data )
 {
     // Startposition des Zeichens einstellen
-    lcd_command( LCD_SET_CGADR | (code<<3) );
+    lcd_command( LCD_SET_CGADR | (uint8_t)(code<<3) );
  
-    // Bitmuster übertragen
+    // Bitmuster ï¿½bertragen
     for ( uint8_t i=0; i<8; i++ )
     {
         lcd_data( data[i] );

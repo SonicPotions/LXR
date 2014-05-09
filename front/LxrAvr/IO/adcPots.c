@@ -33,12 +33,13 @@ void adc_init(void) {
   while (ADCSRA & (1<<ADSC) ) {}        // wait to finish
   // read result 
   result = ADCW;
+  (void)result; //ommit unused but set warning
 }
 //------------------------------------------------------------------------
 uint16_t adc_read( uint8_t channel )
 {
   //select channel
-  ADMUX = (ADMUX & ~(0x1F)) | (channel & 0x1F);
+  ADMUX = (uint8_t)((ADMUX & ~(0x1F)) | (channel & 0x1F));
   ADCSRA |= (1<<ADSC);            // single readout
   while (ADCSRA & (1<<ADSC) ) {}  // wait to finish
   return ADCW;                    // read and return result
@@ -62,7 +63,7 @@ void adc_checkPots()
 	
 	//if((adcCnt++)&0x07 == 0x00)
 	{
-		for(int i=0;i<4;i++)
+		for(uint8_t i=0;i<4;i++)
 		{	
 		
 			uint16_t newValue = adc_readAvg(i,4);//adc_read(i);
@@ -71,7 +72,7 @@ void adc_checkPots()
 			   ( adc_potValues[i] > (newValue + HYSTERSIS)))
 		   {
 			   adc_potValues[i] = newValue;
-			   menu_parseKnobValue(i,(newValue>>2));
+			   menu_parseKnobValue(i,(uint8_t)(newValue>>2));
 			   menu_repaintAll();
 		   } 
 		}
