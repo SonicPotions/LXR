@@ -34,6 +34,8 @@
 #include "usb_midi_core.h"
 #include "MidiParser.h"
 
+#define UNUSED(x) (void)(x)
+
 /* Includes ------------------------------------------------------------------*/
 
 //buffer for parsed midi messages
@@ -96,7 +98,7 @@ uint32_t AudioCtlLen = 0;
 uint8_t  AudioCtlUnit = 0;
 */
 
-static uint32_t PlayFlag = 0;
+//static uint32_t PlayFlag = 0;
 
 static uint32_t  usbd_midi_AltSet = 0;
 static uint8_t usbd_midi_CfgDesc[AUDIO_CONFIG_DESC_SIZE];
@@ -119,7 +121,7 @@ this function closes the endpoints used by the class interface*/
   usbd_midi_EP0_RxReady,
   /*This callback is called to perform the data in stage relative to the non-control
 endpoints.*/
-  NULL,//usbd_midi_DataIn,
+  usbd_midi_DataIn,
   /*This callback is called to perform the data out stage relative to the non-control endpoints.*/
   usbd_midi_DataOut,
   /*This callback is called when a SOF interrupt is received; this callback can be
@@ -262,6 +264,8 @@ static uint8_t  usbd_midi_Init (void  *pdev,
 	* @param epdesc : Endpoint Descriptor
 	* @retval : status
 	*/
+	(void)cfgidx;
+
   DCD_EP_Open(pdev,
 		  	  MIDI_OUT_EP,
 		  	  MIDI_PACKET_SIZE,
@@ -292,11 +296,12 @@ static uint8_t  usbd_midi_Init (void  *pdev,
 static uint8_t  usbd_midi_DeInit (void  *pdev,
                                    uint8_t cfgidx)
 {
-  DCD_EP_Close (pdev , MIDI_OUT_EP);
-  DCD_EP_Close (pdev , MIDI_IN_EP);
+	UNUSED(cfgidx);
+	DCD_EP_Close (pdev , MIDI_OUT_EP);
+	DCD_EP_Close (pdev , MIDI_IN_EP);
 
-  //No Hardware to de-init
-  return USBD_OK;
+	//No Hardware to de-init
+	return USBD_OK;
 }
 //------------------------------------------------------------------------------------------------
 /**
@@ -360,8 +365,7 @@ static uint8_t  usbd_midi_Setup (void  *pdev,
 //------------------------------------------------------------------------------------------------
 static uint8_t  usbd_midi_EP0_TxSent (void  *pdev)
 {
-
-
+  UNUSED(pdev);
   return USBD_OK;
 }
 //------------------------------------------------------------------------------------------------
@@ -373,7 +377,7 @@ static uint8_t  usbd_midi_EP0_TxSent (void  *pdev)
   */
 static uint8_t  usbd_midi_EP0_RxReady (void  *pdev)
 {
-
+  UNUSED(pdev);
   return USBD_OK;
 }
 //------------------------------------------------------------------------------------------------
@@ -386,6 +390,7 @@ static uint8_t  usbd_midi_EP0_RxReady (void  *pdev)
   */
 static uint8_t  usbd_midi_DataIn (void *pdev, uint8_t epnum)
 {
+	UNUSED(epnum);
 	//DCD_EP_Flush (pdev,epnum);
 	DCD_EP_Flush (pdev,MIDI_IN_EP);
 	return USBD_OK;
@@ -540,7 +545,7 @@ static uint8_t  usbd_midi_DataOut (void *pdev, uint8_t epnum)
   */
 static uint8_t  usbd_midi_SOF (void *pdev)
 {
-
+	UNUSED(pdev);
 #if 0
 	//TODO was passiert hier?
   /* Check if there are available data in stream buffer.
@@ -592,11 +597,13 @@ static uint8_t  usbd_midi_SOF (void *pdev)
   * @param  pdev: instance
   * @retval status
   */
-
+/*
 static uint8_t  usbd_midi_OUT_Incplt (void  *pdev)
 {
+	(void)(pdev);
   return USBD_OK;
 }
+*/
 
 //------------------------------------------------------------------------------------------------
 /******************************************************************************
@@ -652,6 +659,7 @@ static void AUDIO_Req_SetCurrent(void *pdev, USB_SETUP_REQ *req)
   */
 static uint8_t  *USBD_midi_GetCfgDesc (uint8_t speed, uint16_t *length)
 {
+	(void)speed;
   *length = sizeof (usbd_midi_CfgDesc);
   return usbd_midi_CfgDesc;
 }

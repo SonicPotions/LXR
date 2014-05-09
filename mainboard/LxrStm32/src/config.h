@@ -43,6 +43,7 @@
 #include "stm32f4xx.h"
 #include <stdio.h>
 
+#define UNUSED(x) (void)(x)
 
 #define true 1
 #define false 0

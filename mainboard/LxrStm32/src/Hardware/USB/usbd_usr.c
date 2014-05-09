@@ -147,6 +147,9 @@ void USBD_USR_DeviceDisconnected (void)
   */
 void EVAL_AUDIO_TransferComplete_CallBack(uint32_t pBuffer, uint32_t Size)
 {
+	//ommit unused parameter warning
+	(void)pBuffer;
+	(void)Size;
 }
 
 /**

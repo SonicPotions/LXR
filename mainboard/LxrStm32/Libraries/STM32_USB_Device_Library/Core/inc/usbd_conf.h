@@ -47,6 +47,7 @@
 
 #define MIDI_PACKET_SIZE 			   0x40
 
+#define VBUS_SENSING_ENABLED		1
 /**
   * @}
   */ 

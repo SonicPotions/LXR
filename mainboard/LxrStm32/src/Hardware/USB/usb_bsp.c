@@ -30,6 +30,8 @@
 #include "usb_bsp.h"
 #include "usbd_conf.h"
 
+#define UNUSED(x) (void)(x)
+
 /** @addtogroup STM32_USB_OTG_DEVICE_LIBRARY
 * @{
 */
@@ -94,6 +96,8 @@
 
 void USB_OTG_BSP_Init(USB_OTG_CORE_HANDLE *pdev)
 {
+
+	UNUSED(pdev);
 #ifndef USE_STM3210C_EVAL
   GPIO_InitTypeDef GPIO_InitStructure;    
 #endif
@@ -264,6 +268,7 @@ void USB_OTG_BSP_Init(USB_OTG_CORE_HANDLE *pdev)
 */
 void USB_OTG_BSP_EnableInterrupt(USB_OTG_CORE_HANDLE *pdev)
 {
+	UNUSED(pdev);
   NVIC_InitTypeDef NVIC_InitStructure; 
   
   NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);
