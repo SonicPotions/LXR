@@ -30,21 +30,7 @@
 #define __USB_CONF__H__
 
 /* Includes ------------------------------------------------------------------*/
-//#include "usb_conf.h"
 #include "stm32f4xx.h"
-
-/** @addtogroup USB_OTG_DRIVER
-  * @{
-  */
-  
-/** @defgroup USB_CONF
-  * @brief USB low level driver configuration file
-  * @{
-  */ 
-
-/** @defgroup USB_CONF_Exported_Defines
-  * @{
-  */ 
 
 /* USB Core and PHY interface configuration.
    Tip: To avoid modifying these defines each time you need to change the USB
@@ -82,6 +68,11 @@
 *     Configuration (ii) need a different hardware, for more details refer to your
 *     STM32 device datasheet.
 *******************************************************************************/
+#if 0
+/*
+ * JS: currently we are running the FS Core.
+ * I don't know what the advantage of running the HS core in FS mode with the on-chip PHY is.
+ */
 #ifndef USE_USB_OTG_HS
  //#define USE_USB_OTG_HS
 #endif /* USE_USB_OTG_HS */
@@ -91,11 +82,12 @@
 #endif /* USE_ULPI_PHY */
 
 #ifndef USE_EMBEDDED_PHY
- //#define USE_EMBEDDED_PHY
+ #define USE_EMBEDDED_PHY
 #endif /* USE_EMBEDDED_PHY */
 
 #ifdef USE_USB_OTG_HS 
  #define USB_OTG_HS_CORE
+#endif
 #endif
 
 /*******************************************************************************
@@ -181,14 +173,14 @@
 
 /****************** USB OTG FS CONFIGURATION **********************************/
 #ifdef USB_OTG_FS_CORE
- #define RX_FIFO_FS_SIZE                          64
- #define TX0_FIFO_FS_SIZE                          64
- #define TX1_FIFO_FS_SIZE                         64
- #define TX2_FIFO_FS_SIZE                          64
+ #define RX_FIFO_FS_SIZE                          128
+ #define TX0_FIFO_FS_SIZE                          128
+ #define TX1_FIFO_FS_SIZE                         128
+ #define TX2_FIFO_FS_SIZE                          0
  #define TX3_FIFO_FS_SIZE                          0
- #define TXH_NP_HS_FIFOSIZ                         96
- #define TXH_P_HS_FIFOSIZ                          96
-//TODO fifos richtig configurieren
+ #define TXH_NP_FS_FIFOSIZ                         96
+ #define TXH_P_FS_FIFOSIZ                          96
+//TODO FIFOs can probably be reduced to 64
 // #define USB_OTG_FS_LOW_PWR_MGMT_SUPPORT
 // #define USB_OTG_FS_SOF_OUTPUT_ENABLED
 #endif
@@ -198,9 +190,9 @@
 
 /****************** USB OTG MODE CONFIGURATION ********************************/
 //#define USE_HOST_MODE
-#ifndef USE_DEVICE_MODE
+
 #define USE_DEVICE_MODE
-#endif
+
 //#define USE_OTG_MODE
 
 #ifndef USB_OTG_FS_CORE
@@ -262,50 +254,6 @@
   #define __packed    __unaligned
 #endif /* __CC_ARM */
 
-/**
-  * @}
-  */ 
-
-
-/** @defgroup USB_CONF_Exported_Types
-  * @{
-  */ 
-/**
-  * @}
-  */ 
-
-
-/** @defgroup USB_CONF_Exported_Macros
-  * @{
-  */ 
-/**
-  * @}
-  */ 
-
-/** @defgroup USB_CONF_Exported_Variables
-  * @{
-  */ 
-/**
-  * @}
-  */ 
-
-/** @defgroup USB_CONF_Exported_FunctionsPrototype
-  * @{
-  */ 
-/**
-  * @}
-  */ 
 
 
 #endif //__USB_CONF__H__
-
-
-/**
-  * @}
-  */ 
-
-/**
-  * @}
-  */ 
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
-

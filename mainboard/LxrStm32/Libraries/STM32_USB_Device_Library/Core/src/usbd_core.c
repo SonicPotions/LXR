@@ -108,9 +108,12 @@ USBD_DCD_INT_cb_TypeDef USBD_DCD_INT_cb =
   USBD_IsoINIncomplete,
   USBD_IsoOUTIncomplete,
 #ifdef VBUS_SENSING_ENABLED
-USBD_DevConnected, 
-USBD_DevDisconnected,    
-#endif  
+	USBD_DevConnected,
+	USBD_DevDisconnected,
+#else
+	NULL,
+	NULL
+#endif
 };
 
 USBD_DCD_INT_cb_TypeDef  *USBD_DCD_INT_fops = &USBD_DCD_INT_cb;

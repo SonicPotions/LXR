@@ -29,8 +29,6 @@
  *  Created on: 26.10.2012
  *      Author: Julian
  */
-
-
 #include "usb_midi_core.h"
 #include "MidiParser.h"
 
@@ -43,42 +41,22 @@ MidiMsg usb_MidiMessages[USB_MIDI_INPUT_BUFFER_SIZE];
 uint8_t usb_MidiMessagesRead = 0;
 uint8_t usb_MidiMessagesWrite = 0;
 
-
-
 /*********************************************
-   AUDIO Device library callbacks
+   MIDI Device library callbacks
  *********************************************/
 static uint8_t  usbd_midi_Init       (void  *pdev, uint8_t cfgidx);
 static uint8_t  usbd_midi_DeInit     (void  *pdev, uint8_t cfgidx);
+static uint8_t  usbd_midi_DataOut    (void *pdev, uint8_t epnum);
+static uint8_t  *USBD_midi_GetCfgDesc (uint8_t speed, uint16_t *length);
+
 static uint8_t  usbd_midi_Setup      (void  *pdev, USB_SETUP_REQ *req);
 static uint8_t  usbd_midi_EP0_RxReady(void *pdev);
 static uint8_t  usbd_midi_EP0_TxSent (void  *pdev);
 static uint8_t  usbd_midi_DataIn     (void *pdev, uint8_t epnum);
-static uint8_t  usbd_midi_DataOut    (void *pdev, uint8_t epnum);
 static uint8_t  usbd_midi_SOF        (void *pdev);
-//static uint8_t  usbd_midi_OUT_Incplt (void  *pdev);
+static uint8_t  usbd_midi_OUT_Incplt (void  *pdev);
 
-/*********************************************
-   AUDIO Requests management functions
- *********************************************/
-/*
-static void AUDIO_Req_GetCurrent(void *pdev, USB_SETUP_REQ *req);
-static void AUDIO_Req_SetCurrent(void *pdev, USB_SETUP_REQ *req);
-*/
-static uint8_t  *USBD_midi_GetCfgDesc (uint8_t speed, uint16_t *length);
-/**
-  * @}
-  */
 
-/** @defgroup usbd_midi_Private_Variables
-  * @{
-  */
-/* Main Buffer for Audio Data Out transfers and its relative pointers */
-/*
-uint8_t  IsocOutBuff [TOTAL_OUT_BUF_SIZE * 2];
-uint8_t* IsocOutWrPtr = IsocOutBuff;
-uint8_t* IsocOutRdPtr = IsocOutBuff;
-*/
 
 //buffers for midi IO
 uint8_t  usb_MidiOutBuff [TOTAL_MIDI_BUF_SIZE * NUM_SUB_BUFFERS];
@@ -89,18 +67,6 @@ uint8_t  usb_MidiInBuff [TOTAL_MIDI_BUF_SIZE * NUM_SUB_BUFFERS];
 uint8_t* usb_MidiInWrPtr = usb_MidiInBuff;
 uint8_t* usb_MidiInRdPtr = usb_MidiInBuff;
 
-
-/* Main Buffer for Audio Control Rrequests transfers and its relative variables */
-/*
-uint8_t  AudioCtl[64];
-uint8_t  AudioCtlCmd = 0;
-uint32_t AudioCtlLen = 0;
-uint8_t  AudioCtlUnit = 0;
-*/
-
-//static uint32_t PlayFlag = 0;
-
-static uint32_t  usbd_midi_AltSet = 0;
 static uint8_t usbd_midi_CfgDesc[AUDIO_CONFIG_DESC_SIZE];
 //------------------------------------------------------------------------------------------------
 /* AUDIO interface class callbacks structure */
@@ -116,7 +82,7 @@ this function closes the endpoints used by the class interface*/
   /*This callback is called to handle the specific class setup requests*/
   usbd_midi_Setup,
   /*This callback is called when the send status is finished*/
- usbd_midi_EP0_TxSent, /* EP0_TxSent */
+  usbd_midi_EP0_TxSent, /* EP0_TxSent */
   /*This callback is called when the receive status is finished*/
   usbd_midi_EP0_RxReady,
   /*This callback is called to perform the data in stage relative to the non-control
@@ -132,7 +98,7 @@ incomplete.*/
   NULL,
   /*IsoOUTIncomplete: This callback is called when the last isochronous OUT transfer is
 incomplete.*/
-  NULL,//usbd_midi_OUT_Incplt,
+  usbd_midi_OUT_Incplt,
   /*GetConfigDescriptor: This callback returns the USB Configuration descriptor*/
   USBD_midi_GetCfgDesc,
 #ifdef USB_OTG_HS_CORE
@@ -311,57 +277,15 @@ static uint8_t  usbd_midi_DeInit (void  *pdev,
   * @param  req: usb requests
   * @retval status
   */
+
 static uint8_t  usbd_midi_Setup (void  *pdev,
                                   USB_SETUP_REQ *req)
 {
-  uint16_t len=USB_AUDIO_DESC_SIZ;
-  uint8_t  *pbuf=usbd_midi_CfgDesc + 9;
-
-  switch (req->bmRequest & USB_REQ_TYPE_MASK)
-  {
-    /* Standard Requests -------------------------------*/
-  case USB_REQ_TYPE_STANDARD:
-    switch (req->bRequest)
-    {
-    case USB_REQ_GET_DESCRIPTOR:
-      if( (req->wValue >> 8) == AUDIO_DESCRIPTOR_TYPE)
-      {
-#ifdef USB_OTG_HS_INTERNAL_DMA_ENABLED
-        pbuf = usbd_midi_Desc;
-#else
-        pbuf = usbd_midi_CfgDesc + 9;
-#endif
-        len = MIN(USB_AUDIO_DESC_SIZ , req->wLength);
-      }
-
-      USBD_CtlSendData (pdev,
-                        pbuf,
-                        len);
-      break;
-
-    case USB_REQ_GET_INTERFACE :
-      USBD_CtlSendData (pdev,
-                        (uint8_t *)&usbd_midi_AltSet,
-                        1);
-      break;
-
-    case USB_REQ_SET_INTERFACE :
-      if ((uint8_t)(req->wValue) < 0x02)
-      {
-        usbd_midi_AltSet = (uint8_t)(req->wValue);
-      }
-      else
-      {
-        /* Call the error management function (command will be nacked */
-        USBD_CtlError (pdev, req);
-      }
-      break;
-    }
-    break;
-  }
+  UNUSED(pdev);
+  UNUSED(req);
   return USBD_OK;
 }
-
+#if 1
 //------------------------------------------------------------------------------------------------
 static uint8_t  usbd_midi_EP0_TxSent (void  *pdev)
 {
@@ -391,10 +315,10 @@ static uint8_t  usbd_midi_EP0_RxReady (void  *pdev)
 static uint8_t  usbd_midi_DataIn (void *pdev, uint8_t epnum)
 {
 	UNUSED(epnum);
-	//DCD_EP_Flush (pdev,epnum);
-	DCD_EP_Flush (pdev,MIDI_IN_EP);
+	UNUSED(pdev);
 	return USBD_OK;
 }
+#endif
 //------------------------------------------------------------------------------------------------
 /**
   * @brief  usbd_midi_DataOut
@@ -403,7 +327,6 @@ static uint8_t  usbd_midi_DataIn (void *pdev, uint8_t epnum)
   * @param  epnum: endpoint number
   * @retval status
   */
-
 static uint8_t  usbd_midi_DataOut (void *pdev, uint8_t epnum)
 {
   if (epnum == MIDI_OUT_EP)
@@ -418,8 +341,8 @@ static uint8_t  usbd_midi_DataOut (void *pdev, uint8_t epnum)
 
     /* PLD is this necessary? Removing it seems to have no negative effect... */
     /* Toggle the frame index */
-    ((USB_OTG_CORE_HANDLE*)pdev)->dev.out_ep[epnum].even_odd_frame =
-      (((USB_OTG_CORE_HANDLE*)pdev)->dev.out_ep[epnum].even_odd_frame)? 0:1;
+  //  ((USB_OTG_CORE_HANDLE*)pdev)->dev.out_ep[epnum].even_odd_frame =
+    //  (((USB_OTG_CORE_HANDLE*)pdev)->dev.out_ep[epnum].even_odd_frame)? 0:1;
 
     /* Prepare Out endpoint to receive next audio packet */
     DCD_EP_PrepareRx(pdev,
@@ -435,18 +358,17 @@ static uint8_t  usbd_midi_DataOut (void *pdev, uint8_t epnum)
     usbData.cin = 1;
     for(i=0;i< 0x40 && usbData.cin!=0x00;i+=4)
     {
-
     	usbData.cin = usb_MidiOutRdPtr[i];
     	usbData.status = usb_MidiOutRdPtr[i+1];
     	usbData.data1 = usb_MidiOutRdPtr[i+2];
     	usbData.data2 = usb_MidiOutRdPtr[i+3];
 
-	/* reset data in buffer since it might not be completely overwritten */
-	usb_MidiOutRdPtr[i] = 0;
+		/* reset data in buffer since it might not be completely overwritten */
+		usb_MidiOutRdPtr[i] = 0;
 
     	uint8_t length=0;
 
-    	//TODO propper midi parsing
+    	//TODO midi parsing can be improved
     	// we only have cable 0
     	if ((usbData.cin&0xf0) == 0)
     	{
@@ -500,14 +422,12 @@ static uint8_t  usbd_midi_DataOut (void *pdev, uint8_t epnum)
 			//not our cable
 			//todo: are all messages in this chunk the same cable?
 			//then we could return; here
+
+			//JS: I think it's not guaranteed
+			//But I suppose there are no messages on other cables to be expected
 		}
     	if(length != 0)
     	{
-    		/*
-    		midiParser_parseUartData(usbData.status);
-    		midiParser_parseUartData(usbData.data1);
-    		midiParser_parseUartData(usbData.data2);
-    		*/
     		usb_MidiMessages[usb_MidiMessagesWrite].status	= usbData.status;
     		usb_MidiMessages[usb_MidiMessagesWrite].data1 	= usbData.data1;
     		usb_MidiMessages[usb_MidiMessagesWrite].data2 	= usbData.data2;
@@ -526,8 +446,8 @@ static uint8_t  usbd_midi_DataOut (void *pdev, uint8_t epnum)
 
     usb_MidiOutRdPtr += TOTAL_MIDI_BUF_SIZE;
     /* Increment the Buffer pointer or roll it back when all buffers are full */
-    if (usb_MidiOutRdPtr >= (usb_MidiOutBuff + (TOTAL_MIDI_BUF_SIZE*NUM_SUB_BUFFERS)))
-    {/* All buffers are full: roll back */
+    if (usb_MidiOutRdPtr >= (usb_MidiOutBuff + (TOTAL_MIDI_BUF_SIZE*NUM_SUB_BUFFERS))) {
+    	/* All buffers are full: roll back */
     	usb_MidiOutRdPtr = usb_MidiOutBuff;
     }
 
@@ -543,53 +463,13 @@ static uint8_t  usbd_midi_DataOut (void *pdev, uint8_t epnum)
   * @param  epnum: endpoint number
   * @retval status
   */
+#if 1
 static uint8_t  usbd_midi_SOF (void *pdev)
 {
-	UNUSED(pdev);
-#if 0
-	//TODO was passiert hier?
-  /* Check if there are available data in stream buffer.
-    In this function, a single variable (PlayFlag) is used to avoid software delays.
-    The play operation must be executed as soon as possible after the SOF detection. */
-  if (PlayFlag)
-  {
-    /* Start playing received packet */
-#if 0
-    AUDIO_OUT_fops.AudioCmd((uint8_t*)(IsocOutRdPtr),  /* Samples buffer pointer */
-                            AUDIO_OUT_PACKET,          /* Number of samples in Bytes */
-                            AUDIO_CMD_PLAY);           /* Command to be processed */
-#endif
-    /* Increment the Buffer pointer or roll it back when all buffers all full */
-    if (usb_MidiOutRdPtr >= (usb_MidiOutBuff + TOTAL_MIDI_BUF_SIZE*NUM_SUB_BUFFERS))
-    {/* Roll back to the start of buffer */
-      usb_MidiOutRdPtr = usb_MidiOutBuff;
-    }
-    else
-    {/* Increment to the next sub-buffer */
-    	usb_MidiOutRdPtr += MIDI_PACKET_SIZE;
-    }
-
-    /* If all available buffers have been consumed, stop playing */
-    if (usb_MidiOutRdPtr == usb_MidiOutWrPtr)
-    {
-      /* Pause the audio stream */
-#if 0
-      AUDIO_OUT_fops.AudioCmd((uint8_t*)(IsocOutBuff),   /* Samples buffer pointer */
-    		  	  	  	  	  MIDI_PACKET_SIZE,          /* Number of samples in Bytes */
-                              AUDIO_CMD_PAUSE);          /* Command to be processed */
-#endif
-      /* Stop entering play loop */
-      PlayFlag = 0;
-
-      /* Reset buffer pointers */
-      usb_MidiOutRdPtr = usb_MidiOutBuff;
-      usb_MidiOutWrPtr = usb_MidiOutBuff;
-    }
-  }
-
-#endif
+  UNUSED(pdev);
   return USBD_OK;
 }
+
 //------------------------------------------------------------------------------------------------
 /**
   * @brief  usbd_midi_OUT_Incplt
@@ -597,59 +477,15 @@ static uint8_t  usbd_midi_SOF (void *pdev)
   * @param  pdev: instance
   * @retval status
   */
-/*
+
 static uint8_t  usbd_midi_OUT_Incplt (void  *pdev)
 {
 	(void)(pdev);
   return USBD_OK;
 }
-*/
-
-//------------------------------------------------------------------------------------------------
-/******************************************************************************
-     AUDIO Class requests management
-******************************************************************************/
-#if 0
-/**
-  * @brief  AUDIO_Req_GetCurrent
-  *         Handles the GET_CUR Audio control request.
-  * @param  pdev: instance
-  * @param  req: setup class request
-  * @retval status
-  */
-static void AUDIO_Req_GetCurrent(void *pdev, USB_SETUP_REQ *req)
-{
-  /* Send the current mute state */
-  USBD_CtlSendData (pdev,
-                    AudioCtl,
-                    req->wLength);
-}
-//------------------------------------------------------------------------------------------------
-/**
-  * @brief  AUDIO_Req_SetCurrent
-  *         Handles the SET_CUR Audio control request.
-  * @param  pdev: instance
-  * @param  req: setup class request
-  * @retval status
-  */
-static void AUDIO_Req_SetCurrent(void *pdev, USB_SETUP_REQ *req)
-{
-  if (req->wLength)
-  {
-    /* Prepare the reception of the buffer over EP0 */
-    USBD_CtlPrepareRx (pdev,
-                       AudioCtl,
-                       req->wLength);
-
-    /* Set the global variables indicating current request and its length
-    to the function usbd_midi_EP0_RxReady() which will process the request */
-    AudioCtlCmd = AUDIO_REQ_SET_CUR;     /* Set the request value */
-    AudioCtlLen = req->wLength;          /* Set the request data length */
-    AudioCtlUnit = HIBYTE(req->wIndex);  /* Set the request target unit */
-  }
-}
 #endif
 //------------------------------------------------------------------------------------------------
+
 /**
   * @brief  USBD_midi_GetCfgDesc
   *         Returns configuration descriptor.

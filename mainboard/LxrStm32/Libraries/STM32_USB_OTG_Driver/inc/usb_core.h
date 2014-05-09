@@ -33,9 +33,6 @@
 #include "usb_conf.h"
 #include "usb_regs.h"
 #include "usb_defines.h"
-#ifndef USE_DEVICE_MODE
-#define USE_DEVICE_MODE
-#endif
 
 
 /** @addtogroup USB_OTG_DRIVER

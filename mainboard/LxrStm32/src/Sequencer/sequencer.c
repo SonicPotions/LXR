@@ -258,12 +258,12 @@ uint8_t seq_getTrackRotation(uint8_t trackNr)
 static void seq_calcDeltaT(uint16_t bpm)
 {
 	//--- calc deltaT ----
-	// für 4/4tel takt -> 1 beat = 4 main steps = 4*8 = 32 sub steps
+	// fï¿½r 4/4tel takt -> 1 beat = 4 main steps = 4*8 = 32 sub steps
 	// 120 bpm 4/4tel = 120 * 1 beat / 60sec = 120 * 32 in 60 sec;
-	seq_deltaT 	= (1000*60)/bpm; 	//bei 12 = 500ms = zeit für einen beat
+	seq_deltaT 	= (1000*60)/bpm; 	//bei 12 = 500ms = time for one beat
 	seq_deltaT /= 96.f; //we run the internal clock at 96ppq -> seq clock 32 ppq == prescaler 3, midi clock 24 ppq == prescale 4
 	seq_deltaT *= 4;
-	//32.f;					// zeit für einen beat / anzahl steps pro beat
+	//32.f;					// time for one beat / number of steps per beat
 
 	//--- calc shuffle ---
 	if(seq_shuffle != 0)
@@ -308,9 +308,6 @@ void seq_setNextPattern(const uint8_t patNr)
 //------------------------------------------------------------------------------
 static void seq_sendMidi(MidiMsg msg)
 {
-	//TODO midi out seq mode
-	//TODO usb und uart einjzeln aktivierbar
-
 	//send to usb midi
 	usb_sendMidi(msg);
 
@@ -660,10 +657,9 @@ void seq_resetDeltaAndTick()
 	{
 		//seq_deltaT = 0;^
 
-		seq_deltaT 	= (1000*60)/seq_tempo; 	//bei 12 = 500ms = zeit für einen beat
+		seq_deltaT 	= (1000*60)/seq_tempo; 	//bei 12 = 500ms = time for one beat
 		seq_deltaT /= 96.f; //we run the internal clock at 96ppq -> seq clock 32 ppq == prescaler 3, midi clock 24 ppq == prescale 4
 		seq_deltaT *= 4;
-
 
 		seq_lastTick = systick_ticks;
 
@@ -672,11 +668,7 @@ void seq_resetDeltaAndTick()
 		const float originalDeltaT = seq_deltaT;
 
 		seq_deltaT = shuffleFactor * originalDeltaT * 1.f;
-		//seq_deltaT -= seq_lastShuffle * originalDeltaT * 8.f;
-
 		seq_lastShuffle = shuffleFactor;
-
-		//seq_calcDeltaT(seq_tempo);
 
 		if(seq_deltaT <= 0)
 		{
@@ -712,6 +704,7 @@ void seq_tick()
 	{
 		seq_deltaT = 32000;
 		seq_nextStep();
+
 		return;
 	}
 	if(systick_ticks-seq_lastTick >= seq_deltaT)
@@ -749,6 +742,8 @@ void seq_tick()
 		seq_prescaleCounter++;
 		if(seq_prescaleCounter>=12)seq_prescaleCounter=0;
 	}
+
+
 }
 //------------------------------------------------------------------------------
 void seq_setQuantisation(uint8_t value)

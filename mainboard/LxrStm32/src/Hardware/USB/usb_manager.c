@@ -40,24 +40,24 @@ enum {
 };
 
 USB_OTG_CORE_HANDLE           USB_OTG_dev;
-//static uint8_t usb_detectionState = USB_NOT_DETECTED;
 //-------------------------------------------------------------------------------
 void usb_init()
 {
+	/*
 	//init usb detect pin
 	  GPIO_InitTypeDef  GPIO_InitStructure;
-	  /* GPIOD Periph clock enable */
+	  // GPIOD Periph clock enable
 	  RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
-	  /* Configure PD12, PD13, PD14 and PD15 in output push-pull mode */
+	  // Configure PD12, PD13, PD14 and PD15 in output push-pull mode
 	  GPIO_InitStructure.GPIO_Pin = USB_DETECT_PIN;
 	  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
 	  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_25MHz;
 	  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;
 
-	  /* standard output pin */
+	  // standard output pin
 	  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
 	  GPIO_Init(USB_DETECT_PORT, &GPIO_InitStructure);
-
+	  */
 
 	  usb_start();
 }
@@ -70,25 +70,7 @@ void usb_stop()
 //-------------------------------------------------------------------------------
 void usb_tick()
 {
-	/*
-	if(USB_DETECT_PORT->IDR & USB_DETECT_PIN)
-	{
-		//USB detected
-		if(usb_detectionState == USB_NOT_DETECTED)
-		{
-			usb_detectionState = USB_DETECTED;
-			usb_start();
-		}
-
-	} else {
-		//no USB detected
-		if(usb_detectionState == USB_DETECTED)
-		{
-			usb_detectionState = USB_NOT_DETECTED;
-			usb_stop();
-		}
-	}
-	*/
+	usb_flushMidi();
 }
 //-------------------------------------------------------------------------------
 void usb_start()
@@ -108,51 +90,52 @@ void usb_start()
 	            &USR_cb);
 }
 //-------------------------------------------------------------------------------
+/*
+ * writes a byte to the Usb Tx buffer
+ * Will be send out by the usb_flushMidi() call
+ */
 void usb_sendByte(uint8_t byte)
 {
-	//if(USB_OTG_dev.dev.device_status != USB_OTG_SUSPENDED)
+	*usb_MidiInWrPtr++ = byte;
+	if(usb_MidiInWrPtr >= (usb_MidiInBuff+(TOTAL_MIDI_BUF_SIZE * NUM_SUB_BUFFERS)))
 	{
-		*usb_MidiInWrPtr++ = byte;
-		if(usb_MidiInWrPtr >= (usb_MidiInBuff+(TOTAL_MIDI_BUF_SIZE * NUM_SUB_BUFFERS)))
-		{
-			usb_MidiInWrPtr = usb_MidiInBuff;
-		}
+		usb_MidiInWrPtr = usb_MidiInBuff;
 	}
 }
-//-------------------------------------------------------------------------------
-void usb_sendMidi(MidiMsg msg)
+//------------------------------------------------------------------------------
+/*
+ * flush FIFO and send out next block of messages stored in the usb_MidiInBuff
+ * called periodically by usb_tick()
+ * TODO:  maybe there is a better way to call this automatically by the USB driver when it is ready to TX some more data?
+ */
+void usb_flushMidi()
 {
-
-		//MIDI byte[0] = 4 bits cable number + 4 bits event type code
-		//usb_sendByte(0x09);
-		usb_sendByte(msg.status>>4);
-		
-		//then the 3 midi message bytes
-		//USB MIDI msg has to be ALWAYS 4 bytes long
-		usb_sendByte(msg.status);
-		usb_sendByte(msg.data1);
-		usb_sendByte(msg.data2);
-
-	if(USB_OTG_dev.dev.device_status != USB_OTG_SUSPENDED)
+	const uint8_t len = usb_MidiInWrPtr - usb_MidiInRdPtr;
+	if((len != 0) && (USB_OTG_dev.dev.device_status != USB_OTG_SUSPENDED))
 	{
 		DCD_EP_Flush (&USB_OTG_dev,MIDI_IN_EP);
-		//DCD_EP_Tx (&USB_OTG_dev, MIDI_IN_EP, usb_MidiInRdPtr, 0x40);
-		DCD_EP_Tx (&USB_OTG_dev, MIDI_IN_EP, usb_MidiInRdPtr, 0x4);
-	}		
-		
+		DCD_EP_Tx (&USB_OTG_dev, MIDI_IN_EP, usb_MidiInRdPtr, len);
 
 		usb_MidiInRdPtr += TOTAL_MIDI_BUF_SIZE;
 		if(usb_MidiInRdPtr >= (usb_MidiInBuff+(TOTAL_MIDI_BUF_SIZE * NUM_SUB_BUFFERS)))
 		{
 			usb_MidiInRdPtr = usb_MidiInBuff;
 		}
-		usb_MidiInRdPtr[0] = 0;
-		usb_MidiInRdPtr[4] = 0;
-		usb_MidiInRdPtr[8] = 0;
-		usb_MidiInRdPtr[12] = 0;
 		usb_MidiInWrPtr=usb_MidiInRdPtr;
+	}
+}
+//------------------------------------------------------------------------------
+void usb_sendMidi(MidiMsg msg)
+{
+	//MIDI byte[0] = 4 bits cable number + 4 bits event type code
+	usb_sendByte(msg.status>>4);
 
-
+	//then the 3 midi message bytes
+	//USB MIDI msg has to be ALWAYS 4 bytes long
+	//even if it is just a single clock byte
+	usb_sendByte(msg.status);
+	usb_sendByte(msg.data1);
+	usb_sendByte(msg.data2);
 }
 //-------------------------------------------------------------------------------
 uint8_t usb_getMidi(MidiMsg* msg)
