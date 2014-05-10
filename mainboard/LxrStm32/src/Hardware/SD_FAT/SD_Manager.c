@@ -85,7 +85,7 @@ void sdManager_init()
 				//get ext
 
 				int i;
-				for(i=0;i<12;i++)
+				for(i=0;i<12-3;i++)
 				{
 					if(fn[i]=='.')
 					{
@@ -169,7 +169,7 @@ void sd_setActiveSample(uint8_t sampleNr)
 				//get ext
 
 				int i;
-				for(i=0;i<12;i++)
+				for(i=0;i<12-3;i++)
 				{
 					if(fn[i]=='.')
 					{
