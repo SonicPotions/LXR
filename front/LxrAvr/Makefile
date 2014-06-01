@@ -21,8 +21,8 @@ else
 DEFINES += -DNDEBUG
 endif
 
-ifndef OPTIMIZE
-OPTIMIZE=s
+ifndef AVR_OPTIMIZE
+AVR_OPTIMIZE=s
 endif
 
 # if VERBOSE is defined, spam output
@@ -80,7 +80,7 @@ INCLUDES += -I"./Menu"
 INCLUDES += -I"./Preset"
 
 CFLAGS += $(DEFINES) $(INCLUDES)
-CFLAGS += -O$(OPTIMIZE)
+CFLAGS += -O$(AVR_OPTIMIZE)
 CFLAGS += -Wall -Wextra -Wconversion -c -funsigned-char -funsigned-bitfields -ffast-math -freciprocal-math -ffunction-sections -fdata-sections -fpack-struct -fshort-enums
 ifeq ($(PEDANTIC),1)
 CFLAGS += -Werror

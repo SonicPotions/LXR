@@ -50,7 +50,7 @@ clean:
 	$(AT)make -C tools/FirmwareImageBuilder clean
 	$(AT)make -C $(AVR_PATH) clean
 	$(AT)make -C $(ARM_PATH) clean
-	$(AT)rm $(IMAGE)
+	$(AT)$(RM) $(IMAGE)
 
 .PHONY: firmware
 firmware: $(IMAGE)
