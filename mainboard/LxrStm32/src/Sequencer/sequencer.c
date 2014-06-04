@@ -609,6 +609,8 @@ void seq_setDeltaT(float delta)
 
 /*This is called from IRQ handler when an external clock tick is received
  * master steps are used to keep the sync with the external clocks
+ * a master step is a step that is directly triggered by the external clock signal.
+ * non master steps are derived from the internaly calculated phase accumulator.
  * spacing is defined by the prescaler value
  * - with 32ppq every step is a master step
  * - with 4ppq only every 8th step is a master step
