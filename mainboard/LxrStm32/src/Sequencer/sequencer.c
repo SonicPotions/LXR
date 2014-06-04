@@ -669,7 +669,7 @@ void seq_resetDeltaAndTick()
 		const float shuffleFactor = seq_shuffleTable[stepInHalfBeat] * seq_shuffle;
 		const float originalDeltaT = seq_deltaT;
 
-		seq_deltaT = shuffleFactor * originalDeltaT * 1.f;
+		seq_deltaT = shuffleFactor * originalDeltaT * 16.f;
 		seq_lastShuffle = shuffleFactor;
 
 		if(seq_deltaT <= 0)
