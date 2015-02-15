@@ -36,9 +36,10 @@
 
 
 #include "transientTables.h"
+#include "config.h"
 
 // Transient Volume Table
-const float transientVolumeTable[69]=
+INCCM const float transientVolumeTable[69]=
 {
 1, 0.985294, 0.970588, 0.955882, 0.941176,
 0.926471, 0.911765, 0.897059, 0.882353, 0.867647,
@@ -58,7 +59,7 @@ const float transientVolumeTable[69]=
 /* signed 8 bit pcm
  *
  */
-const int8_t transientData[NUM_TRANSIENTS][TRANSIENT_SAMPLE_LENGTH] =
+INCCM const int8_t transientData[NUM_TRANSIENTS][TRANSIENT_SAMPLE_LENGTH] =
 {
 		//js_expClick
 		 {
