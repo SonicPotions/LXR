@@ -49,7 +49,8 @@ defined in linker script */
 .word  _sbss
 /* end address for the .bss section. defined in linker script */
 .word  _ebss
-/* stack used for SystemInit_ExtMemCtl; always internal RAM used */
+/* start of ccm stack, defined in linker script */
+.word _ccm_stack
 
 /**
  * @brief  This is the code that gets called when the processor first
@@ -64,6 +65,12 @@ defined in linker script */
   .weak  Reset_Handler
   .type  Reset_Handler, %function
 Reset_Handler:  
+
+/*
+ * Bootloader expects a stack address in normal RAM (0x20000000), so _estack is
+ * used in g_pfnVectors and we adjust to stack value after the jump here.
+ */
+ ldr sp, =_ccm_stack
 
 /* Copy the data segment initializers from flash to SRAM */  
   movs  r1, #0
