@@ -777,7 +777,7 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 		{
 
 			case CC2_TRANS1_WAVE:
-					voiceArray[0].transGen.waveform = msg.data2;
+				transient_setWaveform(&voiceArray[0].transGen, msg.data2);
 				break;
 
 			case CC2_TRANS1_VOL:
@@ -789,7 +789,7 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 				break;
 
 			case CC2_TRANS2_WAVE:
-				voiceArray[1].transGen.waveform = msg.data2;
+				transient_setWaveform(&voiceArray[1].transGen, msg.data2);
 				break;
 
 			case CC2_TRANS2_VOL:
@@ -801,7 +801,7 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 				break;
 
 			case CC2_TRANS3_WAVE:
-				voiceArray[2].transGen.waveform = msg.data2;
+				transient_setWaveform(&voiceArray[2].transGen, msg.data2);
 				break;
 
 			case CC2_TRANS3_VOL:
@@ -813,7 +813,7 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 				break;
 
 			case CC2_TRANS4_WAVE:
-				snareVoice.transGen.waveform = msg.data2;
+				transient_setWaveform(&snareVoice.transGen, msg.data2);
 				break;
 
 			case CC2_TRANS4_VOL:
@@ -824,7 +824,7 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 				break;
 
 			case CC2_TRANS5_WAVE:
-				cymbalVoice.transGen.waveform = msg.data2;
+				transient_setWaveform(&cymbalVoice.transGen, msg.data2);
 				break;
 
 			case CC2_TRANS5_VOL:
@@ -835,7 +835,7 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 				break;
 
 			case CC2_TRANS6_WAVE:
-				hatVoice.transGen.waveform = msg.data2;
+				transient_setWaveform(&hatVoice.transGen, msg.data2);
 				break;
 
 			case CC2_TRANS6_VOL:
