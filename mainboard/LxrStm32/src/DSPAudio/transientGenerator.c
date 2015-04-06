@@ -47,6 +47,14 @@ void transient_init(TransientGenerator* transient)
 	transient->volume	= 1.f;
 };
 //---------------------------------------------------------------
+void transient_setWaveform(TransientGenerator* transient, const uint8_t waveform)
+{
+	if(waveform < NUM_TRANSIENTS + 2)
+		transient->waveform = waveform;
+	else
+		transient->waveform = 0;
+}
+//---------------------------------------------------------------
 void transient_trigger(TransientGenerator* transient)
 {
 	//reset the phase to the beginning when the generator is triggered
