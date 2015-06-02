@@ -193,9 +193,13 @@ int main(void)
 
 	/* get system clock info*/
 	RCC_GetClocksFreq(&RCC_Clocks);
-	/* set timebase systick to 1ms*/
-	//SysTick_Config(RCC_Clocks.HCLK_Frequency / 1000);
-	// looks like it's really being set to .25 ms
+
+	/*
+	// set timebase systick to 1ms
+	SysTick_Config(RCC_Clocks.HCLK_Frequency / 1000);
+	*/
+
+	// set timebase systick to .25 ms
 	SysTick_Config(RCC_Clocks.HCLK_Frequency / 4000);
 
 	initAudioJackDiscoverPins();
@@ -254,16 +258,23 @@ int main(void)
     }
 #else
 
+    /*
+    uint32_t fp = __get_FPSCR();
+    fp |= FPU_FPDSCR_FZ_Msk; //enable flush to zero
+    __set_FPSCR(fp);*/
+
+    FPU->FPDSCR |= FPU_FPDSCR_FZ_Msk ; //enable flush to zero
     while (1)
     {
 
     	usb_tick();
     	//generate next sample if no valid sample is present
+    	/*
     	if(bCurrentSampleValid!= SAMPLE_VALID)
     	{
     		calcNextSampleBlock();
     	}
-
+*/
 		//process midi on midi port
 		uart_processMidi();
 
