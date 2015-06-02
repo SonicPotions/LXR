@@ -156,19 +156,21 @@ void SVF_calcBlockZDF(ResonantFilter* filter, const uint8_t type, int16_t* buf, 
 
 	if(type == FILTER_NAIVE_2_POLE)
 	{
+
+		float f_lp2 = filter->f * 2.21f;
 		for(i=0;i<size;i++)
 		{
 			/* alternative 2Pole LP filter to fix the kick transient problems with the nonlinear ZDF LP */
 
 			float x = softClipTwo((buf[i]/((float)0x7fff))*filter->drive);
 			//float q = (1-filter->q) *2.5 ;/// (1.0 - filter->f);
-			float q = (1-filter->q) *1.5 + (1-filter->q) / (1.0 - filter->f*2);
+			float q = (1-filter->q) *1.4 + (1-filter->q) / (1.0 - f_lp2);
 
-			filter->a += filter->f*2 * ((x - filter->a)  + q * (filter->a - filter->b ));
+			filter->a += f_lp2 * ((x - filter->a)  + q * (filter->a - filter->b ));
 			if(filter->a > 1) filter->a = 1;
 			else if(filter->a < -1) filter->a = -1;
 
-			filter->b  += filter->f * 2 * (filter->a - filter->b );
+			filter->b  += f_lp2 * (filter->a - filter->b );
 			if(filter->b > 1) filter->b = 1;
 			else if(filter->b < -1) filter->b = -1;
 
