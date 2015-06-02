@@ -51,7 +51,6 @@
 #include "math.h"
 #include "distortion.h"
 //----------------------------------------------------
-//removed to free some cpu cycles
 #define ENABLE_NONLINEAR_INTEGRATORS 	1
 #define FILTER_GAIN 					0x70ff
 
@@ -66,7 +65,8 @@ enum filterTypeEnum
 	FILTER_BP,
 	FILTER_UNITY_BP,
 	FILTER_NOTCH,
-	FILTER_PEAK
+	FILTER_PEAK,
+	FILTER_NAIVE_2_POLE
 };
 //----------------------------------------------------
 typedef struct ResoFilterStruct
@@ -77,6 +77,8 @@ typedef struct ResoFilterStruct
 
 	float s1;
 	float s2;
+
+	float a,b;
 #if ENABLE_NONLINEAR_INTEGRATORS
 	float zi;	//input z^(-1)
 #endif
@@ -99,5 +101,7 @@ void SVF_directSetFilterValue(ResonantFilter* filter, float val);
 void SVF_calcBlockZDF(ResonantFilter* filter, const uint8_t type, int16_t* buf, const uint8_t size);
 //------------------------------------------------------------------------------------
 void SVF_recalcFreq(ResonantFilter* filter);
+//------------------------------------------------------------------------------------
+void SVF_reset(ResonantFilter* filter);
 
 #endif /* RESONANTFILTER_H_ */
