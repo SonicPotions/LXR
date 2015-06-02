@@ -849,17 +849,21 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 			case CC2_FILTER_TYPE_2:
 			case CC2_FILTER_TYPE_3:
 				voiceArray[msg.data1-CC2_FILTER_TYPE_1].filterType = msg.data2+1;
+				SVF_reset(&voiceArray[msg.data1-CC2_FILTER_TYPE_1].filter);
 				break;
 			case CC2_FILTER_TYPE_4:
 				snareVoice.filterType = msg.data2 + 1; // +1 because 0 is filter off which results in silence
+				SVF_reset(&snareVoice.filter);
 				break;
 			case CC2_FILTER_TYPE_5:
 				//cymbal filter
 				cymbalVoice.filterType = msg.data2+1;
+				SVF_reset(&cymbalVoice.filter);
 				break;
 			case CC2_FILTER_TYPE_6:
 				//Hihat filter
 				hatVoice.filterType = msg.data2+1;
+				SVF_reset(&hatVoice.filter);
 				break;
 
 			case CC2_FILTER_DRIVE_1:
