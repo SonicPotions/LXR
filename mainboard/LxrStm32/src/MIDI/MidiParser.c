@@ -317,7 +317,31 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 				break;
 		case F_OSC4_FINE:
 		{
-			//TODO hier sollte was hin
+			//clear lower nibble
+			snareVoice.osc.midiFreq &= 0xff00;
+			//set lower nibble
+			snareVoice.osc.midiFreq |= msg.data2;
+			osc_recalcFreq(&snareVoice.osc);
+		}
+				break;
+
+		case F_OSC5_FINE:
+		{
+			//clear lower nibble
+			cymbalVoice.osc.midiFreq &= 0xff00;
+			//set lower nibble
+			cymbalVoice.osc.midiFreq |= msg.data2;
+			osc_recalcFreq(&cymbalVoice.osc);
+		}
+				break;
+
+		case F_OSC6_FINE:
+		{
+			//clear lower nibble
+			hatVoice.osc.midiFreq &= 0xff00;
+			//set lower nibble
+			hatVoice.osc.midiFreq |= msg.data2;
+			osc_recalcFreq(&hatVoice.osc);
 		}
 				break;
 
