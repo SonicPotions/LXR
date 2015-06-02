@@ -76,7 +76,7 @@ typedef struct MidiStruct {
 
 //-----------------------------------------------------------
 // CCs (2nd byte controller number)
-#define CC_BANK_CHANGE		0x00
+//#define CC_BANK_CHANGE		0x00 //-> see CC enum
 #define CC_MOD_WHEEL		0x01
 #define CC_ALL_SOUND_OFF	0x78
 #define CC_ALL_NOTES_OFF	0x7B
@@ -100,7 +100,7 @@ typedef struct MidiStruct {
 
 enum
 {
-	I_DUNNO = 0, //was hiermit???	/*0*/
+	CC_BANK_CHANGE = 0, //	/*0*/
 	CC_MODWHEEL,
 	OSC_WAVE_DRUM1 = 2,
 	OSC_WAVE_DRUM2,

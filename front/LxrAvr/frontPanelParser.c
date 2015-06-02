@@ -96,20 +96,22 @@ void frontPanel_ccHandler()
 {
 	//get the real parameter number from the cc number
 	const uint8_t parNr =(uint8_t)( frontParser_midiMsg.data1 - 1);
-	
-	if(parNr == NRPN_DATA_ENTRY_COARSE) {
-			frontParser_parseNrpn(frontParser_midiMsg.data2);
-		}
 	DISABLE_SIGN_WARNING
-	if(parNr == NRPN_FINE) {
+	if(parNr == 255/*PAR_BANK_CHANGE*/)
+	{
+		menu_currentPresetNr[0] = frontParser_midiMsg.data2;
+		preset_loadDrumset(frontParser_midiMsg.data2, 0);
+		menu_repaint();
+		return;
+	} else if(parNr == NRPN_DATA_ENTRY_COARSE) {
+			frontParser_parseNrpn(frontParser_midiMsg.data2);
+	} else if(parNr == NRPN_FINE) {
 			frontParser_nrpnNr &= ~0x7f;
 			frontParser_nrpnNr |= frontParser_midiMsg.data2;
-		}
-		
-	if(parNr == NRPN_COARSE) {
+	} else if(parNr == NRPN_COARSE) {
 			frontParser_nrpnNr &= 0x7f;
 			frontParser_nrpnNr |= frontParser_midiMsg.data2<<7;
-		}
+	}
 	END_DISABLE_WARNING
 	
 	//set the parameter value

@@ -173,6 +173,16 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 
 			break;
 
+		case CC_BANK_CHANGE:
+			// bank change (coarse) selects kit (sound)
+			/*
+			 * already send in parseMidiMessage()
+			uart_sendFrontpanelByte(MIDI_CC);
+			uart_sendFrontpanelByte(CC_BANK_CHANGE);
+			uart_sendFrontpanelByte(msg.data2);
+			*/
+			break;
+
 		case NRPN_DATA_ENTRY_COARSE:
 			midiParser_nrpnHandler(msg.data2);
 			return;

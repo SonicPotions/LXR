@@ -32,6 +32,9 @@ extern uint8_t menu_playedPattern;
 extern uint8_t menu_shownPattern;
 extern uint8_t menu_muteModeActive;
 
+#define NUM_PRESET_LOCATIONS 5 //kit, pattern, morph sound, performance, all
+extern uint8_t menu_currentPresetNr[NUM_PRESET_LOCATIONS];
+
 void menu_setShownPattern(uint8_t patternNr);
 uint8_t menu_getViewedPattern();
 
@@ -49,7 +52,7 @@ enum PageNames
 	LOAD_PAGE,
 	SAVE_PAGE,
 	/*
-	LFO1_PAGE, //TODO load und savepage verschwenken speicher... nicht gefüllt. ans ende und aus dem array nehmen?
+	LFO1_PAGE, //TODO load und savepage verschwenken speicher... nicht gefï¿½llt. ans ende und aus dem array nehmen?
 	LFO2_PAGE,
 	LFO3_PAGE,
 	LFO4_PAGE,

@@ -494,8 +494,7 @@ static uint8_t menu_TargetVoiceGapIndex = 0xFF;
 uint8_t menu_numSamples = 0;
 
 //preset vars
-#define NUM_PRESET_LOCATIONS 5 //kit, pattern, morph sound, performance, all
-static uint8_t menu_currentPresetNr[NUM_PRESET_LOCATIONS];
+uint8_t menu_currentPresetNr[NUM_PRESET_LOCATIONS];
 
 uint8_t menu_shownPattern = 0;
 uint8_t menu_muteModeActive = 0;

@@ -165,7 +165,7 @@ enum ParamEnums
 	PAR_AMOUNT_LFO5,		
 	PAR_AMOUNT_LFO6,	
 	
-			PAR_RESERVED4, //todo stupid offset -> param 0 /*127*/
+			PAR_BANK_CHANGE, //todo stupid offset -> param 0 /*127*/
 	//######################################
 	//######## END OF MIDI DATASIZE ########
 	//######## PARAM NR 127 REACHED ########
