@@ -1,3 +1,14 @@
+Firmware v0.35
+---------------------------
+- fixed transient pop filter bug
+- added new 2 pole lowpass filter "LP2"
+- fixed USB VID/PID
+- MIDI Bank change now select drumkits (program change selects pattern as before)
+
+Firmware v0.34
+---------------------------
+- fixed shuffle for external midi sync
+
 Firmware v0.33
 ---------------------------
 - USB interrupt bug fixed (PLD)
