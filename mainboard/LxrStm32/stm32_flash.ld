@@ -13,9 +13,6 @@
 /* Entry Point */
 ENTRY(Reset_Handler)
 
-/* Highest address of the user mode stack */
-_estack = 0x2001c000;    /* end of 112K RAM */
-
 /* Generate a link error if heap and stack don't fit into RAM */
 _Min_Heap_Size = 0;      /* required amount of heap  */
 _Min_Stack_Size = 0x400; /* required amount of stack */
@@ -23,19 +20,21 @@ _Min_Stack_Size = 0x400; /* required amount of stack */
 /* memory areas */
 MEMORY
 {
-
  /* FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 1024K*/
  /*we have to reserve the first sector (16k) for the bootloader*/ 
-   FLASH (rx)	  : ORIGIN = 0x08004000, LENGTH = 1008K 
+  FLASH (rx)	  : ORIGIN = 0x08004000, LENGTH = 1008K
  
+  CCMRAM (xrw) : ORIGIN = 0x10000000, LENGTH = 64K
   RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 112K
   
   MEMORY_B1 ( rx ) : ORIGIN = 0x60000000 , LENGTH = 0K
 }
 
-
-
-
+/* _estack is used for bootloader, but actual application uses _ccm_stack. See
+ * startup_stm32f4xx.S for details
+ */
+_estack = 0x2001c000;    /* end of 112K RAM */
+_ccm_stack = ORIGIN(CCMRAM) + LENGTH(CCMRAM);
 
 
 /* Define output sections */
@@ -132,13 +131,12 @@ SECTIONS
   } >RAM
 
   /* User_heap_stack section, used to check that there is enough RAM left */
-  ._user_heap_stack :
+  ._user_heap :
   {
     . = ALIGN(4);
     PROVIDE ( end = . );
     PROVIDE ( _end = . );
     . = . + _Min_Heap_Size;
-    . = . + _Min_Stack_Size;
     . = ALIGN(4);
   } >RAM
 
@@ -152,6 +150,46 @@ SECTIONS
     *(.mb1rodata*)
   } >MEMORY_B1
 
+  /* Setup CCM memory
+   * There are mutliple regions setup for use:
+   *  ccm :: pre-loaded from flash by startup code (expected use: state)
+   *  ccmz :: filled with zeroes at startup, variables must be initialized by application
+   *  ccmstack :: application stack
+   */
+  . = _sidata + SIZEOF(.data);
+  _siccm = .;
+
+  /* CCM load area */
+  .ccm : AT(_siccm)
+  {
+    _sccm = .;
+    . = ALIGN(4);
+    *(.ccm)
+    . = ALIGN(4);
+    _eccm = .;
+  } > CCMRAM
+
+  /* CCMZ area */
+  .ccmz (NOLOAD) :
+  {
+    _sccmz = .;
+    . = ALIGN(4);
+    *(.ccmz)
+    . = ALIGN(4);
+    _eccmz = .;
+  } > CCMRAM
+
+  /* CCM stack */
+  .ccmstack (NOLOAD) :
+  {
+    _sccmstack = .;
+    *(.stack*)
+  } > CCMRAM
+
+  /* Check we didn't overflow CCM */
+  ASSERT(_sccmstack + _Min_Stack_Size <= _ccm_stack, "CCM overflow")
+
+
   /* Remove information from the standard libraries */
   /DISCARD/ :
   {
@@ -160,5 +198,5 @@ SECTIONS
     libgcc.a ( * )
   }
 
-  //.ARM.attributes 0 : { *(.ARM.attributes) }
+  .ARM.attributes 0 : { *(.ARM.attributes) }
 }

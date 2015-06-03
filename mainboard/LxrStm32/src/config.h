@@ -97,4 +97,10 @@
 
 //typedef  uint8_t bool;
 
+// Helper to declare variable in CCM memory, pre-loaded from flash at startup
+#define INCCM __attribute__ ((section(".ccm")))
+
+// Helper to declare variable in CCM memory that is zeroed at startup
+#define INCCMZ __attribute__ ((section(".ccmz")))
+
 #endif /* CONFIG_H_ */

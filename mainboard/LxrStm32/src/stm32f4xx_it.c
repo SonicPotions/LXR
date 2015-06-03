@@ -6,6 +6,7 @@
 #include "usb_core.h"
 #include "usbd_core.h"
 #include "usb_midi_core.h"
+#include "config.h"
 
 //asm(".extern hard_fault_handler_c");
 
@@ -15,7 +16,7 @@ extern uint32_t USBD_OTG_ISR_Handler (USB_OTG_CORE_HANDLE *pdev);
 
 
 // time since system start
-volatile uint32_t  systick_ticks=0;
+INCCM volatile uint32_t  systick_ticks=0;
 
 //exception handlers
 

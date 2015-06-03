@@ -45,9 +45,9 @@
 #include "TriggerOut.h"
 
 
-float ampSmoothValue = 0.1f;
+INCCM static float ampSmoothValue = 0.1f;
 //---------------------------------------------------
-DrumVoice voiceArray[NUM_VOICES];
+INCCMZ DrumVoice voiceArray[NUM_VOICES];
 //---------------------------------------------------
 void setPan(const uint8_t voiceNr, const uint8_t pan)
 {
@@ -63,6 +63,8 @@ void drum_setPhase(const uint8_t phase, const uint8_t voiceNr)
 //---------------------------------------------------
 void initDrumVoice()
 {
+	ampSmoothValue = 0.1f;
+
 	int i;
 	for(i=0;i<NUM_VOICES;i++)
 	{

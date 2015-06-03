@@ -42,7 +42,7 @@
 #include "Snare.h"
 #include "sequencer.h"
 
- ModulationNode velocityModulators[6];
+INCCMZ ModulationNode velocityModulators[6];
 
  //-----------------------------------------------------------------------
 void modNode_init(ModulationNode* vm)

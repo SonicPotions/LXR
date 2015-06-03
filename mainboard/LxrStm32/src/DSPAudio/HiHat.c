@@ -40,7 +40,7 @@
 #include "modulationNode.h"
 #include "TriggerOut.h"
 
-HiHatVoice hatVoice;
+INCCMZ HiHatVoice hatVoice;
 
 //---------------------------------------------------
 void HiHat_setPan(const uint8_t pan)

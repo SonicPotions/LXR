@@ -36,8 +36,9 @@
 
 
 #include "squareRootLut.h"
+#include "config.h"
 
-const float squareRootLut[128] =
+INCCM const float squareRootLut[128] =
 {
 0, 0.0887356, 0.125491, 0.153695, 0.177471,
 0.198419, 0.217357, 0.234772, 0.250982, 0.266207,
