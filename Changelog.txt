@@ -1,3 +1,7 @@
+Firmware v0.36
+---------------------------
+- fixed morph bug introduced with 0.35
+
 Firmware v0.35
 ---------------------------
 - fixed transient pop filter bug
