@@ -193,13 +193,14 @@ const char outputNames[][7] PROGMEM  =
 //-----------------------------------------------------------------
 const char filterTypes[][8] PROGMEM  = 
 {
-	{7},		//number of entries
+	{8},		//number of entries
 	{"LP"}	,	//1 - 001
 	{"HP"}	,	//2 - 010
 	{"BP"}	,	//3 - 011
 	{"UBP"}	,	//4 - 100
 	{"Nch"}	,	//5 - 101
 	{"Pek"}	,	//6 - 110
+	{"LP2"}	,	//1 - 001
 	{"off"}	,	//7 - 111
 	//{"All"}	,	//7 - 111
 };

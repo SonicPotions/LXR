@@ -44,12 +44,12 @@
 #include "squareRootLut.h"
 #include "../Hardware/TriggerOut.h"
 //-----------------------------------------------------------------------
-uint8_t mixer_audioRouting[6];
+INCCMZ uint8_t mixer_audioRouting[6];
 //-----------------------------------------------------------------------
 #if USE_DECIMATOR
-float mixer_decimation_rate[7];		/**<sets the sample rate decimation. 0..1 = full rate*/
-float mixer_decimation_cnt[6];		/**<s'n'h counter for decimator*/
-int16_t mixer_voice_samples[6];		/**< stores the last outputted sample of the 6 voices*/
+INCCMZ float mixer_decimation_rate[7];		/**<sets the sample rate decimation. 0..1 = full rate*/
+INCCMZ float mixer_decimation_cnt[6];		/**<s'n'h counter for decimator*/
+INCCMZ int16_t mixer_voice_samples[6];		/**< stores the last outputted sample of the 6 voices*/
 #endif
 //-----------------------------------------------------------------------
 void mixer_init()

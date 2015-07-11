@@ -38,8 +38,9 @@
 #include "squareRootLut.h"
 #include "modulationNode.h"
 #include "TriggerOut.h"
+#include "config.h"
 
-CymbalVoice cymbalVoice;
+INCCMZ CymbalVoice cymbalVoice;
 //---------------------------------------------------
 void Cymbal_setPan(const uint8_t pan)
 {

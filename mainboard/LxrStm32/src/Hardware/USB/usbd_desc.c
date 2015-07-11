@@ -55,17 +55,15 @@
   */ 
 
 
-//my new VID PID pair generously donated by musictechnologiesgroup.com
-//VID 0x1125, PID 0x181F
 
 //changed to sonic potion PID assigned from ST PID 0xA0D2 VID 0x0483
 
-#define USBD_VID                        0xA0D2/*0x1125*/ /* 0x0483*/
+#define USBD_VID                        0x0483
 
 #ifdef STM32F2XX
- #define USBD_PID                       0x5730
+ #define USBD_PID                       0xA0D2
 #else
- #define USBD_PID                       0x0483/*0x181F*/  /*0x5730*/
+ #define USBD_PID                       0xA0D2
 #endif /* STM32F2XX */
 
 /** @defgroup USB_String_Descriptors

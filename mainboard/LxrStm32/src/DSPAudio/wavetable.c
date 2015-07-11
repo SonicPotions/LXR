@@ -40,7 +40,7 @@
 //Saw Table
 //128 Wavetables a 256 Samples
 //Samplerate: 44000
-const int16_t sine_table[TABLESIZE+1] =
+INCCM const int16_t sine_table[TABLESIZE+1]=
 {
 -32767, -32766, -32766, -32766, -32766, -32766, -32765, -32765,
 -32764, -32763, -32763, -32762, -32761, -32760, -32759, -32758,

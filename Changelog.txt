@@ -1,3 +1,20 @@
+Firmware v0.36
+---------------------------
+- fixed morph bug introduced with 0.35
+
+Firmware v0.35
+---------------------------
+- fixed transient pop filter bug
+- added new 2 pole lowpass filter "LP2"
+- fixed USB VID/PID
+- MIDI Bank change now select drumkits (program change selects pattern as before)
+- fixed missing finetune for voice 4 to 6
+- merged in PLDs CCM branch. Moved some stuff to faster core coupled memory.
+
+Firmware v0.34
+---------------------------
+- fixed shuffle for external midi sync
+
 Firmware v0.33
 ---------------------------
 - USB interrupt bug fixed (PLD)

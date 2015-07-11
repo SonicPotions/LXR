@@ -53,6 +53,8 @@ void SVF_init(ResonantFilter* filter)
 		filter->s1 = 0;
 		filter->s2 = 0;
 
+		filter->a =filter->b = 0;
+
 		filter->f = 0.20f;
 		filter->q = 0.9f;
 
@@ -63,6 +65,18 @@ void SVF_init(ResonantFilter* filter)
 #if USE_SHAPER_NONLINEARITY
 		setDistortionShape(&filter->shaper, 0);
 #endif
+}
+//------------------------------------------------------------------------------------
+void SVF_reset(ResonantFilter* filter)
+{
+	filter->s1 = 0;
+	filter->s2 = 0;
+
+#if ENABLE_NONLINEAR_INTEGRATORS
+	filter->zi = 0;	//input z^(-1)
+#endif
+
+	filter->a = filter->b = 0;
 }
 //------------------------------------------------------------------------------------
 static float fastTanh(float var)
@@ -140,133 +154,162 @@ void SVF_calcBlockZDF(ResonantFilter* filter, const uint8_t type, int16_t* buf, 
 	const float R 	= filter->f >= 0.4499f ? 1 : filter->q;
 	const float ff 	= f*f;
 
-	for(i=0;i<size;i++)
+	if(type == FILTER_NAIVE_2_POLE)
 	{
-#if USE_SHAPER_NONLINEARITY
-		const float x = (buf[i]/((float)0x7fff));
-#else
-		const float x = softClipTwo((buf[i]/((float)0x7fff))*filter->drive);
-#endif
 
-#if ENABLE_NONLINEAR_INTEGRATORS
-		// input with half sample delay, for non-linearities
-		float ih = 0.5f * (x + filter->zi);
-		filter->zi = x;
-#endif
-
-		// evaluate the non-linear gains
-		/*
-		You can travially remove any saturator by setting the corresponding gain t0,...,t1 to 1. Also, you can simply scale any saturator (i.e. change clipping threshold) to 1/a*tanh(a*x) by writing
-		double t1 = tanhXdX(a*s[0]);
-		*/
-#if ENABLE_NONLINEAR_INTEGRATORS
-		const float scale = 0.5f;
-		const float t0 = tanhXdX(scale* (ih - 2*R*filter->s1 - filter->s2 ) );
-		const float t1 = tanhXdX(scale* (filter->s1 ) );
-#else
-		const float t0 = 1;
-		const float t1 = 1;
-#endif
-
-		// g# the denominators for solutions of individual stages
-		const float g0 = 1.f / (1.f + f*t0*2*R);
-
-		const float s1 = filter->s1;
-		const float s2 = filter->s2;
-
-		// solve feedback
-		const float f1 = ff*g0*t0*t1;
-		float y1=(f1*x+s2+f*g0*t1*s1)/(f1+1);
-
-
-		// solve the remaining stages with nonlinear gain
-		 const float xx = t0*(x - y1);
-		 const float y0 = (softClipTwo(s1) + f*xx)*g0;
-
-		filter->s1   = softClipTwo(filter->s1) + 2*f*(xx - t0*2*R*y0);
-		filter->s2   = (filter->s2)    + 2*f* t1*y0;
-
-		int32_t tmp;
-		switch(type)
+		float f_lp2 = filter->f * 2.21f;
+		for(i=0;i<size;i++)
 		{
-		default:
-			return;
-			break;
-		case FILTER_LP:
-#if USE_SHAPER_NONLINEARITY
+			/* alternative 2Pole LP filter to fix the kick transient problems with the nonlinear ZDF LP */
 
-			buf[i] = FILTER_GAIN * fastTanh( distortion_calcSampleFloat(&filter->shaper, y1));
-#else
-			tmp = fastTanh(y1) * 0x7fff ;//FILTER_GAIN;
+			float x = softClipTwo((buf[i]/((float)0x7fff))*filter->drive);
+			//float q = (1-filter->q) *2.5 ;/// (1.0 - filter->f);
+			float q = (1-filter->q) *1.4 + (1-filter->q) / (1.0 - f_lp2);
+
+			filter->a += f_lp2 * ((x - filter->a)  + q * (filter->a - filter->b ));
+			if(filter->a > 1) filter->a = 1;
+			else if(filter->a < -1) filter->a = -1;
+
+			filter->b  += f_lp2 * (filter->a - filter->b );
+			if(filter->b > 1) filter->b = 1;
+			else if(filter->b < -1) filter->b = -1;
+
+			int32_t tmp;
+			tmp = (filter->b  * FILTER_GAIN);
 			buf[i] = __SSAT(tmp,16);
-#endif
-			break;
+		}
 
-		case FILTER_HP:
+	} else {
+
+		for(i=0;i<size;i++)
 		{
-			const float ugb = 2*R*y0;
-			const float h = x - ugb - y1;
-#if USE_SHAPER_NONLINEARITY
+	#if USE_SHAPER_NONLINEARITY
+			const float x = (buf[i]/((float)0x7fff));
+	#else
+			const float x = softClipTwo((buf[i]/((float)0x7fff))*filter->drive);
+	#endif
 
-			buf[i] = FILTER_GAIN * distortion_calcSampleFloat(&filter->shaper, h);
-#else
-			tmp = h * FILTER_GAIN;
-			buf[i] = __SSAT(tmp,16);
-#endif
-		}
-			break;
+	#if ENABLE_NONLINEAR_INTEGRATORS
+			// input with half sample delay, for non-linearities
+			float ih = 0.5f * (x + filter->zi);
+			filter->zi = x;
+	#endif
 
-		case FILTER_BP:
-#if USE_SHAPER_NONLINEARITY
+			// evaluate the non-linear gains
+			/*
+			You can travially remove any saturator by setting the corresponding gain t0,...,t1 to 1. Also, you can simply scale any saturator (i.e. change clipping threshold) to 1/a*tanh(a*x) by writing
+			double t1 = tanhXdX(a*s[0]);
+			*/
+	#if ENABLE_NONLINEAR_INTEGRATORS
+			const float scale = 0.5f;
+			const float t0 = tanhXdX(scale* (ih - 2*R*filter->s1 - filter->s2 ) );
+			const float t1 = tanhXdX(scale* (filter->s1 ) );
+	#else
+			const float t0 = 1;
+			const float t1 = 1;
+	#endif
 
-			buf[i] = FILTER_GAIN * distortion_calcSampleFloat(&filter->shaper, y0);
-#else
-			tmp = y0 * FILTER_GAIN;
-			buf[i] = __SSAT(tmp,16);
-#endif
-			break;
+			// g# the denominators for solutions of individual stages
+			const float g0 = 1.f / (1.f + f*t0*2*R);
 
-		case FILTER_UNITY_BP:
-		{
-			const float ugb = 2*R*y0;
-#if USE_SHAPER_NONLINEARITY
+			const float s1 = filter->s1;
+			const float s2 = filter->s2;
 
-			buf[i] = FILTER_GAIN * distortion_calcSampleFloat(&filter->shaper, ugb);
-#else
-			tmp = ugb * FILTER_GAIN;
-			buf[i] = __SSAT(tmp,16);
-#endif
-		}
-			break;
+			// solve feedback
+			const float f1 = ff*g0*t0*t1;
+			float y1=(f1*x+s2+f*g0*t1*s1)/(f1+1);
 
-		case FILTER_NOTCH:
-		{
-			const float ugb = 2*R*y0;
-#if USE_SHAPER_NONLINEARITY
 
-			buf[i] = FILTER_GAIN * distortion_calcSampleFloat(&filter->shaper, (x-ugb));
-#else
-			tmp = (x-ugb) * FILTER_GAIN;
-			buf[i] = __SSAT(tmp,16);
-#endif
-		}
-			break;
+			// solve the remaining stages with nonlinear gain
+			 const float xx = t0*(x - y1);
+			 const float y0 = (softClipTwo(s1) + f*xx)*g0;
 
-		case FILTER_PEAK:
-		{
-			const float ugb = 2*R*y0;
-			const float h = x - ugb - y1;
-#if USE_SHAPER_NONLINEARITY
+			filter->s1   = softClipTwo(filter->s1) + 2*f*(xx - t0*2*R*y0);
+			filter->s2   = (filter->s2)    + 2*f* t1*y0;
 
-			buf[i] = FILTER_GAIN * distortion_calcSampleFloat(&filter->shaper, (y1-h));
-#else
-			tmp = (y1-h) * FILTER_GAIN;
-			buf[i] = __SSAT(tmp,16);
-#endif
-		}
-			break;
 
-		}
+			int32_t tmp;
+			switch(type)
+			{
+			default:
+				return;
+				break;
+			case FILTER_LP:
+	#if USE_SHAPER_NONLINEARITY
+
+				buf[i] = FILTER_GAIN * fastTanh( distortion_calcSampleFloat(&filter->shaper, y1));
+	#else
+				tmp = fastTanh(y1) * 0x7fff ;//FILTER_GAIN;
+				buf[i] = __SSAT(tmp,16);
+	#endif
+				break;
+
+			case FILTER_HP:
+			{
+				const float ugb = 2*R*y0;
+				const float h = x - ugb - y1;
+	#if USE_SHAPER_NONLINEARITY
+
+				buf[i] = FILTER_GAIN * distortion_calcSampleFloat(&filter->shaper, h);
+	#else
+				tmp = h * FILTER_GAIN;
+				buf[i] = __SSAT(tmp,16);
+	#endif
+			}
+				break;
+
+			case FILTER_BP:
+	#if USE_SHAPER_NONLINEARITY
+
+				buf[i] = FILTER_GAIN * distortion_calcSampleFloat(&filter->shaper, y0);
+	#else
+				tmp = y0 * FILTER_GAIN;
+				buf[i] = __SSAT(tmp,16);
+	#endif
+				break;
+
+			case FILTER_UNITY_BP:
+			{
+				const float ugb = 2*R*y0;
+	#if USE_SHAPER_NONLINEARITY
+
+				buf[i] = FILTER_GAIN * distortion_calcSampleFloat(&filter->shaper, ugb);
+	#else
+				tmp = ugb * FILTER_GAIN;
+				buf[i] = __SSAT(tmp,16);
+	#endif
+			}
+				break;
+
+			case FILTER_NOTCH:
+			{
+				const float ugb = 2*R*y0;
+	#if USE_SHAPER_NONLINEARITY
+
+				buf[i] = FILTER_GAIN * distortion_calcSampleFloat(&filter->shaper, (x-ugb));
+	#else
+				tmp = (x-ugb) * FILTER_GAIN;
+				buf[i] = __SSAT(tmp,16);
+	#endif
+			}
+				break;
+
+			case FILTER_PEAK:
+			{
+				const float ugb = 2*R*y0;
+				const float h = x - ugb - y1;
+	#if USE_SHAPER_NONLINEARITY
+
+				buf[i] = FILTER_GAIN * distortion_calcSampleFloat(&filter->shaper, (y1-h));
+	#else
+				tmp = (y1-h) * FILTER_GAIN;
+				buf[i] = __SSAT(tmp,16);
+	#endif
+			}
+				break;
+
+				}
+			}
 	}
 }
 //------------------------------------------------------------------------------------
