@@ -432,6 +432,7 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 	    /*PAR_MIDI_NOTE5*/		DTYPE_NOTE_NAME,
 	    /*PAR_MIDI_NOTE6*/		DTYPE_NOTE_NAME,
 	    /*PAR_MIDI_NOTE7*/		DTYPE_NOTE_NAME,
+       /*PAR_KIT_VERSION*/    DTYPE_0B255,
 	    /*PAR_ROLL*/ 			DTYPE_MENU | (MENU_ROLL_RATES<<4),
 	    /*PAR_MORPH*/ 			DTYPE_0B255,
 	    /*PAR_ACTIVE_STEP */ 	DTYPE_0B127,							//230
