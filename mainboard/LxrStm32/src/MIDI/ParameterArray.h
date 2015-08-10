@@ -325,6 +325,7 @@ enum ParamEnums
 	PAR_MIDI_NOTE5,
 	PAR_MIDI_NOTE6,
 	PAR_MIDI_NOTE7, //110 - beware going over 127, can't fit into midi data, will need another msg
+   PAR_KIT_VERSION,
 	END_OF_SOUND_PARAMETERS,
 	//#########################################
 	//######## End of sound Parameters ########

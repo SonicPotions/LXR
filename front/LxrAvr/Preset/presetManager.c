@@ -191,6 +191,7 @@ static FRESULT preset_readDrumsetData(uint8_t isMorph)
 	FRESULT res=f_read((FIL*)&preset_File, para,END_OF_SOUND_PARAMETERS, &bytesRead);
 	if(res==FR_OK) {
 		// set to 0 for any that were not read from the file
+      // this will include setting the kit version to 0 if it was not included
 		if(END_OF_SOUND_PARAMETERS-bytesRead)
 			memset(para+bytesRead,0,END_OF_SOUND_PARAMETERS-bytesRead);
 		
@@ -204,6 +205,22 @@ static FRESULT preset_readDrumsetData(uint8_t isMorph)
 			if(para[PAR_TARGET_LFO1+i] >= nmt )
 				para[PAR_TARGET_LFO1+i] = 0;
 		}
+      
+      if(para[PAR_KIT_VERSION]<FILE_VERSION) // file version is ouf of date - put any corrections here
+      {
+         if(para[PAR_KIT_VERSION]<2) // kit versioning started at version 2, with addition of LP2 Filter
+         {
+            for (i=PAR_FILTER_TYPE_1;i<=PAR_FILTER_TYPE_6;i++)
+            {
+               if (para[i]==6)
+               {
+                  para[i]=7;
+               }
+            }
+         }
+         // end of corrections - save the version as a param so it gets written with kit on save
+         para[PAR_KIT_VERSION]=FILE_VERSION; 
+      }
 	}
 
 	return res;

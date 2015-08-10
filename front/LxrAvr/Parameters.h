@@ -12,7 +12,7 @@
 
 enum ParamEnums
 {
-	
+
 	PAR_NONE,	//TODO this is modwheel	- stupid offset +/- 1   /*0*/
 	PAR_MOD_WHEEL ,												/*1*/
 	
@@ -296,7 +296,9 @@ enum ParamEnums
 	PAR_MIDI_NOTE5,
 	PAR_MIDI_NOTE6,
 	PAR_MIDI_NOTE7,
-
+   
+   PAR_KIT_VERSION,
+   
 	//#########################################
 	//######## End of sound Parameters ########
 	//#########################################
