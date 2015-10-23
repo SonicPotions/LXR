@@ -1,3 +1,7 @@
+Firmware v0.37
+---------------------------
+- fixes the scrambled OLED after a AVR soft reset
+
 Firmware v0.36
 ---------------------------
 - fixed morph bug introduced with 0.35
