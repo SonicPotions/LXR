@@ -37,17 +37,17 @@
 ////////////////////////////////////////////////////////////////////////////////
 // LCD Ausf�hrungszeiten (MS=Millisekunden, US=Mikrosekunden)
  
-#define LCD_BOOTUP_MS           15
-#define LCD_ENABLE_US           20
-#define LCD_WRITEDATA_US        46
-#define LCD_COMMAND_US          42
+#define LCD_BOOTUP_MS           500
+#define LCD_ENABLE_US           30
+#define LCD_WRITEDATA_US        56
+#define LCD_COMMAND_US          52
  
-#define LCD_SOFT_RESET_MS1      5
-#define LCD_SOFT_RESET_MS2      1
-#define LCD_SOFT_RESET_MS3      1
-#define LCD_SET_4BITMODE_MS     5
+#define LCD_SOFT_RESET_MS1      50
+#define LCD_SOFT_RESET_MS2      50
+#define LCD_SOFT_RESET_MS3      50
+#define LCD_SET_4BITMODE_MS     50
  
-#define LCD_CLEAR_DISPLAY_MS    2
+#define LCD_CLEAR_DISPLAY_MS    10
 #define LCD_CURSOR_HOME_MS      2
  
 ////////////////////////////////////////////////////////////////////////////////
