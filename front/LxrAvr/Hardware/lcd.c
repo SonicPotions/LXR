@@ -72,7 +72,8 @@ void lcd_init( void )
     lcd_command( LCD_SET_FUNCTION |
                  LCD_FUNCTION_4BIT |
                  LCD_FUNCTION_2LINE |
-                 LCD_FUNCTION_5X7 );//|	 LCD_FUNCTION_RUSSIAN);
+                 LCD_FUNCTION_5X7 ) |
+                 LCD_FUNCTION_RUSSIAN);
                  
     // Display pff / Cursor off / Blinken LCD_BLINKING_OFF
     // This additional "Display Off" seems to prefent OLED soft reset scrambling
