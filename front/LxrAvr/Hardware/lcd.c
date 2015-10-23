@@ -35,23 +35,20 @@ void lcd_init( void )
     // verwendete Pins auf Ausgang schalten
     uint8_t pins = (0x0F << LCD_DB);           // 4 Datenleitungen
 	
-    uint8_t rsen_pins = (1<<LCD_RS) |                // R/S Leitung
-                        (1<<LCD_EN);                 // Enable Leitung
+	uint8_t rsen_pins = (1<<LCD_RS) |                // R/S Leitung
+						(1<<LCD_EN);                 // Enable Leitung
     LCD_DDR |= pins;
-    LCD_RSEN_DDR |= rsen_pins;
+	
+	LCD_RSEN_DDR |= rsen_pins;
  
-    // INIT ALL OUTPUTS TO 0
+    // initial alle Ausg�nge auf Null
     LCD_PORT &= (uint8_t)~pins;
-    LCD_RSEN_PORT &= (uint8_t)~rsen_pins;
+	
+	LCD_RSEN_PORT &= (uint8_t)~rsen_pins;
  
     // warten auf die Bereitschaft des LCD
     _delay_ms( LCD_BOOTUP_MS );
     
-   
-    // Set 8 bit mode 3 times (soft reset)
-    // If the LCD is in 8 bit mode it will be set again 3 times.
-    // If the LCD is in 4 bit mode expecting the 2nd nibble the 
-    // first write will be lost, the next two set 8 bit mode
     // Soft-Reset muss 3mal hintereinander gesendet werden zur Initialisierung
     lcd_out( LCD_SOFT_RESET );
     _delay_ms( LCD_SOFT_RESET_MS1 );
@@ -66,20 +63,14 @@ void lcd_init( void )
     lcd_out( LCD_SET_FUNCTION |
              LCD_FUNCTION_4BIT );
     _delay_ms( LCD_SET_4BITMODE_MS );
-    
  
     // 4-bit Modus / 2 Zeilen / 5x7
     lcd_command( LCD_SET_FUNCTION |
                  LCD_FUNCTION_4BIT |
                  LCD_FUNCTION_2LINE |
-                 LCD_FUNCTION_5X7 );//|	 LCD_FUNCTION_RUSSIAN);
-                 
-    // Display ein / Cursor aus / Blinken aus
-    lcd_command( LCD_SET_DISPLAY |
-                 LCD_DISPLAY_OFF |
-                 LCD_CURSOR_OFF |
-                 LCD_BLINKING_OFF); 
-                 
+                 LCD_FUNCTION_5X7 |
+				 LCD_FUNCTION_RUSSIAN);
+ 
     // Display ein / Cursor aus / Blinken aus
     lcd_command( LCD_SET_DISPLAY |
                  LCD_DISPLAY_ON |
@@ -91,6 +82,7 @@ void lcd_init( void )
                  LCD_ENTRY_INCREASE |
                  LCD_ENTRY_NOSHIFT );
  
+	
     lcd_clear();
 }
   
