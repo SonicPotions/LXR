@@ -19,6 +19,14 @@ Please note that there are libraries from ST and ARM used in the mainboard code 
 
 Many Thanks to user Rudeog who contributet a lot of bugfixes and features for version 0.26 and 0.33 as well as Patrick Dowling for the Makefiles for the Linux build system!
 
+To build the firmware in docker follow these instructions:
+----------------------------------------------------------------
+You will need:
+- docker
+
+```sh
+make firmware-docker
+```
 
 
 Instructions for building on Linux using the provided makefiles:

@@ -55,6 +55,14 @@ clean:
 .PHONY: firmware
 firmware: $(IMAGE)
 
+.PHONY: lxr-docker-builder
+lxr-docker-builder:
+	docker build -t lxr-docker-builder .
+
+.PHONY: firmware-docker
+firmware-docker: lxr-docker-builder
+	docker run -v ${PWD}:/app lxr-docker-builder:latest make firmware
+
 $(IMAGE): $(ARM_BINARY) $(AVR_BINARY) $(FIB)
 	@echo "Building final firmware image $@..."
 	$(AT)$(FIB) $(ARM_BINARY) $(AVR_BINARY) "$@"
