@@ -28,6 +28,8 @@
 *.bin
 *.lss
 
+tools/bin/
+
 !firmware image/FIRMWARE.BIN
 
 #eclipse staging areas

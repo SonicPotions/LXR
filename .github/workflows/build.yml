@@ -1,0 +1,29 @@
+name: Build firmware
+
+on:
+  push:
+
+  pull_request:
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build docker image
+        run: make lxr-docker-builder
+
+      - name: Build firmware
+        run: |
+          make firmware-docker
+          tar -czvf firmware.tar.gz firmware\ image/FIRMWARE.BIN
+
+      - name: Archive firmware
+        uses: actions/upload-artifact@v2
+        with:
+          name: Firmware binary
+          if-no-files-found: error
+          path: firmware.tar.gz
