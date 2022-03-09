@@ -37,7 +37,10 @@
 
 #include "EuklidGenerator.h"
 #include "sequencer.h"
+#include "../../../../front/LxrAvr/Parameters.h"
+#include "random.h"
 
+static uint8_t euklid_randomNoteActive[NUM_TRACKS];
 static uint8_t euklid_length[NUM_TRACKS];
 static uint8_t euklid_steps[NUM_TRACKS];
 static uint8_t euklid_rotation[NUM_TRACKS];
@@ -55,6 +58,7 @@ void euklid_init()
 		euklid_length[i] = 16;
 		euklid_steps[i] = 4;
 		euklid_rotation[i] = 0;
+		euklid_randomNoteActive[i] = 0;
 	}
 
 	euklid_patternBuffer = 0;
@@ -211,6 +215,11 @@ uint8_t euklid_getRotation(uint8_t trackNr)
 	return euklid_rotation[trackNr];
 }
 //-----------------------------------------------------
+uint8_t euklid_getNoteRandom(uint8_t trackNr)
+{
+	return euklid_randomNoteActive[trackNr];
+}
+//-----------------------------------------------------
 void euklid_setRotation(uint8_t trackNr, uint8_t value, uint8_t patternNr)
 {
 	if(value>euklid_length[trackNr]) value = euklid_rotation[trackNr];
@@ -229,10 +238,46 @@ void euklid_rotatePattern(uint8_t length, uint8_t amount)
 
 	euklid_patternBuffer &= ~(0xffff<<length); //Remove "leftovers"
 }
+
+void euklid_setRandomNote( uint8_t trackNr, uint8_t active )
+{
+	euklid_randomNoteActive[trackNr] = active;
+}
+
+unsigned int randomMax (int max) {
+   return ((GetRngValue()) / ((float)0xffffffff))*max;
+}
+
 //-----------------------------------------------------
 void euklid_transferPattern(uint8_t trackNr, uint8_t patternNr)
 {
 	uint8_t len=euklid_length[trackNr];
+
+	// hidden behind PAR_EUKLID_NOTE_RANDOM toggle
+	if ( euklid_randomNoteActive[trackNr] > 0 ) {
+		int k;
+		Step *stepPtr;
+
+		for(k=0; k<=127; k++) {
+
+			uint8_t note = randomMax(127);
+
+			stepPtr=&seq_patternSet.seq_subStepPattern[patternNr][trackNr][k];
+			stepPtr->note 		= note;
+			
+			// TODO add some options to select a track mod target for more variety
+			//
+			//stepPtr->param1Nr = trackModTarget[trackNr][0] - 1;
+			//stepPtr->param1Val = randomMax(127);
+
+			//stepPtr->param2Nr = trackModTarget[trackNr][1] - 1;
+			//stepPtr->param2Val = randomMax(127); 
+			// stepPtr->prob		= 50;				// 100% probability
+			//stepPtr->volume 	|= STEP_ACTIVE_MASK;
+
+		}
+	}
+
 	seq_patternSet.seq_mainSteps[patternNr][trackNr] = euklid_patternBuffer;
 // **PATROT - pattern end is now stored differently
 

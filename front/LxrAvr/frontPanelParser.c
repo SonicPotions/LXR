@@ -342,6 +342,11 @@ void frontPanel_parseData(uint8_t data)
 							menu_repaint();
 							break;
 						
+						case SEQ_EUKLID_NOTE_RANDOM:
+							parameter_values[PAR_EUKLID_NOTE_RANDOM] = frontParser_midiMsg.data2;
+							menu_repaint();
+							break;
+						
 						case SEQ_EUKLID_STEPS:
 							parameter_values[PAR_EUKLID_STEPS] = frontParser_midiMsg.data2;
 							menu_repaint();

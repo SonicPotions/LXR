@@ -646,6 +646,15 @@ static void frontParser_handleSeqCC()
 		seq_patternSet.seq_subStepPattern[frontParser_shownPattern][frontParser_activeTrack][frontParser_activeStep].prob = frontParser_midiMsg.data2;
 		break;
 
+	case FRONT_SEQ_EUKLID_NOTE_RANDOM:
+		{
+			uint8_t active 	= frontParser_midiMsg.data2 >> 3;
+			//uint8_t pattern = frontParser_midiMsg.data2 & 0x7;
+
+			euklid_setRandomNote(frontParser_activeTrack, active);
+		}
+		break;
+
 	case FRONT_SEQ_EUKLID_LENGTH:
 		{
 			uint8_t length 	= frontParser_midiMsg.data2 >> 3;
@@ -780,6 +789,10 @@ static void frontParser_handleSeqCC()
 		uart_sendFrontpanelByte(FRONT_SEQ_CC);
 		uart_sendFrontpanelByte(FRONT_SEQ_EUKLID_ROTATION);
 		uart_sendFrontpanelByte(euklid_getRotation(frontParser_midiMsg.data2));
+
+		uart_sendFrontpanelByte(FRONT_SEQ_CC);
+		uart_sendFrontpanelByte(FRONT_SEQ_EUKLID_NOTE_RANDOM);
+		uart_sendFrontpanelByte(euklid_getNoteRandom(frontParser_midiMsg.data2));
 		break;
 
 	case FRONT_SEQ_SET_SHOWN_PATTERN:

@@ -375,6 +375,7 @@ enum ParamEnums
 
 	PAR_BAR_RESET_MODE,					// bool --AS 0 or 1   /*270*/
 	PAR_MIDI_CHAN_GLOBAL,				// --AS global midi channel
+	PAR_EUKLID_NOTE_RANDOM,				// bool --AS 0 or 1
 	NUM_PARAMS	
 };
 

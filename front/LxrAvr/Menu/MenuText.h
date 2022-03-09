@@ -312,6 +312,7 @@ const char shortNames[][4] PROGMEM  =
 	{"co1"},  // trigger clock out1 ppq
 	{"co2"},  // trigger clock out2 ppq
 	{"pcr"}, // pattern change resets bar counter
+	{"rnd"}
 };
 //-----------------------------------------------------------------
 // These correspond with the catNamesEnum in menu.h
@@ -422,6 +423,7 @@ const char longNames[][16] PROGMEM =
 	{"Out2 PPQ"},
 	{"Gate Mode"},
 	{"PCReset" }, // reset bar counter on manual pattern change
+	{"Rnd Notes" }
 };
 
 
