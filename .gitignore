@@ -13,6 +13,9 @@
 *.so.*
 *.dylib
 
+# Vs code ide
+.vscode
+
 # Executables
 *.exe
 !FirmwareImageBuilder.exe
