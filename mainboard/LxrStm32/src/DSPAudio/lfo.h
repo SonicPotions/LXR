@@ -56,7 +56,7 @@
 #define LFO_EXP_DOWN	0x07
 
 
-#define LFO_MAX_F 		200 //[Hz]
+#define LFO_MAX_F 		1000 //[Hz]
 #define LFO_SR 			(REAL_FS/(float)OUTPUT_DMA_SIZE)
 //-------------------------------------------------------------
 typedef struct LfoStruct

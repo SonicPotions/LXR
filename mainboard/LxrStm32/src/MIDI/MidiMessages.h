@@ -483,6 +483,8 @@ enum
 #define FRONT_SEQ_TRIGGER_OUT2_PPQ 		0x38
 #define FRONT_SEQ_TRIGGER_GATE_MODE 	0x39
 
+#define FRONT_SEQ_EUKLID_NOTE_RANDOM 	0x3A
+
 //codec control messages
 #define EQ_ON_OFF						0x01
 #define EQ_BASS_F						0x02

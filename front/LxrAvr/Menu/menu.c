@@ -196,6 +196,7 @@ const Name valueNames[NUM_NAMES] PROGMEM =
 		{SHORT_TRIGGER_OUT2, CAT_TRIGGER, LONG_TRIGGER_OUT2}, // TEXT_TRIGGER_OUT2_PPQ
 		{SHORT_MODE, CAT_TRIGGER, LONG_TRIGGER_GATE_MODE}, //TEXT_TRIGGER_GATE_MODE
 		{SHORT_BAR_RESET_MODE, CAT_SEQUENCER, LONG_BAR_RESET_MODE}, // TEXT_BAR_RESET_MODE
+		{SHORT_NOTE_RANDOM, CAT_EUKLID, LONG_NOTE_RANDOM}, // TEXT_MIDI_CHAN_GLOBAL
 		{SHORT_CHANNEL, CAT_MIDI, LONG_MIDI_CHANNEL}, // TEXT_MIDI_CHAN_GLOBAL
 
 };
@@ -477,6 +478,7 @@ const enum Datatypes PROGMEM parameter_dtypes[NUM_PARAMS] = {
 		/*PAR_TRIGGER_GATE_MODE*/	DTYPE_ON_OFF,
 	    /*PAR_BAR_RESET_MODE*/  DTYPE_ON_OFF,
 	    /*PAR_MIDI_CHAN_GLOBAL*/DTYPE_1B16,		//--AS global midi channel
+		/*PAR_EUKLID_NOTE_RANDOM*/  DTYPE_ON_OFF,
 };
 
 
@@ -555,6 +557,7 @@ void menu_init()
 	parameter_values[PAR_EUKLID_LENGTH] = 16;
 	parameter_values[PAR_EUKLID_STEPS] = 16;
 	parameter_values[PAR_EUKLID_ROTATION] = 0;
+	parameter_values[PAR_EUKLID_NOTE_RANDOM] = 0;
 
 	//initialize the roll value
 	parameter_values[PAR_ROLL] = 8;
@@ -2121,8 +2124,17 @@ void menu_parseGlobalParam(uint16_t paramNr, uint8_t value)
 	}
 	break;
 
+	case PAR_EUKLID_NOTE_RANDOM: {
+		uint8_t active = (uint8_t)(value) > 0 ? 1 : 0;
+		uint8_t pattern = menu_shownPattern; //max 7
+		uint8_t msg =(uint8_t)( (pattern&0x7) | (active<<3));
 
+		//select the track nr
+		frontPanel_sendData(SEQ_CC,SEQ_SET_ACTIVE_TRACK,menu_getActiveVoice());
+		frontPanel_sendData(SEQ_CC,SEQ_EUKLID_NOTE_RANDOM,msg);
 
+	}
+	break;
 
 	case PAR_EUKLID_LENGTH: {
 		// set the length of the currently active track
