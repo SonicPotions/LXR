@@ -51,6 +51,10 @@ The sequencer currently transmits note-on trigger messages to the MIDI output. T
 send complete sequencer tracks with pitch information on separate MIDI channels is planned for a
 future release.
 
+## Transmitting Parameter Changes
+
+Adjustments to voice parameters made in the menu are transmitted on the Global MIDI channel when the `txf` global setting includes **C**.
+
 ## Program / Bank Changes
 
 Program Change messages on the global channel select the next pattern (0-7) for all tracks. Program Change messages on voice channels select the pattern for that track independently.

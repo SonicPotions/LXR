@@ -2879,6 +2879,28 @@ static void menu_sendVoiceMorphAmount(uint16_t paramNr, uint8_t value)
 }
 
 //-----------------------------------------------------------------
+/* MENU SOUND-PARAMETER SEND  (Session 039 P3)
+   WHAT: sends a sound-parameter change made with the menu encoder or a knob
+         to the STM as MIDI_CC_MENU (raw id 0..127) or CC_2_MENU (raw id
+         128..END_OF_SOUND_PARAMETERS-1). Ignores non-sound ids.
+   WHY:  the STM applies these exactly like MIDI_CC/CC_2 and, when txf C is on,
+         also transmits them as Global CC/NRPN. Using distinct opcodes keeps
+         load, revert and restore traffic (still MIDI_CC/CC_2) from ever being
+         transmitted. The armed-step and gate checks are on the STM.
+   INPUT:  paramNr - raw id; value - 7-bit parameter value.
+   OUTPUT: one 3-byte packet to the STM (same size as before).
+   ACCESSORS: menu_encoderChangeParameter(), menu_parseKnobValue() (two branches).
+   AFFILIATES: STM FRONT_CC_MENU / FRONT_CC_2_MENU handling
+               (frontPanelReceivingProtocol.c), outputControl_queueMenuParameterTx(). */
+static void menu_sendSoundParameter(uint16_t paramNr, uint8_t value)
+{
+   if(paramNr < 128)
+      avrComms_sendData(MIDI_CC_MENU, (uint8_t)paramNr, value);
+   else if(paramNr < END_OF_SOUND_PARAMETERS)
+      avrComms_sendData(CC_2_MENU, (uint8_t)(paramNr - 128), value);
+}
+
+//-----------------------------------------------------------------
 // called when edit mode is active
 // encoder controls parameter value
 // given a delta, will apply that to the current parameter
@@ -3101,18 +3123,11 @@ static void menu_encoderChangeParameter(int8_t inc)
    {
       menu_sendVoiceMorphAmount(paramNr, *paramValue);
    }
-	else if(paramNr < 128) // => Sound Parameter
+	else if(paramNr < END_OF_SOUND_PARAMETERS) // => Sound Parameter: menu edit (Session 039 P3)
    {
       if (!isMorphParam)
       {
-		   avrComms_sendData(MIDI_CC,(uint8_t)paramNr,*paramValue);
-      }
-   }
-	else if(paramNr > 127 && (paramNr < END_OF_SOUND_PARAMETERS)) // => Sound Parameter above 127
-   {
-      if (!isMorphParam)
-      {
-		   avrComms_sendData(CC_2,(uint8_t)(paramNr-128),*paramValue);
+         menu_sendSoundParameter(paramNr, *paramValue);
       }
    }
 	else // non sound parameters (ie current step data, etc)
@@ -4393,10 +4408,8 @@ void menu_parseKnobValue(uint8_t potNr, uint8_t potValue)
       }
       else
       {
-         if(paramNr<128) // => Sound Parameter below 128
-   			avrComms_sendData(MIDI_CC,(uint8_t)paramNr,dtypeValue);
-   		else if(paramNr>=128 && (paramNr < END_OF_SOUND_PARAMETERS)) // => Sound Parameter above 127
-   			avrComms_sendData(CC_2,(uint8_t)(paramNr-128),dtypeValue);
+         if(paramNr < END_OF_SOUND_PARAMETERS) // => Sound Parameter: menu edit (Session 039 P3)
+            menu_sendSoundParameter(paramNr, dtypeValue);
    		else
    			menu_parseGlobalParam(paramNr,dtypeValue);
       }
@@ -4406,10 +4419,8 @@ void menu_parseKnobValue(uint8_t potNr, uint8_t potValue)
 	default: // all other sound parameters are send as CC or CC2. anything else is handled specially
       if(menu_isVoiceMorphAmountParam(paramNr))
          menu_sendVoiceMorphAmount(paramNr, dtypeValue);
-		else if(paramNr<128) // => Sound Parameter below 128
-			avrComms_sendData(MIDI_CC,(uint8_t)paramNr,dtypeValue);
-		else if(paramNr>=128 && (paramNr < END_OF_SOUND_PARAMETERS)) // => Sound Parameter above 127
-			avrComms_sendData(CC_2,(uint8_t)(paramNr-128),dtypeValue);
+		else if(paramNr < END_OF_SOUND_PARAMETERS) // => Sound Parameter: menu edit (Session 039 P3)
+			menu_sendSoundParameter(paramNr, dtypeValue);
 		else
 			menu_parseGlobalParam(paramNr,dtypeValue);
 		break;

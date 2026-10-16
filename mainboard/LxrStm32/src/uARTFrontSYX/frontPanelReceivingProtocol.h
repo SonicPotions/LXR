@@ -59,6 +59,19 @@ byte3, data2 byte: xbbbbbbb : b=macro mod target value lower 7 bits or top level
 #define PARAM_RESTORE_BEGIN           0xc7	// begin a parameter restore burst
 #define PARAM_RESTORE_READY           0xc8	// ready/ack marker for parameter restore
 #define PARAM_RESTORE_ACK             0xc9	// acknowledge a parameter restore request
+/* MENU-ORIGINATED SOUND-PARAMETER EDITS, AVR -> STM  (Session 039 P3)
+   WHAT: identical payload to MIDI_CC (raw id 0..127) / FRONT_CC_2 (raw id - 128)
+         but sent only by AVR menu encoder/knob edits
+         (menu_sendSoundParameter()).
+   WHY:  the plain opcodes are also used by file/voice load and the
+         armed-step revert, so the STM could not tell a menu edit apart.
+         Only menu edits may be transmitted as MIDI CC/NRPN when txf C is on.
+         Both are handled exactly like the plain opcodes, plus a TX queue call.
+   ACCESSORS: frontParser_handleMidiMessage() MIDI_CC / FRONT_CC_2 cases.
+   AFFILIATES: AVR MIDI_CC_MENU / CC_2_MENU (avrCommsReceivingProtocol.h,
+               same values), outputControl_queueMenuParameterTx(). */
+#define FRONT_CC_MENU                 0xca	// menu edit, parameter 0..127
+#define FRONT_CC_2_MENU               0xcb	// menu edit, parameter 128+
 //#define PRF_CACHE_REJECTED            0x00	// PRF cache request rejected
 //#define PRF_CACHE_ACCEPTED            0x01	// PRF cache request accepted
 /* SAMPLE_CC subcommands.

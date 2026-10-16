@@ -44,7 +44,7 @@
 typedef struct FifoStruct
 {
 	  volatile uint8_t data[BUFFER_SIZE];
-	  volatile uint8_t read; // zeigt auf das Feld mit dem ältesten Inhalt
+	  volatile uint8_t read; // zeigt auf das Feld mit dem ï¿½ltesten Inhalt
 	  volatile uint8_t write; // zeigt immer auf leeres Feld
 }Fifo;
 
@@ -54,6 +54,18 @@ void fifo_init(Fifo* fifo);
 uint8_t fifo_bufferIn(Fifo* fifo, uint8_t byte);
 
 uint8_t fifo_bufferOut(Fifo* fifo, uint8_t *pByte);
+
+/* FIFO FREE SPACE  (Session 039 P3)
+   WHAT: number of bytes that can still be written (0..BUFFER_SIZE-1; one slot
+         is always kept empty to tell full from empty).
+   WHY:  producers that must not split multi-byte messages
+         (uart_sendMidi()) check for room before writing any byte.
+   INPUT:  fifo. OUTPUT: free byte count.
+   CONCURRENCY: exact for a single producer; a consumer in an ISR can only
+                increase free space, so the result is conservative.
+   ACCESSORS: uart_sendMidi(), uart_midiTxFree() (Uart.c).
+   AFFILIATES: fifo_bufferIn(), fifo_bufferOut(). */
+uint8_t fifo_freeSpace(Fifo* fifo);
 
 void fifo_clear(Fifo* fifo);
 
@@ -65,7 +77,7 @@ void fifo_clear(Fifo* fifo);
 typedef struct FifoStructBig
 {
 	volatile  uint8_t data[BUFFER_SIZE_BIG];
-	volatile uint8_t read; // zeigt auf das Feld mit dem ältesten Inhalt
+	volatile uint8_t read; // zeigt auf das Feld mit dem ï¿½ltesten Inhalt
 	volatile uint8_t write; // zeigt immer auf leeres Feld
 }FifoBig;
 

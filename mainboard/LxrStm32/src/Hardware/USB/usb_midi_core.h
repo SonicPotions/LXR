@@ -63,6 +63,18 @@ extern uint8_t  usb_MidiInBuff [TOTAL_MIDI_BUF_SIZE * NUM_SUB_BUFFERS];
 extern uint8_t* usb_MidiInWrPtr;
 extern uint8_t* usb_MidiInRdPtr;
 
+/* USB MIDI IN-ENDPOINT TRANSFER-IN-FLIGHT FLAG  (Session 039 P3)
+   WHAT: 1 from the moment usb_flushMidi() hands a ping-pong half to
+         DCD_EP_Tx() until the stack reports completion through
+         usbd_midi_DataIn(), or until usb_flushMidi()'s timeout gives up.
+   WHY:  usb_flushMidi() used to run DCD_EP_Flush() + DCD_EP_Tx() on every
+         main-loop pass, aborting IN data still in the endpoint FIFO. The
+         flag lets the flush wait for completion.
+   WRITERS: usb_flushMidi() (set; clear on timeout or not configured),
+            usbd_midi_DataIn() (clear; USB OTG interrupt context).
+   READERS: usb_flushMidi().
+   AFFILIATES: USB_MIDI_TX_TIMEOUT_TICKS (usb_manager.h). */
+extern volatile uint8_t usb_midiTxBusy;
 
 //buffer for parsed midi messages
 extern MidiMsg usb_MidiMessages[USB_MIDI_INPUT_BUFFER_SIZE];

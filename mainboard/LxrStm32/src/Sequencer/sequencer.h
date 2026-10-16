@@ -439,6 +439,18 @@ static inline void seq_applySingleParameterValue(uint16_t param, uint8_t value)
    track: track index whose automation lane is being armed.
    isArmed: non-zero to arm the capture point, zero to clear it. */
 void seq_armAutomationStep(uint8_t stepNr, uint8_t track,uint8_t isArmed);
+/* AUTOMATION STEP ARMED QUERY  (Session 039 P3)
+   WHAT: non-zero while a front-panel automation step is armed (step and
+         track both set by seq_armAutomationStep()).
+   WHY:  menu edits made while a step is armed are temporary step data that
+         the AVR reverts on disarm; MIDI TX must not send them (user decision).
+         The STM sees ARM/DISARM in order with the edits, so it is the single
+         place to gate.
+   OUTPUT: 1 armed, 0 not armed.
+   ACCESSORS: outputControl_queueMenuParameterTx(),
+              outputControl_queueMenuPerfTx() (MidiOutputControl.c).
+   AFFILIATES: seq_armAutomationStep(), seq_recordAutomation(). */
+uint8_t seq_isAutomationStepArmed(void);
 /* Recalculate the transport delta after a clock jump.
    This is used by clock jumps, sync restarts, and other timing changes that
    force the next step to be recomputed immediately. */

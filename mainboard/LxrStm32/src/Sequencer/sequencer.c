@@ -1219,6 +1219,14 @@ void seq_armAutomationStep(uint8_t stepNr, uint8_t track,uint8_t isArmed)
    }
 }
 //------------------------------------------------------------------------------
+/* AUTOMATION STEP ARMED QUERY (Session 039 P3); see sequencer.h. Uses the same
+   test as seq_recordAutomation()'s armed-step branch. */
+uint8_t seq_isAutomationStepArmed(void)
+{
+   return (uint8_t)((seq_armedArmedAutomationStep != -1)
+                    && (seq_armedArmedAutomationTrack != -1));
+}
+//------------------------------------------------------------------------------
 /* Override the next transport interval directly.
    delta: interval in milliseconds until the next transport step. */
 void seq_setDeltaT(float delta)

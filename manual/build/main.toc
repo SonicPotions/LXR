@@ -76,95 +76,98 @@
 \contentsline {subsection}{\numberline {5.4}Load and Save Mode}{24}{subsection.5.4}%
 \contentsline {subsubsection}{\numberline {5.4.1}Display Description}{24}{subsubsection.5.4.1}%
 \contentsline {subsubsection}{\numberline {5.4.2}Menu Navigation}{24}{subsubsection.5.4.2}%
-\contentsline {subsubsection}{\numberline {5.4.3}Sound Presets}{24}{subsubsection.5.4.3}%
+\contentsline {subsubsection}{\numberline {5.4.3}Sound Presets}{25}{subsubsection.5.4.3}%
 \contentsline {subsubsection}{\numberline {5.4.4}Morph Presets}{25}{subsubsection.5.4.4}%
 \contentsline {subsubsection}{\numberline {5.4.5}Pattern Sets}{25}{subsubsection.5.4.5}%
 \contentsline {subsubsection}{\numberline {5.4.6}Performance Files}{25}{subsubsection.5.4.6}%
 \contentsline {subsubsection}{\numberline {5.4.7}All Files}{25}{subsubsection.5.4.7}%
-\contentsline {subsubsection}{\numberline {5.4.8}Background file loading}{25}{subsubsection.5.4.8}%
+\contentsline {subsubsection}{\numberline {5.4.8}Background file loading}{26}{subsubsection.5.4.8}%
 \contentsline {subsubsection}{\numberline {5.4.9}Samples}{26}{subsubsection.5.4.9}%
 \contentsline {subsubsection}{\numberline {5.4.10}Settings}{26}{subsubsection.5.4.10}%
 \contentsline {subsection}{\numberline {5.5}Pattern Generator Mode}{26}{subsection.5.5}%
 \contentsline {subsubsection}{\numberline {5.5.1}Accessing the Pattern Generator}{26}{subsubsection.5.5.1}%
 \contentsline {subsubsection}{\numberline {5.5.2}Pattern Generator Menu}{26}{subsubsection.5.5.2}%
 \contentsline {subsubsection}{\numberline {5.5.3}Generating Patterns}{26}{subsubsection.5.5.3}%
-\contentsline {subsubsection}{\numberline {5.5.4}Resetting a Generated Pattern}{26}{subsubsection.5.5.4}%
+\contentsline {subsubsection}{\numberline {5.5.4}Resetting a Generated Pattern}{27}{subsubsection.5.5.4}%
 \contentsline {subsection}{\numberline {5.6}Global Settings Menu}{27}{subsection.5.6}%
 \contentsline {subsubsection}{\numberline {5.6.1}Accessing the Settings Menu}{27}{subsubsection.5.6.1}%
-\contentsline {subsubsection}{\numberline {5.6.2}Menu Options}{27}{subsubsection.5.6.2}%
-\contentsline {subsubsection}{\numberline {5.6.3}Follow Mode}{27}{subsubsection.5.6.3}%
-\contentsline {subsubsection}{\numberline {5.6.4}Screensaver}{28}{subsubsection.5.6.4}%
-\contentsline {subsubsection}{\numberline {5.6.5}Loading and Saving Global Settings}{28}{subsubsection.5.6.5}%
-\contentsline {section}{\numberline {6}Synth Modules}{29}{section.6}%
-\contentsline {subsection}{\numberline {6.1}Oscillator}{29}{subsection.6.1}%
-\contentsline {subsubsection}{\numberline {6.1.1}Wavetable Interpolation}{29}{subsubsection.6.1.1}%
-\contentsline {subsection}{\numberline {6.2}Filter}{29}{subsection.6.2}%
-\contentsline {subsubsection}{\numberline {6.2.1}Frequency}{29}{subsubsection.6.2.1}%
-\contentsline {subsubsection}{\numberline {6.2.2}Resonance}{29}{subsubsection.6.2.2}%
-\contentsline {subsubsection}{\numberline {6.2.3}Drive}{30}{subsubsection.6.2.3}%
-\contentsline {subsubsection}{\numberline {6.2.4}Filter Types}{30}{subsubsection.6.2.4}%
-\contentsline {subsection}{\numberline {6.3}Envelopes}{34}{subsection.6.3}%
-\contentsline {subsubsection}{\numberline {6.3.1}Attack / Decay Times}{35}{subsubsection.6.3.1}%
-\contentsline {subsubsection}{\numberline {6.3.2}Slope}{35}{subsubsection.6.3.2}%
-\contentsline {subsubsection}{\numberline {6.3.3}Repeat}{37}{subsubsection.6.3.3}%
-\contentsline {subsection}{\numberline {6.4}Transient Generator}{37}{subsection.6.4}%
-\contentsline {subsubsection}{\numberline {6.4.1}Snappy Mode (\texttt {Snp})}{37}{subsubsection.6.4.1}%
-\contentsline {subsubsection}{\numberline {6.4.2}Offset Mode (\texttt {Off})}{37}{subsubsection.6.4.2}%
-\contentsline {subsubsection}{\numberline {6.4.3}Sample Mode}{37}{subsubsection.6.4.3}%
-\contentsline {subsection}{\numberline {6.5}Sample Rate Reduction}{38}{subsection.6.5}%
-\contentsline {subsection}{\numberline {6.6}Distortion}{38}{subsection.6.6}%
-\contentsline {subsection}{\numberline {6.7}LFO}{38}{subsection.6.7}%
-\contentsline {subsubsection}{\numberline {6.7.1}Setting Up Modulations}{39}{subsubsection.6.7.1}%
-\contentsline {subsubsection}{\numberline {6.7.2}Using The LFO as an Envelope}{39}{subsubsection.6.7.2}%
-\contentsline {subsection}{\numberline {6.8}Velocity Modulation}{39}{subsection.6.8}%
-\contentsline {subsection}{\numberline {6.9}Output Routing}{39}{subsection.6.9}%
-\contentsline {section}{\numberline {7}MIDI}{40}{section.7}%
-\contentsline {subsection}{\numberline {7.1}MIDI Channel}{40}{subsection.7.1}%
-\contentsline {subsection}{\numberline {7.2}MIDI Sync}{40}{subsection.7.2}%
-\contentsline {subsection}{\numberline {7.3}Record Incoming MIDI}{40}{subsection.7.3}%
-\contentsline {subsection}{\numberline {7.4}Transmitting Sequencer Data to the MIDI Output}{40}{subsection.7.4}%
-\contentsline {subsection}{\numberline {7.5}Program / Bank Changes}{40}{subsection.7.5}%
-\contentsline {subsection}{\numberline {7.6}MIDI CC List}{41}{subsection.7.6}%
-\contentsline {subsubsection}{\numberline {7.6.1}Channel MIDI CC Table}{41}{subsubsection.7.6.1}%
-\contentsline {subsubsection}{\numberline {7.6.2}Global MIDI CC Table}{44}{subsubsection.7.6.2}%
-\contentsline {section}{\numberline {8}Firmware Update}{50}{section.8}%
-\contentsline {subsection}{\numberline {8.1}Update Procedure}{50}{subsection.8.1}%
-\contentsline {subsection}{\numberline {8.2}Bootloader Error Codes}{50}{subsection.8.2}%
-\contentsline {section}{\numberline {9}Introduction to Drum Synthesis}{51}{section.9}%
-\contentsline {subsection}{\numberline {9.1}Kicks}{51}{subsection.9.1}%
-\contentsline {subsubsection}{\numberline {9.1.1}Oscillator}{51}{subsubsection.9.1.1}%
-\contentsline {subsubsection}{\numberline {9.1.2}Amplitude Envelope}{51}{subsubsection.9.1.2}%
-\contentsline {subsubsection}{\numberline {9.1.3}Pitch Envelope}{51}{subsubsection.9.1.3}%
-\contentsline {subsubsection}{\numberline {9.1.4}Click}{51}{subsubsection.9.1.4}%
-\contentsline {subsubsection}{\numberline {9.1.5}Tips and Tricks}{51}{subsubsection.9.1.5}%
-\contentsline {subsection}{\numberline {9.2}Snare}{51}{subsection.9.2}%
-\contentsline {subsubsection}{\numberline {9.2.1}Tonal Part}{51}{subsubsection.9.2.1}%
-\contentsline {subsubsection}{\numberline {9.2.2}Noise Part}{51}{subsubsection.9.2.2}%
-\contentsline {subsubsection}{\numberline {9.2.3}Amplitude Envelope}{52}{subsubsection.9.2.3}%
-\contentsline {subsubsection}{\numberline {9.2.4}Tips and Tricks}{52}{subsubsection.9.2.4}%
-\contentsline {subsection}{\numberline {9.3}Clap}{52}{subsection.9.3}%
-\contentsline {subsubsection}{\numberline {9.3.1}Amplitude Envelope}{52}{subsubsection.9.3.1}%
-\contentsline {subsubsection}{\numberline {9.3.2}Oscillator}{52}{subsubsection.9.3.2}%
-\contentsline {subsubsection}{\numberline {9.3.3}Filter}{52}{subsubsection.9.3.3}%
-\contentsline {subsection}{\numberline {9.4}Hihat}{52}{subsection.9.4}%
-\contentsline {subsubsection}{\numberline {9.4.1}Oscillator}{52}{subsubsection.9.4.1}%
-\contentsline {subsubsection}{\numberline {9.4.2}Amplitude Envelope}{52}{subsubsection.9.4.2}%
-\contentsline {subsubsection}{\numberline {9.4.3}Filter}{52}{subsubsection.9.4.3}%
-\contentsline {subsection}{\numberline {9.5}Cymbal Ride}{52}{subsection.9.5}%
-\contentsline {subsubsection}{\numberline {9.5.1}Oscillator}{52}{subsubsection.9.5.1}%
-\contentsline {subsubsection}{\numberline {9.5.2}Amplitude Envelope}{53}{subsubsection.9.5.2}%
-\contentsline {subsubsection}{\numberline {9.5.3}Filter}{53}{subsubsection.9.5.3}%
-\contentsline {subsubsection}{\numberline {9.5.4}LFO}{53}{subsubsection.9.5.4}%
-\contentsline {subsection}{\numberline {9.6}Bells}{53}{subsection.9.6}%
-\contentsline {subsubsection}{\numberline {9.6.1}Realistic Bells}{53}{subsubsection.9.6.1}%
-\contentsline {subsubsection}{\numberline {9.6.2}808-Style Cowbell}{53}{subsubsection.9.6.2}%
-\contentsline {subsection}{\numberline {9.7}More Information About Drum Sound Design}{53}{subsection.9.7}%
-\contentsline {section}{\numberline {10}Specifications}{55}{section.10}%
-\contentsline {subsection}{\numberline {10.1}Overview}{55}{subsection.10.1}%
-\contentsline {subsection}{\numberline {10.2}Sequencer}{55}{subsection.10.2}%
-\contentsline {subsection}{\numberline {10.3}Audio}{55}{subsection.10.3}%
-\contentsline {subsection}{\numberline {10.4}Hardware}{55}{subsection.10.4}%
-\contentsline {subsection}{\numberline {10.5}Power}{55}{subsection.10.5}%
-\contentsline {section}{\numberline {11}Appendix}{56}{section.11}%
-\contentsline {subsection}{\numberline {11.1}References}{56}{subsection.11.1}%
-\contentsline {subsection}{\numberline {11.2}Sample Credits}{56}{subsection.11.2}%
+\contentsline {subsubsection}{\numberline {5.6.2}Menu Options}{28}{subsubsection.5.6.2}%
+\contentsline {subsubsection}{\numberline {5.6.3}Follow Mode}{28}{subsubsection.5.6.3}%
+\contentsline {subsubsection}{\numberline {5.6.4}Screensaver}{29}{subsubsection.5.6.4}%
+\contentsline {subsubsection}{\numberline {5.6.5}MIDI Roll Offset}{29}{subsubsection.5.6.5}%
+\contentsline {subsubsection}{\numberline {5.6.6}Receive MIDI Filter}{29}{subsubsection.5.6.6}%
+\contentsline {subsubsection}{\numberline {5.6.7}Loading and Saving Global Settings}{29}{subsubsection.5.6.7}%
+\contentsline {section}{\numberline {6}Synth Modules}{30}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Oscillator}{30}{subsection.6.1}%
+\contentsline {subsubsection}{\numberline {6.1.1}Wavetable Interpolation}{30}{subsubsection.6.1.1}%
+\contentsline {subsection}{\numberline {6.2}Filter}{30}{subsection.6.2}%
+\contentsline {subsubsection}{\numberline {6.2.1}Frequency}{30}{subsubsection.6.2.1}%
+\contentsline {subsubsection}{\numberline {6.2.2}Resonance}{30}{subsubsection.6.2.2}%
+\contentsline {subsubsection}{\numberline {6.2.3}Drive}{31}{subsubsection.6.2.3}%
+\contentsline {subsubsection}{\numberline {6.2.4}Filter Types}{31}{subsubsection.6.2.4}%
+\contentsline {subsection}{\numberline {6.3}Envelopes}{35}{subsection.6.3}%
+\contentsline {subsubsection}{\numberline {6.3.1}Attack / Decay Times}{36}{subsubsection.6.3.1}%
+\contentsline {subsubsection}{\numberline {6.3.2}Slope}{36}{subsubsection.6.3.2}%
+\contentsline {subsubsection}{\numberline {6.3.3}Repeat}{38}{subsubsection.6.3.3}%
+\contentsline {subsection}{\numberline {6.4}Transient Generator}{38}{subsection.6.4}%
+\contentsline {subsubsection}{\numberline {6.4.1}Snappy Mode (\texttt {Snp})}{38}{subsubsection.6.4.1}%
+\contentsline {subsubsection}{\numberline {6.4.2}Offset Mode (\texttt {Off})}{38}{subsubsection.6.4.2}%
+\contentsline {subsubsection}{\numberline {6.4.3}Sample Mode}{38}{subsubsection.6.4.3}%
+\contentsline {subsection}{\numberline {6.5}Sample Rate Reduction}{39}{subsection.6.5}%
+\contentsline {subsection}{\numberline {6.6}Distortion}{39}{subsection.6.6}%
+\contentsline {subsection}{\numberline {6.7}LFO}{39}{subsection.6.7}%
+\contentsline {subsubsection}{\numberline {6.7.1}Setting Up Modulations}{40}{subsubsection.6.7.1}%
+\contentsline {subsubsection}{\numberline {6.7.2}Using The LFO as an Envelope}{40}{subsubsection.6.7.2}%
+\contentsline {subsection}{\numberline {6.8}Velocity Modulation}{40}{subsection.6.8}%
+\contentsline {subsection}{\numberline {6.9}Output Routing}{40}{subsection.6.9}%
+\contentsline {section}{\numberline {7}MIDI}{41}{section.7}%
+\contentsline {subsection}{\numberline {7.1}MIDI Channel}{41}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}MIDI Sync}{41}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}Record Incoming MIDI}{41}{subsection.7.3}%
+\contentsline {subsection}{\numberline {7.4}Transmitting Sequencer Data to the MIDI Output}{41}{subsection.7.4}%
+\contentsline {subsection}{\numberline {7.5}Transmitting Parameter Changes}{42}{subsection.7.5}%
+\contentsline {subsection}{\numberline {7.6}Program / Bank Changes}{42}{subsection.7.6}%
+\contentsline {subsection}{\numberline {7.7}MIDI CC List}{42}{subsection.7.7}%
+\contentsline {subsubsection}{\numberline {7.7.1}Channel MIDI CC Table}{42}{subsubsection.7.7.1}%
+\contentsline {subsubsection}{\numberline {7.7.2}Global MIDI CC Table}{45}{subsubsection.7.7.2}%
+\contentsline {section}{\numberline {8}Firmware Update}{52}{section.8}%
+\contentsline {subsection}{\numberline {8.1}Update Procedure}{52}{subsection.8.1}%
+\contentsline {subsection}{\numberline {8.2}Bootloader Error Codes}{52}{subsection.8.2}%
+\contentsline {section}{\numberline {9}Introduction to Drum Synthesis}{53}{section.9}%
+\contentsline {subsection}{\numberline {9.1}Kicks}{53}{subsection.9.1}%
+\contentsline {subsubsection}{\numberline {9.1.1}Oscillator}{53}{subsubsection.9.1.1}%
+\contentsline {subsubsection}{\numberline {9.1.2}Amplitude Envelope}{53}{subsubsection.9.1.2}%
+\contentsline {subsubsection}{\numberline {9.1.3}Pitch Envelope}{53}{subsubsection.9.1.3}%
+\contentsline {subsubsection}{\numberline {9.1.4}Click}{53}{subsubsection.9.1.4}%
+\contentsline {subsubsection}{\numberline {9.1.5}Tips and Tricks}{53}{subsubsection.9.1.5}%
+\contentsline {subsection}{\numberline {9.2}Snare}{53}{subsection.9.2}%
+\contentsline {subsubsection}{\numberline {9.2.1}Tonal Part}{53}{subsubsection.9.2.1}%
+\contentsline {subsubsection}{\numberline {9.2.2}Noise Part}{53}{subsubsection.9.2.2}%
+\contentsline {subsubsection}{\numberline {9.2.3}Amplitude Envelope}{54}{subsubsection.9.2.3}%
+\contentsline {subsubsection}{\numberline {9.2.4}Tips and Tricks}{54}{subsubsection.9.2.4}%
+\contentsline {subsection}{\numberline {9.3}Clap}{54}{subsection.9.3}%
+\contentsline {subsubsection}{\numberline {9.3.1}Amplitude Envelope}{54}{subsubsection.9.3.1}%
+\contentsline {subsubsection}{\numberline {9.3.2}Oscillator}{54}{subsubsection.9.3.2}%
+\contentsline {subsubsection}{\numberline {9.3.3}Filter}{54}{subsubsection.9.3.3}%
+\contentsline {subsection}{\numberline {9.4}Hihat}{54}{subsection.9.4}%
+\contentsline {subsubsection}{\numberline {9.4.1}Oscillator}{54}{subsubsection.9.4.1}%
+\contentsline {subsubsection}{\numberline {9.4.2}Amplitude Envelope}{54}{subsubsection.9.4.2}%
+\contentsline {subsubsection}{\numberline {9.4.3}Filter}{54}{subsubsection.9.4.3}%
+\contentsline {subsection}{\numberline {9.5}Cymbal Ride}{54}{subsection.9.5}%
+\contentsline {subsubsection}{\numberline {9.5.1}Oscillator}{54}{subsubsection.9.5.1}%
+\contentsline {subsubsection}{\numberline {9.5.2}Amplitude Envelope}{55}{subsubsection.9.5.2}%
+\contentsline {subsubsection}{\numberline {9.5.3}Filter}{55}{subsubsection.9.5.3}%
+\contentsline {subsubsection}{\numberline {9.5.4}LFO}{55}{subsubsection.9.5.4}%
+\contentsline {subsection}{\numberline {9.6}Bells}{55}{subsection.9.6}%
+\contentsline {subsubsection}{\numberline {9.6.1}Realistic Bells}{55}{subsubsection.9.6.1}%
+\contentsline {subsubsection}{\numberline {9.6.2}808-Style Cowbell}{55}{subsubsection.9.6.2}%
+\contentsline {subsection}{\numberline {9.7}More Information About Drum Sound Design}{55}{subsection.9.7}%
+\contentsline {section}{\numberline {10}Specifications}{57}{section.10}%
+\contentsline {subsection}{\numberline {10.1}Overview}{57}{subsection.10.1}%
+\contentsline {subsection}{\numberline {10.2}Sequencer}{57}{subsection.10.2}%
+\contentsline {subsection}{\numberline {10.3}Audio}{57}{subsection.10.3}%
+\contentsline {subsection}{\numberline {10.4}Hardware}{57}{subsection.10.4}%
+\contentsline {subsection}{\numberline {10.5}Power}{57}{subsection.10.5}%
+\contentsline {section}{\numberline {11}Appendix}{58}{section.11}%
+\contentsline {subsection}{\numberline {11.1}References}{58}{subsection.11.1}%
+\contentsline {subsection}{\numberline {11.2}Sample Credits}{58}{subsection.11.2}%

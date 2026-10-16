@@ -1,7 +1,7 @@
 # MIDI Table
 
-Date: 2026-09-26
-Status: current after the Session 038 stuck-MIDI-roll fix (NOTE_ON velocity 0 is a note-off; per-key MIDI roll ownership; stop release; stopped-transport MIDI rolls), on top of the 2026-09-17 MIDI roll-trigger implementation. This is the durable MIDI reference for external DIN/USB MIDI input parsing and realtime dispatch timing on STM32.
+Date: 2026-10-16
+Status: current after Session 039 (¢ RX-filter CC38 swap and NRPN 96; RPN-null swallow; NRPN 94/95 roll note/velocity with PERF display reports; RX filter C gating all incoming CCs; TX filter C transmitting menu edits as Global CC/NRPN; whole-message DIN/USB MIDI out with the USB IN completion/timeout fix), on top of the Session 038 stuck-MIDI-roll fix (NOTE_ON velocity 0 is a note-off; per-key MIDI roll ownership; stop release; stopped-transport MIDI rolls) and the 2026-09-17 MIDI roll-trigger implementation. This is the durable MIDI reference for external DIN/USB MIDI input parsing, realtime dispatch timing, and menu-originated MIDI transmit on STM32. Full Session 039 rationale: `knowledge_files/log_archive/039_SESSION_HANDOFF_LOG.md`.
 
 ## Ownership And Routing
 
@@ -12,7 +12,9 @@ Important ownership boundaries:
 - `MidiParser.c` owns byte-stream parsing, routing/filtering, system message dispatch, note/program-change routing, the high-level CC router, the DWT timestamp helper used by realtime capture, the saved MIDI roll-note offset, and the MIDI roll held-key table (`(channel, note)` -> claimed voice mask, Session 038). The sequencer owns only the per-voice MIDI ownership bit (`seq_rollMidiHeld`, via `seq_rollMidiChange()`), which stays separate from manual front-panel roll ownership.
 - `uARTFrontSYX/Uart.c` and `Hardware/USB/usb_midi_core.c` each own one source-specific, 16-event SPSC realtime capture queue. `main.c` drains DIN then USB at the audio render deadline before rendering the next block.
 - `ChannelMidiParser.c` owns the existing per-voice/channel CC implementation, plus the preserved CC0 bank-change and CC1 morph behavior.
-- `GlobalMidiParser.c` owns system clock/MTC handling and, after Session 029, the separate Global-channel CC/NRPN table for CC2-127.
+- `GlobalMidiParser.c` owns system clock/MTC handling and, after Session 029, the separate Global-channel CC/NRPN table for CC2-127. Session 039: it also owns the NRPN protocol state (selection, ¢ CC38 swap flag `globalMidiParser_cc38Swap`, RPN-null window), the special NRPNs 93-96 (numbers defined in `GlobalMidiParser.h`), and the TX reverse address table `globalMidiParser_getTxAddress()`.
+- `MidiOutputControl.c` owns MIDI output fan-out (`outputControl_sendMidi()` to USB and DIN) and, since Session 039, the menu MIDI-TX gate, coalescing queue and `outputControl_serviceMenuTx()` (called from the `main.c` loop before `usb_tick()`).
+- `Hardware/USB/usb_manager.c` / `usb_midi_core.c` own USB MIDI out: whole-event bounds check, `usbd_midi_DataIn()` completion flag, 5 ms busy timeout, discard while not `USB_OTG_CONFIGURED` (Session 039). `uARTFrontSYX/Uart.c` owns DIN MIDI out (`uart_sendMidi()` whole-message-or-drop, Session 039).
 - `frontPanelReceivingProtocol.c` owns the internal `MIDI_CC` / `MIDI_CC2` parameter apply ladder through `frontParser_applyParameterCommand()`. The new Global CC/NRPN parser translates into this existing internal apply path rather than duplicating DSP apply code.
 
 Global-channel CC pre-emption:
@@ -27,7 +29,7 @@ RX filter and routing (Session 039 P2):
 - `mrt` routing runs first in `midiParser_parseMidiMessage()` and is never affected by the RX filter. A filtered message is still forwarded if routed.
 - RX letters gate what the LXR responds to: N `0x01` notes (including MIDI rolls), R `0x02` clock/start/stop/continue/MTC, C `0x04` **all** incoming CC traffic (every channel; CC0 bank, CC1 morph, NRPN, both CC tables), P `0x08` program change.
 - C is gated once at the `MIDI_CC` entry. The older `0x04` tests inside the CC ladders are now redundant guards.
-- TX C (`0x40`) is reserved: the LXR transmits no CCs.
+- TX C (`0x40`) transmits menu-originated parameter edits as Global CC/NRPN (Session 039 P3); see `## MIDI Transmit` below. TX N/R/P gate sequencer note-ons, clock/start/stop and pattern program changes; note-offs are never gated.
 
 ### Global Parameter-ID Domains
 
@@ -432,3 +434,76 @@ Session 039 adds 8 "¢" (cent sign) RX-filter twins to the existing 16 entries. 
 | 23 | `al¢` | `0x0F` | yes | yes |
 
 Wire encoding (AVR → STM on `SEQ_MIDI_FILT_RX`): values 0..15 are sent unchanged. Values 16..23 encode as `0x04 | (k & 3) | ((k & 4) << 1) | 0x10` where `k = value - 16`. Bit 4 (`0x10`, `MIDI_RX_FILTER_CC38_SWAP`) is stripped by `midi_setFilter()` before the RX nibble is stored and forwarded to `globalMidiParser_setCc38Swap()`.
+
+AVR rules:
+- `midiFilterNames` rows are `[4]`; the count byte stays `{16}`, so pots and TxFilter see 16 entries.
+- `menu_getDtypeMenuEntryCount()` returns 24 for `PAR_MIDI_FILT_RX` (encoder paths only).
+- `menu_parseKnobValue()` ignores the RxFilter pot while the value is ≥ 16.
+- `menu_parseGlobalParam()` is the single encode point; values ≥ 24 are repaired to 15 (`all`).
+- Globals save byte-for-byte; no file-format change.
+
+Glyph: `MENU_CHAR_CENT` is `"\\"` (LCD ROM 0x5C, cent sign on this display per the user; a standard HD44780 A00 ROM has `¥` there, so this is unverified). Fallback: a CGRAM glyph via `lcd_generatechar()` in slot 1 (`"\x01"`; slot 0 cannot be used in strings).
+
+NRPN protocol details (`globalMidiParser_handleNrpnControl()`):
+- CC98/99 select and close the RPN-null window. CC6 opens it only when an NRPN is selected; CC6 with no selection is consumed and ignored.
+- In ¢ mode CC38 is consumed and leaves the window open (Elektron sends CC38 between CC6 and any null).
+- CC100/101 = 127 inside the window clears the selection and is consumed (both null bytes). Any other CC closes the window.
+- Accepted cost: a deliberate Pan 4/5 = 127 sent immediately after an NRPN data entry is dropped.
+
+---
+
+## MIDI Transmit (TX filter C, Session 039 P3)
+
+When `txf` includes **C** (bit 6, `0x40`) and the **Global MIDI channel** is set (1–16, not 0), every parameter change made with the menu encoder or knobs is transmitted on the Global channel as the CC or NRPN that controls that parameter on receive.
+
+### Gate
+
+TX is suppressed when any of these is true:
+
+- TX filter C is off.
+- Global MIDI channel is 0 (off) or > 16.
+- An automation step is armed (`seq_isAutomationStepArmed()`).
+- The parameter has no Global MIDI mapping (returns `GLOBAL_MIDI_TX_NONE`).
+
+### Address derivation
+
+The transmit address is the **inverse of the receive tables** (`globalMidiParser_ccToRawParam[]` and `globalMidiParser_nrpnToRawParam[]`). CCs are preferred over NRPNs when both tables map a parameter (3 bytes instead of 9). The reverse table is built lazily on first use.
+
+### Exclusions (return GLOBAL_MIDI_TX_NONE)
+
+- **18 target selectors:** `PAR_VEL_DEST_1..6`, `PAR_VOICE_LFO1..6`, `PAR_TARGET_LFO1..6` — their receive value domain is unverified against the menu's `modTargets` index.
+- Parameters with no Global mapping: envelope position 1–6, per-voice morph, kit version, reserved slots.
+- CC0/1/6/98/99 never come out of the reverse table because those receive-table slots are `PAR_NONE`.
+
+### ¢ mirror
+
+When the RX filter is a ¢ entry (CC38 swap active), Drum 1 filter cutoff (`PAR_FILTER_FREQ_1`) is sent as **NRPN 96** instead of CC38, matching what a ¢-mode receiver accepts.
+
+### PERF controls
+
+| Control | Address | Value |
+|---|---|---|
+| Roll rate | NRPN 93 | 0..15 (selector) |
+| Roll note | NRPN 94 | 0..127 |
+| Roll velocity | NRPN 95 | 0..127 |
+| Global morph | CC1 | amount >> 1 (inverse of receive: v*2, 127 → 255) |
+
+### NRPN framing
+
+CC99 = 0, CC98 = number, CC6 = value. No CC38 (data-entry LSB), no RPN-null tail.
+
+### CC100/101 = 127 guard
+
+CC100 (Snare pan) and CC101 (Cymbal pan) with value 127 would be taken by an LXR receiver as an RPN-null deselect if it followed an NRPN data entry (P1 rule). Before emitting CC100/101 = 127, TX first emits CC99 = 0, which closes the receiver's null window.
+
+### Coalescing and pacing
+
+A coalescing queue holds one slot per raw sound parameter plus 4 PERF slots. Repeated edits keep only the latest value. `outputControl_serviceMenuTx()` emits at most one message per main-loop pass, round-robin, only when both DIN and USB outputs can take the whole message. This prevents knob sweeps from saturating DIN (31,250 baud) or splitting messages.
+
+### Whole-message DIN/USB
+
+DIN: `uart_sendMidi()` drops the entire message when `fifo_freeSpace()` is insufficient, never splits. This applies to every DIN sender (sequencer notes/clock, routing, menu TX). USB: `usb_sendMidi()` drops the 4-byte event when `usb_midiTxFree() < 4`, never writes past the current ping-pong half. `usb_flushMidi()` starts the next IN transfer only after `usbd_midi_DataIn()` clears `usb_midiTxBusy`, or after `USB_MIDI_TX_TIMEOUT_TICKS` (20 SysTicks = 5 ms). It discards pending bytes while the device is not `USB_OTG_CONFIGURED`. Drop/timeout counters: `uart_midiTxDropCount`, `usb_midiTxDropCount`, `usb_midiTxTimeoutCount` (debugger-visible).
+
+### Not transmitted
+
+Received MIDI (DIN or USB) is never re-transmitted (except by `mrt` routing). Only menu-originated changes trigger TX: sound-parameter edits tagged with AVR opcodes `0xca`/`0xcb`, and the menu-only PERF opcodes `FRONT_SEQ_ROLL_RATE/_NOTE/_VELOCITY` and `FRONT_SEQ_SET_GLOBAL_MORPH_MSB`. Values only stored while temporary playback is active (not applied live) are not transmitted. File loads, voice loads, automation playback, the armed-step revert, LFOs, and preset restores all use the plain opcodes (`MIDI_CC`/`CC_2`) and are never transmitted.

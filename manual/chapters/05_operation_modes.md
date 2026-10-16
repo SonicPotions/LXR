@@ -358,7 +358,7 @@ twice while in PERF mode.
 bpm & Tempo in BPM    & Internal clock tempo. Set to 0 to sync to incoming MIDI clock. \\
 qnt & Sequencer Quantisation & Sets the quantisation grid for recorded data. \\
 mid & Global MIDI Channel & Sets the channel for global functions (see MIDI Table). \\
-txf & Transmit MIDI Filter & Sets what MIDI commands are transmitted from the LXR. \\
+txf & Transmit MIDI Filter & Sets what MIDI commands are transmitted from the LXR. With C on and a global MIDI channel set, parameter changes made in the menu are sent as the CC or NRPN listed in the MIDI tables, on the global channel. \\
 rxf & Receive MIDI Filter & Sets what MIDI commands are recognized by the LXR. Additional ¢ entries,
                            reachable only with the encoder, swap CC38 to NRPN 96
                            (see Receive MIDI Filter below). \\
@@ -397,27 +397,11 @@ the settings menu.
 
 ### MIDI Roll Offset
 
-The \param{rol} setting (shown as `RolOfset`, on the third settings page) lets incoming MIDI notes
-play the roll engine. It is `off` by default; values 1–127 are a semitone offset above each voice's
-normal MIDI trigger note.
+If the \param{rol} offset has a value, that value is applied to incoming MIDI Notes: Notes corresponding to a value above the voice's normal MIDI trigger by \param{rol} start a roll at the current roll settings defined in MODE PERF. 
 
-- A note at a voice's trigger note plus the offset starts a roll on that voice. The roll continues
-  while the note is held and stops on note-off. For example, with Drum 1 on note 36 and an offset
-  of 12, note 48 rolls Drum 1.
-- On a track without a fixed note (chromatic mode), the offset works as a keyboard split: notes
+- If the voice is on the Global Channel, the roll is triggered by the note at \param{rol} above the voice's assigned note, or above the voice default if no note is set.
+- If the voice is assigned its own channel without a fixed note (chromatic mode), the offset works as a keyboard split: notes
   below it play the voice normally, and notes at or above it play rolls.
-- Normal note triggers always take priority. A note only rolls if it would not trigger a voice
-  normally.
-- MIDI rolls use the roll rate, note, and velocity from the Performance menu (\param{rol},
-  \param{nte}, \param{vel}). These can also be set by NRPN 93–95 (see the MIDI chapter).
-- While the sequencer is stopped, a MIDI roll starts immediately and repeats at the current tempo.
-  If the note is still held when the sequencer starts, the roll continues in time with the
-  sequencer.
-- A note-on with velocity 0 counts as a note-off. Up to 16 roll notes can be held at once.
-- All held MIDI rolls are released when the sequencer stops, when the offset changes, when a MIDI
-  channel or note assignment changes, or when note reception is turned off in \param{rxf}.
-
-The offset is saved with the global settings.
 
 ### Receive MIDI Filter
 
@@ -429,45 +413,18 @@ letter enables one type:
 | N | Notes |
 | R | Realtime: clock, start, stop |
 | C | Controllers: CC and NRPN |
+| ¢ | Controllers, alternate 038 Mapping |
 | P | Program change |
 
-The values are `off`, `N`, `R`, `RN`, `C`, `CN`, `CR`, `CRN`, `P`, `PN`, `PR`, `PRN`, `PC`,
-`PCN`, `PCR`, and `all`.
 
-The receive filter only controls what the LXR itself responds to. A message that is filtered
-out is still passed on to the MIDI outputs if MIDI Routing (\param{mrt}) forwards it. With C
-turned off, no controller message has any effect: this includes bank change (CC0), the mod
-wheel morph (CC1) and NRPNs.
-
-**¢ entries (CC38 swap).** Every entry that receives controllers has a twin with ¢ in place of
-the C:
-
-| Entry | Twin of |
-|---|---|
-| `¢` | `C` |
-| `¢N` | `CN` |
-| `¢R` | `CR` |
-| `¢RN` | `CRN` |
-| `P¢` | `PC` |
-| `P¢N` | `PCN` |
-| `P¢R` | `PCR` |
-| `al¢` | `all` |
-
-A ¢ entry works exactly like its twin, except:
+A ¢ entry works exactly like 'C', except:
 
 - CC38 on the global MIDI channel is ignored.
 - Voice 1 filter frequency, normally on global CC38, moves to NRPN 96.
 
-Use a ¢ entry with gear that sends a CC38 (data entry LSB) after every NRPN value, as Elektron
-devices do. Without it, each NRPN sent to the LXR also moves voice 1's filter frequency, usually
-closing it.
+Use a ¢ entry with gear that sends a CC38 (data entry LSB) after every NRPN value. Without it, each NRPN sent to the LXR also moves voice 1's filter frequency, usually closing it.
 
-The ¢ entries can only be selected with the encoder. Push the encoder to enter edit mode on
-\param{rxf}, then turn it past `all`. The knob only reaches the standard entries, and while a ¢
-entry is selected the knob has no effect on this setting. The ¢ entry stays visible in the
-4-parameter view, and to leave it, use the encoder again. The \param{txf} setting has no ¢ entries.
-
-The selected entry, including ¢ entries, is saved with the global settings.
+The ¢ entries may only be selected when the parameter is clicked with the encoder and is in single-parameter view. 
 
 ### Loading and Saving Global Settings
 

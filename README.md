@@ -10,6 +10,7 @@ The `front` folder contains the AVR code. The `mainboard` folder contains the ST
 ### Version 1.03
 - Bugfixes to sequencer timing and FM with samples.
 - Bugfixes to MIDI Tx and Rx for CC Control.
+- Menu edits send Tx CC on Global channel when enabled. 
 - Setting to swap CC038 to NRPN (common NRPN data line).
 - There is a new setting for triggering rolls and controlling them over MIDI.
 - Manual has been updated to reflect the changes.

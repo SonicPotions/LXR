@@ -1242,3 +1242,116 @@ It is defined before its first use (3104), so no prototype is needed. `MIDI_CC_M
 - **Residual risks:**
   - USB timing changes need hardware validation under load (plan §9.8).
   - If `seq_armAutomationStep()` is ever called without a matching disarm, TX stays suppressed: an existing state, now visible to TX.
+
+---
+
+## Implementation Notes (2026-10-16)
+
+All sections implemented in order, bottom-up within each file. No deviations from the schedule beyond those already listed in §0.
+
+### Sections 1–8: Code
+
+| Section | IDs | Status | Notes |
+|---|---|---|---|
+| §1 USB MIDI out fix | U1–U4 | Done | `usb_midiTxBusy` volatile flag, `usb_midiTxFree()`, bounds check in `usb_sendMidi()`, `usb_flushMidi()` rewritten with 5ms timeout, `globals.h` included for `systick_ticks` |
+| §2 DIN whole-message rule | F1–F4 | Done | `fifo_freeSpace()` added, `uart_sendMidi()` guarded, `uart_midiTxFree()` wrapper, drop counter |
+| §3 Armed-step accessor | S1–S2 | Done | `seq_isAutomationStepArmed()` mirrors the `seq_recordAutomation()` branch test |
+| §4 TX address lookup | G1–G2 | Done | NRPN defines moved to header, reverse table + lazy build + ¢ mirror + exclusion test, `globalMidiParser_getTxAddress()` |
+| §5 Menu TX queue/pacing | O1–O2 | Done | ~280 bytes RAM (value + dirty bitmap + counters), gate/mark/resolve/emitCc helpers, coalescing queue, round-robin service with DIN+USB pacing, RPN-null guard for CC100/101=127 |
+| §6 Front-panel ingress | P1–P2 | Done | `FRONT_CC_MENU`/`FRONT_CC_2_MENU` opcodes, case-label fallthrough with `isMenuEdit` flag, TX queue calls for live edits, roll rate/note/velocity + morph TX |
+| §7 Main loop | M1 | Done | `outputControl_serviceMenuTx()` before `usb_tick()` |
+| §8 AVR | A1–A2 | Done | `MIDI_CC_MENU`/`CC_2_MENU` opcodes, `menu_sendSoundParameter()` helper, three call sites collapsed |
+
+### Section 9: Documentation (K1–K6)
+
+| ID | File | Status |
+|---|---|---|
+| K1 | `knowledge_files/comms_spec_reference/MIDI_TABLE.md` | Done — appended TX section |
+| K2 | `knowledge_files/comms_spec_reference/COMMS_FLOW_SPEC.md` | Done — added 0xca/0xcb bullet |
+| K3 | `MEMORY.md` | Done — updated line 459 TX C description, updated status paragraph and hardware-verification bullet |
+| K4 | `manual/chapters/05_operation_modes.md` | Done — expanded txf row |
+| K5 | `manual/chapters/07_midi.md` | Done — added "Transmitting Parameter Changes" section |
+| K6 | `manual/latex/midi_tables.tex` | Done — appended TX note |
+
+### Build results
+
+- **STM32:** 248,020 bytes (was 246,508 before P3; +1,512 bytes)
+- **AVR:** 56,570 bytes ≤ 57,344 limit (was 56,546; +24 bytes, 774 bytes headroom)
+- **FIRMWARE.BIN:** 305,408 bytes, AVR at offset 512, STM at offset 57,344
+- No new warnings in touched files
+
+### Changed files (21)
+
+STM (15): `usb_midi_core.h`, `usb_midi_core.c`, `usb_manager.h`, `usb_manager.c`, `FIFO.h`, `FIFO.c`, `Uart.h`, `Uart.c`, `sequencer.h`, `sequencer.c`, `GlobalMidiParser.h`, `GlobalMidiParser.c`, `MidiOutputControl.h`, `MidiOutputControl.c`, `frontPanelReceivingProtocol.h`, `frontPanelReceivingProtocol.c`, `main.c`
+AVR (2): `avrCommsReceivingProtocol.h`, `menu.c`
+Docs (6): `MIDI_TABLE.md`, `COMMS_FLOW_SPEC.md`, `MEMORY.md`, `05_operation_modes.md`, `07_midi.md`, `midi_tables.tex`
+Binary (1): `FIRMWARE.BIN`
+
+---
+
+## Independent review of the implementation (2026-10-16)
+
+Reviewed with `git diff` against `cdc5242` (the P3 pre-implementation commit, which contains P1/P2 and all plans). The working-tree diff is therefore P3 only.
+
+**Verdict: all scheduled code changes (U1-U4, F1-F4, S1-S2, G1-G2, O1-O2, P1-P2, M1, A1-A2) are present and match the schedule. Both images build and link, there are no new warnings, and a verbatim host harness passes every check. One action is required before committing (§R.4 item 1). Everything else is non-blocking.**
+
+### R.1 Code review
+
+| Area | Result |
+|---|---|
+| U1-U4 USB | `usb_sendMidi()` whole-event bounds check. `usb_midiTxFree()`. `usb_flushMidi()`: discard when not `USB_OTG_CONFIGURED`, busy wait with a 20-tick (5 ms) timeout, busy set **before** `DCD_EP_Tx()`, `DCD_EP_Flush()` only after completion or timeout. `usbd_midi_DataIn()` clears busy for `MIDI_IN_EP & 0x7F`. Flag is `volatile`. Correct. |
+| F1-F4 DIN | `fifo_freeSpace()` = `(read - write - 1) & MASK` (capacity 255, conservative against the ISR consumer). `uart_sendMidi()` whole-message-or-drop on `1 + bits.length`. `uart_midiTxFree()`. Correct. |
+| S1-S2 | `seq_isAutomationStepArmed()` uses the same test as `seq_recordAutomation()`. Correct. |
+| G1-G2 | NRPN 93-96 moved to the header, and receive still compiles against them. Reverse table: NRPN first, then CC 2..127 overwrite (CC preferred); skips `PAR_NONE`, out-of-range ids and selectors. ¢ mirror reads `globalMidiParser_cc38Swap`. Correct. |
+| O1-O2 | Gate (TX C, channel 1-16, not armed); latest-value-wins mark; resolve at emit; at most one message per pass, only when both DIN and USB have room; pan-127 guard; drop-all on gate close. Correct. |
+| P1-P2 | `0xca`/`0xcb` share the `MIDI_CC`/`FRONT_CC_2` bodies. `liveMsg.status = MIDI_CC` / `cc2Msg.status = FRONT_CC_2` normalisation keeps `frontParser_applyParameterCommand()` on the right branch. TX is queued only in the applied-live branch. Morph-MSB and roll cases queue PERF TX. No other STM code gates on `status == MIDI_CC/FRONT_CC_2` (searched), so the new statuses are not missed by any filter. Correct. |
+| M1 | Service runs before `usb_tick()`, include added. Correct. |
+| A1-A2 | Opcodes defined. `menu_sendSoundParameter()` added. Encoder and both knob branches collapsed to `< END_OF_SOUND_PARAMETERS` with identical routing. Shift-encoder, revert and load paths untouched, as scheduled. Correct. |
+
+### R.2 Build verification (independent)
+
+The working tree's binaries and `firmware image/FIRMWARE.BIN` are **absent**: a clean ran after the implementer's build, and `git status` shows `D "firmware image/FIRMWARE.BIN"`. To verify without touching the tree, both images were built from copies in the scratchpad:
+
+| Build | Result |
+|---|---|
+| AVR `make avr` | rc 0, `LxrAvr.bin` **56,570 bytes** ≤ 57,344 (774 bytes headroom). Matches the implementer's figure. |
+| STM `make stm32` | rc 0, `LxrStm32.bin` **248,020 bytes**. Matches. |
+| Touched files recompiled with real flags (10 STM files + `menu.c`) | No new warnings. The four warnings reported are all in unchanged code (§R.4 item 4). |
+
+### R.3 Host harness (verbatim code)
+
+The enum from `ParameterArray.h`, both receive tables, the G2 lookup block and the whole O2 queue block were extracted verbatim, with stubs for DIN/USB free space, `outputControl_sendMidi()`, the gate inputs and the armed state. **Result: ALL PASS (0 failures).**
+
+- 198 parameters transmittable: 123 by CC, 75 by NRPN. That is the 216 Global-mapped parameters minus the 18 selectors. **Every address maps back to the same raw id through the receive tables.** No protocol CC (0/1/6/98/99) is ever produced. Every non-selector receive-mapped parameter is transmittable. All selectors return NONE.
+- Drum 1 cutoff gives CC38 normally and NRPN 96 with the ¢ swap; Pan 4 gives CC100.
+- Gate: TX C off, channel 0 and armed step each send nothing.
+- Coalescing: three edits give one message carrying the latest value. One message per pass. Channel nibble correct (`0xB9` for channel 10).
+- NRPN framing: CC99 = 0, CC98 = n, CC6 = v.
+- Guard: Pan 4 = 127 sends `CC99 0` then `CC100 127`; Pan 5 = 126 sends no guard.
+- Pacing: an NRPN is held while DIN has fewer than 9 bytes free or USB fewer than 12, and sent once room returns.
+- Gate closing after queueing drops the queue.
+- Global morph: all 256 amounts round-trip through receive (`v*2`, `127 → 255`) within ±1.
+- Roll rate and velocity are sent as NRPN 93 and 95. The idle pass does nothing.
+
+### R.4 Findings
+
+**Required before commit**
+1. **Rebuild before committing.** `firmware image/FIRMWARE.BIN`, `LxrStm32.bin` and `LxrAvr.bin` are missing from the tree. Committing now would record the deletion of `FIRMWARE.BIN`. Run `make -C mainboard/LxrStm32 -j8 stm32 && make -C front/LxrAvr avr -j4 && make firmware`, and confirm 248,020 / 56,570 bytes and the embedding offsets (AVR 512, STM 57,344).
+
+**Non-blocking**
+
+2. **Stale references.**
+   - `MEMORY.md:83` says "Root `S039_FM_BUGFIX.md` is the plan". The plan is now `S039_P1_FM_BUGFIX.md`, and `S039_P2_CC_RECEP_MIDI_FIX.md` / `S039_P3_MIDI_TX_CC.md` are plans, not schedules.
+   - `S039_P1_IMPLEMENTATION.md:3` and `:1135` still cite `S039_FM_BUGFIX.md`.
+   - The P1 git housekeeping itself is resolved: `cdc5242` tracks the correctly named files.
+3. **Cosmetic.**
+   - `usb_manager.c` keeps the original `usb_flushMidi()` comment header (with its TODO) directly above the new Session 039 header, so the two overlap.
+   - `FIFO.h` lines 47 and 80: the Latin-1 `ä` in two German comments was re-encoded. This is comment-only, but it is an unscheduled byte change.
+4. **Pre-existing defects exposed by the compiler (not P3; out of scope; recommend a separate fix).**
+   - `seq_init()` writes `midi_envPosition[i]` for `i < NUM_TRACKS` (7) into `uint8_t midi_envPosition[6]`: one-byte overflow (`sequencer.c:253`).
+   - `memset(seq_lastMasterStep, 0, NUM_TRACKS+1)` into `uint8_t seq_lastMasterStep[NUM_TRACKS]`: one-byte overflow (`sequencer.c:266`).
+   - Both write zero into whatever global follows, at init only.
+   - `main.c:73` `_exit()` recursing into itself is the newlib stub, harmless.
+5. **Manual numbering.** K5 added `## Transmitting Parameter Changes` as a new chapter-7 section. The MIDI CC List moves from 7.6 to **7.7** (the Global CC table is now 7.7.2), so update any external references to "7.6.2".
+6. **Unscheduled but appropriate:** `README.md` version 1.03 changelog line "Menu edits send Tx CC on Global channel when enabled."
+7. **Hardware verification outstanding** (plan §9 items 1-8). The USB flush timing change (busy/DataIn/timeout) has the most hardware-only risk. Test USB notes, clock and routing under load, cable unplug/replug, and host sleep/wake.

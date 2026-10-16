@@ -53,12 +53,26 @@ The default MIDI note numbers for the 7 tracks are:
 7 & 42 \\
 \end{voicemiditbl}
 
+\textbf{MIDI roll trigger:} when the MIDI Roll Offset setting
+(\param{rol} in the Global Settings menu) is on, a note that many
+semitones above a voice's trigger note plays a held roll on that voice
+instead of a single hit. See \emph{MIDI Roll Offset} in the Global
+Settings Menu section. A note-on with velocity 0 is treated as a
+note-off.
+
 \subsection{Transmitting Sequencer Data to the MIDI
 Output}\label{transmitting-sequencer-data-to-the-midi-output}
 
 The sequencer currently transmits note-on trigger messages to the MIDI
 output. The ability to send complete sequencer tracks with pitch
 information on separate MIDI channels is planned for a future release.
+
+\subsection{Transmitting Parameter
+Changes}\label{transmitting-parameter-changes}
+
+Adjustments to voice parameters made in the menu are transmitted on the
+Global MIDI channel when the \texttt{txf} global setting includes
+\textbf{C}.
 
 \subsection{Program / Bank Changes}\label{program-bank-changes}
 
@@ -180,3 +194,58 @@ Yes \\
 \subsubsection{Global MIDI CC Table}\label{global-midi-cc-table}
 
 This table applies only on the configured Global MIDI channel.
+
+Notes on the CC and NRPN tables below:
+
+\begin{itemize}
+\item
+  \textbf{Sending an NRPN:} send CC99 (NRPN number MSB), then CC98 (NRPN
+  number LSB), then CC6 (value). CC6 is ignored until an NRPN number has
+  been selected.
+\item
+  \textbf{Performance NRPNs:}
+
+  {\def\LTcaptype{none} % do not increment counter
+  \begin{longtable}[]{@{}
+    >{\raggedleft\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4000}}
+    >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3000}}
+    >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3000}}@{}}
+  \toprule\noalign{}
+  \begin{minipage}[b]{\linewidth}\raggedleft
+  NRPN
+  \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+  Function
+  \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+  Range
+  \end{minipage} \\
+  \midrule\noalign{}
+  \endhead
+  \bottomrule\noalign{}
+  \endlastfoot
+  93 & Roll rate (Performance menu \param{rol}) & 0--15 \\
+  94 & Roll note (Performance menu \param{nte}) & 0--127 \\
+  95 & Roll velocity (Performance menu \param{vel}) & 0--127 \\
+  96 & Filter frequency, voice 1 (¢ receive filter entries only) &
+  0--127 \\
+  \end{longtable}
+  }
+
+  NRPN 93--95 update the Performance menu display. They are not recorded
+  as automation.
+\item
+  \textbf{CC38 swap option:} many devices, including Elektron gear, send
+  CC38 (data entry LSB) after every NRPN value. On the global channel
+  CC38 is voice 1 filter frequency, so every NRPN from such a device
+  also closes voice 1's filter. Selecting one of the ¢ entries of the
+  Receive MIDI Filter (\param{rxf}) makes the LXR ignore CC38 on the
+  global channel and moves voice 1 filter frequency to NRPN 96. With
+  standard entries, CC38 keeps its normal function and NRPN 96 is
+  ignored. See \emph{Receive MIDI Filter} in the Global Settings Menu
+  section.
+\item
+  \textbf{NRPN deselect (RPN null):} CC101 = 127 or CC100 = 127 sent
+  directly after an NRPN value is treated as the standard NRPN deselect.
+  It does not change voice pan, and a following CC6 is ignored until a
+  new NRPN number is selected. CC100 and CC101 sent at any other time
+  control voice pan as listed.
+\end{itemize}

@@ -63,6 +63,12 @@ uint8_t fifo_bufferOut(Fifo* fifo, uint8_t *pByte)
   return 1;
 }
 //-------------------------------------------------------------------------
+/* FIFO FREE SPACE (Session 039 P3); see FIFO.h. */
+uint8_t fifo_freeSpace(Fifo* fifo)
+{
+  return (uint8_t)((fifo->read - fifo->write - 1) & BUFFER_MASK);
+}
+//-------------------------------------------------------------------------
 void fifo_clear(Fifo* fifo)
 {
 	fifo->read = fifo->write;

@@ -63,6 +63,7 @@
 
 #include "usb_manager.h"
 #include "MidiParser.h"
+#include "MidiOutputControl.h"	/* outputControl_serviceMenuTx() (Session 039 P3) */
 
 #include "TriggerOut.h"
 #include <string.h>
@@ -286,6 +287,12 @@ int main(void)
     {
 
 		serviceAudioRenderDeadline();
+		/* MENU MIDI TX SERVICE  (Session 039 P3)
+		   Emit at most one queued menu CC/NRPN per pass, before usb_tick() so
+		   it is flushed to USB in the same pass. Bounded: one message (3-9
+		   DIN bytes / 4-12 USB bytes) and an O(slots) scan only when work is
+		   pending. See outputControl_serviceMenuTx(). */
+		outputControl_serviceMenuTx();
 		usb_tick();
 
 		//process midi on midi port

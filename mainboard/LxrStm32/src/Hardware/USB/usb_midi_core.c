@@ -138,6 +138,8 @@ uint8_t* usb_MidiOutRdPtr = usb_MidiOutBuff;
 uint8_t  usb_MidiInBuff [TOTAL_MIDI_BUF_SIZE * NUM_SUB_BUFFERS];
 uint8_t* usb_MidiInWrPtr = usb_MidiInBuff;
 uint8_t* usb_MidiInRdPtr = usb_MidiInBuff;
+/* USB MIDI IN transfer-in-flight flag; see usb_midi_core.h (Session 039 P3). */
+volatile uint8_t usb_midiTxBusy = 0;
 
 static uint8_t usbd_midi_CfgDesc[AUDIO_CONFIG_DESC_SIZE];
 //------------------------------------------------------------------------------------------------
@@ -395,8 +397,20 @@ static uint8_t  usbd_midi_EP0_RxReady (void  *pdev)
   */
 static uint8_t  usbd_midi_DataIn (void *pdev, uint8_t epnum)
 {
-	UNUSED(epnum);
+	/* MIDI IN TRANSFER COMPLETE  (Session 039 P3)
+	   WHAT: clears usb_midiTxBusy when the MIDI IN endpoint finishes the
+	         transfer started by usb_flushMidi().
+	   WHY:  lets usb_flushMidi() start the next ping-pong half only after the
+	         previous one has left the endpoint FIFO, instead of flushing it
+	         mid-transfer.
+	   INPUT:  epnum - endpoint number without the direction bit (usbd_core.c
+	           only calls this while the device is USB_OTG_CONFIGURED).
+	   OUTPUT: usb_midiTxBusy = 0 for the MIDI IN endpoint.
+	   ACCESSORS: STM USB device core (OTG interrupt), via MIDI_cb.DataIn.
+	   AFFILIATES: usb_flushMidi() (usb_manager.c), usb_midiTxBusy. */
 	UNUSED(pdev);
+	if((epnum & 0x7F) == (MIDI_IN_EP & 0x7F))
+		usb_midiTxBusy = 0;
 	return USBD_OK;
 }
 #endif

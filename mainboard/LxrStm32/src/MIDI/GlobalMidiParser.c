@@ -33,20 +33,8 @@ static uint8_t midiParser_mtcIsRunning = 0;
 static uint16_t globalMidiParser_activeNrpnNumber = 0;
 static uint8_t globalMidiParser_nrpnSelected = 0;
 
-/* GLOBAL SPECIAL NRPN NUMBERS  (Session 038 / Session 039)
-   WHAT: NRPN numbers handled by globalMidiParser_applySpecialNrpn() instead
-         of the raw table (which covers 0..92).
-         93 roll rate (0..15), 94 roll note, 95 roll velocity: PERF controls.
-         96 Drum 1 filter cutoff, active only in ¢ RX-filter mode, where it
-            replaces Global CC38.
-   WHY:  these are not raw sound-parameter slots; every existing Global CC
-         and NRPN assignment is preserved.
-   ACCESSORS: globalMidiParser_applySpecialNrpn().
-   AFFILIATES: MIDI_TABLE.md, manual/latex/midi_tables.tex. */
-#define GLOBAL_MIDI_NRPN_ROLL_RATE      93
-#define GLOBAL_MIDI_NRPN_ROLL_NOTE      94
-#define GLOBAL_MIDI_NRPN_ROLL_VELOCITY  95
-#define GLOBAL_MIDI_NRPN_FILTER_FREQ_1  96
+/* Special NRPN numbers (93-96) are defined in GlobalMidiParser.h so receive
+   and menu TX share them (Session 039 P3). */
 #define GLOBAL_MIDI_ROLL_RATE_MAX       15
 /* Data value that, on CC100/CC101 right after an NRPN data entry, forms the
    standard "RPN null" deselect. */
@@ -708,4 +696,94 @@ void globalMidiParser_MIDIccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 void globalMidiParser_setCc38Swap(uint8_t enabled)
 {
    globalMidiParser_cc38Swap = enabled ? 1u : 0u;
+}
+
+/* GLOBAL TX REVERSE TABLE  (Session 039 P3)
+   WHAT: per raw sound parameter, the Global transmit address: 0 none,
+         1..127 = CC number, 128 + n = NRPN n (n <= 92). Built once, lazily,
+         by globalMidiParser_buildTxAddressTable().
+   WHY:  O(1) lookup for menu TX without duplicating the receive tables.
+   WRITER: globalMidiParser_buildTxAddressTable(). READER:
+           globalMidiParser_getTxAddress(). */
+static uint8_t globalMidiParser_txAddress[END_OF_SOUND_PARAMETERS];
+static uint8_t globalMidiParser_txAddressBuilt = 0;
+
+/* TX EXCLUSION TEST  (Session 039 P3)
+   WHAT: true for the 18 modulation target selectors (user decision 4).
+   WHY:  the menu stores a modTargets index for these and receive stores the
+         NRPN value raw; the two domains are not verified to match.
+   INPUT: rawParam. OUTPUT: 1 excluded, 0 allowed.
+   ACCESSORS: globalMidiParser_buildTxAddressTable(). */
+static uint8_t globalMidiParser_isTxExcluded(uint16_t rawParam)
+{
+   return (uint8_t)(((rawParam >= PAR_VEL_DEST_1) && (rawParam <= PAR_VEL_DEST_6))
+                 || ((rawParam >= PAR_VOICE_LFO1) && (rawParam <= PAR_VOICE_LFO6))
+                 || ((rawParam >= PAR_TARGET_LFO1) && (rawParam <= PAR_TARGET_LFO6)));
+}
+
+/* TX REVERSE TABLE BUILDER  (Session 039 P3)
+   WHAT: inverts globalMidiParser_nrpnToRawParam[] first, then
+         globalMidiParser_ccToRawParam[2..127] so a CC address overwrites an
+         NRPN for the same parameter (CC preferred: 3 bytes instead of 9).
+         Skips PAR_NONE slots (CC0/1/6/98/99 and unmapped), out-of-range ids
+         and the excluded selectors.
+   WHY:  one derivation from the receive tables (see getTxAddress()).
+   OUTPUT: globalMidiParser_txAddress[] filled; built flag set.
+   ACCESSORS: globalMidiParser_getTxAddress() (first call). */
+static void globalMidiParser_buildTxAddressTable(void)
+{
+   uint16_t i;
+   const uint16_t nrpnCount = (uint16_t)(sizeof(globalMidiParser_nrpnToRawParam)
+                                       / sizeof(globalMidiParser_nrpnToRawParam[0]));
+
+   for(i = 0; i < nrpnCount; i++)
+   {
+      const uint16_t raw = globalMidiParser_nrpnToRawParam[i];
+      if(raw == PAR_NONE || raw >= END_OF_SOUND_PARAMETERS || globalMidiParser_isTxExcluded(raw))
+         continue;
+      globalMidiParser_txAddress[raw] = (uint8_t)(128u + i);
+   }
+
+   for(i = 2; i < 128; i++)
+   {
+      const uint16_t raw = globalMidiParser_ccToRawParam[i];
+      if(raw == PAR_NONE || raw >= END_OF_SOUND_PARAMETERS || globalMidiParser_isTxExcluded(raw))
+         continue;
+      globalMidiParser_txAddress[raw] = (uint8_t)i;
+   }
+
+   globalMidiParser_txAddressBuilt = 1;
+}
+
+/* GLOBAL TX ADDRESS LOOKUP (Session 039 P3); full contract in
+   GlobalMidiParser.h. */
+uint8_t globalMidiParser_getTxAddress(uint16_t rawParam, uint8_t *number)
+{
+   uint8_t code;
+
+   if(rawParam >= END_OF_SOUND_PARAMETERS)
+      return GLOBAL_MIDI_TX_NONE;
+
+   if(!globalMidiParser_txAddressBuilt)
+      globalMidiParser_buildTxAddressTable();
+
+   /* ¢ mirror (user decision 5): record what a ¢-mode receiver accepts. */
+   if(rawParam == PAR_FILTER_FREQ_1 && globalMidiParser_cc38Swap)
+   {
+      *number = GLOBAL_MIDI_NRPN_FILTER_FREQ_1;
+      return GLOBAL_MIDI_TX_NRPN;
+   }
+
+   code = globalMidiParser_txAddress[rawParam];
+   if(code == 0)
+      return GLOBAL_MIDI_TX_NONE;
+
+   if(code < 128)
+   {
+      *number = code;
+      return GLOBAL_MIDI_TX_CC;
+   }
+
+   *number = (uint8_t)(code - 128);
+   return GLOBAL_MIDI_TX_NRPN;
 }

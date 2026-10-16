@@ -33,6 +33,7 @@
 
 #include "usb_manager.h"
 #include <string.h>
+#include "globals.h"	/* systick_ticks (Session 039 P3 USB timeout) */
 
 enum {
 	USB_NOT_DETECTED,
@@ -40,6 +41,16 @@ enum {
 };
 
 USB_OTG_CORE_HANDLE           USB_OTG_dev;
+
+/* USB MIDI OUT DIAGNOSTICS AND TIMING  (Session 039 P3)
+   usb_midiTxStartTick: systick_ticks when the current IN transfer started;
+     read only by usb_flushMidi() for the 5 ms timeout.
+   usb_midiTxDropCount: whole USB-MIDI events dropped because the current
+     ping-pong half was full (debugger-visible; wraps).
+   usb_midiTxTimeoutCount: IN transfers abandoned after the busy timeout. */
+static uint32_t usb_midiTxStartTick = 0;
+static uint16_t usb_midiTxDropCount = 0;
+static uint16_t usb_midiTxTimeoutCount = 0;
 //-------------------------------------------------------------------------------
 void usb_init()
 {
@@ -103,16 +114,63 @@ void usb_sendByte(uint8_t byte)
 	}
 }
 //------------------------------------------------------------------------------
+/* USB MIDI OUT FREE SPACE (Session 039 P3); see usb_manager.h. The write
+   pointer always stays within [RdPtr, RdPtr + TOTAL_MIDI_BUF_SIZE] because
+   usb_sendMidi() checks this before writing. */
+uint8_t usb_midiTxFree(void)
+{
+	const uint8_t used = (uint8_t)(usb_MidiInWrPtr - usb_MidiInRdPtr);
+	return (used >= TOTAL_MIDI_BUF_SIZE) ? 0u : (uint8_t)(TOTAL_MIDI_BUF_SIZE - used);
+}
+//------------------------------------------------------------------------------
 /*
  * flush FIFO and send out next block of messages stored in the usb_MidiInBuff
  * called periodically by usb_tick()
  * TODO:  maybe there is a better way to call this automatically by the USB driver when it is ready to TX some more data?
  */
+/*
+ * flush FIFO and send out next block of messages stored in the usb_MidiInBuff
+ * called periodically by usb_tick()
+ * Session 039 P3:
+ *   WHAT: starts a DCD_EP_Tx() of the filled ping-pong half only when the
+ *         previous transfer has completed (usb_midiTxBusy cleared by
+ *         usbd_midi_DataIn()), or after USB_MIDI_TX_TIMEOUT_TICKS (5 ms).
+ *         When the device is not USB_OTG_CONFIGURED, pending bytes are
+ *         discarded.
+ *   WHY:  the old code flushed and restarted the endpoint on every main-loop
+ *         pass, aborting data still in flight. With no host reading, it kept
+ *         accumulating into the unbounded ring.
+ *   INPUT:  usb_MidiInWrPtr/RdPtr, usb_midiTxBusy, systick_ticks,
+ *           USB_OTG_dev.dev.device_status.
+ *   OUTPUT: one IN transfer started and halves swapped; or nothing; or the
+ *           pending half discarded.
+ *   ACCESSORS: usb_tick() (main loop).
+ *   AFFILIATES: usb_sendMidi(), usb_midiTxFree(), usbd_midi_DataIn().
+ */
 void usb_flushMidi()
 {
-	const uint8_t len = usb_MidiInWrPtr - usb_MidiInRdPtr;
-	if((len != 0) && (USB_OTG_dev.dev.device_status != USB_OTG_SUSPENDED))
+	if(USB_OTG_dev.dev.device_status != USB_OTG_CONFIGURED)
 	{
+		/* No host is reading: drop the backlog so the ring cannot fill. */
+		usb_MidiInWrPtr = usb_MidiInRdPtr;
+		usb_midiTxBusy = 0;
+		return;
+	}
+
+	if(usb_midiTxBusy)
+	{
+		if((uint32_t)(systick_ticks - usb_midiTxStartTick) < USB_MIDI_TX_TIMEOUT_TICKS)
+			return;
+		/* Host stopped polling: abandon the in-flight half and continue. */
+		usb_midiTxBusy = 0;
+		usb_midiTxTimeoutCount++;
+	}
+
+	const uint8_t len = (uint8_t)(usb_MidiInWrPtr - usb_MidiInRdPtr);
+	if(len != 0)
+	{
+		usb_midiTxStartTick = systick_ticks;
+		usb_midiTxBusy = 1;	/* set before Tx: DataIn may fire immediately */
 		DCD_EP_Flush (&USB_OTG_dev,MIDI_IN_EP);
 		DCD_EP_Tx (&USB_OTG_dev, MIDI_IN_EP, usb_MidiInRdPtr, len);
 
@@ -127,6 +185,24 @@ void usb_flushMidi()
 //------------------------------------------------------------------------------
 void usb_sendMidi(MidiMsg msg)
 {
+	/* WHOLE-EVENT BOUNDS CHECK  (Session 039 P3)
+	   WHAT: drops the complete 4-byte event (and counts it) when it does not
+	         fit in the ping-pong half being filled.
+	   WHY:  usb_sendByte() has no bounds check: more than 64 bytes between
+	         flushes ran into the half being transmitted, and more than 128
+	         wrapped, corrupting usb_flushMidi()'s length. Whole-event drop
+	         never produces a partial event.
+	   INPUT:  msg; current half fill (usb_midiTxFree()).
+	   OUTPUT: 4 bytes queued, or usb_midiTxDropCount++.
+	   ACCESSORS: outputControl_sendMidi(), midiParser_parseMidiMessage()
+	              routing, midiParser_handleDinRealtime() routing (main loop).
+	   AFFILIATES: usb_flushMidi(), usb_midiTxFree(). */
+	if(usb_midiTxFree() < 4u)
+	{
+		usb_midiTxDropCount++;
+		return;
+	}
+
 	//MIDI byte[0] = 4 bits cable number + 4 bits event type code
 	usb_sendByte(msg.status>>4);
 

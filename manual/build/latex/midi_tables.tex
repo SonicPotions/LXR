@@ -52,7 +52,7 @@
 35  & Coarse tune mod. Osc 2   & 6  \\
 36  & Gain mod. Osc 1          & 6  \\
 37  & Gain mod. Osc 2          & 6  \\
-38  & Filter frequency         & 1  \\
+38  & Filter frequency$^{\dagger}$ & 1  \\
 39  & Filter frequency         & 2  \\
 40  & Filter frequency         & 3  \\
 41  & Filter frequency         & 4  \\
@@ -114,8 +114,8 @@
 97  & Voice pan                & 3  \\
 98  & NRPN fine                & -- \\
 99  & NRPN coarse              & -- \\
-100 & Voice pan                & 4  \\
-101 & Voice pan                & 5  \\
+100 & Voice pan$^{\ddagger}$    & 4  \\
+101 & Voice pan$^{\ddagger}$    & 5  \\
 102 & Voice pan                & 6  \\
 103 & Distortion               & 1  \\
 104 & Distortion               & 2  \\
@@ -143,6 +143,17 @@
 126 & LFO amount               & 5  \\
 127 & LFO amount               & 6  \\
 \end{miditableCC}
+
+{\small
+\noindent$^{\dagger}$\,\textbf{CC38 swap.} In the \textcent{} entries of the Receive MIDI Filter
+(\param{rxf}), CC38 on the global channel is ignored and voice 1 filter frequency moves to
+NRPN 96. Use these entries with devices that send CC38 (data entry LSB) after every NRPN value,
+such as Elektron gear; otherwise each NRPN also closes the voice 1 filter.
+
+\noindent$^{\ddagger}$\,\textbf{NRPN deselect.} A value of 127 on CC100 or CC101 sent directly
+after an NRPN value is treated as the standard NRPN deselect (RPN null) and does not change pan.
+At any other time CC100 and CC101 control voice pan as listed.
+}
 
 \subsection*{MIDI NRPN Table}
 
@@ -240,4 +251,23 @@
 90  & Audio output routing       & 4 \\
 91  & Audio output routing       & 5 \\
 92  & Audio output routing       & 6 \\
+93  & Roll rate (0--15)          & -- \\
+94  & Roll note                  & -- \\
+95  & Roll velocity              & -- \\
+96  & Filter frequency$^{\dagger}$ & 1 \\
 \end{miditableNRPN}
+
+{\small
+\noindent Send CC99 (NRPN MSB), then CC98 (NRPN LSB), then CC6 (value) on the global MIDI
+channel. NRPN 93--95 set the Performance menu roll rate, note, and velocity (\param{rol},
+\param{nte}, \param{vel}); the display follows the incoming values, and they are not recorded
+as automation.
+
+\noindent$^{\dagger}$\,NRPN 96 is active only in the \textcent{} entries of the Receive MIDI
+Filter (\param{rxf}), where it replaces CC38. With the standard entries it is ignored.
+
+\medskip
+\noindent With \param{txf} C on and a global channel set, menu changes are transmitted using the
+numbers in these tables on the global channel. NRPNs are sent as CC99\,=\,0, CC98, CC6.
+LFO/velocity target selectors are not transmitted.
+}

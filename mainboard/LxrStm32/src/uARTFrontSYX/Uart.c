@@ -52,6 +52,9 @@
 
 static Fifo fifo_midiTx;
 static Fifo fifo_midiRx;
+/* Whole DIN MIDI messages dropped by uart_sendMidi() because fifo_midiTx was
+   full (Session 039 P3 diagnostics; debugger-visible; wraps). */
+static uint16_t uart_midiTxDropCount = 0;
 
 #define MIDI_REALTIME_QUEUE_SIZE 16
 #define MIDI_REALTIME_QUEUE_MASK (MIDI_REALTIME_QUEUE_SIZE - 1)
@@ -215,6 +218,25 @@ void uart_serviceMidiRealtime()
 void uart_sendMidi(MidiMsg msg)
 {
 	/* Serialize a MIDI message onto the raw MIDI transport FIFO. */
+	/* WHOLE-MESSAGE-OR-DROP  (Session 039 P3, user decision)
+	   WHAT: queues status + msg.bits.length data bytes only if all of them
+	         fit; otherwise drops the whole message and counts it.
+	   WHY:  fifo_bufferIn() drops single bytes when full, which could put a
+	         partial message on the DIN wire (e.g. a status without its data,
+	         or an NRPN triplet missing CC6), corrupting the receiver's
+	         running status. Applies to every DIN output: sequencer notes,
+	         clock, routing and menu CC/NRPN TX.
+	   INPUT:  msg (status, data1, data2, bits.length 0..2).
+	   OUTPUT: 1-3 bytes queued and TXE enabled, or uart_midiTxDropCount++.
+	   ACCESSORS: outputControl_sendMidi(), midiParser_parseMidiMessage()
+	              routing, midiParser_handleDinRealtime() routing (all main
+	              loop; single producer).
+	   AFFILIATES: fifo_freeSpace(), uart_sendMidiByte(), USART2 TXE ISR. */
+	if(fifo_freeSpace(&fifo_midiTx) < (uint8_t)(1u + msg.bits.length))
+	{
+		uart_midiTxDropCount++;
+		return;
+	}
 	uart_sendMidiByte(msg.status);
 	if(msg.bits.length) {
 		uart_sendMidiByte(msg.data1);
@@ -233,6 +255,12 @@ void uart_sendMidiByte(uint8_t data)
 	//enable Transmit Data Register empty interrupt
 	USART_ITConfig(USART2, USART_IT_TXE, ENABLE);
 };
+//-----------------------------------------------------------------------------
+/* DIN MIDI OUT FREE SPACE (Session 039 P3); see Uart.h. */
+uint8_t uart_midiTxFree(void)
+{
+	return fifo_freeSpace(&fifo_midiTx);
+}
 //-----------------------------------------------------------------------------
 void uart_processFront()
 {

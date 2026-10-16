@@ -51,6 +51,14 @@
 void initMidiUart();
 void uart_sendMidi(MidiMsg msg);
 void uart_sendMidiByte(uint8_t data);
+/* DIN MIDI OUT FREE SPACE  (Session 039 P3)
+   WHAT: bytes free in the DIN MIDI TX FIFO.
+   WHY:  outputControl_serviceMenuTx() paces menu CC/NRPN output so a whole
+         message (3 or 9 bytes, plus a 3-byte guard) always fits.
+   OUTPUT: free byte count (0..255).
+   ACCESSORS: outputControl_serviceMenuTx().
+   AFFILIATES: uart_sendMidi(), fifo_freeSpace(). */
+uint8_t uart_midiTxFree(void);
 void uart_processMidi();
 /* Drain DIN system-realtime bytes captured by USART2 RX. This main-loop API
    dispatches only the bounded realtime queue, preserving ordinary MIDI FIFO
