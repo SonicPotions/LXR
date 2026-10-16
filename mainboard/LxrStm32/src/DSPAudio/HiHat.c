@@ -118,6 +118,25 @@ void HiHat_trigger( uint8_t vel, uint8_t isOpen, const uint8_t note)
 		osc_resetSamplePlayback(&hatVoice.osc);
 	}
 
+	/* HIHAT MODULATOR SAMPLE RE-ARM  (Session 039)
+	   WHAT: re-arms the imported-sample read heads of both hat modulator
+	         oscillators on every trigger.
+	   WHY:  modOsc/modOsc2 can select imported samples (WAVE2_HH/WAVE3_HH).
+	         Without a reset, a one-shot modulator plays once, clears its
+	         sampleActive gate and then outputs zeros forever, so hat FM
+	         silently disappears after the first hit. CymbalVoice.c and
+	         DrumVoice.c already re-arm their modulators. Only sample-read state
+	         is touched; modulator phase is deliberately NOT reset, so
+	         periodic-waveform hat modulators sound exactly as before.
+	   INPUT:  hatVoice.modOsc, hatVoice.modOsc2.
+	   OUTPUT: samplePosition = 0, sampleFraction = 0, sampleActive = 1 on both.
+	   ACCESSORS: HiHat_trigger() only.
+	   AFFILIATES: osc_resetSamplePlayback() (Oscillator.c),
+	               HiHat_calcSyncBlock() (consumes the modulators),
+	               CymbalVoice.c trigger (same pattern). */
+	osc_resetSamplePlayback(&hatVoice.modOsc);
+	osc_resetSamplePlayback(&hatVoice.modOsc2);
+
 	osc_setBaseNote(&hatVoice.osc,note);
 	osc_setBaseNote(&hatVoice.modOsc,note);
 	osc_setBaseNote(&hatVoice.modOsc2,note);

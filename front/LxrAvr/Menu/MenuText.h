@@ -24,6 +24,24 @@
 #define MENU_MIDI			11 // -bc- this is possibly unused?
 #define MENU_MIDI_ROUTING	12
 #define MENU_MIDI_FILTERING 13
+
+/* ¢ RX-FILTER CONSTANTS  (Session 039)
+   MENU_CHAR_CENT: the cent sign on this LCD's character ROM is code 0x5C
+     (between '[' 0x5B and ']' 0x5D), written as the C escape "\\". If a
+     display variant renders 0x5C as '¥' or '\', define a CGRAM glyph with
+     lcd_generatechar() (Hardware/lcd.c) in slot 1 and change this to "\x01";
+     slot 0 cannot be used in strings.
+   MIDI_FILTER_CENT_FIRST: first ¢ value of PAR_MIDI_FILT_RX (16).
+   MIDI_FILTER_RX_ENTRIES: RX encoder range, 16 normal + 8 ¢ = 24.
+   MIDI_FILTER_RX_CC38_SWAP: wire bit 4 sent with SEQ_MIDI_FILT_RX for ¢
+     values; must equal STM MIDI_RX_FILTER_CC38_SWAP (MidiParser.h).
+   ACCESSORS: midiFilterNames[], menu_getDtypeMenuEntryCount(),
+              menu_parseKnobValue(), menu_parseGlobalParam() (menu.c). */
+#define MENU_CHAR_CENT            "\\"
+#define MIDI_FILTER_CENT_FIRST    16
+#define MIDI_FILTER_RX_ENTRIES    24
+#define MIDI_FILTER_RX_CC38_SWAP  0x10
+
 #define MENU_PPQ		 	14
 #define MENU_TRACK_SCALE 15
 #define MENU_FILE_LOAD_BACKGROUND 0
@@ -239,9 +257,9 @@ const char midiRoutingNames[][6] PROGMEM =
 		{"M2A"},
 };
 //-----------------------------------------------------------------
-const char midiFilterNames[][16] PROGMEM =
+const char midiFilterNames[][4] PROGMEM =
 {
-	{16},	// number of entries
+	{16},	// pot/TX entry count; RX encoder also reaches the ¢ rows below (MIDI_FILTER_RX_ENTRIES)
 	{"off"},
 	{"N"},
 	{"R"},
@@ -258,6 +276,25 @@ const char midiFilterNames[][16] PROGMEM =
 	{"PCN"},
 	{"PCR"},
 	{"all"},
+	/* ¢ RX TWINS  (Session 039)
+	   WHAT: values 16..23 of PAR_MIDI_FILT_RX. Each is identical to the
+	         C-entry it shadows (C, CN, CR, CRN, PC, PCN, PCR, all) plus the
+	         CC38 swap: Global CC38 ignored, NRPN 96 = Drum 1 filter cutoff.
+	   WHY:  opt-in workaround for Elektron NRPN senders, which append CC38.
+	         Rows sit after the count byte's range, so pots and TxFilter
+	         (which use getMaxEntriesForMenu() = 16) can never reach them; only
+	         the RX encoder edit path (menu_getDtypeMenuEntryCount()) can.
+	   ORDER IS ABI: value 16+k must keep RX bits
+	         0x04 | (k & 3) | ((k & 4) << 1), as encoded in menu_parseGlobalParam().
+	   ACCESSORS: getMenuItemNameForValue() (display only). */
+	{MENU_CHAR_CENT},
+	{MENU_CHAR_CENT "N"},
+	{MENU_CHAR_CENT "R"},
+	{MENU_CHAR_CENT "RN"},
+	{"P" MENU_CHAR_CENT},
+	{"P" MENU_CHAR_CENT "N"},
+	{"P" MENU_CHAR_CENT "R"},
+	{"al" MENU_CHAR_CENT},
 };
 //-----------------------------------------------------------------
 const char trackScaleNames[][4] PROGMEM =

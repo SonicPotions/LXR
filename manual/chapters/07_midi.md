@@ -40,6 +40,11 @@ The default MIDI note numbers for the 7 tracks are:
 7 & 42 \\
 \end{voicemiditbl}
 
+**MIDI roll trigger:** when the MIDI Roll Offset setting (\param{rol} in the Global Settings menu)
+is on, a note that many semitones above a voice's trigger note plays a held roll on that voice
+instead of a single hit. See *MIDI Roll Offset* in the Global Settings Menu section. A note-on with
+velocity 0 is treated as a note-off.
+
 ## Transmitting Sequencer Data to the MIDI Output
 
 The sequencer currently transmits note-on trigger messages to the MIDI output. The ability to
@@ -115,4 +120,29 @@ If a CC is received on a voice's specific MIDI channel, it controls that voice a
 
 ### Global MIDI CC Table
 
-This table applies only on the configured Global MIDI channel. 
+This table applies only on the configured Global MIDI channel.
+
+Notes on the CC and NRPN tables below:
+
+- **Sending an NRPN:** send CC99 (NRPN number MSB), then CC98 (NRPN number LSB), then CC6 (value).
+  CC6 is ignored until an NRPN number has been selected.
+- **Performance NRPNs:**
+
+  | NRPN | Function | Range |
+  |---:|---|---|
+  | 93 | Roll rate (Performance menu \param{rol}) | 0–15 |
+  | 94 | Roll note (Performance menu \param{nte}) | 0–127 |
+  | 95 | Roll velocity (Performance menu \param{vel}) | 0–127 |
+  | 96 | Filter frequency, voice 1 (¢ receive filter entries only) | 0–127 |
+
+  NRPN 93–95 update the Performance menu display. They are not recorded as automation.
+- **CC38 swap option:** many devices, including Elektron gear, send CC38 (data entry LSB) after
+  every NRPN value. On the global channel CC38 is voice 1 filter frequency, so every NRPN from such
+  a device also closes voice 1's filter. Selecting one of the ¢ entries of the Receive MIDI Filter
+  (\param{rxf}) makes the LXR ignore CC38 on the global channel and moves voice 1 filter frequency
+  to NRPN 96. With standard entries, CC38 keeps its normal function and NRPN 96 is ignored. See
+  *Receive MIDI Filter* in the Global Settings Menu section.
+- **NRPN deselect (RPN null):** CC101 = 127 or CC100 = 127 sent directly after an NRPN value is
+  treated as the standard NRPN deselect. It does not change voice pan, and a following CC6 is
+  ignored until a new NRPN number is selected. CC100 and CC101 sent at any other time control
+  voice pan as listed. 

@@ -22,6 +22,13 @@ Global-channel CC pre-emption:
 - Global CC2-127 run only through the new `GlobalMidiParser.c` table and do not also run through the voice-channel parser.
 - Non-global CC messages continue to use the existing `ChannelMidiParser.c` implementation.
 
+RX filter and routing (Session 039 P2):
+
+- `mrt` routing runs first in `midiParser_parseMidiMessage()` and is never affected by the RX filter. A filtered message is still forwarded if routed.
+- RX letters gate what the LXR responds to: N `0x01` notes (including MIDI rolls), R `0x02` clock/start/stop/continue/MTC, C `0x04` **all** incoming CC traffic (every channel; CC0 bank, CC1 morph, NRPN, both CC tables), P `0x08` program change.
+- C is gated once at the `MIDI_CC` entry. The older `0x04` tests inside the CC ladders are now redundant guards.
+- TX C (`0x40`) is reserved: the LXR transmits no CCs.
+
 ### Global Parameter-ID Domains
 
 The Global CC and NRPN numbers in this document are fixed external legacy
@@ -208,7 +215,7 @@ This table applies only on the configured Global MIDI channel. CC0 and CC1 are p
 | 35 | Coarse tune mod Osc 2 | Hihat | `MOD_OSC_F2` |
 | 36 | Gain mod Osc 1 | Hihat | `MOD_OSC_GAIN1` |
 | 37 | Gain mod Osc 2 | Hihat | `MOD_OSC_GAIN2` |
-| 38 | Filter frequency | Drum 1 | `FILTER_FREQ_DRUM1` |
+| 38 | Filter frequency (ignored in ¢ RX-filter modes; use NRPN 96) | Drum 1 | `FILTER_FREQ_DRUM1` |
 | 39 | Filter frequency | Drum 2 | `FILTER_FREQ_DRUM2` |
 | 40 | Filter frequency | Drum 3 | `FILTER_FREQ_DRUM3` |
 | 41 | Filter frequency | Snare | `SNARE_FILTER_F` |
@@ -270,8 +277,8 @@ This table applies only on the configured Global MIDI channel. CC0 and CC1 are p
 | 97 | Voice pan | Drum 3 | `PAN3` |
 | 98 | NRPN fine/LSB selector | Global NRPN state | Set active NRPN low 7 bits |
 | 99 | NRPN coarse/MSB selector | Global NRPN state | Set active NRPN high 7 bits |
-| 100 | Voice pan | Snare | `PAN4` |
-| 101 | Voice pan | Cymbal | `PAN5` |
+| 100 | Voice pan | Snare | `PAN4`; value 127 directly after an NRPN data entry is consumed as RPN-null |
+| 101 | Voice pan | Cymbal | `PAN5`; value 127 directly after an NRPN data entry is consumed as RPN-null |
 | 102 | Voice pan | Hihat | `PAN6` |
 | 103 | Distortion | Drum 1 | `OSC1_DIST` |
 | 104 | Distortion | Drum 2 | `OSC2_DIST` |
@@ -307,7 +314,7 @@ NRPN sequence:
 2. Send CC98 with the fine/LSB selector.
 3. Send CC6 with the value to apply.
 
-Valid Global NRPN numbers are `0..93`. CC6 before a selector is ignored. Out-of-range selected NRPN numbers are ignored.
+Valid Global NRPN numbers are 0..95, plus 96 in ¢ RX-filter modes. CC6 before a selector is ignored. Out-of-range selected NRPN numbers are ignored. CC100/CC101 = 127 directly after a data entry deselects the NRPN (RPN null) and is not applied as pan. In ¢ modes CC38 (data-entry LSB) is consumed.
 
 | NRPN | Function | Voice/scope | Internal target |
 |---:|---|---|---|
@@ -404,4 +411,24 @@ Valid Global NRPN numbers are `0..93`. CC6 before a selector is ignored. Out-of-
 | 90 | Audio output routing | Snare | `128+CC2_AUDIO_OUT4` |
 | 91 | Audio output routing | Cymbal | `128+CC2_AUDIO_OUT5` |
 | 92 | Audio output routing | Hihat | `128+CC2_AUDIO_OUT6` |
-| 93 | Roll rate | Global performance | `seq_setRollRate(value clamped 0..15)` |
+| 93 | Roll rate | Global performance | `seq_setRollRate(value clamped 0..15)`; reported to AVR PERF page |
+| 94 | Roll note | Global performance | `seq_setRollNote(value)`; reported to AVR PERF page |
+| 95 | Roll velocity | Global performance | `seq_setRollVelocity(value)`; reported to AVR PERF page |
+| 96 | Filter frequency (¢ RX-filter modes only) | Drum 1 | `PAR_FILTER_FREQ_1` (replaces Global CC38) |
+
+## RX Filter ¢ Modes
+
+Session 039 adds 8 "¢" (cent sign) RX-filter twins to the existing 16 entries. They are encoder-only on the AVR (pots cannot reach them; TX filter is unchanged). Each ¢ entry behaves like the C-entry it shadows plus two differences: Global CC38 is consumed (Elektron data-entry LSB), and NRPN 96 controls Drum 1 filter cutoff (`PAR_FILTER_FREQ_1`).
+
+| Menu value | Name | RX bits | CC38 swap | NRPN 96 |
+|---:|---|---|---|---|
+| 16 | `¢` | `0x04` | yes | yes |
+| 17 | `¢N` | `0x05` | yes | yes |
+| 18 | `¢R` | `0x06` | yes | yes |
+| 19 | `¢RN` | `0x07` | yes | yes |
+| 20 | `P¢` | `0x0C` | yes | yes |
+| 21 | `P¢N` | `0x0D` | yes | yes |
+| 22 | `P¢R` | `0x0E` | yes | yes |
+| 23 | `al¢` | `0x0F` | yes | yes |
+
+Wire encoding (AVR → STM on `SEQ_MIDI_FILT_RX`): values 0..15 are sent unchanged. Values 16..23 encode as `0x04 | (k & 3) | ((k & 4) << 1) | 0x10` where `k = value - 16`. Bit 4 (`0x10`, `MIDI_RX_FILTER_CC38_SWAP`) is stripped by `midi_setFilter()` before the RX nibble is stored and forwarded to `globalMidiParser_setCc38Swap()`.

@@ -259,6 +259,18 @@ byte3, data2 byte: xbbbbbbb : b=macro mod target value lower 7 bits or top level
    shift above the normal trigger note; STM owns held-roll release on change. */
 #define SEQ_ROLL_NOTE_OFFSET       0x6f	// saved MIDI roll-note offset
 #define SEQ_OSC_WAVE_INTERPOLATION 0x70 // enable/disable waveform interpolation
+/* PERF ROLL DISPLAY REPORTS, STM -> AVR  (Session 039)
+   WHAT: SEQ_CC sub-opcodes carrying a roll value changed by external MIDI
+         (Global NRPN 93/94/95); data2 = rate 0..15 / note 0..127 /
+         velocity 0..127.
+   WHY:  display sync for the PERF page. Distinct from SEQ_ROLL_RATE (0x11),
+         SEQ_ROLL_NOTE (0x40) and SEQ_ROLL_VELOCITY (0x41), which are AVR -> STM.
+   ACCESSORS: avrCommsReceivingProtocol.c SEQ_CC switch.
+   AFFILIATES: STM FRONT_SEQ_REPORT_ROLL_* (frontPanelReceivingProtocol.h,
+               same values). */
+#define SEQ_REPORT_ROLL_RATE       0x71	// STM reports roll rate (0..15)
+#define SEQ_REPORT_ROLL_NOTE       0x72	// STM reports roll note
+#define SEQ_REPORT_ROLL_VELOCITY   0x73	// STM reports roll velocity
 
 #define SEQ_TMP_KIT_AUTOMATION_NONE 0x00	// no automation sideband in the temp-kit copy
 #define SEQ_TMP_KIT_AUTOMATION_FRONT_ENDPOINT 0x01	// temp-kit front-endpoint automation sideband

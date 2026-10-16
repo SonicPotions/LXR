@@ -383,6 +383,20 @@ void frontPanelSending_sendGlobalMorphRuntimeReport(uint8_t amount)
    frontPanelSending_sendByte((uint8_t)((amount >> 7) & 0x01));
 }
 
+/* PERF ROLL DISPLAY REPORT  (Session 039)
+   WHAT/WHY: see frontPanelSendingProtocol.h. Display-only: the AVR writes
+             parameter_values[PAR_ROLL*] and repaints; it does not echo back.
+   INPUT:  subOpcode (FRONT_SEQ_REPORT_ROLL_*), value.
+   OUTPUT: FRONT_SEQ_CC, subOpcode, value & 0x7f on the normal (non-priority)
+           front-panel queue, the same path as the runtime morph report.
+   ACCESSORS: globalMidiParser_applySpecialNrpn().
+   AFFILIATES: frontPanelSending_sendTriplet(),
+               frontPanelSending_sendGlobalMorphRuntimeReport() (precedent). */
+void frontPanelSending_sendRollParamReport(uint8_t subOpcode, uint8_t value)
+{
+   frontPanelSending_sendTriplet(FRONT_SEQ_CC, subOpcode, (uint8_t)(value & 0x7f));
+}
+
 void frontPanelSending_sendVoiceMorphReport(uint8_t voice, uint8_t amount)
 {
    if(voice >= PRESET_SYNTH_VOICES)

@@ -205,6 +205,21 @@ byte3, data2 byte: xbbbbbbb : b=macro mod target value lower 7 bits or top level
    external MIDI note routing only, not performance roll controls. */
 #define FRONT_SEQ_ROLL_NOTE_OFFSET     0x6f	// saved MIDI roll-note offset
 #define FRONT_SEQ_OSC_WAVE_INTERPOLATION 0x70   // enable/disable waveform interpolation
+/* PERF ROLL DISPLAY REPORTS, STM -> AVR  (Session 039)
+   WHAT: FRONT_SEQ_CC sub-opcodes reporting a roll value changed by external
+         MIDI (Global NRPN 93/94/95). data2 = new value: rate 0..15 (the same
+         selector index as PAR_ROLL / FRONT_SEQ_ROLL_RATE), note 0..127,
+         velocity 0..127.
+   WHY:  display-only sync so the AVR PERF page matches STM. Distinct names
+         from FRONT_SEQ_ROLL_RATE/_NOTE/_VELOCITY because protocol direction
+         matters; those are AVR -> STM. PARAM_CC2 cannot be used: it cannot
+         address PAR_ROLL_NOTE (270) and its AVR handler writes parameters2[],
+         which is only END_OF_SOUND_PARAMETERS long.
+   ACCESSORS: frontPanelSending_sendRollParamReport() (sender).
+   AFFILIATES: AVR SEQ_REPORT_ROLL_* (avrCommsReceivingProtocol.h, same values). */
+#define FRONT_SEQ_REPORT_ROLL_RATE       0x71	// report roll rate (0..15) back to AVR
+#define FRONT_SEQ_REPORT_ROLL_NOTE       0x72	// report roll note back to AVR
+#define FRONT_SEQ_REPORT_ROLL_VELOCITY   0x73	// report roll velocity back to AVR
 
 #define FRONT_SEQ_TMP_KIT_ENDPOINT_BOTH 0x00	// copy both endpoints
 #define FRONT_SEQ_TMP_KIT_ENDPOINT_FRONT_ONLY 0x01	// copy only the kit/front endpoint

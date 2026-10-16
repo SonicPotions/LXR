@@ -108,6 +108,14 @@ velocity used are set with the \param{rol}, \param{nte}, and \param{vel} paramet
 the pattern when recording mode is active. Rolls can be recorded in three modes: full (pitch and velocity),
 note only (pitch), or velocity only. The roll record mode is set in the SHIFT + REC button menu. 
 
+Rolls can also be played and adjusted over MIDI:
+
+- **MIDI roll trigger:** with the MIDI roll offset (\param{rol} in the Global Settings menu, described under *MIDI Roll Offset* below)
+  switched on, MIDI notes above each voice's trigger note start and hold a roll on that voice.
+- **Roll parameters by NRPN:** \param{rol}, \param{nte}, and \param{vel} can be set from the
+  global MIDI channel with NRPN 93 (roll rate, values 0–15), NRPN 94 (roll note), and NRPN 95 (roll
+  velocity). The Performance menu display follows the incoming values.
+
 ### Morph
 
 The morph feature transitions from one preset sound to another. Load any preset from the SD card
@@ -351,7 +359,9 @@ bpm & Tempo in BPM    & Internal clock tempo. Set to 0 to sync to incoming MIDI 
 qnt & Sequencer Quantisation & Sets the quantisation grid for recorded data. \\
 mid & Global MIDI Channel & Sets the channel for global functions (see MIDI Table). \\
 txf & Transmit MIDI Filter & Sets what MIDI commands are transmitted from the LXR. \\
-rxf & Receive MIDI Filter & Sets what MIDI commands are recognized by the LXR. \\
+rxf & Receive MIDI Filter & Sets what MIDI commands are recognized by the LXR. Additional ¢ entries,
+                           reachable only with the encoder, swap CC38 to NRPN 96
+                           (see Receive MIDI Filter below). \\
 mrt & MIDI Routing & Sets how MIDI is transmitted between the DIN jacks and USB. \\
 fet & Parameter fetch & When active, you must `fetch' the displayed value with the knob
                         before it changes — prevents value jumps on page switches. \\
@@ -367,6 +377,9 @@ b2p & Performance Bank Change & When enabled, MIDI Bank Change (CC0) loads a .pr
 stg & Shift Toggle & When enabled, SHIFT works as a toggle.\\
 flb & File Background Load & Sets which files load in the background and queue change on next pattern.\\
 itp & Waveform Interpolation & Toggles interpolating between main oscillator waveforms when modulated.\\
+rol & MIDI Roll Offset & Semitone offset above each voice's MIDI trigger note at which incoming
+                         notes play rolls instead of single hits. \texttt{off} disables MIDI roll
+                         triggering (see MIDI Roll Offset below).\\
 \end{paramtable}
 
 ### Follow Mode
@@ -381,6 +394,80 @@ playing pattern is viewed.
 The display is an OLED. To extend its lifetime and prevent burn-in, a screensaver activates after
 a few minutes of inactivity. Any control touch dismisses it. The screensaver can be disabled in
 the settings menu.
+
+### MIDI Roll Offset
+
+The \param{rol} setting (shown as `RolOfset`, on the third settings page) lets incoming MIDI notes
+play the roll engine. It is `off` by default; values 1–127 are a semitone offset above each voice's
+normal MIDI trigger note.
+
+- A note at a voice's trigger note plus the offset starts a roll on that voice. The roll continues
+  while the note is held and stops on note-off. For example, with Drum 1 on note 36 and an offset
+  of 12, note 48 rolls Drum 1.
+- On a track without a fixed note (chromatic mode), the offset works as a keyboard split: notes
+  below it play the voice normally, and notes at or above it play rolls.
+- Normal note triggers always take priority. A note only rolls if it would not trigger a voice
+  normally.
+- MIDI rolls use the roll rate, note, and velocity from the Performance menu (\param{rol},
+  \param{nte}, \param{vel}). These can also be set by NRPN 93–95 (see the MIDI chapter).
+- While the sequencer is stopped, a MIDI roll starts immediately and repeats at the current tempo.
+  If the note is still held when the sequencer starts, the roll continues in time with the
+  sequencer.
+- A note-on with velocity 0 counts as a note-off. Up to 16 roll notes can be held at once.
+- All held MIDI rolls are released when the sequencer stops, when the offset changes, when a MIDI
+  channel or note assignment changes, or when note reception is turned off in \param{rxf}.
+
+The offset is saved with the global settings.
+
+### Receive MIDI Filter
+
+The \param{rxf} setting selects which incoming MIDI message types the LXR responds to. Each
+letter enables one type:
+
+| Letter | Message type |
+|:---:|---|
+| N | Notes |
+| R | Realtime: clock, start, stop |
+| C | Controllers: CC and NRPN |
+| P | Program change |
+
+The values are `off`, `N`, `R`, `RN`, `C`, `CN`, `CR`, `CRN`, `P`, `PN`, `PR`, `PRN`, `PC`,
+`PCN`, `PCR`, and `all`.
+
+The receive filter only controls what the LXR itself responds to. A message that is filtered
+out is still passed on to the MIDI outputs if MIDI Routing (\param{mrt}) forwards it. With C
+turned off, no controller message has any effect: this includes bank change (CC0), the mod
+wheel morph (CC1) and NRPNs.
+
+**¢ entries (CC38 swap).** Every entry that receives controllers has a twin with ¢ in place of
+the C:
+
+| Entry | Twin of |
+|---|---|
+| `¢` | `C` |
+| `¢N` | `CN` |
+| `¢R` | `CR` |
+| `¢RN` | `CRN` |
+| `P¢` | `PC` |
+| `P¢N` | `PCN` |
+| `P¢R` | `PCR` |
+| `al¢` | `all` |
+
+A ¢ entry works exactly like its twin, except:
+
+- CC38 on the global MIDI channel is ignored.
+- Voice 1 filter frequency, normally on global CC38, moves to NRPN 96.
+
+Use a ¢ entry with gear that sends a CC38 (data entry LSB) after every NRPN value, as Elektron
+devices do. Without it, each NRPN sent to the LXR also moves voice 1's filter frequency, usually
+closing it.
+
+The ¢ entries can only be selected with the encoder. Push the encoder to enter edit mode on
+\param{rxf}, then turn it past `all`. The knob only reaches the standard entries, and while a ¢
+entry is selected the knob has no effect on this setting. The ¢ entry stays visible in the
+4-parameter view, and to leave it, use the encoder again. The \param{txf} setting has no ¢ entries.
+
+The selected entry, including ¢ entries, is saved with the global settings.
 
 ### Loading and Saving Global Settings
 

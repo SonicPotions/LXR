@@ -93,6 +93,17 @@ void frontPanelSending_sendRestoreMorphParam(uint16_t param, uint8_t value);
 /* Report global morph amount as low/high 7-bit FRONT_SEQ_CC commands. */
 void frontPanelSending_sendGlobalMorphReport(uint8_t amount);
 void frontPanelSending_sendGlobalMorphRuntimeReport(uint8_t amount);
+/* PERF ROLL DISPLAY REPORT  (Session 039)
+   WHAT: queues one FRONT_SEQ_CC / FRONT_SEQ_REPORT_ROLL_* / value triplet to
+         the AVR on the non-blocking front-panel UART path.
+   WHY:  keeps the PERF page in step with MIDI-driven roll changes;
+         non-blocking because it is called from the main-loop MIDI parse path.
+   INPUT:  subOpcode - FRONT_SEQ_REPORT_ROLL_RATE/_NOTE/_VELOCITY;
+           value - 0..127 (masked to 7 bits).
+   OUTPUT: three bytes queued via frontPanelSending_sendTriplet().
+   ACCESSORS: globalMidiParser_applySpecialNrpn() (GlobalMidiParser.c).
+   AFFILIATES: AVR SEQ_REPORT_ROLL_* cases (avrCommsReceivingProtocol.c). */
+void frontPanelSending_sendRollParamReport(uint8_t subOpcode, uint8_t value);
 /* Report one or all current per-voice morph amounts as low/high packets. */
 void frontPanelSending_sendVoiceMorphReport(uint8_t voice, uint8_t amount);
 void frontPanelSending_sendVoiceMorphRuntimeReport(uint8_t voice, uint8_t amount);

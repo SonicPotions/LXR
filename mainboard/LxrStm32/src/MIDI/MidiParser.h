@@ -75,8 +75,36 @@ void midiDebugSend(uint8_t b1, uint8_t b2);
 /* Routing selection for the MIDI I/O bridge. */
 void midi_setRouting(uint8_t value);
 
-/* Per-direction MIDI filter bits. */
+/* MIDI TX/RX FILTER SETTER
+   WHAT: installs the TX (high nibble) or RX (low nibble) MIDI filter of
+         midiParser_txRxFilter. Bit layout per nibble: 0x01 notes, 0x02
+         realtime/clock, 0x04 control change (RX: gates all incoming
+         CC/NRPN at the midiParser_parseMidiMessage() entry, Session 039 P2;
+         TX: reserved, as the LXR transmits no CCs), 0x08 program change.
+         The RX filter never affects mrt routing, which forwards first.
+         RX only: bit 0x10 (MIDI_RX_FILTER_CC38_SWAP) is the Session 039 ¢ flag.
+         It is stripped before the nibble is stored and forwarded to
+         globalMidiParser_setCc38Swap().
+   WHY:  one front-panel opcode (FRONT_SEQ_MIDI_RX_FILTER) carries both the RX
+         nibble and the ¢ flag, so ¢ entries need no new protocol traffic.
+   INPUT:  is_tx - 1 for TX, 0 for RX; value - filter bits (RX may carry 0x10).
+   OUTPUT: midiParser_txRxFilter updated; RX also updates the CC38 swap state
+           and may release MIDI roll holds (note bit turning off).
+   ACCESSORS: frontPanelReceivingProtocol.c FRONT_SEQ_MIDI_TX/RX_FILTER case.
+   AFFILIATES: globalMidiParser_setCc38Swap() (GlobalMidiParser.c),
+               midiParser_clearMidiRollHolds() (MidiParser.c),
+               AVR menu_parseGlobalParam() PAR_MIDI_FILT_RX (sender). */
 void midi_setFilter(uint8_t is_tx, uint8_t value);
+
+/* RX FILTER ¢ FLAG  (Session 039)
+   WHAT: bit 4 of the RX filter byte sent by the AVR. Set only by the ¢ twins
+         of RxFilter (AVR menu values 16..23).
+   WHY:  Elektron devices append CC38 (data-entry LSB) to every NRPN, which
+         lands on Global CC38 = Drum 1 filter cutoff. While this flag is set,
+         Global CC38 is consumed and NRPN 96 controls Drum 1 cutoff instead.
+   ACCESSORS: midi_setFilter() (decode). The AVR encodes the same value as
+              MIDI_FILTER_RX_CC38_SWAP in Menu/MenuText.h; keep them equal. */
+#define MIDI_RX_FILTER_CC38_SWAP 0x10
 
 /* Last seen CC values used by automation and live-apply feedback. */
 extern uint8_t frontParser_originalCcValues[0xff];
@@ -140,8 +168,21 @@ extern uint8_t midi_KitChange[6];
 //	MIDI_MODE_NOTE,
 //} MidiModes;
 
-/* High nibble is TX, low nibble is RX. See midi_setFilter() for the
-   bit layout. */
+/* MIDI FILTER STATE
+   WHAT: high nibble TX, low nibble RX; see midi_setFilter() for the bit
+         layout. The RX ¢ flag (MIDI_RX_FILTER_CC38_SWAP) is NOT stored here;
+         it lives in GlobalMidiParser.c (globalMidiParser_cc38Swap).
+   WHY:  one byte read on every MIDI message; nibble split keeps TX and RX
+         independent.
+   WRITER: midi_setFilter() only. Default 0xFF (everything on) until the AVR
+           sends its globals at boot.
+   READERS: RX - midiParser_parseMidiMessage() (N 0x01, P 0x08, C 0x04 gate
+            at entry since Session 039 P2), midiParser_handleDinRealtime()
+            and globalMidiParser_handleSystemMessage() (R 0x02), plus legacy
+            0x04 echo/record guards in the CC ladders (now always true for
+            external CCs). TX - seq_sendMidiNoteOn() 0x10, seq_sendRealtime()
+            0x20, seq_sendProgChg() 0x80; 0x40 has no transmitter.
+   AFFILIATES: midi_setRouting() (routing is independent of these bits). */
 extern uint8_t midiParser_txRxFilter;
 
 #endif /* MIDIPARSER_H_ */

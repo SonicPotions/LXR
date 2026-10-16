@@ -139,9 +139,22 @@ int16_t calcNextOscSampleFm(OscInfo* osc, OscInfo* modOsc);
 //-----------------------------------------------------------
 void calcSampleOscBlock(OscInfo* osc, int16_t* buf, const uint8_t size ,const float gain);
 //-----------------------------------------------------------
-/* FM user-sample compatibility path. Inputs match other block renderers; output
-   is size int16 samples in buf. The implementation delegates to the non-FM
-   long-index reader to keep a single bounds-safe sample path. */
+/* IMPORTED-SAMPLE FM BLOCK RENDERER  (Session 039)
+   WHAT: renders `size` frames of the imported sample at
+         osc->waveform - OSC_SAMPLE_START, phase-modulated by modBuffer
+         (read offset = modBuffer[i] * osc->fmMod, scaled by 2^14 into the
+         17-bit fixed-point frame domain, the same modulation index as the
+         wavetable and CRASH FM paths).
+   WHY:  FM must work whatever the carrier's waveform source. The previous
+         stub ignored modBuffer.
+   INPUT:  osc (play head, fmMod, sampleActive), modBuffer[size], buf[size],
+           size, gain.
+   OUTPUT: buf filled (zeros when the slot is invalid or a one-shot has
+           finished); play head and one-shot gate advance exactly as
+           calcUserSampleOscBlock(); osc->output = last frame.
+   ACCESSORS: calcNextOscSampleFmBlock() default branch.
+   AFFILIATES: calcUserSampleOscBlock(), osc_resetSamplePlayback(),
+               calcSampleOscFmBlock() (CRASH precedent). */
 void calcUserSampleOscFmBlock(OscInfo* osc,int16_t* modBuffer, int16_t* buf, uint8_t size ,const float gain);
 //-----------------------------------------------------------
 /* Render an imported user sample selected by osc->waveform - OSC_SAMPLE_START.

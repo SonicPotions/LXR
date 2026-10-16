@@ -779,9 +779,66 @@ int16_t calcSampleOscFm(OscInfo* osc, OscInfo* modOsc)
 	return oscOut;
 };
 //------------------------------------------------------------------
+/* USER-SAMPLE FM SCALING CONSTANTS  (Session 039)
+   WHAT: fixed-point scale and clamp for the imported-sample phase-modulation
+         offset computed in calcUserSampleOscFmBlock().
+   WHY:  osc_calcUserSampleFreq() uses freq2PhaseIncr32767(), so an imported
+         sample advances 1024 frames per oscillator cycle with a 17-bit
+         fractional read position. The wavetable FM path (calcFm /
+         calcFmBlock) offsets its 32-bit phase by (mod*fmMod)<<19, i.e.
+         mod*fmMod/8192 cycles = mod*fmMod/8 frames = (mod*fmMod)<<14 in the
+         17-bit domain. Scaling by 2^14 therefore gives imported samples the
+         same modulation index as SINE/SAW/TRI/REC; the built-in CRASH path
+         (calcSampleOscFmBlock) already uses the same <<14.
+         The product clamp keeps product*SCALE inside int32_t
+         (131071 x 16384 = 2^31 - 16384) even if a modulation route ever
+         pushes fmMod above 1.0.
+   INPUT/OUTPUT: compile-time constants only.
+   ACCESSORS: calcUserSampleOscFmBlock() (this file) only.
+   AFFILIATES: freq2PhaseIncr32767(), osc_calcUserSampleFreq(),
+               calcSampleOscFmBlock() (this file). */
+#define OSC_USER_SAMPLE_FM_SCALE        16384     /* 2^14: (mod*fmMod) -> 17-bit fixed frames */
+#define OSC_USER_SAMPLE_FM_PRODUCT_MAX  131071    /* |mod*fmMod| clamp so product*SCALE fits int32_t */
+
+/* IMPORTED-SAMPLE FM BLOCK RENDERER  (Session 039; replaces the Phase 2 stub)
+   WHAT: renders `size` frames of the imported sample selected by
+         osc->waveform - OSC_SAMPLE_START, phase-modulated by modBuffer.
+         Each output frame is read at (unmodulated play head + FM offset);
+         the play head itself advances exactly as calcUserSampleOscBlock()
+         advances it.
+   WHY:  the sample-import Phase 2 stub discarded modBuffer and delegated to
+         the non-FM reader, so selecting an imported sample on any FM carrier
+         (Drum 1-3 in FM mode, Cymbal, Hihat) silently removed FM. All LXR
+         "FM" is phase modulation of the read index, and imported samples now
+         follow that same model. Keeping the play-head advance unmodulated
+         means FM cannot change a one-shot's length, end detection, or
+         sampleActive timing, and with fmMod == 0 the output is bit-identical
+         to calcUserSampleOscBlock().
+         Bounds: one-shots clamp the modulated read to [0, size-1]; loops wrap
+         it with one 32-bit modulo (hardware divide on Cortex-M4) only when
+         the read leaves the sample, so a tiny loop with a large offset still
+         costs O(1). Interpolation uses the same "nextPos < sampleSize" rule as
+         the non-FM path (no wrap) so fmMod == 0 stays bit-identical.
+   INPUT:  osc       - carrier oscillator: waveform, samplePosition,
+                       sampleFraction (17-bit), sampleActive, phaseInc, fmMod.
+           modBuffer - `size` modulator samples, already scaled by the
+                       voice's modulator gain (e.g. fmModAmount).
+           buf       - output buffer of `size` int16 frames.
+           size      - frames to render (OUTPUT_DMA_SIZE in practice).
+           gain      - output gain applied per frame.
+   OUTPUT: buf filled with PCM, or zeros for an invalid slot, zero-length or
+           unmapped sample, or a finished one-shot. osc->samplePosition,
+           sampleFraction and sampleActive advance as in the non-FM path;
+           osc->output holds the last rendered frame.
+   ACCESSORS: calcNextOscSampleFmBlock() default branch (this file), reached
+              from DrumVoice.c calcDrumVoiceSyncBlock() (FM mode),
+              CymbalVoice.c and HiHat.c HiHat_calcSyncBlock().
+   AFFILIATES: calcUserSampleOscBlock() (non-FM twin; keep the two loops in
+               step), osc_resetSamplePlayback() (trigger re-arm),
+               sampleMemory_getSampleInfo()/getSampleSizeFrames()/
+               isSampleLooped() (SampleRom/SampleMemory.c). */
 void calcUserSampleOscFmBlock(OscInfo* osc,int16_t* modBuffer, int16_t* buf, uint8_t size ,const float gain)
 {
-   (void)modBuffer;
    const uint8_t sampleIndex = (uint8_t)(osc->waveform - OSC_SAMPLE_START);
    const uint8_t sampleCount = sampleMemory_getNumSamples();
 
@@ -793,9 +850,104 @@ void calcUserSampleOscFmBlock(OscInfo* osc,int16_t* modBuffer, int16_t* buf, uin
       return;
    }
 
-   /* For Phase 2, route FM user samples through the non-FM long-index reader.
-      This preserves safe bounds while avoiding a second buggy long-sample path. */
-   calcUserSampleOscBlock(osc, buf, size, gain);
+   SampleInfo info = sampleMemory_getSampleInfo(sampleIndex);
+   const uint32_t sampleSize = sampleMemory_getSampleSizeFrames(info);
+   const uint8_t looped = sampleMemory_isSampleLooped(info);
+   int16_t* sampleData = (int16_t*)((int8_t*)(info.offset));
+
+   /* Same metadata/one-shot guard as calcUserSampleOscBlock(). */
+   if(sampleSize == 0u || info.offset < SAMPLE_ROM_START_ADDRESS || !osc->sampleActive)
+   {
+      memset(buf, 0, size * sizeof(int16_t));
+      return;
+   }
+
+   uint8_t i;
+   for(i = 0; i < size; i++)
+   {
+      uint32_t pos = osc->samplePosition;
+      int16_t oscOut;
+
+      if(pos >= sampleSize)
+      {
+         if(looped)
+         {
+            pos %= sampleSize;
+         }
+         else
+         {
+            /* One-shot finished: identical gate behaviour to the non-FM path. */
+            osc->sampleActive = 0u;
+            osc->output = 0;
+            buf[i] = 0;
+            continue;
+         }
+      }
+
+      /* Signed phase-modulation offset in 17-bit fixed frames. Multiply, never
+         left-shift, a negative value; the CRASH path's (uint32_t)(negative
+         float) cast is undefined behaviour and must not be copied. */
+      int32_t fmProduct = (int32_t)(modBuffer[i] * osc->fmMod);
+      if(fmProduct > OSC_USER_SAMPLE_FM_PRODUCT_MAX)
+         fmProduct = OSC_USER_SAMPLE_FM_PRODUCT_MAX;
+      else if(fmProduct < -OSC_USER_SAMPLE_FM_PRODUCT_MAX)
+         fmProduct = -OSC_USER_SAMPLE_FM_PRODUCT_MAX;
+      const int32_t fmOffset = fmProduct * OSC_USER_SAMPLE_FM_SCALE;
+
+      /* Split into floor(frames) + positive 17-bit fraction, then add to the
+         unmodulated head. GCC/ARM >> on int32_t is arithmetic (floor). */
+      uint32_t readFrac = (osc->sampleFraction & 0x1ffffu) + ((uint32_t)fmOffset & 0x1ffffu);
+      int32_t readPos = (int32_t)pos + (fmOffset >> 17) + (int32_t)(readFrac >> 17);
+      readFrac &= 0x1ffffu;
+
+      if(looped)
+      {
+         const int32_t size32 = (int32_t)sampleSize;
+         if(readPos >= size32 || readPos < 0)
+         {
+            readPos %= size32;
+            if(readPos < 0)
+               readPos += size32;
+         }
+      }
+      else if(readPos < 0)
+      {
+         readPos = 0;
+         readFrac = 0u;
+      }
+      else if(readPos >= (int32_t)sampleSize)
+      {
+         readPos = (int32_t)sampleSize - 1;
+         readFrac = 0u;
+      }
+
+#if INTERPOLATE_OSC
+      oscOut = sampleData[readPos];
+      {
+         const uint32_t nextPos = (uint32_t)readPos + 1u;
+         if(nextPos < sampleSize)
+         {
+            const float frac = readFrac * 0.00000762939453125f; /* 1/0x20000 */
+            oscOut += frac * (sampleData[nextPos] - oscOut);
+         }
+      }
+#else
+      oscOut = sampleData[readPos];
+#endif
+
+      /* Unmodulated play-head advance: must match calcUserSampleOscBlock(). */
+      osc->sampleFraction += osc->phaseInc;
+      osc->samplePosition += (osc->sampleFraction >> 17);
+      osc->sampleFraction &= 0x1ffffu;
+
+      if(looped && osc->samplePosition >= sampleSize)
+      {
+         osc->samplePosition %= sampleSize;
+      }
+
+      osc->output = oscOut;
+      buf[i] = oscOut * gain;
+   }
 }
 //---------------------------------------------------------------
 void calcUserSampleOscBlock(OscInfo* osc, int16_t* buf, const uint8_t size ,const float gain)

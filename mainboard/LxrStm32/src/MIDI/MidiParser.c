@@ -537,7 +537,26 @@ float midiParser_calcDetune(uint8_t value)
 
 
 //-----------------------------------------------------------
-/* Parse incoming MIDI messages and route them to the shared helpers. */
+/* EXTERNAL MIDI MESSAGE DISPATCH
+   WHAT: entry point for every complete external MIDI message (DIN via
+         midiParser_parseUartData(), USB via usb_midi_core.c). Order:
+           1. mrt routing: forward to DIN/USB outputs per midiParser_routing,
+              UNFILTERED;
+           2. SysEx bytes: stop here (pass-through only);
+           3. system messages -> globalMidiParser_handleSystemMessage()
+              (RX R bit gates clock/start/stop/MTC there);
+           4. channel messages, each gated by its RX letter:
+              notes N (0x01), program change P (0x08), control change C (0x04).
+   WHY:  the receive filter (rxf) decides only what the LXR itself responds
+         to; routing (mrt) decides what is passed through. Keeping routing
+         first preserves that separation.
+   INPUT:  msg - parsed message with bits.source (DIN/USB).
+   OUTPUT: forwarded bytes; voice/sequencer/parameter side effects for
+           accepted messages.
+   ACCESSORS: midiParser_parseUartData() (this file), main.c USB dispatch,
+              usb_midi_core.c.
+   AFFILIATES: midi_setRouting(), midi_setFilter(), midiParser_handleDinRealtime()
+               (DIN realtime takes its own route + filter path). */
 void midiParser_parseMidiMessage(MidiMsg msg)
 {
 
@@ -824,10 +843,44 @@ void midiParser_parseMidiMessage(MidiMsg msg)
          }
       } 
       else if(msgonly==MIDI_CC){
-      // respond to CC message. 
-         midiParser_MIDIccHandler(msg,1); // send with 1 to record value to either 
-                                       // automation or kit param, 0 for DSP only
-      } 
+         /* RX CONTROLLER FILTER GATE  (Session 039 P2)
+            WHAT: passes an incoming Control Change to the CC router only
+                  when the RX filter's C bit (0x04) is set. This covers every
+                  channel (Global and voice) and every CC number: CC0 bank/kit
+                  change, CC1 morph, NRPN select/data/RPN-null, and both CC
+                  parameter tables.
+            WHY:  rxf "C" means "controller messages are received". Before this
+                  gate the CC router ran unconditionally, and 0x04 was only
+                  tested deep inside the CC ladders, where it suppressed the
+                  front-panel display echo and automation recording. With C off,
+                  CCs still changed the sound and the stored kit while the
+                  display silently desynchronised.
+                  Routing (mrt) is deliberately unaffected: forwarding to the
+                  DIN/USB outputs already happened at the top of this function,
+                  before any RX filtering, so a filtered CC is still passed
+                  through but does not affect the LXR.
+            INPUT:  msg - external MIDI_CC (DIN or USB, any channel);
+                    midiParser_txRxFilter RX nibble bit 0x04.
+            OUTPUT: midiParser_MIDIccHandler(msg, 1) when C is on (1 = store
+                    to kit / record automation; 0 would be DSP-only); nothing
+                    when C is off. NRPN selection state is left untouched.
+            ACCESSORS: this function only. It is the single external CC
+                       ingress; internal automation and front-panel edits
+                       reach DSP via frontParser_applyParameterCommand() and
+                       never pass here.
+            AFFILIATES: midiParser_MIDIccHandler() (this file),
+                        channelMidiParser_MIDIccHandler() (ChannelMidiParser.c),
+                        globalMidiParser_MIDIccHandler() and its NRPN handler
+                        (GlobalMidiParser.c), midi_setFilter() (RX nibble
+                        writer), AVR PAR_MIDI_FILT_RX (C and ¢ entries).
+                        The inner (midiParser_txRxFilter & 0x04) tests in
+                        ChannelMidiParser.c and GlobalMidiParser.c are now
+                        always true for external CCs. They are kept as
+                        harmless guards; do not read them as the RX C
+                        implementation. */
+         if(midiParser_txRxFilter & 0x04)
+            midiParser_MIDIccHandler(msg,1);
+      }
       else {
       // anything else
       // TODO MIDI_PITCH_WHEEL ?
@@ -1072,7 +1125,7 @@ void midi_setRouting(uint8_t value)
 
 }
 
-/* Configure the TX/RX MIDI filter bitfields. */
+/* Configure the TX/RX MIDI filter bitfields; RX also decodes the ¢ flag. See MidiParser.h for the full contract. */
 void midi_setFilter(uint8_t is_tx, uint8_t value)
 {
 
@@ -1090,7 +1143,7 @@ void midi_setFilter(uint8_t is_tx, uint8_t value)
                note-off, so its roll would stick until the next stop or
                mapping change. Releasing here keeps the rule "every accepted
                roll key has a guaranteed release path".
-         INPUT:  value, the new RX nibble (low 4 bits significant).
+         INPUT:  value, the new RX nibble (low 4 bits) plus the optional ¢ flag in bit 4 (MIDI_RX_FILTER_CC38_SWAP), decoded below.
          OUTPUT: midiParser_txRxFilter updated. MIDI-owned rolls released
                  through midiParser_clearMidiRollHolds() when bit 0 turns off.
          ACCESSORS: called from the front-panel MIDI filter setting path.
@@ -1098,6 +1151,21 @@ void midi_setFilter(uint8_t is_tx, uint8_t value)
                      seq_rollMidiChange() (Sequencer/sequencer.c). */
       if((midiParser_txRxFilter & 0x01) && !(value & 0x01))
          midiParser_clearMidiRollHolds();
+
+      /* RX ¢ FLAG DECODE  (Session 039)
+         WHAT: forwards bit 4 of the RX value to the Global parser as the CC38
+               swap state, then lets the existing line below store only the
+               low nibble.
+         WHY:  the ¢ RxFilter entries are ordinary RX filters plus "CC38 off,
+               NRPN 96 = Drum 1 cutoff"; the flag must not leak into
+               midiParser_txRxFilter, whose high nibble is TX.
+         INPUT:  value bit MIDI_RX_FILTER_CC38_SWAP.
+         OUTPUT: globalMidiParser_cc38Swap set or cleared.
+         ACCESSORS: this function (RX branch) only.
+         AFFILIATES: globalMidiParser_setCc38Swap(),
+                     globalMidiParser_handleNrpnControl() and
+                     globalMidiParser_applySpecialNrpn() (GlobalMidiParser.c). */
+      globalMidiParser_setCc38Swap((uint8_t)((value & MIDI_RX_FILTER_CC38_SWAP) != 0));
 
       midiParser_txRxFilter = (value & 0x0F) | (midiParser_txRxFilter & 0xF0);
    }

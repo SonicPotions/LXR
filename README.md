@@ -1,11 +1,18 @@
 # Sonic Potions LXR Drumsynth Firmware
-## Catalyst Edition Version 1.0
+## Catalyst Edition Version 1.03
 
 The LXR is a digital drum synthesizer based on a 32-bit Cortex-M4 (STM32F407) audio/control processor and an ATmega644 8-bit front-panel CPU. Originally developed by Julian Schmidt / Sonic Potions.
 
 Catalyst edition expands a number of the features of the LXR while keeping the core sound of the instrument the same.  
 
 The `front` folder contains the AVR code. The `mainboard` folder contains the STM32F4 code. The `tools` folder contains the firmware image builder, which combines AVR and Cortex code into a single file usable by the bootloader.
+
+### Version 1.03
+- Bugfixes to sequencer timing and FM with samples.
+- Bugfixes to MIDI Tx and Rx for CC Control.
+- Setting to swap CC038 to NRPN (common NRPN data line).
+- There is a new setting for triggering rolls and controlling them over MIDI.
+- Manual has been updated to reflect the changes.
 
 ### Libraries
 

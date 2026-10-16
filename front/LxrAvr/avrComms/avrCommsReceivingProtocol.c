@@ -528,6 +528,37 @@ void avrComms_parseData(uint8_t data)
                      break;
                   }
 
+                  /* PERF ROLL DISPLAY REPORTS, STM -> AVR  (Session 039)
+                     WHAT: STM reports a roll value changed by external MIDI
+                           (Global NRPN 93 rate 0..15, 94 note, 95 velocity);
+                           store it in the PERF page slot and repaint.
+                     WHY:  keeps PAR_ROLL/PAR_ROLL_NOTE/PAR_ROLL_VELOCITY
+                           equal to the STM value, so a later encoder/pot move
+                           starts from it instead of resending a stale value.
+                           Display-only: no echo back to STM (STM already
+                           holds the value), and these runtime-only params are
+                           never saved, so no file/snapshot state is touched.
+                     INPUT:  avrCommsParser_command.data2 - new value.
+                     OUTPUT: parameter_values[PAR_ROLL*] updated; menu_repaint().
+                     ACCESSORS: this parser only.
+                     AFFILIATES: STM frontPanelSending_sendRollParamReport(),
+                                 globalMidiParser_applySpecialNrpn(); menu.c
+                                 PAR_ROLL/_NOTE/_VELOCITY send cases (AVR->STM). */
+                  case SEQ_REPORT_ROLL_RATE:
+                     parameter_values[PAR_ROLL] = avrCommsParser_command.data2;
+                     menu_repaint();
+                     break;
+
+                  case SEQ_REPORT_ROLL_NOTE:
+                     parameter_values[PAR_ROLL_NOTE] = avrCommsParser_command.data2;
+                     menu_repaint();
+                     break;
+
+                  case SEQ_REPORT_ROLL_VELOCITY:
+                     parameter_values[PAR_ROLL_VELOCITY] = avrCommsParser_command.data2;
+                     menu_repaint();
+                     break;
+
                   case SEQ_SET_PAT_BEAT:
                      parameter_values[PAR_PATTERN_BEAT] = avrCommsParser_command.data2;
                      menu_repaint();

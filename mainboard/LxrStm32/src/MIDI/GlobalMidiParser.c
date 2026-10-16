@@ -33,10 +33,43 @@ static uint8_t midiParser_mtcIsRunning = 0;
 static uint16_t globalMidiParser_activeNrpnNumber = 0;
 static uint8_t globalMidiParser_nrpnSelected = 0;
 
-/* Global NRPN 93 is a performance roll-rate command. It intentionally bypasses
-   the raw sound-parameter table and preserves every existing Global CC map. */
-#define GLOBAL_MIDI_NRPN_ROLL_RATE 93
-#define GLOBAL_MIDI_ROLL_RATE_MAX 15
+/* GLOBAL SPECIAL NRPN NUMBERS  (Session 038 / Session 039)
+   WHAT: NRPN numbers handled by globalMidiParser_applySpecialNrpn() instead
+         of the raw table (which covers 0..92).
+         93 roll rate (0..15), 94 roll note, 95 roll velocity: PERF controls.
+         96 Drum 1 filter cutoff, active only in ¢ RX-filter mode, where it
+            replaces Global CC38.
+   WHY:  these are not raw sound-parameter slots; every existing Global CC
+         and NRPN assignment is preserved.
+   ACCESSORS: globalMidiParser_applySpecialNrpn().
+   AFFILIATES: MIDI_TABLE.md, manual/latex/midi_tables.tex. */
+#define GLOBAL_MIDI_NRPN_ROLL_RATE      93
+#define GLOBAL_MIDI_NRPN_ROLL_NOTE      94
+#define GLOBAL_MIDI_NRPN_ROLL_VELOCITY  95
+#define GLOBAL_MIDI_NRPN_FILTER_FREQ_1  96
+#define GLOBAL_MIDI_ROLL_RATE_MAX       15
+/* Data value that, on CC100/CC101 right after an NRPN data entry, forms the
+   standard "RPN null" deselect. */
+#define GLOBAL_MIDI_RPN_NULL_VALUE      127
+
+/* ¢ RX-FILTER STATE  (Session 039)
+   WHAT: 1 while the AVR RxFilter is one of the ¢ entries.
+   WHY:  gates CC38 consumption and NRPN 96 (see globalMidiParser_setCc38Swap()).
+   WRITER: globalMidiParser_setCc38Swap() only (from midi_setFilter()).
+   READERS: globalMidiParser_handleNrpnControl(),
+            globalMidiParser_applySpecialNrpn(). Default 0 = published
+            behaviour until the AVR sends its globals at boot. */
+static uint8_t globalMidiParser_cc38Swap = 0;
+
+/* RPN-NULL WINDOW  (Session 039)
+   WHAT: 1 from an NRPN CC6 data entry (with a selected NRPN) until the next
+         Global CC that is not ¢-consumed CC38 or a null byte.
+   WHY:  lets CC100/101 = 127 be swallowed as an NRPN deselect only when it
+         directly follows NRPN traffic, so deliberate Snare/Cymbal pan moves
+         on CC100/101 keep working.
+   WRITER/READER: globalMidiParser_handleNrpnControl() only. */
+static uint8_t globalMidiParser_nrpnDataPending = 0;
+
 #define GLOBAL_MIDI_RAW_UNMAPPED PAR_NONE
 
 /* Table indices are fixed legacy external Global CC numbers. Values are raw
@@ -345,39 +378,139 @@ static void globalMidiParser_applyRawParameter(uint16_t rawParam,
    }
 }
 
+/* GLOBAL SPECIAL-NRPN APPLY  (Session 039)
+   WHAT: applies the Global NRPN numbers that bypass
+         globalMidiParser_nrpnToRawParam[]:
+           93 roll rate      -> seq_setRollRate(clamp 0..15)  + AVR report
+           94 roll note      -> seq_setRollNote(0..127)       + AVR report
+           95 roll velocity  -> seq_setRollVelocity(0..127)   + AVR report
+           96 Drum 1 cutoff  -> PAR_FILTER_FREQ_1, ¢ mode only (otherwise
+                                not handled, so the caller's range check
+                                ignores it as before)
+   WHY:  roll rate/note/velocity are runtime PERF controls, not raw sound
+         parameters, so they cannot live in the raw table; they are not
+         recorded as automation or echoed (unchanged NRPN 93 behaviour).
+         Each roll change is reported to the AVR so the PERF page shows the
+         MIDI value; otherwise the next encoder/pot move would resend the
+         stale menu value and overwrite it. Reports are sent on every data
+         entry (no change cache): the front panel can also set these values,
+         so an STM-side cache could go stale and suppress a needed report.
+         NRPN 96 reuses globalMidiParser_applyRawParameter(), the exact
+         store/apply/echo/record path Global CC38 uses, so ¢ mode only moves
+         the transport, never the semantics.
+   INPUT:  nrpn - selected NRPN number; value - CC6 data (0..127);
+           updateOriginalValue, source - forwarded for NRPN 96.
+   OUTPUT: 1 if handled (caller returns), 0 if not a special NRPN (or NRPN
+           96 outside ¢ mode).
+   ACCESSORS: globalMidiParser_handleNrpnControl() (CC6 case) only.
+   AFFILIATES: seq_setRollRate()/seq_setRollNote()/seq_setRollVelocity()
+               (Sequencer/sequencer.c), frontPanelSending_sendRollParamReport()
+               (uARTFrontSYX/frontPanelSendingProtocol.c), AVR
+               SEQ_REPORT_ROLL_* handlers (avrCommsReceivingProtocol.c),
+               globalMidiParser_cc38Swap. */
+static uint8_t globalMidiParser_applySpecialNrpn(uint16_t nrpn,
+                                                 uint8_t value,
+                                                 uint8_t updateOriginalValue,
+                                                 enum MidiSource source)
+{
+   switch(nrpn)
+   {
+      case GLOBAL_MIDI_NRPN_ROLL_RATE:
+         if(value > GLOBAL_MIDI_ROLL_RATE_MAX)
+            value = GLOBAL_MIDI_ROLL_RATE_MAX;
+         seq_setRollRate(value);
+         frontPanelSending_sendRollParamReport(FRONT_SEQ_REPORT_ROLL_RATE, value);
+         return 1;
+
+      case GLOBAL_MIDI_NRPN_ROLL_NOTE:
+         seq_setRollNote(value);
+         frontPanelSending_sendRollParamReport(FRONT_SEQ_REPORT_ROLL_NOTE, value);
+         return 1;
+
+      case GLOBAL_MIDI_NRPN_ROLL_VELOCITY:
+         seq_setRollVelocity(value);
+         frontPanelSending_sendRollParamReport(FRONT_SEQ_REPORT_ROLL_VELOCITY, value);
+         return 1;
+
+      case GLOBAL_MIDI_NRPN_FILTER_FREQ_1:
+         if(!globalMidiParser_cc38Swap)
+            return 0;
+         globalMidiParser_applyRawParameter(PAR_FILTER_FREQ_1,
+                                            value,
+                                            updateOriginalValue,
+                                            source);
+         return 1;
+
+      default:
+         return 0;
+   }
+}
+
+/* GLOBAL NRPN PROTOCOL HANDLER
+   WHAT: consumes NRPN protocol CCs on the Global channel and applies the
+         selected NRPN on data entry:
+           CC99/CC98  select the NRPN number (MSB/LSB) and clear the
+                      RPN-null window;
+           CC6        applies the selected NRPN: special numbers first
+                      (globalMidiParser_applySpecialNrpn(): 93-95 roll,
+                      96 Drum 1 cutoff in ¢ mode), then the raw table 0..92;
+                      opens the RPN-null window;
+           CC38       consumed only in ¢ mode (data-entry LSB);
+           CC100/101  value 127 inside the RPN-null window is the standard
+                      NRPN deselect: consumed, clears nrpnSelected.
+         Every other CC closes the RPN-null window and returns 0 so the
+         caller applies it through the Global CC table.
+   WHY:  without consumption, standard NRPN traffic writes published sound
+         parameters: Elektron CC38 -> Drum 1 cutoff (¢ mode fixes it),
+         RPN-null CC101/100 -> Cymbal/Snare hard pan (fixed in all modes).
+         The window keeps deliberate CC100/101 pan moves working; only a
+         127 sent immediately after an NRPN data entry is treated as a null.
+   INPUT:  msg - Global-channel MIDI_CC; updateOriginalValue - forwarded to
+           the apply helpers.
+   OUTPUT: 1 if the CC was consumed here, 0 if the caller must apply it as
+           an ordinary Global CC. Updates globalMidiParser_activeNrpnNumber,
+           _nrpnSelected and _nrpnDataPending.
+   ACCESSORS: globalMidiParser_MIDIccHandler() only.
+   AFFILIATES: globalMidiParser_applySpecialNrpn(),
+               globalMidiParser_applyRawParameter(),
+               globalMidiParser_nrpnToRawParam[], globalMidiParser_cc38Swap,
+               MIDI_TABLE.md "Global MIDI NRPN Table". */
 static uint8_t globalMidiParser_handleNrpnControl(MidiMsg msg,
                                                   uint8_t updateOriginalValue)
 {
    switch(msg.data1)
    {
-      case NRPN_FINE:
+      case NRPN_FINE:          /* CC98 */
          globalMidiParser_activeNrpnNumber &= (uint16_t)~0x7f;
          globalMidiParser_activeNrpnNumber |= (uint16_t)(msg.data2 & 0x7f);
          globalMidiParser_nrpnSelected = 1;
+         globalMidiParser_nrpnDataPending = 0;
          return 1;
 
-      case NRPN_COARSE:
+      case NRPN_COARSE:        /* CC99 */
          globalMidiParser_activeNrpnNumber &= 0x7f;
          globalMidiParser_activeNrpnNumber |= (uint16_t)(msg.data2 << 7);
          globalMidiParser_nrpnSelected = 1;
+         globalMidiParser_nrpnDataPending = 0;
          return 1;
 
-      case NRPN_DATA_ENTRY_COARSE:
-         if(globalMidiParser_nrpnSelected
-            && globalMidiParser_activeNrpnNumber == GLOBAL_MIDI_NRPN_ROLL_RATE)
-         {
-            /* Apply NRPN 93 directly to the existing 0..15 roll-rate control. */
-            uint8_t rate = msg.data2;
-            if(rate > GLOBAL_MIDI_ROLL_RATE_MAX)
-               rate = GLOBAL_MIDI_ROLL_RATE_MAX;
-            seq_setRollRate(rate);
-            return 1;
-         }
+      case NRPN_DATA_ENTRY_COARSE:   /* CC6 */
+         /* A data entry opens the RPN-null window only if it addressed a
+            selected NRPN; CC6 before any selector stays ignored. */
+         globalMidiParser_nrpnDataPending = globalMidiParser_nrpnSelected;
 
-         if(globalMidiParser_nrpnSelected
-            && globalMidiParser_activeNrpnNumber
-                  < (sizeof(globalMidiParser_nrpnToRawParam)
-                     / sizeof(globalMidiParser_nrpnToRawParam[0])))
+         if(!globalMidiParser_nrpnSelected)
+            return 1;
+
+         if(globalMidiParser_applySpecialNrpn(globalMidiParser_activeNrpnNumber,
+                                              msg.data2,
+                                              updateOriginalValue,
+                                              msg.bits.source))
+            return 1;
+
+         if(globalMidiParser_activeNrpnNumber
+               < (sizeof(globalMidiParser_nrpnToRawParam)
+                  / sizeof(globalMidiParser_nrpnToRawParam[0])))
          {
             globalMidiParser_applyRawParameter(
                globalMidiParser_nrpnToRawParam[globalMidiParser_activeNrpnNumber],
@@ -387,7 +520,29 @@ static uint8_t globalMidiParser_handleNrpnControl(MidiMsg msg,
          }
          return 1;
 
+      case DATA_MSB_LSB:       /* CC38: data-entry LSB */
+         /* ¢ mode: consume. The RPN-null window is left as-is because an
+            Elektron sender emits CC38 between CC6 and any null. */
+         if(globalMidiParser_cc38Swap)
+            return 1;
+         globalMidiParser_nrpnDataPending = 0;
+         return 0;            /* published Drum 1 cutoff mapping */
+
+      case RPN_LSB:            /* CC100 */
+      case RPN_MSB:            /* CC101 */
+         if(globalMidiParser_nrpnDataPending
+            && msg.data2 == GLOBAL_MIDI_RPN_NULL_VALUE)
+         {
+            /* Standard deselect: a later CC6 must not re-apply the NRPN.
+               The window stays open so the paired null byte is consumed too. */
+            globalMidiParser_nrpnSelected = 0;
+            return 1;
+         }
+         globalMidiParser_nrpnDataPending = 0;
+         return 0;            /* published Snare/Cymbal pan mapping */
+
       default:
+         globalMidiParser_nrpnDataPending = 0;
          return 0;
    }
 }
@@ -507,6 +662,19 @@ void midiParser_checkMtc(void)
       seq_setRunning(0);
    }
 }
+/* GLOBAL-CHANNEL CC ROUTER
+   WHAT: handles CC2-127 on the configured Global MIDI channel. NRPN protocol
+         bytes (CC6/98/99, ¢-mode CC38, RPN-null CC100/101 = 127) are offered
+         to globalMidiParser_handleNrpnControl() first; anything it does not
+         consume is applied through the fixed legacy Global CC table.
+   WHY:  NRPN protocol bytes must be consumed before the CC table, or they
+         land on published sound parameters (CC38 = Drum 1 cutoff,
+         CC100/101 = Snare/Cymbal pan).
+   INPUT:  msg - MIDI_CC; updateOriginalValue - 1 to store/record/echo.
+   OUTPUT: live DSP apply, Preset raw storage, optional echo/record.
+   ACCESSORS: midiParser_MIDIccHandler() (MidiParser.c).
+   AFFILIATES: globalMidiParser_handleNrpnControl(),
+               globalMidiParser_applyRawParameter(), MIDI_TABLE.md. */
 void globalMidiParser_MIDIccHandler(MidiMsg msg, uint8_t updateOriginalValue)
 {
    uint16_t rawParam;
@@ -527,4 +695,17 @@ void globalMidiParser_MIDIccHandler(MidiMsg msg, uint8_t updateOriginalValue)
                                       msg.data2,
                                       updateOriginalValue,
                                       msg.bits.source);
+}
+
+/* GLOBAL CC38 SWAP SETTER  (Session 039)
+   WHAT: stores the ¢ RX-filter flag decoded by midi_setFilter().
+   WHY:  single writer for globalMidiParser_cc38Swap; see GlobalMidiParser.h.
+   INPUT:  enabled - nonzero enables the swap.
+   OUTPUT: globalMidiParser_cc38Swap = 0/1.
+   ACCESSORS: midi_setFilter() (MidiParser.c).
+   AFFILIATES: globalMidiParser_handleNrpnControl(),
+               globalMidiParser_applySpecialNrpn() (readers). */
+void globalMidiParser_setCc38Swap(uint8_t enabled)
+{
+   globalMidiParser_cc38Swap = enabled ? 1u : 0u;
 }

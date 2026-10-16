@@ -2808,9 +2808,32 @@ static void menu_applyEncoderDeltaToByte(uint8_t *paramValue, int8_t inc)
    *paramValue = (uint8_t)value;
 }
 
+/* ENCODER DTYPE_MENU ENTRY COUNT
+   WHAT: number of selectable entries for a DTYPE_MENU parameter on the
+         encoder edit path. Normally the menu table's count byte; RxFilter
+         returns MIDI_FILTER_RX_ENTRIES (24) so the ¢ twins (16..23) are
+         reachable (Session 039).
+   WHY:  ¢ entries must be encoder-only. This helper is used ONLY by the
+         encoder paths (menu_normalizeDtypeMenuEncoderValue() and the
+         DTYPE_MENU clamps in menu_encoderChangeParameter() /
+         menu_encoderChangeShiftParameter()); pots use getMaxEntriesForMenu()
+         via getDtypeValue() and stay at 16. Without this override the
+         normaliser would rescale any value >= 16 down and the clamp would
+         cap it at 15. TxFilter shares the table but is not overridden, so it
+         stays 0..15.
+   INPUT:  paramNr - DTYPE_MENU parameter.
+   OUTPUT: entry count (0 if the menu is unknown).
+   ACCESSORS: menu_normalizeDtypeMenuEncoderValue() (2820),
+              menu_encoderChangeParameter() (3058),
+              menu_encoderChangeShiftParameter() (3291).
+   AFFILIATES: getMaxEntriesForMenu(), midiFilterNames[] (MenuText.h). */
 static uint8_t menu_getDtypeMenuEntryCount(uint16_t paramNr)
 {
    const uint8_t menuId = pgm_read_byte(&parameter_dtypes[paramNr]) >> 4;
+
+   if(paramNr == PAR_MIDI_FILT_RX)
+      return MIDI_FILTER_RX_ENTRIES;
+
    return getMaxEntriesForMenu(menuId);
 }
 
@@ -4011,8 +4034,43 @@ void menu_parseGlobalParam(uint16_t paramNr, uint8_t value)
 	case PAR_MIDI_FILT_TX:
 		avrComms_sendData(SEQ_CC, SEQ_MIDI_FILT_TX, value);
 		break;
+	/* RX FILTER WIRE ENCODING  (Session 039)
+	   WHAT: converts the RxFilter menu index into the byte STM expects:
+	         0..15  -> sent unchanged (RX nibble: N 0x01, R 0x02, C 0x04, P 0x08);
+	         16..23 -> ¢ twin k = value-16: RX bits 0x04|(k&3)|((k&4)<<1)
+	                   (C, CN, CR, CRN, PC, PCN, PCR, all) plus
+	                   MIDI_FILTER_RX_CC38_SWAP;
+	         >= 24  -> corrupt (e.g. global file): repaired to "all" (15) in
+	                   parameter_values and sent as 15.
+	   WHY:  this is the single AVR->STM send point for RxFilter (encoder,
+	         pot, global-file load via menu_sendAllGlobals(), automation
+	         restore in buttonHandler.c), so encoding here covers every path.
+	         Arithmetic instead of a PROGMEM table to save AVR flash (0xE000
+	         bootloader limit).
+	   INPUT:  value - menu index 0..23 (or a corrupt value).
+	   OUTPUT: SEQ_CC / SEQ_MIDI_FILT_RX / encoded byte (7-bit safe, <= 0x1F).
+	   ACCESSORS: menu_encoderChangeParameter(), menu_encoderChangeShiftParameter(),
+	              menu_parseKnobValue(), menu_sendAllGlobals(),
+	              buttonHandler.c original-value restore.
+	   AFFILIATES: STM midi_setFilter() / MIDI_RX_FILTER_CC38_SWAP (MidiParser),
+	               midiFilterNames[] ¢ rows (MenuText.h). */
 	case PAR_MIDI_FILT_RX:
-		avrComms_sendData(SEQ_CC, SEQ_MIDI_FILT_RX, value);
+	{
+		uint8_t wire = value;
+
+		if(value >= MIDI_FILTER_RX_ENTRIES)
+		{
+			wire = 0x0F;
+			parameter_values[PAR_MIDI_FILT_RX] = wire;
+		}
+		else if(value >= MIDI_FILTER_CENT_FIRST)
+		{
+			const uint8_t k = (uint8_t)(value - MIDI_FILTER_CENT_FIRST);
+			wire = (uint8_t)(0x04 | (k & 0x03) | ((k & 0x04) << 1)
+			                 | MIDI_FILTER_RX_CC38_SWAP);
+		}
+		avrComms_sendData(SEQ_CC, SEQ_MIDI_FILT_RX, wire);
+	}
 		break;
 	case PAR_PRESCALER_CLOCK_IN:
 			avrComms_sendData(SEQ_CC, SEQ_TRIGGER_IN_PPQ, value);
@@ -4218,6 +4276,23 @@ void menu_parseKnobValue(uint8_t potNr, uint8_t potValue)
 	const uint8_t isOn2ndPage		= ( activeParameter > 3) * 4;
 	uint16_t paramNr				= pgm_read_word(&menuPages[menu_activePage][activePage].bot1 +
 										potNr + isOn2ndPage);
+
+	/* ¢ RX-FILTER POT LOCK  (Session 039)
+	   WHAT: ignores pot movement on RxFilter while a ¢ entry (value >= 16) is
+	         selected.
+	   WHY:  ¢ entries are encoder-only: they can be selected and left only in
+	         encoder edit mode. Pots already cannot reach them (getDtypeValue()
+	         scales over 16 entries); without this guard a pot nudge would
+	         silently drop the CC38 workaround. The value stays visible in the
+	         4-parameter view.
+	   INPUT:  paramNr, parameter_values[PAR_MIDI_FILT_RX].
+	   OUTPUT: early return (no value change, no STM traffic).
+	   ACCESSORS: this function only.
+	   AFFILIATES: menu_getDtypeMenuEntryCount() (encoder range),
+	               menu_parseGlobalParam() PAR_MIDI_FILT_RX. */
+	if(paramNr == PAR_MIDI_FILT_RX
+	   && parameter_values[PAR_MIDI_FILT_RX] >= MIDI_FILTER_CENT_FIRST)
+		return;
 
 	//parameter fetch. given the value of the pot, and the parameter number
 	// fetch the actual numeric value that the parameter should be set to
